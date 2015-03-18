@@ -7,6 +7,7 @@
 #include "sync.h"
 #include "virtualreg.h"
 #include "river.h"
+#include "mm.h"
 
 struct _zone;
 struct _cb_info;
@@ -23,12 +24,13 @@ struct _exec_env {
 
 	UINT_PTR saveLog;
 	
-	unsigned int heapSize, historySize, logHashSize, outBufferSize;
+	unsigned int /*heapSize,*/ historySize, logHashSize, outBufferSize;
 
 	unsigned char *pStack; // = NULL;
 
-	unsigned char *pHeap; //NULL
-	struct _zone *pFirstFree; //NULL
+	//unsigned char *pHeap; //NULL
+	//struct _zone *pFirstFree; //NULL
+	class RiverHeap heap;
 
 	_tbm_mutex cbLock; //  = 0;
 	struct _cb_info **hashTable; // = 0

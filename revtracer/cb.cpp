@@ -18,7 +18,7 @@ unsigned long HashFunc(unsigned int logHashSize, unsigned long a) {
 struct _cb_info *NewBlock(struct _exec_env *pEnv) {
 	struct _cb_info *pNew;
 	
-	pNew = (struct _cb_info *)SC_HeapAlloc(pEnv, sizeof(*pNew));
+	pNew = (struct _cb_info *)pEnv->heap.Alloc(sizeof(*pNew));
 
 	if (pNew) {
 		memset (pNew, 0, sizeof (*pNew));
@@ -138,10 +138,10 @@ void CloseBlock(struct _exec_env *pEnv) {
 			pWalk = pWalk->pNext;
 
 			if (pAdd->address != (UINT_PTR) pAdd->pCode) {
-				SC_HeapFree(pEnv, pAdd->pCode);
+				pEnv->heap.Free(pAdd->pCode);
 			}
 
-			SC_HeapFree(pEnv, (unsigned char *)pAdd);
+			pEnv->heap.Free(pAdd);
 		}
 	}
 

@@ -1,9 +1,7 @@
 #ifndef _ENVIRONMENT_H
 #define _ENVIRONMENT_H
 
-typedef unsigned long DWORD;
-typedef unsigned short WORD;
-typedef unsigned char BYTE;
+#include "extern.h"
 
 void *EnvMemoryAlloc (DWORD dwSize);
 void EnvMemoryFree (void *b);

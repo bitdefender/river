@@ -10,6 +10,10 @@
 #endif  /* __cplusplus */
 #endif  /* NULL */
 
+typedef unsigned long DWORD;
+typedef unsigned short WORD;
+typedef unsigned char BYTE;
+
 void DbgPrint(const char *fmt, ...);
 
 void *EnvMemoryAlloc(unsigned long dwSize);

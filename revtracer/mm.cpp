@@ -18,51 +18,64 @@ void memset(void *dest, int val, unsigned int size) {
 	}
 }
 
-struct _zone {
-	struct _zone *Prev; // 0xFFFFFFFF if this is the first block
-	struct _zone *Next; // 0xFFFFFFFF if this is the last block
+struct HeapZone {
+	HeapZone *Prev; // 0xFFFFFFFF if this is the first block
+	HeapZone *Next; // 0xFFFFFFFF if this is the last block
 	DWORD Size; // size of this block
 	DWORD Type; // 0 - free, 1 - allocated
 };
 
-int SC_HeapInit(struct _exec_env *pEnv, unsigned int heapSize) {
-	struct _zone *fz;
-	unsigned char *pHeap;
+RiverHeap::RiverHeap() {
+	pHeap = NULL;
+	pFirstFree = NULL;
+	size = 0;
+}
 
-	pHeap = pEnv->pHeap = (unsigned char *)EnvMemoryAlloc(heapSize);
+RiverHeap::~RiverHeap() {
+	if (0 != size) {
+		Destroy();
+	}
+}
 
-	if (!pHeap) {
-		return 0;
+bool RiverHeap::Init(DWORD heapSize) {
+	HeapZone *fz;
+	unsigned char *tHeap;
+
+	tHeap = pHeap = (unsigned char *)EnvMemoryAlloc(heapSize);
+
+	if (!tHeap) {
+		return false;
 	}
 	
-	memset (pHeap, 0, heapSize);
+	memset (tHeap, 0, heapSize);
 
-	fz = (struct _zone *) pHeap; 
+	fz = (HeapZone *)tHeap; 
 
-	fz->Next = (struct _zone *) 0xFFFFFFFF;
-	fz->Prev = (struct _zone *) 0xFFFFFFFF;
+	fz->Next = (HeapZone *) 0xFFFFFFFF;
+	fz->Prev = (HeapZone *) 0xFFFFFFFF;
 	fz->Type = 0;
-	fz->Size = pEnv->heapSize - sizeof(struct _zone);
+	fz->Size = size - sizeof(HeapZone);
 
-	pEnv->pFirstFree = fz;
+	pFirstFree = fz;
 
-	pEnv->heapSize = heapSize;
-	return 1;
+	size = heapSize;
+	return true;
 }
 
-int SC_HeapDestroy(struct _exec_env *pEnv) {
-	if (pEnv->pHeap) {
-		EnvMemoryFree(pEnv->pHeap);
-		pEnv->pHeap = NULL;
-		pEnv->pFirstFree = NULL;
+bool RiverHeap::Destroy() {
+	if (pHeap) {
+		EnvMemoryFree(pHeap);
+		pHeap = NULL;
+		pFirstFree = NULL;
+		size = 0;
 	}
 
 	return 1;
 }
 
 
-void SC_PrintInfo (struct _exec_env *pEnv, struct _zone *fz) {
-	DbgPrint("FirstFree: %08X.\n", (DWORD) pEnv->pFirstFree);
+void RiverHeap::PrintInfo(HeapZone *fz) {
+	DbgPrint("FirstFree: %08X.\n", (DWORD)pFirstFree);
 	DbgPrint("fz  Addr : %08X.\n", (DWORD)fz);
 	DbgPrint("fz->Next : %08X.\n", (DWORD)fz->Next);
 	DbgPrint("fz->Prev : %08X.\n", (DWORD)fz->Prev);
@@ -72,10 +85,10 @@ void SC_PrintInfo (struct _exec_env *pEnv, struct _zone *fz) {
 }
 
 
-BYTE *SC_HeapAlloc(struct _exec_env *pEnv, DWORD sz) {
+void *RiverHeap::Alloc(DWORD sz) {
 	BYTE *b;
 	DWORD first;
-	struct _zone *fz, *nfz;
+	HeapZone *fz, *nfz;
 
 	sz += 3;
 	sz &= ~3L;
@@ -84,20 +97,20 @@ BYTE *SC_HeapAlloc(struct _exec_env *pEnv, DWORD sz) {
 
 	first = 1;
 
-	fz = pEnv->pFirstFree;
+	fz = pFirstFree;
 
 	do{
 	//	SC_PrintInfo (fz);
 
 		if (fz->Type == 0) {// free block
-			if (sz + sizeof (struct _zone) <= fz->Size) {
+			if (sz + sizeof (HeapZone) <= fz->Size) {
 			//	printf("Found a block of %d bytes. We need only %d.\n", fz->Size, sz);
 
-				b = (BYTE *) fz + sizeof (struct _zone);
+				b = (BYTE *) fz + sizeof (HeapZone);
 
-				nfz = (struct _zone *) ((BYTE *) fz + sizeof (struct _zone) + sz);
+				nfz = (HeapZone *) ((BYTE *) fz + sizeof (HeapZone) + sz);
 
-				if (fz->Next != (struct _zone *) 0xFFFFFFFF)
+				if (fz->Next != (HeapZone *) 0xFFFFFFFF)
 				{
 					fz->Next->Prev = nfz;
 				}
@@ -105,14 +118,14 @@ BYTE *SC_HeapAlloc(struct _exec_env *pEnv, DWORD sz) {
 				nfz->Next = fz->Next;
 				nfz->Prev = fz;
 				nfz->Type = 0;
-				nfz->Size = fz->Size - sz - sizeof (struct _zone);
+				nfz->Size = fz->Size - sz - sizeof (HeapZone);
 
 				fz->Next = nfz;
 				fz->Type = 1;
 				fz->Size = sz;
 
 				if (first) {
-					pEnv->pFirstFree = nfz;
+					pFirstFree = nfz;
 				}
 
 			//	SC_Unlock (&dwMMLock);
@@ -124,20 +137,20 @@ BYTE *SC_HeapAlloc(struct _exec_env *pEnv, DWORD sz) {
 			}
 		}
 
-		fz = (struct _zone *) fz->Next;
+		fz = (HeapZone *) fz->Next;
 
-	} while (fz != (struct _zone *) 0xFFFFFFFF);
+	} while (fz != (HeapZone *) 0xFFFFFFFF);
 
 //	SC_Unlock (&dwMMLock);
 
 	return NULL;
 }
 
-int SC_HeapList(struct _exec_env *pEnv) {
+void RiverHeap::List() {
 	DWORD dwMaxSize;
-	struct _zone *fz;
+	HeapZone *fz;
 
-	fz = (struct _zone *)pEnv->pHeap;
+	fz = (HeapZone *)pHeap;
 
 //	SC_Lock (&dwMMLock);
 
@@ -153,23 +166,21 @@ int SC_HeapList(struct _exec_env *pEnv) {
 			dwMaxSize += fz->Size;
 		}
 
-		fz = (struct _zone *) fz->Next;
+		fz = (HeapZone *) fz->Next;
 
-	} while (fz != (struct _zone *) 0xFFFFFFFF);
+	} while (fz != (HeapZone *) 0xFFFFFFFF);
 
 //	printf("%d bytes of memory are in use.\n", dwMaxSize);
 
 //	SC_Unlock (&dwMMLock);
-
-	return 0;
 }
 
-int SC_HeapFree(struct _exec_env *pEnv, BYTE *p) {
-	struct _zone *fz, *wfz;
+void RiverHeap::Free(void *p) {
+	HeapZone *fz, *wfz;
 
 //	SC_Lock (&dwMMLock);
 
-	fz = (struct _zone *) (p - sizeof (struct _zone));
+	fz = (HeapZone *) ((BYTE *)p - sizeof (HeapZone));
 
 //	SC_PrintInfo (fz);
 
@@ -177,33 +188,31 @@ int SC_HeapFree(struct _exec_env *pEnv, BYTE *p) {
 
 	wfz = fz->Next;
 
-	if (wfz != (struct _zone *) 0xFFFFFFFF) {// present?
+	if (wfz != (HeapZone *) 0xFFFFFFFF) {// present?
 		if (wfz->Type == 0) {// free?
 			fz->Next = wfz->Next;
-			fz->Size = fz->Size + wfz->Size + sizeof (struct _zone);
+			fz->Size = fz->Size + wfz->Size + sizeof (HeapZone);
 			fz->Type = 0;
 		}
 	}
 
-	if (fz < pEnv->pFirstFree) {
-		pEnv->pFirstFree = fz;
+	if (fz < pFirstFree) {
+		pFirstFree = fz;
 	}
 
 	wfz = fz->Prev;
 
-	if (wfz != (struct _zone *) 0xFFFFFFFF) {// present?
+	if (wfz != (HeapZone *) 0xFFFFFFFF) {// present?
 		if (wfz->Type == 0) {// free?
 			wfz->Next = fz->Next;
-			wfz->Size = wfz->Size + fz->Size + sizeof (struct _zone);
+			wfz->Size = wfz->Size + fz->Size + sizeof (HeapZone);
 
-			if (wfz < pEnv->pFirstFree) {
-				pEnv->pFirstFree = wfz;
+			if (wfz < pFirstFree) {
+				pFirstFree = wfz;
 			}
 		}
 	}
 
 //	SC_Unlock (&dwMMLock);
-
-	return 1;
 }
 

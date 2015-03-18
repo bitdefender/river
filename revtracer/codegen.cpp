@@ -21,7 +21,7 @@ void TranslateReverse(struct _exec_env *pEnv, struct RiverInstruction *rIn, stru
 unsigned char *DuplicateBuffer(struct _exec_env *pEnv, unsigned char *p, unsigned int sz) {
 	unsigned int mSz = (sz + 0x0F) & ~0x0F;
 	
-	unsigned char *pBuf = SC_HeapAlloc(pEnv, mSz);
+	unsigned char *pBuf = (unsigned char *)pEnv->heap.Alloc(mSz);
 	if (pBuf == NULL) {
 		return NULL;
 	}
@@ -34,7 +34,7 @@ unsigned char *DuplicateBuffer(struct _exec_env *pEnv, unsigned char *p, unsigne
 unsigned char *ConsolidateBlock(struct _exec_env *pEnv, unsigned char *outBuff, unsigned int outSz, unsigned char *saveBuff, unsigned int saveSz) {
 	unsigned int mSz = (outSz + saveSz + 0x0F) & (~0x0F);
 
-	unsigned char *pBuf = SC_HeapAlloc(pEnv, mSz);
+	unsigned char *pBuf = (unsigned char *)pEnv->heap.Alloc(mSz);
 	if (NULL == pBuf) {
 		return NULL;
 	}
