@@ -1,9 +1,12 @@
+#include <intrin.h>
+
 #include "common.h"
 #include "callgates.h"
 #include "cb.h"
 #include "mm.h"
 #include "BaseTsd.h"
 
+void DbgPrint(const char *fmt, ...);
 int Translate(struct _exec_env *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags);
 
 void Stopper(struct _exec_env *pEnv, BYTE *s) {
@@ -25,7 +28,7 @@ DWORD __declspec(noinline) call_cdecl_0(struct _exec_env *env, _fn_cdecl_0 f) {
 	struct _cb_info *pBlock;
 	DWORD ret;
 
-	Stopper (env, _ReturnAddress());
+	Stopper (env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -33,7 +36,7 @@ DWORD __declspec(noinline) call_cdecl_0(struct _exec_env *env, _fn_cdecl_0 f) {
 	env->bForward = 1;
 	TouchBlock(env, pBlock);
 	AddBlock(env, pBlock);
-	ret = ((_fn_cdecl_0)(pBlock->pCode))(); //JUMP in TVM
+	ret = ((_fn_cdecl_0)(pBlock->pFwCode))(); //JUMP in TVM
 
 	return ret;
 }
@@ -42,7 +45,7 @@ DWORD __declspec(noinline) call_cdecl_1(struct _exec_env *env, _fn_cdecl_1 f, vo
 	DWORD ret;
 	struct _cb_info *pBlock;
 
-	Stopper (env, _ReturnAddress());
+	Stopper (env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -51,7 +54,7 @@ DWORD __declspec(noinline) call_cdecl_1(struct _exec_env *env, _fn_cdecl_1 f, vo
 	TouchBlock(env, pBlock); 
 	AddBlock(env, pBlock);
 
-	ret = ((_fn_cdecl_1)(pBlock->pCode))(p1);
+	ret = ((_fn_cdecl_1)(pBlock->pFwCode))(p1);
 
 	return ret;
 }
@@ -60,7 +63,7 @@ DWORD __declspec(noinline) call_cdecl_2(struct _exec_env *env, _fn_cdecl_2 f, vo
 	DWORD ret;
 	struct _cb_info *pBlock;
 
-	Stopper (env, _ReturnAddress());
+	Stopper(env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -69,7 +72,7 @@ DWORD __declspec(noinline) call_cdecl_2(struct _exec_env *env, _fn_cdecl_2 f, vo
 	TouchBlock(env, pBlock); 
 	AddBlock(env, pBlock);
 
-	ret = ((_fn_cdecl_2)(pBlock->pCode))(p1, p2);
+	ret = ((_fn_cdecl_2)(pBlock->pFwCode))(p1, p2);
 
 	return ret;
 }
@@ -78,7 +81,7 @@ DWORD __declspec(noinline) call_cdecl_3(struct _exec_env *env, _fn_cdecl_3 f, vo
 	DWORD ret;
 	struct _cb_info *pBlock;
 
-	Stopper (env, _ReturnAddress());
+	Stopper(env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -87,7 +90,7 @@ DWORD __declspec(noinline) call_cdecl_3(struct _exec_env *env, _fn_cdecl_3 f, vo
 	TouchBlock(env, pBlock);
 	AddBlock(env, pBlock);
 
-	ret = ((_fn_cdecl_3)(pBlock->pCode))(p1, p2, p3);
+	ret = ((_fn_cdecl_3)(pBlock->pFwCode))(p1, p2, p3);
 
 	return ret;
 }
@@ -96,7 +99,7 @@ DWORD __declspec(noinline) call_cdecl_4(struct _exec_env *env, _fn_cdecl_4 f, vo
 	DWORD ret;
 	struct _cb_info *pBlock;
 
-	Stopper (env, _ReturnAddress());
+	Stopper(env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -105,7 +108,7 @@ DWORD __declspec(noinline) call_cdecl_4(struct _exec_env *env, _fn_cdecl_4 f, vo
 	TouchBlock(env, pBlock);
 	AddBlock(env, pBlock);
 
-	ret = ((_fn_cdecl_4)(pBlock->pCode))(p1, p2, p3, p4);
+	ret = ((_fn_cdecl_4)(pBlock->pFwCode))(p1, p2, p3, p4);
 	return ret;
 }
 
@@ -113,7 +116,7 @@ DWORD __declspec(noinline) call_stdcall_0(struct _exec_env *env, _fn_stdcall_0 f
 	struct _cb_info *pBlock;
 	DWORD ret;
 
-	Stopper (env, _ReturnAddress());
+	Stopper(env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -121,7 +124,7 @@ DWORD __declspec(noinline) call_stdcall_0(struct _exec_env *env, _fn_stdcall_0 f
 	env->bForward = 1;
 	TouchBlock(env, pBlock);
 	AddBlock(env, pBlock);
-	ret = ((_fn_stdcall_0)(pBlock->pCode))(); //JUMP in TVM
+	ret = ((_fn_stdcall_0)(pBlock->pFwCode))(); //JUMP in TVM
 
 	return ret;
 }
@@ -130,7 +133,7 @@ DWORD __declspec(noinline) call_stdcall_1(struct _exec_env *env, _fn_stdcall_1 f
 	DWORD ret;
 	struct _cb_info *pBlock;
 
-	Stopper (env, _ReturnAddress());
+	Stopper(env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -139,7 +142,7 @@ DWORD __declspec(noinline) call_stdcall_1(struct _exec_env *env, _fn_stdcall_1 f
 	TouchBlock(env, pBlock);
 	AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_1)(pBlock->pCode))(p1);
+	ret = ((_fn_stdcall_1)(pBlock->pFwCode))(p1);
 
 	return ret;
 }
@@ -148,7 +151,7 @@ DWORD __declspec(noinline) call_stdcall_2(struct _exec_env *env, _fn_stdcall_2 f
 	DWORD ret;
 	struct _cb_info *pBlock;
 
-	Stopper (env, _ReturnAddress());
+	Stopper(env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -157,7 +160,7 @@ DWORD __declspec(noinline) call_stdcall_2(struct _exec_env *env, _fn_stdcall_2 f
 	TouchBlock(env, pBlock);
 	AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_2)(pBlock->pCode))(p1, p2);
+	ret = ((_fn_stdcall_2)(pBlock->pFwCode))(p1, p2);
 
 	return ret;
 }
@@ -166,7 +169,7 @@ DWORD __declspec(noinline) call_stdcall_3(struct _exec_env *env, _fn_stdcall_3 f
 	DWORD ret;
 	struct _cb_info *pBlock;
 
-	Stopper (env, _ReturnAddress());
+	Stopper(env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -175,7 +178,7 @@ DWORD __declspec(noinline) call_stdcall_3(struct _exec_env *env, _fn_stdcall_3 f
 	TouchBlock(env, pBlock);
 	AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_3)(pBlock->pCode))(p1, p2, p3);
+	ret = ((_fn_stdcall_3)(pBlock->pFwCode))(p1, p2, p3);
 
 	return ret;
 }
@@ -184,7 +187,7 @@ DWORD __declspec(noinline) call_stdcall_4(struct _exec_env *env, _fn_stdcall_4 f
 	DWORD ret;
 	struct _cb_info *pBlock;
 
-	Stopper (env, _ReturnAddress());
+	Stopper(env, (BYTE *)_ReturnAddress());
 
 	pBlock = NewBlock(env);
 	pBlock->address = (DWORD) f;
@@ -193,6 +196,6 @@ DWORD __declspec(noinline) call_stdcall_4(struct _exec_env *env, _fn_stdcall_4 f
 	TouchBlock(env, pBlock);
 	AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_4)(pBlock->pCode))(p1, p2, p3, p4);
+	ret = ((_fn_stdcall_4)(pBlock->pFwCode))(p1, p2, p3, p4);
 	return ret;
 }

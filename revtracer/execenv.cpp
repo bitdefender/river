@@ -3,12 +3,12 @@
 #include "cb.h"
 
 //#include "lup.h" //for now
-#include "common.h"
+#include "extern.h"
 
 struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize) {
 	struct _exec_env *pEnv;
 
-	if (NULL == (pEnv = EnvMemoryAlloc(sizeof(*pEnv)))) {
+	if (NULL == (pEnv = (struct _exec_env *)EnvMemoryAlloc(sizeof(*pEnv)))) {
 		return NULL;
 	}
 
@@ -25,14 +25,14 @@ struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsign
 		return NULL;
 	}
 
-	if (0 == (pEnv->executionBuffer = EnvMemoryAlloc(executionSize))) {
+	if (0 == (pEnv->executionBuffer = (UINT_PTR *)EnvMemoryAlloc(executionSize))) {
 		CloseBlock(pEnv);
 		SC_HeapDestroy(pEnv);
 		EnvMemoryFree((BYTE *)pEnv);
 		return NULL;
 	}
 
-	if (NULL == (pEnv->outBuffer = EnvMemoryAlloc(outBufferSize))) {
+	if (NULL == (pEnv->outBuffer = (unsigned char *)EnvMemoryAlloc(outBufferSize))) {
 		EnvMemoryFree(pEnv->executionBuffer);
 		CloseBlock(pEnv);
 		SC_HeapDestroy(pEnv);
@@ -41,7 +41,7 @@ struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsign
 	}
 	pEnv->outBufferSize = outBufferSize;
 
-	if (NULL == (pEnv->pStack = EnvMemoryAlloc (0x100000))) {
+	if (NULL == (pEnv->pStack = (unsigned char *)EnvMemoryAlloc (0x100000))) {
 		EnvMemoryFree((BYTE *)pEnv->outBuffer);
 		EnvMemoryFree(pEnv->executionBuffer); 
 		CloseBlock(pEnv);
@@ -75,29 +75,29 @@ void DeleteEnv(struct _exec_env *pEnv) {
 	}
 }
 
-RIVER_EXT struct RiverAddress *AllocRiverAddr(struct _exec_env *pEnv) {
+struct RiverAddress *AllocRiverAddr(struct _exec_env *pEnv) {
 	struct RiverAddress *ret = &pEnv->trRiverAddr[pEnv->addrCount];
 	pEnv->addrCount++;
 	return ret;
 }
 
-RIVER_EXT void RiverMemReset(struct _exec_env *pEnv) {
+void RiverMemReset(struct _exec_env *pEnv) {
 	pEnv->addrCount = pEnv->trInstCount = pEnv->fwInstCount = pEnv->bkInstCount = 0;
 }
 
-RIVER_EXT void ResetRegs(struct _exec_env *pEnv) {
+void ResetRegs(struct _exec_env *pEnv) {
 	memset(pEnv->regVersions, 0, sizeof(pEnv->regVersions));
 }
 
-RIVER_EXT unsigned int GetCurrentReg(struct _exec_env *pEnv, unsigned char regName) {
+unsigned int GetCurrentReg(struct _exec_env *pEnv, unsigned char regName) {
 	return pEnv->regVersions[regName] | regName;
 }
 
-RIVER_EXT unsigned int GetPrevReg(struct _exec_env *pEnv, unsigned char regName) {
+unsigned int GetPrevReg(struct _exec_env *pEnv, unsigned char regName) {
 	return (pEnv->regVersions[regName] - 0x100) | regName;
 }
 
-RIVER_EXT unsigned int NextReg(struct _exec_env *pEnv, unsigned char regName) {
+unsigned int NextReg(struct _exec_env *pEnv, unsigned char regName) {
 	pEnv->regVersions[regName] += 0x100;
 	return GetCurrentReg(pEnv, regName);
 }
@@ -118,6 +118,6 @@ void DeleteUserContext(struct _exec_env *pEnv) {
 		return;
 	}
 
-	SC_HeapFree(pEnv, pEnv->userContext);
+	SC_HeapFree(pEnv, (unsigned char *)pEnv->userContext);
 	pEnv->userContext = NULL;
 }

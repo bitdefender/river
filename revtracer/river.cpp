@@ -3,6 +3,8 @@
 #include "modrm32.h"
 #include "riverinternl.h"
 
+#include "extern.h"
+
 void InitRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags);
 void ConvertRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags);
 void EndRiverConversion(struct _exec_env *pEnv, BYTE **px86, DWORD *pFlags);

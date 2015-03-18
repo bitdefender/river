@@ -1,6 +1,5 @@
 #include "mm.h"
 
-
 //#include "lup.h" //for now
 //volatile DWORD dwMMLock			= 0;
 
@@ -30,7 +29,7 @@ int SC_HeapInit(struct _exec_env *pEnv, unsigned int heapSize) {
 	struct _zone *fz;
 	unsigned char *pHeap;
 
-	pHeap = pEnv->pHeap = EnvMemoryAlloc(heapSize);
+	pHeap = pEnv->pHeap = (unsigned char *)EnvMemoryAlloc(heapSize);
 
 	if (!pHeap) {
 		return 0;

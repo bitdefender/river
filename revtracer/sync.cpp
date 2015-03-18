@@ -2,6 +2,8 @@
 #include "extern.h"
 #include "sync.h"
 
+#include <intrin.h>
+
 void TbmMutexLock(_tbm_mutex *mutex) {
 	//DbgPrint("LOCK %08x\n", mutex);
 	while (1) {

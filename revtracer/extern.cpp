@@ -22,7 +22,7 @@ void *EnvMemoryAlloc(unsigned long dwSize) {
 	return ret;
 }
 
-void EnvMemoryFree(unsigned char *b) {
+void EnvMemoryFree(void *b) {
 	//ExFreePoolWithTag(b, 0x3070754C);
 	//VirtualFree(b);
 }
