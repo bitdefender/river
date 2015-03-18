@@ -4,6 +4,8 @@
 #include "mm.h"
 #include "BaseTsd.h"
 
+int Translate(struct _exec_env *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags);
+
 void Stopper(struct _exec_env *pEnv, BYTE *s) {
 	struct _cb_info *pStop;
 

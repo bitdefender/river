@@ -6,7 +6,7 @@ typedef unsigned short WORD;
 typedef unsigned char BYTE;
 
 void *EnvMemoryAlloc (DWORD dwSize);
-void EnvMemoryFree (BYTE *b);
+void EnvMemoryFree (void *b);
 
 void __stdcall BranchHandler(struct _exec_env *, DWORD);
 void __cdecl   SysHandler(struct _exec_env *, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD);

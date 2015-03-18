@@ -4,6 +4,6 @@
 void DbgPrint(const char *fmt, ...);
 
 void *EnvMemoryAlloc(unsigned long dwSize);
-void EnvMemoryFree(unsigned char *b);
+void EnvMemoryFree(void *b);
 
 #endif

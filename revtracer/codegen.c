@@ -10,16 +10,7 @@
 
 #include "river.h"
 
-//static BYTE poutBuffer [0x100000] = { 0 };
-
-
-/*extern DWORD dwVirtualStack;
-extern DWORD dwEaxSave;
-extern DWORD dwJmpBuf;*/
-
-
 DWORD dwTransLock = 0;
-
 
 DWORD dwSysHandler    = (DWORD) SysHandler;
 DWORD dwSysEndHandler = (DWORD) SysEndHandler;
@@ -82,10 +73,10 @@ int Translate(struct _exec_env *pEnv, struct _cb_info *pCB, DWORD dwTranslationF
 		RiverMemReset(pEnv);
 		ResetRegs(pEnv);
 
-		pCB->dwSize = x86toriver(pEnv, pCB->address, pEnv->trRiverInst, &pEnv->trInstCount);
+		pCB->dwSize = x86toriver(pEnv, (BYTE *)pCB->address, pEnv->trRiverInst, &pEnv->trInstCount);
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 
-		for (int i = 0; i < pEnv->fwInstCount; ++i) {
+		for (DWORD i = 0; i < pEnv->fwInstCount; ++i) {
 			TranslateReverse(pEnv, &pEnv->fwRiverInst[pEnv->fwInstCount - 1 - i], &pEnv->bkRiverInst[i], &tmp);
 		}
 		MakeJMP(pEnv, &pEnv->bkRiverInst[pEnv->fwInstCount], pCB->address);

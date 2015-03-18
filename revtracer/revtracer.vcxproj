@@ -33,7 +33,9 @@
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
     </ClCompile>
     <ClCompile Include="cb.c" />
-    <ClCompile Include="codegen.c" />
+    <ClCompile Include="codegen.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="crc32.c" />
     <ClCompile Include="execenv.c" />
     <ClCompile Include="extern.c" />
@@ -45,9 +47,6 @@
     <ClCompile Include="RiverReverseCode.cpp" />
     <ClCompile Include="RiverSaveCode.cpp" />
     <ClCompile Include="RiverTox86.cpp" />
-    <ClCompile Include="savetbl.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="src.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
@@ -59,10 +58,6 @@
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
     </ClCompile>
     <ClCompile Include="sync.c" />
-    <ClCompile Include="translatetbl.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="virtualreg.c" />
     <ClCompile Include="x86ToRiver.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

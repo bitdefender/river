@@ -8,7 +8,7 @@ void ConvertRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri
 void EndRiverConversion(struct _exec_env *pEnv, BYTE **px86, DWORD *pFlags);
 void RiverPrintInstruction(struct RiverInstruction *ri);
 
-void TransalteSave(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount);
+void TranslateSave(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount);
 void TranslateReverse(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount);
 
 /* x86toriver converts a single x86 intruction to one ore more river instructions */
@@ -21,7 +21,7 @@ DWORD x86toriver(struct _exec_env *pEnv, BYTE *px86, struct RiverInstruction *pR
 
 	pEnv->fwInstCount = 0;
 
-	printf("= x86 to river ================================================================\n");
+	DbgPrint("= x86 to river ================================================================\n");
 
 	do {
 		BYTE *pAux = pTmp;
@@ -29,14 +29,14 @@ DWORD x86toriver(struct _exec_env *pEnv, BYTE *px86, struct RiverInstruction *pR
 		InitRiverInstruction(pEnv, pRiver, &pTmp, &pFlags);
 		TranslateSave(pEnv, pRiver, &pEnv->fwRiverInst[pEnv->fwInstCount], &pEnv->fwInstCount);
 
-		printf(".%08x    ", pAux);
+		DbgPrint(".%08x    ", pAux);
 		iSize = pTmp - pAux;
 		for (DWORD i = 0; i < iSize; ++i) {
-			printf("%02x ", pAux[i]);
+			DbgPrint("%02x ", pAux[i]);
 		}
 
 		for (DWORD i = iSize; i < 8; ++i) {
-			printf("   ");
+			DbgPrint("   ");
 		}
 
 		RiverPrintInstruction(pRiver);
@@ -45,17 +45,17 @@ DWORD x86toriver(struct _exec_env *pEnv, BYTE *px86, struct RiverInstruction *pR
 		pRiver++;
 	} while (!(pFlags & RIVER_FLAG_BRANCH));
 
-	printf("===============================================================================\n");
+	DbgPrint("===============================================================================\n");
 	return pTmp - px86;
 }
 
 /* rivertox86 converts a block of river instructions to x86 */
 /* returns the nuber of bytes written in px86 */
-DWORD rivertox86(struct _exec_env *pEnv, struct RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, unsigned int flg) {
+DWORD rivertox86(struct _exec_env *pEnv, struct RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg) {
 	BYTE *pTmp = px86, *pAux;
 	DWORD pFlags = flg;
 
-	printf("= river to x86 ================================================================\n");
+	DbgPrint("= river to x86 ================================================================\n");
 
 	for (DWORD i = 0; i < dwInstrCount; ++i) {
 		pAux = pTmp;
@@ -64,19 +64,19 @@ DWORD rivertox86(struct _exec_env *pEnv, struct RiverInstruction *pRiver, DWORD 
 		ConvertRiverInstruction(pEnv, &pRiver[i], &pTmp, &pFlags);
 
 		for (; pAux < pTmp; ++pAux) {
-			printf("%02x ", *pAux);
+			DbgPrint("%02x ", *pAux);
 		}
-		printf("\n");
+		DbgPrint("\n");
 	}
 
 	pAux = pTmp;
 	EndRiverConversion(pEnv, &pTmp, &pFlags);
 	for (; pAux < pTmp; ++pAux) {
-		printf("%02x ", *pAux);
+		DbgPrint("%02x ", *pAux);
 	}
-	printf("\n");
+	DbgPrint("\n");
 
-	printf("===============================================================================\n");
+	DbgPrint("===============================================================================\n");
 	return pTmp - px86;
 }
 

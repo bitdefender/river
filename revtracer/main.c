@@ -26,7 +26,6 @@ DWORD PopFromExecutionBuffer(struct _exec_env *pEnv) {
 
 void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	struct _cb_info *pCB;
-	unsigned int tmp;
 	struct UserCtx *ctx = (struct UserCtx *)pEnv->userContext;
 
 	DbgPrint("BranchHandler: %08X\n", a);
@@ -78,13 +77,13 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 				Translate(pEnv, pCB, 0);
 
 				DbgPrint("= river saving code ===========================================================\n");
-				for (int i = 0; i < pEnv->fwInstCount; ++i) {
+				for (DWORD i = 0; i < pEnv->fwInstCount; ++i) {
 					RiverPrintInstruction(&pEnv->fwRiverInst[i]);
 				}
 				DbgPrint("===============================================================================\n");
 
 				DbgPrint("= river reversing code ========================================================\n");
-				for (int i = 0; i < pEnv->bkInstCount; ++i) {
+				for (DWORD i = 0; i < pEnv->bkInstCount; ++i) {
 					RiverPrintInstruction(&pEnv->bkRiverInst[i]);
 				}
 				DbgPrint("===============================================================================\n");
@@ -167,19 +166,16 @@ int main() {
 	ctx = (struct UserCtx *)pEnv->userContext;
 	ctx->callCount = 0;
 
-	struct RiverInstruction ris[20];
-	unsigned char tBuff[64];
-
 	unsigned char *pOverlap = (unsigned char *)*(unsigned int *)((unsigned char *)overlap + 1);
 	pOverlap += (UINT_PTR)overlap + 5;
 
 	/*x86toriver(pEnv, pOverlap, ris, &dwCount);
 	rivertox86(pEnv, ris, dwCount, tBuff);*/
 
-	DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, 3, 7, 2, 10);
-	printf("Done. ret = %d\n", ret);
+	DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, (void *)3, (void *)7, (void *)2, (void *)10);
+	DbgPrint("Done. ret = %d\n", ret);
 
-	printf("Test %d\n", overlap(3, 7, 2, 10));
+	DbgPrint("Test %d\n", overlap(3, 7, 2, 10));
 
 	return 0;
 }
