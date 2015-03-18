@@ -7,12 +7,6 @@
 
 #include "environment.h"
 
-#ifdef __cplusplus
-#define RIVER_EXT extern "C"
-#else
-#define RIVER_EXT
-#endif
-
 /* River mofifiers (present in riverInstruction.modifiers) */
 #define RIVER_MODIFIER_EXT 			0x0001
 #define RIVER_MODIFIER_FSSEG		0x0002
@@ -131,14 +125,14 @@ struct RiverInstruction {
 /* x86toriver converts a single x86 intruction to one ore more river instructions */
 /* returns the instruction length */
 /* dwInstrCount contains the number of generated river instructions */
-RIVER_EXT DWORD x86toriver(struct _exec_env *pEnv, BYTE *px86, struct RiverInstruction *pRiver, DWORD *dwInstrCount);
+DWORD x86toriver(struct _exec_env *pEnv, BYTE *px86, struct RiverInstruction *pRiver, DWORD *dwInstrCount);
 
 /* rivertox86 converts a block of river instructions to x86 */
 /* returns the nuber of bytes written in px86 */
-RIVER_EXT DWORD rivertox86(struct _exec_env *pEnv, struct RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flags);
+DWORD rivertox86(struct _exec_env *pEnv, struct RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flags);
 
 /* revir reverses the river instructions */
 /* revir also marks unnecessary riverload/riversave instruction pairs */
-RIVER_EXT DWORD revir(struct RiverInstruction *pRiver, DWORD dwInstrCount, struct RiverInstruction *pRevir);
+DWORD revir(struct RiverInstruction *pRiver, DWORD dwInstrCount, struct RiverInstruction *pRevir);
 
 #endif

@@ -28,26 +28,26 @@
     <ClInclude Include="virtualreg.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="callgates.c">
+    <ClCompile Include="callgates.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
     </ClCompile>
-    <ClCompile Include="cb.c" />
-    <ClCompile Include="codegen.c">
+    <ClCompile Include="cb.cpp" />
+    <ClCompile Include="codegen.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="crc32.c" />
-    <ClCompile Include="execenv.c" />
-    <ClCompile Include="extern.c" />
-    <ClCompile Include="main.c" />
-    <ClCompile Include="mm.c" />
-    <ClCompile Include="modrm32.c" />
-    <ClCompile Include="river.c" />
+    <ClCompile Include="crc32.cpp" />
+    <ClCompile Include="execenv.cpp" />
+    <ClCompile Include="extern.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="mm.cpp" />
+    <ClCompile Include="modrm32.cpp" />
+    <ClCompile Include="river.cpp" />
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseCode.cpp" />
     <ClCompile Include="RiverSaveCode.cpp" />
     <ClCompile Include="RiverTox86.cpp" />
-    <ClCompile Include="src.c">
+    <ClCompile Include="src.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</BufferSecurityCheck>
@@ -57,7 +57,7 @@
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">None</DebugInformationFormat>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
     </ClCompile>
-    <ClCompile Include="sync.c" />
+    <ClCompile Include="sync.cpp" />
     <ClCompile Include="x86ToRiver.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

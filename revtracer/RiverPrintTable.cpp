@@ -132,7 +132,7 @@ void PrintOperands(struct RiverInstruction *ri) {
 	}
 }
 
-extern "C" void RiverPrintInstruction(struct RiverInstruction *ri) {
+void RiverPrintInstruction(struct RiverInstruction *ri) {
 	if (ri->modifiers & RIVER_MODIFIER_IGNORE) {
 		return;
 	}

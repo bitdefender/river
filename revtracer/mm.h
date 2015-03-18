@@ -5,14 +5,8 @@
 
 #define HEAP_SIZE 0x100000
 
-#ifdef __cplusplus
-#define RIVER_EXT extern "C"
-#else
-#define RIVER_EXT
-#endif
-
-RIVER_EXT void memcpy(void *dest, const void *src, unsigned int size);
-RIVER_EXT void memset(void *dest, int val, unsigned int size);
+void memcpy(void *dest, const void *src, unsigned int size);
+void memset(void *dest, int val, unsigned int size);
 
 int 	SC_HeapInit 	(struct _exec_env *pEnv, unsigned int heapSize);
 int 	SC_HeapDestroy 	(struct _exec_env *pEnv);

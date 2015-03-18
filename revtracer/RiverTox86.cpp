@@ -3,9 +3,9 @@
 
 #include "mm.h"
 
-extern "C" unsigned int dwSysHandler; // = 0; // &SysHandler
-extern "C" unsigned int dwSysEndHandler; // = 0; // &SysEndHandler
-extern "C" unsigned int dwBranchHandler; // = 0; // &BranchHandler
+extern DWORD dwSysHandler; // = 0; // &SysHandler
+extern DWORD dwSysEndHandler; // = 0; // &SysEndHandler
+extern DWORD dwBranchHandler; // = 0; // &BranchHandler
 
 #define X86_LOCK_PREFIX				0xF0
 #define X86_REPNZ_PREFIX			0xF2
@@ -39,7 +39,7 @@ void SwitchToRiverEsp(struct _exec_env *pEnv, BYTE **px86) {
 	(*px86) += sizeof(code);
 }
 
-extern "C" void EndRiverConversion(struct _exec_env *pEnv, BYTE **px86, DWORD *pFlags) {
+void EndRiverConversion(struct _exec_env *pEnv, BYTE **px86, DWORD *pFlags) {
 	if (*pFlags & FLAG_GENERATE_RIVER) {
 		if (*pFlags & FLAG_GENERATE_RIVER_xSP) {
 			SwitchToRiverEsp(pEnv, px86);
@@ -189,7 +189,7 @@ RiverInstruction *FixRiverEspInstruction(RiverInstruction *rIn, RiverInstruction
 	}
 }
 
-extern "C" void ConvertRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+void ConvertRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	// skip ignored instructions
 	if (ri->modifiers & RIVER_MODIFIER_IGNORE) {
 		return;

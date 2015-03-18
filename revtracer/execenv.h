@@ -47,7 +47,7 @@ struct _exec_env {
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];
 	struct RiverAddress trRiverAddr[512];
-	unsigned int trInstCount, fwInstCount, bkInstCount, addrCount;
+	DWORD trInstCount, fwInstCount, bkInstCount, addrCount;
 
 	unsigned int regVersions[8];
 
@@ -61,18 +61,12 @@ void DeleteEnv(struct _exec_env *pEnv);
 void *AllocUserContext(struct _exec_env *pEnv, unsigned int size);
 void DeleteUserContext(struct _exec_env *pEnv);
 
-#ifdef __cplusplus
-#define RIVER_EXT extern "C"
-#else
-#define RIVER_EXT
-#endif
+struct RiverAddress *AllocRiverAddr(struct _exec_env *pEnv);
+void RiverMemReset(struct _exec_env *pEnv);
 
-RIVER_EXT struct RiverAddress *AllocRiverAddr(struct _exec_env *pEnv);
-RIVER_EXT void RiverMemReset(struct _exec_env *pEnv);
-
-RIVER_EXT unsigned int GetCurrentReg(struct _exec_env *pEnv, unsigned char regName);
-RIVER_EXT unsigned int GetPrevReg(struct _exec_env *pEnv, unsigned char regName);
-RIVER_EXT unsigned int NextReg(struct _exec_env *pEnv, unsigned char regName);
-RIVER_EXT void ResetRegs(struct _exec_env *pEnv);
+unsigned int GetCurrentReg(struct _exec_env *pEnv, unsigned char regName);
+unsigned int GetPrevReg(struct _exec_env *pEnv, unsigned char regName);
+unsigned int NextReg(struct _exec_env *pEnv, unsigned char regName);
+void ResetRegs(struct _exec_env *pEnv);
 
 #endif

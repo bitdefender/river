@@ -21,7 +21,7 @@ void TrackModifiedRegisters(struct _exec_env *pEnv, struct RiverInstruction *ri)
 	}
 }
 
-extern "C" void InitRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+void InitRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	ri->modifiers = 0;
 	ri->specifiers = 0;
 	ri->subOpCode = 0;
@@ -269,7 +269,7 @@ static void TranslateImm32(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
 
 /* Specifier tables */
 
-extern "C" const WORD specTbl00[] = {
+const WORD specTbl00[] = {
 	/*0x00*/ 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 
 	/*0x04*/ 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
 	/*0x08*/ 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 
@@ -351,7 +351,7 @@ extern "C" const WORD specTbl00[] = {
 	/*0xFC*/ 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
 };
 
-extern "C" const WORD specTbl0F[] = {
+const WORD specTbl0F[] = {
 	/*0x00*/ 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
 	/*0x04*/ 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
 	/*0x08*/ 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,

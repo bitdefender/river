@@ -204,7 +204,7 @@ void SavePop(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverI
 extern const ConvertInstructionFunc riverSaveCode00[];
 extern const ConvertInstructionFunc riverSaveCode0F[];
 
-extern "C" void TranslateSave(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void TranslateSave(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	const ConvertInstructionFunc *cvtTbl = riverSaveCode00;
 
 	if (RIVER_MODIFIER_EXT & rIn->modifiers) {

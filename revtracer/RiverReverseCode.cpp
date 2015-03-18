@@ -8,7 +8,7 @@ extern const ConvertInstructionFunc riverReverseCode0F[];
 
 void CopyInstruction(struct _exec_env *pEnv, struct RiverInstruction *rOut, struct RiverInstruction *rIn);
 
-extern "C" void TranslateReverse(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void TranslateReverse(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	const ConvertInstructionFunc *cvtTbl = riverReverseCode00;
 	*outCount += 1;
 
