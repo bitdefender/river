@@ -8,6 +8,7 @@
 #include "virtualreg.h"
 #include "river.h"
 #include "mm.h"
+#include "cb.h"
 
 struct _zone;
 struct _cb_info;
@@ -24,19 +25,19 @@ struct _exec_env {
 
 	UINT_PTR saveLog;
 	
-	unsigned int /*heapSize,*/ historySize, logHashSize, outBufferSize;
+	unsigned int /*heapSize,*/ historySize /*, logHashSize*/, outBufferSize;
 
 	unsigned char *pStack; // = NULL;
 
-	//unsigned char *pHeap; //NULL
-	//struct _zone *pFirstFree; //NULL
-	class RiverHeap heap;
+	RiverHeap heap;
 
-	_tbm_mutex cbLock; //  = 0;
-	struct _cb_info **hashTable; // = 0
+	//_tbm_mutex cbLock; //  = 0;
+	//struct _cb_info **hashTable; // = 0
+	RiverBasicBlockCache blockCache;
 
-	UINT_PTR *history;
-	unsigned long posHist, totHist; // = 0;
+	UINT_PTR lastFwBlock;
+	//UINT_PTR *history;
+	//unsigned long posHist, totHist; // = 0;
 
 	UINT_PTR *executionBuffer;
 

@@ -57,7 +57,7 @@ void MakeJMP(struct _exec_env *pEnv, struct RiverInstruction *ri, DWORD jmpAddr)
 
 }
 
-int Translate(struct _exec_env *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags) {
+int Translate(struct _exec_env *pEnv, RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 	DWORD tmp;
 
 	if (dwTranslationFlags & 0x80000000) {

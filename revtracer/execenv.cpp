@@ -19,14 +19,15 @@ struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsign
 		return NULL;
 	}
 
-	if (0 == InitBlock(pEnv, logHashSize, historySize)) {
+	//if (0 == InitBlock(pEnv, logHashSize, historySize)) {
+	if (0 == pEnv->blockCache.Init(&pEnv->heap, logHashSize, historySize)) {
 		pEnv->heap.Destroy();
 		EnvMemoryFree((BYTE *)pEnv);
 		return NULL;
 	}
 
 	if (0 == (pEnv->executionBuffer = (UINT_PTR *)EnvMemoryAlloc(executionSize))) {
-		CloseBlock(pEnv);
+		pEnv->blockCache.Destroy();
 		pEnv->heap.Destroy();
 		EnvMemoryFree((BYTE *)pEnv);
 		return NULL;
@@ -34,7 +35,7 @@ struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsign
 
 	if (NULL == (pEnv->outBuffer = (unsigned char *)EnvMemoryAlloc(outBufferSize))) {
 		EnvMemoryFree(pEnv->executionBuffer);
-		CloseBlock(pEnv);
+		pEnv->blockCache.Destroy(); 
 		pEnv->heap.Destroy();
 		EnvMemoryFree((BYTE *)pEnv);
 		return NULL;
@@ -44,7 +45,7 @@ struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsign
 	if (NULL == (pEnv->pStack = (unsigned char *)EnvMemoryAlloc (0x100000))) {
 		EnvMemoryFree((BYTE *)pEnv->outBuffer);
 		EnvMemoryFree(pEnv->executionBuffer); 
-		CloseBlock(pEnv);
+		pEnv->blockCache.Destroy(); 
 		pEnv->heap.Destroy();
 		EnvMemoryFree((BYTE *)pEnv);
 		return NULL;
@@ -62,7 +63,7 @@ void DeleteEnv(struct _exec_env *pEnv) {
 	if (pEnv != NULL) {
 		DeleteUserContext(pEnv);
 
-		CloseBlock(pEnv);
+		pEnv->blockCache.Destroy(); 
 		pEnv->heap.Destroy();
 
 		EnvMemoryFree((BYTE *)pEnv->executionBuffer);

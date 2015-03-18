@@ -25,14 +25,14 @@ DWORD PopFromExecutionBuffer(struct _exec_env *pEnv) {
 }
 
 void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
-	struct _cb_info *pCB;
+	RiverBasicBlock *pCB;
 	struct UserCtx *ctx = (struct UserCtx *)pEnv->userContext;
 
 	DbgPrint("BranchHandler: %08X\n", a);
 	//DbgPrint("pEnv %08X\n", pEnv);
 	//DbgPrint("sizes: %08X, %08X, %08X, %08X\n", pEnv->heapSize, pEnv->historySize, pEnv->logHashSize, pEnv->outBufferSize);
 	if (pEnv->bForward) {
-		PushToExecutionBuffer(pEnv, pEnv->history[pEnv->posHist - 1]);
+		PushToExecutionBuffer(pEnv, pEnv->lastFwBlock);
 	}
 
 	ctx->callCount++;
@@ -43,11 +43,11 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 		DWORD addr = PopFromExecutionBuffer(pEnv);
 
 		DbgPrint("Looking for block\n");
-		pCB = FindBlock(pEnv, addr);
+		pCB = pEnv->blockCache.FindBlock(addr);
 		if (pCB) {
 			DbgPrint("Block found\n");
-			pCB->dwParses++;
-			pEnv->posHist -= 1;
+			pCB->MarkBackward();
+			//pEnv->posHist -= 1;
 			pEnv->bForward = 0;
 			pEnv->jumpBuff = (DWORD)pCB->pBkCode;
 		}
@@ -61,18 +61,12 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 		DbgPrint("Going Forwards!!!\n");
 		__try {
 			DbgPrint("Looking for block\n");
-			pCB = FindBlock(pEnv, a);
+			pCB = pEnv->blockCache.FindBlock(a);
 			if (pCB) {
 				DbgPrint("Block found\n");
-				pCB->dwParses++;
-				TouchBlock(pEnv, pCB);
-				pEnv->bForward = 1;
-				pEnv->jumpBuff = (DWORD)pCB->pFwCode;
-			}
-			else {
+			} else {
 				DbgPrint("Not Found\n");
-				pCB = NewBlock(pEnv);
-				pCB->address = a;
+				pCB = pEnv->blockCache.NewBlock(a);
 
 				Translate(pEnv, pCB, 0);
 
@@ -87,14 +81,13 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 					RiverPrintInstruction(&pEnv->bkRiverInst[i]);
 				}
 				DbgPrint("===============================================================================\n");
-
-				AddBlock(pEnv, pCB);
-				//pEnv->jumpBuff = (DWORD)pCB->pCode;
-				TouchBlock(pEnv, pCB);
-				pEnv->bForward = 1;
-				pEnv->jumpBuff = (DWORD)pCB->pFwCode;
 			}
-
+			pCB->MarkForward();
+			//pEnv->jumpBuff = (DWORD)pCB->pCode;
+			//TouchBlock(pEnv, pCB);
+			pEnv->lastFwBlock = pCB->address;
+			pEnv->bForward = 1;
+			pEnv->jumpBuff = (DWORD)pCB->pFwCode;
 		}
 		__except (1) { //EXCEPTION_EXECUTE_HANDLER
 			pEnv->jumpBuff = a;
@@ -113,7 +106,7 @@ void __cdecl SysHandler(struct _exec_env *pEnv,
 	DWORD r3, DWORD r2, DWORD r1, DWORD r0
 	)
 {
-	UINT_PTR a;
+	/*UINT_PTR a;
 	struct _cb_info *pCB;
 
 	a = *(UINT_PTR*)pEnv->virtualStack;
@@ -139,7 +132,7 @@ void __cdecl SysHandler(struct _exec_env *pEnv,
 	Translate(pEnv, pCB, CB_FLAG_SYSOUT);
 	AddBlock(pEnv, pCB);
 
-	*(UINT_PTR *)pEnv->virtualStack = (UINT_PTR)pCB->pCode;
+	*(UINT_PTR *)pEnv->virtualStack = (UINT_PTR)pCB->pCode;*/
 }
 
 

@@ -70,7 +70,7 @@ bool RiverHeap::Destroy() {
 		size = 0;
 	}
 
-	return 1;
+	return true;
 }
 
 

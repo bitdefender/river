@@ -1,44 +1,66 @@
 #ifndef _CB_H
 #define _CB_H
 
-#include "execenv.h"
+#include "extern.h"
+#include "mm.h"
+#include "sync.h"
 
-//#include <Ntddk.h>
-//#include <Basetsd.h>
+class RiverBasicBlock {
+public :
+	/* informations about the real block */
+	UINT_PTR			address; // original address
+	DWORD				dwSize;  // block size
+	DWORD				dwCRC;   // block crc
 
+	/* statistical translation information */
+	DWORD				dwOrigOpCount; // number of instructions in the original block
+	DWORD				dwFwOpCount; // number of instructions in the translated block
+	DWORD				dwBkOpCount; // number of instructions in the reverse block
 
-struct _cb_info {
-	UINT_PTR			address;
-	unsigned long		dwSize;
-	unsigned long		dwCRC;
-	unsigned long		dwParses;
-	unsigned char		*pCode;
-	unsigned char       *pFwCode;
-	unsigned char       *pBkCode;
-	struct _cb_info		*pNext;
+	/* statistical runtime information */
+	DWORD				dwFwPasses; // number of block executions
+	DWORD				dwBkPasses; // number of reverse block executions
+
+	/* actual code information */
+	unsigned char		*pCode; // deprecated
+	unsigned char       *pFwCode; // forward bb
+	unsigned char       *pBkCode; // reverse bb
+
+	/* block linkage (for hash table) */
+	RiverBasicBlock		*pNext;
+
+	void MarkForward();
+	void MarkBackward();
 };
 
-struct _cb_info *NewBlock (struct _exec_env *pEnv);
-struct _cb_info *FindBlock (struct _exec_env *pEnv, unsigned long);
+class RiverBasicBlockCache {
+private :
+	RiverHeap *heap;
+public :
+	_tbm_mutex cbLock; //  = 0;
+	RiverBasicBlock **hashTable; // = 0
+	DWORD  historySize, logHashSize;
 
-void TouchBlock(struct _exec_env *pEnv, struct _cb_info *pCB);
-void AddBlock (struct _exec_env *pEnv, struct _cb_info *);
-int InitBlock(struct _exec_env *pEnv, unsigned int logHashSize, unsigned int historySize);
-void CloseBlock (struct _exec_env *pEnv);
+	RiverBasicBlockCache();
+	~RiverBasicBlockCache();
+
+	bool Init(RiverHeap *hp, DWORD logHSize, DWORD histSize);
+	bool Destroy();
+
+	RiverBasicBlock *NewBlock(UINT_PTR addr);
+	RiverBasicBlock *FindBlock(UINT_PTR addr);
+};
+
+//RiverBasicBlock *NewBlock(struct _exec_env *pEnv);
+//RiverBasicBlock *FindBlock(struct _exec_env *pEnv, unsigned long);
+
+//void AddBlock(struct _exec_env *pEnv, RiverBasicBlock*);
 
 void PrintHistory (struct _exec_env *pEnv);
 DWORD DumpHistory(struct _exec_env *pEnv, unsigned char *o, unsigned long s, unsigned long *sz);
 
-int Translate (struct _exec_env *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags);
+int Translate(struct _exec_env *pEnv, RiverBasicBlock *pCB, DWORD dwTranslationFlags);
 
 
-/*
-	8 dwords = 32 bytes
-*/
-
-
-#define CB_FLAG_SYSOUT	0x80000000
-
-
-#endif // _CB_H
+#endif
 
