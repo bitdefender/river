@@ -25,7 +25,6 @@ DWORD HashFunc(unsigned int logHashSize, unsigned long a) {
 }
 
 RiverBasicBlockCache::RiverBasicBlockCache() {
-	cbLock = 0;
 	hashTable = NULL;
 	logHashSize = 0;
 }
@@ -48,14 +47,14 @@ RiverBasicBlock *RiverBasicBlockCache::NewBlock(UINT_PTR a) {
 	memset(pNew, 0, sizeof (*pNew));
 	pNew->address = a;
 
-	TbmMutexLock(&cbLock);
+	cbLock.Lock();
 
 	DWORD dwHash = HashFunc(logHashSize, pNew->address); // & 0xFFFF;
 
 	pNew->pNext = hashTable[dwHash];
 	hashTable[dwHash] = pNew;
 
-	TbmMutexUnlock(&cbLock);
+	cbLock.Unlock();
 
 	return pNew;
 }
@@ -66,32 +65,32 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(UINT_PTR a) {
 	unsigned long hash = HashFunc(logHashSize, a);
 
 	DbgPrint("HASH %08x\n", hash);
-	TbmMutexLock(&cbLock);
+	cbLock.Lock();
 
 	pWalk = hashTable[hash];
 
 	while (pWalk) {
 		if (pWalk->address == a) {
 			if (pWalk->dwCRC == (unsigned long) crc32 (0xEDB88320, (BYTE *) a, pWalk->dwSize)) {
-				TbmMutexUnlock(&cbLock);
+				cbLock.Unlock();
 				return pWalk;
 			} else {
 				//	_asm int 3
 				//	dbg1 ("___SMC___ at address %08X.\n", a);
 
-				TbmMutexUnlock(&cbLock);
+				cbLock.Unlock();
 				return NULL;
 			}
 		}
 
 		pWalk = pWalk->pNext;
 		if (++arr > 0x800) {
-			TbmMutexUnlock(&cbLock);
+			cbLock.Unlock();
 			__asm int 3
 		}
 	}
 
-	TbmMutexUnlock(&cbLock);
+	cbLock.Unlock();
 
 	return NULL;
 }

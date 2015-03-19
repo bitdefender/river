@@ -23,7 +23,6 @@
     <ClInclude Include="extern.h" />
     <ClInclude Include="mm.h" />
     <ClInclude Include="modrm32.h" />
-    <ClInclude Include="nld2msg.h" />
     <ClInclude Include="sync.h" />
     <ClInclude Include="virtualreg.h" />
   </ItemGroup>

@@ -37,7 +37,7 @@ class RiverBasicBlockCache {
 private :
 	RiverHeap *heap;
 public :
-	_tbm_mutex cbLock; //  = 0;
+	RiverMutex cbLock; //  = 0;
 	RiverBasicBlock **hashTable; // = 0
 	DWORD  historySize, logHashSize;
 
