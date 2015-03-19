@@ -5,23 +5,29 @@ extern const WORD specTbl00[];
 extern const WORD specTbl0F[];
 extern const WORD specTblExt[][8];
 
-void TrackModifiedRegisters(struct _exec_env *pEnv, struct RiverInstruction *ri) {
+extern const TranslateOpcodeFunc TranslateOpcodeTable00[];
+extern const TranslateOpcodeFunc TranslateOpcodeTable0F[];
+
+extern const TranslateOperandsFunc TranslateOperandsTable00[];
+extern const TranslateOperandsFunc TranslateOperandsTable0F[];
+
+void TrackModifiedRegisters(RiverCodeGen *cg, struct RiverInstruction *ri) {
 	//bool modifiysp = true;
 	if (RIVER_SPEC_MODIFIES_xSP & ri->specifiers) {
-		NextReg(pEnv, RIVER_REG_xSP);
+		cg->NextReg(RIVER_REG_xSP);
 		//modifiysp = false;
 	}
 
 	if ((RIVER_SPEC_MODIFIES_OP2 & ri->specifiers) && (RIVER_OPTYPE_REG & ri->opTypes[1])) {
-		ri->operands[1].asRegister.versioned = NextReg(pEnv, ri->operands[1].asRegister.name);
+		ri->operands[1].asRegister.versioned = cg->NextReg(ri->operands[1].asRegister.name);
 	}
 
 	if ((RIVER_SPEC_MODIFIES_OP1 & ri->specifiers) && (RIVER_OPTYPE_REG & ri->opTypes[0])) {
-		ri->operands[0].asRegister.versioned = NextReg(pEnv, ri->operands[0].asRegister.name);
+		ri->operands[0].asRegister.versioned = cg->NextReg(ri->operands[0].asRegister.name);
 	}
 }
 
-void InitRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+void InitRiverInstruction(RiverCodeGen *cg, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	ri->modifiers = 0;
 	ri->specifiers = 0;
 	ri->subOpCode = 0;
@@ -36,7 +42,7 @@ void InitRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, B
 		}
 
 		*pFlags &= ~RIVER_FLAG_PFX;
-		translateOpcodeTable[**px86](pEnv, ri, px86, pFlags);
+		translateOpcodeTable[**px86](cg, ri, px86, pFlags);
 	} while (*pFlags & RIVER_FLAG_PFX);
 
 	const TranslateOperandsFunc *translateOperandsTable = TranslateOperandsTable00;
@@ -44,8 +50,8 @@ void InitRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, B
 		translateOperandsTable = TranslateOperandsTable0F;
 	}
 
-	translateOperandsTable[ri->opCode](pEnv, ri, px86);
-	TrackModifiedRegisters(pEnv, ri);
+	translateOperandsTable[ri->opCode](cg, ri, px86);
+	TrackModifiedRegisters(cg, ri);
 }
 
 /* helper functions */
@@ -83,7 +89,7 @@ void TranslateImmOperand(BYTE opIdx, RiverInstruction *ri, BYTE **px86, BYTE imm
 	}
 }
 
-void TranslateRegisterOperand(struct _exec_env *pEnv, BYTE opIdx, RiverInstruction *ri, BYTE reg) {
+void TranslateRegisterOperand(RiverCodeGen *cg, BYTE opIdx, RiverInstruction *ri, BYTE reg) {
 	BYTE opType = RIVER_OPTYPE_REG;
 	if (RIVER_MODIFIER_O8 & ri->modifiers) {
 		opType |= RIVER_OPSIZE_8;
@@ -93,10 +99,10 @@ void TranslateRegisterOperand(struct _exec_env *pEnv, BYTE opIdx, RiverInstructi
 	}
 
 	ri->opTypes[opIdx] = opType;
-	ri->operands[opIdx].asRegister.versioned = GetCurrentReg(pEnv, reg);
+	ri->operands[opIdx].asRegister.versioned = cg->GetCurrentReg(reg);
 }
 
-void TranslateSIBByte(struct _exec_env *pEnv, BYTE opIdx, RiverInstruction *ri, BYTE **px86) {
+void TranslateSIBByte(RiverCodeGen *cg, BYTE opIdx, RiverInstruction *ri, BYTE **px86) {
 	RiverAddress *rAddr = ri->operands[opIdx].asAddress;
 
 	rAddr->sib = **px86;
@@ -110,24 +116,24 @@ void TranslateSIBByte(struct _exec_env *pEnv, BYTE opIdx, RiverInstruction *ri, 
 	rAddr->type |= RIVER_ADDR_SCALE;
 	rAddr->scale = scales[scale];
 
-	rAddr->index.versioned = GetCurrentReg(pEnv, index);
-	rAddr->base.versioned = GetCurrentReg(pEnv, base);
+	rAddr->index.versioned = cg->GetCurrentReg(index);
+	rAddr->base.versioned = cg->GetCurrentReg(base);
 
 	(*px86)++;
 }
 
-void TranslateModRMOperand(struct _exec_env *pEnv, BYTE opIdx, RiverInstruction *ri, BYTE **px86) {
+void TranslateModRMOperand(RiverCodeGen *cg, BYTE opIdx, RiverInstruction *ri, BYTE **px86) {
 	RiverAddress *rAddr;
 	BYTE mod = (**px86) >> 6;
 	BYTE rm = **px86 & 0x07;
 
 	if (0x03 == mod) {
-		TranslateRegisterOperand(pEnv, opIdx, ri, rm);
+		TranslateRegisterOperand(cg, opIdx, ri, rm);
 		(*px86)++;
 		return;
 	}
 	
-	rAddr = AllocRiverAddr(pEnv); //new RiverAddress;
+	rAddr = cg->AllocAddr(); //new RiverAddress;
 	rAddr->type = 0;
 	rAddr->modRM = **px86;
 	
@@ -162,9 +168,9 @@ void TranslateModRMOperand(struct _exec_env *pEnv, BYTE opIdx, RiverInstruction 
 
 	(*px86)++;
 	if (0x04 == rm) {
-		TranslateSIBByte(pEnv, opIdx, ri, px86); 
+		TranslateSIBByte(cg, opIdx, ri, px86); 
 	} else {
-		rAddr->base.versioned = GetCurrentReg(pEnv, rm);
+		rAddr->base.versioned = cg->GetCurrentReg(rm);
 	}
 
 	switch (rAddr->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP16 | RIVER_ADDR_DISP32)) {
@@ -187,22 +193,22 @@ void TranslateModRMOperand(struct _exec_env *pEnv, BYTE opIdx, RiverInstruction 
 
 /* classic opcode decoders */
 
-static void TranslateUnknownInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslateUnknownInstr(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	__asm int 3;
 	(*px86)++;
 }
 
 // handles +r opcodes such as 0x50+r
 // base template argument corresponds to op eax
-template <BYTE base> void TranslatePlusRegInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+template <BYTE base> void TranslatePlusRegInstr(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	ri->opCode = base;
 	ri->specifiers = GetSpecifiers(ri);
-	TranslateRegisterOperand(pEnv, 0, ri, **px86 - base);
+	TranslateRegisterOperand(cg, 0, ri, **px86 - base);
 	(*px86)++;
 }
 
 // translate single opcode instruction
-template <int modifiers = 0, int flags = 0> void TranslateDefaultInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+template <int modifiers = 0, int flags = 0> void TranslateDefaultInstr(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	ri->opCode = **px86;
 	ri->modifiers |= modifiers;
 	ri->specifiers = GetSpecifiers(ri);
@@ -210,7 +216,7 @@ template <int modifiers = 0, int flags = 0> void TranslateDefaultInstr(_exec_env
 	(*px86)++;
 }
 
-static void TranslateExtendedInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslateExtendedInstr(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	ri->opCode = **px86;
 	(*px86)++; 
 	
@@ -218,7 +224,7 @@ static void TranslateExtendedInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE *
 	ri->specifiers = GetSpecifiers(ri);
 }
 
-template <BYTE instrLen> void TranslateRelBranchInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+template <BYTE instrLen> void TranslateRelBranchInstr(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	ri->opCode = **px86;
 	ri->specifiers = GetSpecifiers(ri);
 	ri->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
@@ -228,41 +234,41 @@ template <BYTE instrLen> void TranslateRelBranchInstr(_exec_env *pEnv, RiverInst
 }
 
 /* operand decoders */
-static void TranslateUnknownOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateUnknownOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	__asm int 3;
 }
 
-static void TranslateNoOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateNoOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 }
 
-static void TranslateRegModRM(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateRegModRM(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	//BYTE mod = (**px86) >> 6;
 	BYTE sec = ((**px86) >> 3) & 0x07;
 	//BYTE rm = **px86 & 0x07;
 
-	TranslateRegisterOperand(pEnv, 0, ri, sec);
-	TranslateModRMOperand(pEnv, 1, ri, px86);
+	TranslateRegisterOperand(cg, 0, ri, sec);
+	TranslateModRMOperand(cg, 1, ri, px86);
 }
 
-static void TranslateModRMReg(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateModRMReg(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	//BYTE mod = (**px86) >> 6;
 	BYTE sec = ((**px86) >> 3) & 0x07;
 	//BYTE rm = **px86 & 0x07;
 
-	TranslateRegisterOperand(pEnv, 1, ri, sec);
-	TranslateModRMOperand(pEnv, 0, ri, px86);
+	TranslateRegisterOperand(cg, 1, ri, sec);
+	TranslateModRMOperand(cg, 0, ri, px86);
 }
 
-static void TranslateModRMImm8(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
-	TranslateModRMOperand(pEnv, 0, ri, px86);
+static void TranslateModRMImm8(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
+	TranslateModRMOperand(cg, 0, ri, px86);
 	TranslateImmOperand(1, ri, px86, RIVER_OPSIZE_8);
 }
 
-static void TranslateImm8(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateImm8(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	TranslateImmOperand(0, ri, px86, RIVER_OPSIZE_8);
 }
 
-static void TranslateImm32(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateImm32(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	TranslateImmOperand(0, ri, px86, RIVER_OPSIZE_32);
 }
 

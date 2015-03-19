@@ -59,8 +59,5 @@ public :
 void PrintHistory (struct _exec_env *pEnv);
 DWORD DumpHistory(struct _exec_env *pEnv, unsigned char *o, unsigned long s, unsigned long *sz);
 
-int Translate(struct _exec_env *pEnv, RiverBasicBlock *pCB, DWORD dwTranslationFlags);
-
-
 #endif
 

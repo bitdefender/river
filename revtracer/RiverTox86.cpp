@@ -12,41 +12,41 @@ extern DWORD dwBranchHandler; // = 0; // &BranchHandler
 #define X86_REPZ_PREFIX				0xF3
 #define X86_REP_PREFIX				0xF3
 
-extern const TranslateOpcodeFunc RiverOpcodeTable00[];
-extern const TranslateOpcodeFunc RiverOpcodeTable0F[];
-extern const TranslateOperandsFunc RiverOperandsTable00[];
-extern const TranslateOperandsFunc RiverOperandsTable0F[];
+extern const AssemblingOpcodeFunc RiverOpcodeTable00[];
+extern const AssemblingOpcodeFunc RiverOpcodeTable0F[];
+extern const AssemblingOperandsFunc RiverOperandsTable00[];
+extern const AssemblingOperandsFunc RiverOperandsTable0F[];
 
 #define FLAG_SKIP_METAOP			0x01
 #define FLAG_GENERATE_RIVER			0x02
 #define FLAG_GENERATE_RIVER_xSP		0x04
 
-void SwitchToRiver(struct _exec_env *pEnv, BYTE **px86) {
+void SwitchToRiver(RiverRuntime *rt, BYTE **px86) {
 	static const unsigned char code[] = { 0x87, 0x25, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg esp, large ds:<dwVirtualStack>}
 
 	memcpy(*px86, code, sizeof(code));
-	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&pEnv->execBuff;
+	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&rt->execBuff;
 
 	(*px86) += sizeof(code);
 }
 
-void SwitchToRiverEsp(struct _exec_env *pEnv, BYTE **px86) {
+void SwitchToRiverEsp(RiverRuntime *rt, BYTE **px86) {
 	static const unsigned char code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}
 
 	memcpy(*px86, code, sizeof(code));
-	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&pEnv->execBuff;
+	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&rt->execBuff;
 
 	(*px86) += sizeof(code);
 }
 
-void EndRiverConversion(struct _exec_env *pEnv, BYTE **px86, DWORD *pFlags) {
+void EndRiverConversion(RiverRuntime *rt, BYTE **px86, DWORD *pFlags) {
 	if (*pFlags & FLAG_GENERATE_RIVER) {
 		if (*pFlags & FLAG_GENERATE_RIVER_xSP) {
-			SwitchToRiverEsp(pEnv, px86);
+			SwitchToRiverEsp(rt, px86);
 			*pFlags &= ~FLAG_GENERATE_RIVER_xSP;
 		}
 
-		SwitchToRiver(pEnv, px86);
+		SwitchToRiver(rt, px86);
 		*pFlags &= ~FLAG_GENERATE_RIVER;
 	}
 }
@@ -189,7 +189,7 @@ RiverInstruction *FixRiverEspInstruction(RiverInstruction *rIn, RiverInstruction
 	}
 }
 
-void ConvertRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+void ConvertRiverInstruction(RiverCodeGen *cg, RiverRuntime *rt, struct RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	// skip ignored instructions
 	if (ri->modifiers & RIVER_MODIFIER_IGNORE) {
 		return;
@@ -205,31 +205,31 @@ void ConvertRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri
 	// ensure state transitions between river and x86
 	if (ri->modifiers & RIVER_MODIFIER_RIVEROP) {
 		if (0 == (*pFlags & FLAG_GENERATE_RIVER)) {
-			SwitchToRiver(pEnv, px86);
+			SwitchToRiver(rt, px86);
 			*pFlags |= FLAG_GENERATE_RIVER;
 		}
 
 		// ensure state transitions between riveresp and river
 		if (ri->modifiers & RIVER_MODIFIER_ORIG_xSP) {
 			if (0 == (*pFlags & FLAG_GENERATE_RIVER_xSP)) {
-				SwitchToRiverEsp(pEnv, px86);
+				SwitchToRiverEsp(rt, px86);
 				*pFlags |= FLAG_GENERATE_RIVER_xSP;
 			}
 		}
 		else {
 			if (*pFlags & FLAG_GENERATE_RIVER_xSP) {
-				SwitchToRiverEsp(pEnv, px86);
+				SwitchToRiverEsp(rt, px86);
 				*pFlags &= ~FLAG_GENERATE_RIVER_xSP;
 			}
 		}
 	} else {
 		if (*pFlags & FLAG_GENERATE_RIVER) {
 			if (*pFlags & FLAG_GENERATE_RIVER_xSP) {
-				SwitchToRiverEsp(pEnv, px86);
+				SwitchToRiverEsp(rt, px86);
 				*pFlags &= ~FLAG_GENERATE_RIVER_xSP;
 			}
 
-			SwitchToRiver(pEnv, px86);
+			SwitchToRiver(rt, px86);
 			*pFlags &= ~FLAG_GENERATE_RIVER;
 		}
 	}
@@ -259,8 +259,8 @@ void ConvertRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri
 
 	RiverInstruction *rOut = FixRiverEspInstruction(ri, &rInstr, &rAddr);
 
-	const TranslateOpcodeFunc *translateRiverTable = RiverOpcodeTable00;
-	const TranslateOperandsFunc *translateRiverOperands = RiverOperandsTable00;
+	const AssemblingOpcodeFunc *translateRiverTable = RiverOpcodeTable00;
+	const AssemblingOperandsFunc *translateRiverOperands = RiverOperandsTable00;
 
 	if (rOut->modifiers & RIVER_MODIFIER_EXT) {
 		**px86 = 0x0F;
@@ -270,21 +270,21 @@ void ConvertRiverInstruction(struct _exec_env *pEnv, struct RiverInstruction *ri
 		translateRiverOperands = RiverOperandsTable0F;
 	}
 
-	translateRiverTable[rOut->opCode](pEnv, rOut, px86, pFlags);
-	translateRiverOperands[rOut->opCode](pEnv, rOut, px86);
+	translateRiverTable[rOut->opCode](cg, rt, rOut, px86, pFlags);
+	translateRiverOperands[rOut->opCode](cg, rOut, px86);
 
 }
 
 /* classic opcode encoders */
 
-static void TranslateUnknownInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslateUnknownInstr(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	__asm int 3;
 	(*px86)++;
 }
 
 // handles +r opcodes such as 0x50+r
 // base template argument corresponds to op eax
-static void TranslatePlusRegInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslatePlusRegInstr(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	unsigned char regName = ri->operands[0].asRegister.name;
 
 	if ((ri->modifiers & RIVER_MODIFIER_ORIG_xSP) && (regName == RIVER_REG_xSP)) {
@@ -296,7 +296,7 @@ static void TranslatePlusRegInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **
 }
 
 // translate single opcode instruction
-static void TranslateDefaultInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslateDefaultInstr(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	**px86 = ri->opCode;
 	(*px86)++;
 }
@@ -316,7 +316,7 @@ static const BYTE pBranchJMP[] = {
 	0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x26 - jmp large dword ptr ds:<jumpbuff>	
 };
 
-static void TranslateRelJmpInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslateRelJmpInstr(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	int addrJump = (int)(ri->operands[1].asImm32);
 
 	switch (ri->opTypes[0] & 0x03) {
@@ -332,12 +332,12 @@ static void TranslateRelJmpInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **p
 	}
 
 	memcpy((*px86), pBranchJMP, sizeof(pBranchJMP));
-	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&pEnv->virtualStack;
+	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&rt->virtualStack;
 	*(unsigned int *)(&((*px86)[0x0F])) = addrJump;
-	*(unsigned int *)(&((*px86)[0x14])) = (unsigned int)pEnv;
+	*(unsigned int *)(&((*px86)[0x14])) = (unsigned int)rt;
 	*(unsigned int *)(&((*px86)[0x1A])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&((*px86)[0x22])) = (unsigned int)&pEnv->virtualStack;
-	*(unsigned int *)(&((*px86)[0x28])) = (unsigned int)&pEnv->jumpBuff;
+	*(unsigned int *)(&((*px86)[0x22])) = (unsigned int)&rt->virtualStack;
+	*(unsigned int *)(&((*px86)[0x28])) = (unsigned int)&rt->jumpBuff;
 
 	(*px86) += sizeof(pBranchJMP);
 	*pFlags |= RIVER_FLAG_BRANCH;
@@ -358,7 +358,7 @@ const BYTE pBranchJCC[] = {
 	0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x26 - jmp large dword ptr ds:<jumpbuff>
 };
 
-static void TranslateRelJccInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslateRelJccInstr(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	int addrFallThrough = (int)(ri->operands[1].asImm32);
 	int addrJump = addrFallThrough;
 
@@ -381,23 +381,23 @@ static void TranslateRelJccInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **p
 
 	memcpy((*px86), pBranchJMP, sizeof(pBranchJCC));
 	
-	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&pEnv->virtualStack;
+	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&rt->virtualStack;
 	*(unsigned int *)(&((*px86)[0x0F])) = addrFallThrough;
-	*(unsigned int *)(&((*px86)[0x14])) = (unsigned int)pEnv;
+	*(unsigned int *)(&((*px86)[0x14])) = (unsigned int)rt;
 	*(unsigned int *)(&((*px86)[0x1A])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&((*px86)[0x22])) = (unsigned int)&pEnv->virtualStack;
-	*(unsigned int *)(&((*px86)[0x28])) = (unsigned int)&pEnv->jumpBuff;
+	*(unsigned int *)(&((*px86)[0x22])) = (unsigned int)&rt->virtualStack;
+	*(unsigned int *)(&((*px86)[0x28])) = (unsigned int)&rt->jumpBuff;
 	(*px86) += sizeof(pBranchJMP);
 
 
 	memcpy((*px86), pBranchJMP, sizeof(pBranchJCC));
 
-	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&pEnv->virtualStack;
+	*(unsigned int *)(&((*px86)[0x02])) = (unsigned int)&rt->virtualStack;
 	*(unsigned int *)(&((*px86)[0x0F])) = addrJump;
-	*(unsigned int *)(&((*px86)[0x14])) = (unsigned int)pEnv;
+	*(unsigned int *)(&((*px86)[0x14])) = (unsigned int)rt;
 	*(unsigned int *)(&((*px86)[0x1A])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&((*px86)[0x22])) = (unsigned int)&pEnv->virtualStack;
-	*(unsigned int *)(&((*px86)[0x28])) = (unsigned int)&pEnv->jumpBuff;
+	*(unsigned int *)(&((*px86)[0x22])) = (unsigned int)&rt->virtualStack;
+	*(unsigned int *)(&((*px86)[0x28])) = (unsigned int)&rt->jumpBuff;
 	(*px86) += sizeof(pBranchJMP);
 
 	*pFlags |= RIVER_FLAG_BRANCH;
@@ -427,52 +427,52 @@ const BYTE pBranchRet[] = {
 	0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x34 - jmp large dword ptr ds:<jumpbuff>
 };
 
-static void TranslateRetnInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslateRetnInstr(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 //unsigned int __stdcall FuncCRetImm(struct _exec_env *pEnv, struct _cb_info *pCB, unsigned int *dwFlags, char *pI, char *pD, unsigned int *dwWritten) {
 	unsigned short stackSpace = 0;
 	memcpy((*px86), pBranchRet, sizeof(pBranchRet));
 
-	*(unsigned int *)(&((*px86)[0x01])) = (unsigned int)&pEnv->returnRegister;
-	*(unsigned int *)(&((*px86)[0x08])) = (unsigned int)&pEnv->virtualStack;
-	*(unsigned int *)(&((*px86)[0x16])) = (unsigned int)pEnv;
+	*(unsigned int *)(&((*px86)[0x01])) = (unsigned int)&rt->returnRegister;
+	*(unsigned int *)(&((*px86)[0x08])) = (unsigned int)&rt->virtualStack;
+	*(unsigned int *)(&((*px86)[0x16])) = (unsigned int)rt;
 	*(unsigned int *)(&((*px86)[0x1C])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&((*px86)[0x24])) = (unsigned int)&pEnv->virtualStack;
-	*(unsigned int *)(&((*px86)[0x29])) = (unsigned int)&pEnv->returnRegister;
+	*(unsigned int *)(&((*px86)[0x24])) = (unsigned int)&rt->virtualStack;
+	*(unsigned int *)(&((*px86)[0x29])) = (unsigned int)&rt->returnRegister;
 	*(unsigned int *)(&((*px86)[0x30])) = stackSpace;
-	*(unsigned int *)(&((*px86)[0x36])) = (unsigned int)&pEnv->jumpBuff;
+	*(unsigned int *)(&((*px86)[0x36])) = (unsigned int)&rt->jumpBuff;
 
 	(*px86) += sizeof(pBranchRet);
 	*pFlags |= RIVER_FLAG_BRANCH;
 }
 
-static void Translate0xFF(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void Translate0xFF(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	switch (ri->subOpCode) {
 	case 6:
-		TranslateDefaultInstr(pEnv, ri, px86, pFlags);
+		TranslateDefaultInstr(cg, rt, ri, px86, pFlags);
 		break;
 	default:
 		__asm int 3;
 	}
 }
 
-static void TranslateRiverAddSubInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+static void TranslateRiverAddSubInstr(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	**px86 = 0x8d; // add and sub are converted to lea
 	(*px86)++;
 }
 
 
-template <TranslateOpcodeFunc fRiver, TranslateOpcodeFunc fNormal> static void TranslateMultiplexedInstr(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
+template <AssemblingOpcodeFunc fRiver, AssemblingOpcodeFunc fNormal> static void TranslateMultiplexedInstr(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags) {
 	if (ri->modifiers & RIVER_MODIFIER_RIVEROP) {
-		fRiver(pEnv, ri, px86, pFlags);
+		fRiver(cg, rt, ri, px86, pFlags);
 	}
 	else {
-		fNormal(pEnv, ri, px86, pFlags);
+		fNormal(cg, rt, ri, px86, pFlags);
 	}
 }
 
 /* operands encoders */
 
-static void TranslateImmOp(_exec_env *pEnv, unsigned int opIdx, RiverInstruction *ri, BYTE **px86, BYTE immSize) {
+static void TranslateImmOp(RiverCodeGen *cg, unsigned int opIdx, RiverInstruction *ri, BYTE **px86, BYTE immSize) {
 	switch (immSize) {
 		case RIVER_OPSIZE_8:
 			*((BYTE *)(*px86)) = ri->operands[opIdx].asImm8;
@@ -489,7 +489,7 @@ static void TranslateImmOp(_exec_env *pEnv, unsigned int opIdx, RiverInstruction
 	}
 }
 
-static void TranslateModRMOp(_exec_env *pEnv, unsigned int opIdx, RiverInstruction *ri, BYTE **px86, BYTE extra) {
+static void TranslateModRMOp(RiverCodeGen *cg, unsigned int opIdx, RiverInstruction *ri, BYTE **px86, BYTE extra) {
 	if (ri->opTypes[opIdx] & RIVER_OPTYPE_REG) {
 		**px86 = 0xC0 | ((extra & 0x07) << 3) | (ri->operands[opIdx].asRegister.name & 0x07);
 		(*px86)++;
@@ -523,41 +523,41 @@ static void TranslateModRMOp(_exec_env *pEnv, unsigned int opIdx, RiverInstructi
 	}
 }
 
-static void TranslateUnknownOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateUnknownOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	__asm int 3;
 }
 
-static void TranslateNoOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateNoOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 }
 
-template <int extra> static void TranslateModRMOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
-	TranslateModRMOp(pEnv, 0, ri, px86, extra);
+template <int extra> static void TranslateModRMOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
+	TranslateModRMOp(cg, 0, ri, px86, extra);
 }
 
-static void TranslateRegModRMOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
-	TranslateModRMOp(pEnv, 1, ri, px86, ri->operands[0].asRegister.name);
+static void TranslateRegModRMOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
+	TranslateModRMOp(cg, 1, ri, px86, ri->operands[0].asRegister.name);
 }
 
-static void TranslateModRMRegOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
-	TranslateModRMOp(pEnv, 0, ri, px86, ri->operands[1].asRegister.name);
+static void TranslateModRMRegOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
+	TranslateModRMOp(cg, 0, ri, px86, ri->operands[1].asRegister.name);
 }
 
-static void TranslateSubOpModRMImm8Op(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
-	TranslateModRMOp(pEnv, 0, ri, px86, ri->subOpCode);
-	TranslateImmOp(pEnv, 1, ri, px86, RIVER_OPSIZE_8);
+static void TranslateSubOpModRMImm8Op(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
+	TranslateModRMOp(cg, 0, ri, px86, ri->subOpCode);
+	TranslateImmOp(cg, 1, ri, px86, RIVER_OPSIZE_8);
 }
 
-static void Translate0xFFOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void Translate0xFFOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	switch (ri->subOpCode) {
 	case 6:
-		TranslateModRMOp(pEnv, 0, ri, px86, ri->subOpCode);
+		TranslateModRMOp(cg, 0, ri, px86, ri->subOpCode);
 		break;
 	default:
 		__asm int 3;
 	}
 }
 
-static void TranslateRiverAddSubOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+static void TranslateRiverAddSubOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	RiverInstruction rTmp;
 	RiverAddress addr;
 
@@ -580,18 +580,18 @@ static void TranslateRiverAddSubOp(_exec_env *pEnv, RiverInstruction *ri, BYTE *
 	rTmp.operands[1].asAddress = &addr;
 	
 
-	TranslateRegModRMOp(pEnv, &rTmp, px86);
+	TranslateRegModRMOp(cg, &rTmp, px86);
 }
 
-template <TranslateOperandsFunc fRiver, TranslateOperandsFunc fNormal> static void TranslateMultiplexedOp(_exec_env *pEnv, RiverInstruction *ri, BYTE **px86) {
+template <TranslateOperandsFunc fRiver, TranslateOperandsFunc fNormal> static void TranslateMultiplexedOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	if (ri->modifiers & RIVER_MODIFIER_RIVEROP) {
-		fRiver(pEnv, ri, px86);
+		fRiver(cg, ri, px86);
 	} else {
-		fNormal(pEnv, ri, px86);
+		fNormal(cg, ri, px86);
 	}
 }
 
-const TranslateOpcodeFunc RiverOpcodeTable00[] = {
+const AssemblingOpcodeFunc RiverOpcodeTable00[] = {
 	/*0x00*/ TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr,
 	/*0x04*/ TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr,
 	/*0x08*/ TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr,
@@ -674,7 +674,7 @@ const TranslateOpcodeFunc RiverOpcodeTable00[] = {
 };
 
 
-const TranslateOpcodeFunc RiverOpcodeTable0F[] = {
+const AssemblingOpcodeFunc RiverOpcodeTable0F[] = {
 	/*0x00*/ TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr,
 	/*0x04*/ TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr,
 	/*0x08*/ TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr,
@@ -756,7 +756,7 @@ const TranslateOpcodeFunc RiverOpcodeTable0F[] = {
 	/*0xFC*/ TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr, TranslateUnknownInstr
 };
 
-const TranslateOperandsFunc RiverOperandsTable00[] = {
+const AssemblingOperandsFunc RiverOperandsTable00[] = {
 	/*0x00*/ TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp,
 	/*0x04*/ TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp,
 	/*0x08*/ TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp,
@@ -838,7 +838,7 @@ const TranslateOperandsFunc RiverOperandsTable00[] = {
 	/*0xFC*/ TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp, Translate0xFFOp
 };
 
-const TranslateOperandsFunc RiverOperandsTable0F[] = {
+const AssemblingOperandsFunc RiverOperandsTable0F[] = {
 	/*0x00*/ TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp,
 	/*0x04*/ TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp,
 	/*0x08*/ TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp, TranslateUnknownOp,

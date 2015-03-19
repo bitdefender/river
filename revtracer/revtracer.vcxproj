@@ -13,8 +13,10 @@
   <ItemGroup>
     <ClInclude Include="callgates.h" />
     <ClInclude Include="cb.h" />
+    <ClInclude Include="CodeGen.h" />
     <ClInclude Include="river.h" />
     <ClInclude Include="riverinternl.h" />
+    <ClInclude Include="Runtime.h" />
     <ClInclude Include="translatetbl.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="crc32.h" />

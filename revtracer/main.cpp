@@ -14,13 +14,13 @@ void TransalteSave(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct 
 void TranslateReverse(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount);
 
 void PushToExecutionBuffer(struct _exec_env *pEnv, DWORD value) {
-	pEnv->execBuff -= 4;
-	*((DWORD *)pEnv->execBuff) = value;
+	pEnv->runtimeContext.execBuff -= 4;
+	*((DWORD *)pEnv->runtimeContext.execBuff) = value;
 }
 
 DWORD PopFromExecutionBuffer(struct _exec_env *pEnv) {
-	DWORD ret = *((DWORD *)pEnv->execBuff);
-	pEnv->execBuff += 4;
+	DWORD ret = *((DWORD *)pEnv->runtimeContext.execBuff);
+	pEnv->runtimeContext.execBuff += 4;
 	return ret;
 }
 
@@ -49,7 +49,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 			pCB->MarkBackward();
 			//pEnv->posHist -= 1;
 			pEnv->bForward = 0;
-			pEnv->jumpBuff = (DWORD)pCB->pBkCode;
+			pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pBkCode;
 		}
 		else {
 			DbgPrint("No reverse block found!");
@@ -68,17 +68,17 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 				DbgPrint("Not Found\n");
 				pCB = pEnv->blockCache.NewBlock(a);
 
-				Translate(pEnv, pCB, 0);
+				pEnv->codeGen.Translate(pCB, &pEnv->runtimeContext, 0);
 
 				DbgPrint("= river saving code ===========================================================\n");
-				for (DWORD i = 0; i < pEnv->fwInstCount; ++i) {
-					RiverPrintInstruction(&pEnv->fwRiverInst[i]);
+				for (DWORD i = 0; i < pEnv->codeGen.fwInstCount; ++i) {
+					RiverPrintInstruction(&pEnv->codeGen.fwRiverInst[i]);
 				}
 				DbgPrint("===============================================================================\n");
 
 				DbgPrint("= river reversing code ========================================================\n");
-				for (DWORD i = 0; i < pEnv->bkInstCount; ++i) {
-					RiverPrintInstruction(&pEnv->bkRiverInst[i]);
+				for (DWORD i = 0; i < pEnv->codeGen.bkInstCount; ++i) {
+					RiverPrintInstruction(&pEnv->codeGen.bkRiverInst[i]);
 				}
 				DbgPrint("===============================================================================\n");
 			}
@@ -87,10 +87,10 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 			//TouchBlock(pEnv, pCB);
 			pEnv->lastFwBlock = pCB->address;
 			pEnv->bForward = 1;
-			pEnv->jumpBuff = (DWORD)pCB->pFwCode;
+			pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
 		}
 		__except (1) { //EXCEPTION_EXECUTE_HANDLER
-			pEnv->jumpBuff = a;
+			pEnv->runtimeContext.jumpBuff = a;
 
 			/*if ((pCB != NULL) && (pCB->dwParses > 0x800)) {
 			int *a = 0;
@@ -142,7 +142,7 @@ void __cdecl SysEndHandler(struct _exec_env *pEnv,
 	DWORD eflags
 	)
 {
-	*(UINT_PTR *)(pEnv->virtualStack - 4) = pEnv->returnRegister;
+	*(UINT_PTR *)(pEnv->runtimeContext.virtualStack - 4) = pEnv->runtimeContext.returnRegister;
 }
 
 

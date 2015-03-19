@@ -33,17 +33,16 @@ struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsign
 		return NULL;
 	}
 
-	if (NULL == (pEnv->outBuffer = (unsigned char *)EnvMemoryAlloc(outBufferSize))) {
+	if (!pEnv->codeGen.Init(&pEnv->heap, outBufferSize)) {
 		EnvMemoryFree(pEnv->executionBuffer);
-		pEnv->blockCache.Destroy(); 
+		pEnv->blockCache.Destroy();
 		pEnv->heap.Destroy();
 		EnvMemoryFree((BYTE *)pEnv);
 		return NULL;
 	}
-	pEnv->outBufferSize = outBufferSize;
-
+	
 	if (NULL == (pEnv->pStack = (unsigned char *)EnvMemoryAlloc (0x100000))) {
-		EnvMemoryFree((BYTE *)pEnv->outBuffer);
+		pEnv->codeGen.Destroy();
 		EnvMemoryFree(pEnv->executionBuffer); 
 		pEnv->blockCache.Destroy(); 
 		pEnv->heap.Destroy();
@@ -53,8 +52,8 @@ struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsign
 
 	memset (pEnv->pStack, 0, 0x100000);
 
-	pEnv->execBuff = (DWORD)pEnv->executionBuffer + executionSize;
-	pEnv->virtualStack = (DWORD) pEnv->pStack + 0xFFFF0;
+	pEnv->runtimeContext.execBuff = (DWORD)pEnv->executionBuffer + executionSize;
+	pEnv->runtimeContext.virtualStack = (DWORD)pEnv->pStack + 0xFFFF0;
 
 	return pEnv;
 }
@@ -75,34 +74,6 @@ void DeleteEnv(struct _exec_env *pEnv) {
 		pEnv = NULL;
 	}
 }
-
-struct RiverAddress *AllocRiverAddr(struct _exec_env *pEnv) {
-	struct RiverAddress *ret = &pEnv->trRiverAddr[pEnv->addrCount];
-	pEnv->addrCount++;
-	return ret;
-}
-
-void RiverMemReset(struct _exec_env *pEnv) {
-	pEnv->addrCount = pEnv->trInstCount = pEnv->fwInstCount = pEnv->bkInstCount = 0;
-}
-
-void ResetRegs(struct _exec_env *pEnv) {
-	memset(pEnv->regVersions, 0, sizeof(pEnv->regVersions));
-}
-
-unsigned int GetCurrentReg(struct _exec_env *pEnv, unsigned char regName) {
-	return pEnv->regVersions[regName] | regName;
-}
-
-unsigned int GetPrevReg(struct _exec_env *pEnv, unsigned char regName) {
-	return (pEnv->regVersions[regName] - 0x100) | regName;
-}
-
-unsigned int NextReg(struct _exec_env *pEnv, unsigned char regName) {
-	pEnv->regVersions[regName] += 0x100;
-	return GetCurrentReg(pEnv, regName);
-}
-
 
 void *AllocUserContext(struct _exec_env *pEnv, unsigned int size) {
 	if (NULL != pEnv->userContext) {

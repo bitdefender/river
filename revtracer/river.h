@@ -120,19 +120,8 @@ struct RiverInstruction {
 	union RiverOperand operands[2];
 };
 
-#include "execenv.h"
+//#include "execenv.h"
 
-/* x86toriver converts a single x86 intruction to one ore more river instructions */
-/* returns the instruction length */
-/* dwInstrCount contains the number of generated river instructions */
-DWORD x86toriver(struct _exec_env *pEnv, BYTE *px86, struct RiverInstruction *pRiver, DWORD *dwInstrCount);
 
-/* rivertox86 converts a block of river instructions to x86 */
-/* returns the nuber of bytes written in px86 */
-DWORD rivertox86(struct _exec_env *pEnv, struct RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flags);
-
-/* revir reverses the river instructions */
-/* revir also marks unnecessary riverload/riversave instruction pairs */
-DWORD revir(struct RiverInstruction *pRiver, DWORD dwInstrCount, struct RiverInstruction *pRevir);
 
 #endif

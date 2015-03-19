@@ -6,15 +6,15 @@
 extern const ConvertInstructionFunc riverReverseCode00[];
 extern const ConvertInstructionFunc riverReverseCode0F[];
 
-void CopyInstruction(struct _exec_env *pEnv, struct RiverInstruction *rOut, struct RiverInstruction *rIn);
+void CopyInstruction(RiverCodeGen *cg, struct RiverInstruction *rOut, struct RiverInstruction *rIn);
 
-void TranslateReverse(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void TranslateReverse(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	const ConvertInstructionFunc *cvtTbl = riverReverseCode00;
 	*outCount += 1;
 
 
 	if (0 == (RIVER_MODIFIER_RIVEROP & rIn->modifiers)) {
-		CopyInstruction(pEnv, rOut, rIn);
+		CopyInstruction(cg, rOut, rIn);
 		rOut->modifiers |= RIVER_MODIFIER_IGNORE;
 		return;
 	}
@@ -23,35 +23,35 @@ void TranslateReverse(struct _exec_env *pEnv, struct RiverInstruction *rIn, stru
 		cvtTbl = riverReverseCode0F;
 	}
 
-	cvtTbl[rIn->opCode](pEnv, rIn, rOut, outCount);
+	cvtTbl[rIn->opCode](cg, rIn, rOut, outCount);
 }
 
-void ReverseUnknown(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void ReverseUnknown(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	__asm int 3;
 }
 
-void ReversePushReg(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
-	CopyInstruction(pEnv, rOut, rIn);
+void ReversePushReg(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+	CopyInstruction(cg, rOut, rIn);
 	rOut->opCode += 8;
 }
 
-void ReversePopReg(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
-	CopyInstruction(pEnv, rOut, rIn);
+void ReversePopReg(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+	CopyInstruction(cg, rOut, rIn);
 	rOut->opCode -= 8;
 }
 
-void ReversePushf(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
-	CopyInstruction(pEnv, rOut, rIn);
+void ReversePushf(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+	CopyInstruction(cg, rOut, rIn);
 	rOut->opCode += 1;
 }
 
-void ReversePopf(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
-	CopyInstruction(pEnv, rOut, rIn);
+void ReversePopf(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+	CopyInstruction(cg, rOut, rIn);
 	rOut->opCode -= 1;
 }
 
-void ReversePushModRM(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
-	CopyInstruction(pEnv, rOut, rIn);
+void ReversePushModRM(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+	CopyInstruction(cg, rOut, rIn);
 	*outCount += 1;
 
 	if (rOut->subOpCode != 6) {
@@ -64,8 +64,8 @@ void ReversePushModRM(struct _exec_env *pEnv, struct RiverInstruction *rIn, stru
 	}
 }
 
-void ReversePopModRM(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
-	CopyInstruction(pEnv, rOut, rIn);
+void ReversePopModRM(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+	CopyInstruction(cg, rOut, rIn);
 	*outCount += 1;
 
 	if (rOut->subOpCode != 0) {
@@ -80,8 +80,8 @@ void ReversePopModRM(struct _exec_env *pEnv, struct RiverInstruction *rIn, struc
 	}
 }
 
-void Reverse0x83(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
-	CopyInstruction(pEnv, rOut, rIn);
+void Reverse0x83(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+	CopyInstruction(cg, rOut, rIn);
 	*outCount += 1;
 
 	switch (rOut->subOpCode) {

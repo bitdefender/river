@@ -3,21 +3,21 @@
 #include "mm.h"
 #include "execenv.h"
 
-struct RiverAddress *CloneAddress(struct _exec_env *pEnv, struct RiverAddress *mem) {
-	struct RiverAddress *ret = AllocRiverAddr(pEnv);
+struct RiverAddress *CloneAddress(RiverCodeGen *cg, struct RiverAddress *mem) {
+	struct RiverAddress *ret = cg->AllocAddr();
 	memcpy(ret, mem, sizeof(*ret));
 	return ret;
 }
 
-void CopyInstruction(struct _exec_env *pEnv, struct RiverInstruction *rOut, struct RiverInstruction *rIn) {
+void CopyInstruction(RiverCodeGen *cg, struct RiverInstruction *rOut, struct RiverInstruction *rIn) {
 	memcpy(rOut, rIn, sizeof(*rOut));
 
 	if ((RIVER_OPTYPE_NONE != rIn->opTypes[0]) && (RIVER_OPTYPE_MEM & rIn->opTypes[0])) {
-		rOut->operands[0].asAddress = CloneAddress(pEnv, rIn->operands[0].asAddress);
+		rOut->operands[0].asAddress = CloneAddress(cg, rIn->operands[0].asAddress);
 	}
 
 	if ((RIVER_OPTYPE_NONE != rIn->opTypes[1]) && (RIVER_OPTYPE_MEM & rIn->opTypes[1])) {
-		rOut->operands[1].asAddress = CloneAddress(pEnv, rIn->operands[1].asAddress);
+		rOut->operands[1].asAddress = CloneAddress(cg, rIn->operands[1].asAddress);
 	}
 }
 
@@ -29,7 +29,7 @@ void MakeSaveFlags(struct RiverInstruction *rOut) {
 	rOut->opTypes[0] = rOut->opTypes[1] = RIVER_OPTYPE_NONE;
 }
 
-inline void MakeSaveReg(struct _exec_env *pEnv, struct RiverInstruction *rOut, union RiverRegister *reg, unsigned short auxFlags) {
+inline void MakeSaveReg(RiverCodeGen *cg, struct RiverInstruction *rOut, union RiverRegister *reg, unsigned short auxFlags) {
 	unsigned char rg = (reg->name & 0x07) | RIVER_OPSIZE_32; 
 
 
@@ -38,20 +38,20 @@ inline void MakeSaveReg(struct _exec_env *pEnv, struct RiverInstruction *rOut, u
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
-	rOut->operands[0].asRegister.versioned = GetPrevReg(pEnv, rg);
+	rOut->operands[0].asRegister.versioned = cg->GetPrevReg(rg);
 	//rOut->operands[0].asRegister.name &= 0x07; // eliminate all size prefixes
 	//rOut->operands[0].asRegister.versioned |= RIVER_OPSIZE_32;
 
 	rOut->opTypes[1] = RIVER_OPTYPE_NONE;
 }
 
-inline void MakeSaveMem(struct _exec_env *pEnv, struct RiverInstruction *rOut, struct RiverAddress *mem, unsigned short auxFlags) {
+inline void MakeSaveMem(RiverCodeGen *cg, struct RiverInstruction *rOut, struct RiverAddress *mem, unsigned short auxFlags) {
 	rOut->opCode = 0xFF; // PUSH (ext + 6)
 	rOut->modifiers = RIVER_MODIFIER_RIVEROP | auxFlags;
 	rOut->subOpCode = 0x06;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
-	rOut->operands[0].asAddress = CloneAddress(pEnv, mem);
+	rOut->operands[0].asAddress = CloneAddress(cg, mem);
 	rOut->operands[0].asAddress->modRM &= 0xC7;
 	rOut->operands[0].asAddress->modRM |= rOut->subOpCode << 3;
 
@@ -60,7 +60,7 @@ inline void MakeSaveMem(struct _exec_env *pEnv, struct RiverInstruction *rOut, s
 }
 
 
-void MakeAddNoFlagsRegImm8(struct _exec_env *pEnv, struct RiverInstruction *rOut, union RiverRegister *reg, unsigned char offset, unsigned short auxFlags) {
+void MakeAddNoFlagsRegImm8(RiverCodeGen *cg, struct RiverInstruction *rOut, union RiverRegister *reg, unsigned char offset, unsigned short auxFlags) {
 	unsigned char rg = (reg->name & 0x07) | RIVER_OPSIZE_32;
 
 	rOut->opCode = 0x83;
@@ -69,13 +69,13 @@ void MakeAddNoFlagsRegImm8(struct _exec_env *pEnv, struct RiverInstruction *rOut
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
-	rOut->operands[0].asRegister.versioned = GetCurrentReg(pEnv, rg);
+	rOut->operands[0].asRegister.versioned = cg->GetCurrentReg(rg);
 
 	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
 	rOut->operands[1].asImm8 = offset;
 }
 
-void MakeSubNoFlagsRegImm8(struct _exec_env *pEnv, struct RiverInstruction *rOut, union RiverRegister *reg, unsigned char offset, unsigned short auxFlags) {
+void MakeSubNoFlagsRegImm8(RiverCodeGen *cg, struct RiverInstruction *rOut, union RiverRegister *reg, unsigned char offset, unsigned short auxFlags) {
 	unsigned char rg = (reg->name & 0x07) | RIVER_OPSIZE_32;
 
 	rOut->opCode = 0x83;
@@ -84,46 +84,46 @@ void MakeSubNoFlagsRegImm8(struct _exec_env *pEnv, struct RiverInstruction *rOut
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
-	rOut->operands[0].asRegister.versioned = GetCurrentReg(pEnv, rg);
+	rOut->operands[0].asRegister.versioned = cg->GetCurrentReg(rg);
 
 	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
 	rOut->operands[1].asImm8 = offset;
 }
 
 
-void MakeSaveOp(struct _exec_env *pEnv, struct RiverInstruction *rOut, unsigned char opType, union RiverOperand *op) {
+void MakeSaveOp(RiverCodeGen *cg, struct RiverInstruction *rOut, unsigned char opType, union RiverOperand *op) {
 	switch (opType) {
 		case RIVER_OPTYPE_NONE :
 		case RIVER_OPTYPE_IMM :
 			__asm int 3;
 			break;
 		case RIVER_OPTYPE_REG :
-			MakeSaveReg(pEnv, rOut, &op->asRegister, 0);
+			MakeSaveReg(cg, rOut, &op->asRegister, 0);
 			break;
 		case RIVER_OPTYPE_MEM :
-			MakeSaveMem(pEnv, rOut, op->asAddress, 0);
+			MakeSaveMem(cg, rOut, op->asAddress, 0);
 			break;
 	}
 }
 
-void MakeSaveAtEsp(struct _exec_env *pEnv, struct RiverInstruction *rOut) {
+void MakeSaveAtEsp(RiverCodeGen *cg, struct RiverInstruction *rOut) {
 	struct RiverAddress rTmp;
 
 	rTmp.type = RIVER_ADDR_BASE | RIVER_ADDR_DISP8;
-	rTmp.base.versioned = GetPrevReg(pEnv, RIVER_REG_xSP); // Here lies the original xSP
+	rTmp.base.versioned = cg->GetPrevReg(RIVER_REG_xSP); // Here lies the original xSP
 	rTmp.index.versioned = RIVER_REG_NONE; 
 	rTmp.disp.d8 = 0xFC;
 
 	rTmp.modRM = 0x70; // actually save xAX (because xSP is used for other stuff
 
-	MakeSaveMem(pEnv, rOut, &rTmp, RIVER_MODIFIER_ORIG_xSP);
+	MakeSaveMem(cg, rOut, &rTmp, RIVER_MODIFIER_ORIG_xSP);
 }
 
-void SaveUnknown(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void SaveUnknown(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	__asm int 3;
 }
 
-void SaveOperands(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void SaveOperands(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 
 	if (RIVER_SPEC_MODIFIES_FLG & rIn->specifiers) {
 		MakeSaveFlags(rOut);
@@ -132,44 +132,44 @@ void SaveOperands(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct R
 	}
 
 	if (RIVER_SPEC_MODIFIES_OP2 & rIn->specifiers) {
-		MakeSaveOp(pEnv, rOut, rIn->opTypes[1], &rIn->operands[1]);
+		MakeSaveOp(cg, rOut, rIn->opTypes[1], &rIn->operands[1]);
 		(*outCount)++;
 		rOut++;
 	}
 
 	if (RIVER_SPEC_MODIFIES_OP1 & rIn->specifiers) {
-		MakeSaveOp(pEnv, rOut, rIn->opTypes[0], &rIn->operands[0]);
+		MakeSaveOp(cg, rOut, rIn->opTypes[0], &rIn->operands[0]);
 		(*outCount)++;
 		rOut++;
 	}
 
-	CopyInstruction(pEnv, rOut, rIn);
+	CopyInstruction(cg, rOut, rIn);
 	(*outCount)++;
 }
 
 /* uses specifier fields to save modified operands */
-void SaveDefault(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void SaveDefault(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	if (RIVER_SPEC_MODIFIES_xSP & rIn->specifiers) {
 		__asm int 3;
 	}
 
-	SaveOperands(pEnv, rIn, rOut, outCount);
+	SaveOperands(cg, rIn, rOut, outCount);
 }
 
-void SavePush(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void SavePush(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	RiverRegister tmpReg;
 
-	MakeSaveAtEsp(pEnv, rOut);
+	MakeSaveAtEsp(cg, rOut);
 	(*outCount)++;
 	rOut++;
 
 	tmpReg.versioned = RIVER_REG_xSP;
-	MakeSaveReg(pEnv, rOut, &tmpReg, RIVER_MODIFIER_ORIG_xSP);
+	MakeSaveReg(cg, rOut, &tmpReg, RIVER_MODIFIER_ORIG_xSP);
 	(*outCount)++;
 	rOut++;
 
 	tmpReg.versioned = RIVER_REG_xSP;
-	MakeSubNoFlagsRegImm8(pEnv, rOut, &tmpReg, 0x04, RIVER_MODIFIER_ORIG_xSP | RIVER_MODIFIER_METAOP);
+	MakeSubNoFlagsRegImm8(cg, rOut, &tmpReg, 0x04, RIVER_MODIFIER_ORIG_xSP | RIVER_MODIFIER_METAOP);
 	(*outCount)++;
 	rOut++;
 
@@ -178,19 +178,19 @@ void SavePush(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct River
 	//*outCount++;
 	//rOut++;
 	
-	SaveOperands(pEnv, rIn, rOut, outCount);
+	SaveOperands(cg, rIn, rOut, outCount);
 }
 
-void SavePop(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void SavePop(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xSP;
-	MakeSaveReg(pEnv, rOut, &tmpReg, RIVER_MODIFIER_ORIG_xSP);
+	MakeSaveReg(cg, rOut, &tmpReg, RIVER_MODIFIER_ORIG_xSP);
 	(*outCount)++;
 	rOut++; 
 
 	tmpReg.versioned = RIVER_REG_xSP;
-	MakeAddNoFlagsRegImm8(pEnv, rOut, &tmpReg, 0x04, RIVER_MODIFIER_ORIG_xSP | RIVER_MODIFIER_METAOP);
+	MakeAddNoFlagsRegImm8(cg, rOut, &tmpReg, 0x04, RIVER_MODIFIER_ORIG_xSP | RIVER_MODIFIER_METAOP);
 	(*outCount)++;
 	rOut++;
 	
@@ -198,20 +198,20 @@ void SavePop(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverI
 	//MakeCustomSubEsp4
 	//*outCount++;
 	//rOut++;
-	SaveOperands(pEnv, rIn, rOut, outCount);
+	SaveOperands(cg, rIn, rOut, outCount);
 }
 
 extern const ConvertInstructionFunc riverSaveCode00[];
 extern const ConvertInstructionFunc riverSaveCode0F[];
 
-void TranslateSave(struct _exec_env *pEnv, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
+void TranslateSave(RiverCodeGen *cg, struct RiverInstruction *rIn, struct RiverInstruction *rOut, DWORD *outCount) {
 	const ConvertInstructionFunc *cvtTbl = riverSaveCode00;
 
 	if (RIVER_MODIFIER_EXT & rIn->modifiers) {
 		cvtTbl = riverSaveCode0F;
 	}
 
-	cvtTbl[rIn->opCode](pEnv, rIn, rOut, outCount);
+	cvtTbl[rIn->opCode](cg, rIn, rOut, outCount);
 }
 
 
