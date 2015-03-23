@@ -126,14 +126,28 @@ void TranslateModRMOperand(RiverCodeGen *cg, BYTE opIdx, RiverInstruction *ri, B
 	RiverAddress *rAddr;
 	BYTE mod = (**px86) >> 6;
 	BYTE rm = **px86 & 0x07;
+	BYTE xtra;
 
-	if (0x03 == mod) {
+	rAddr = cg->AllocAddr(ri->modifiers); //new RiverAddress;
+	rAddr->DecodeFromx86(*cg, *px86, xtra, ri->modifiers);
+
+	BYTE opType = RIVER_OPTYPE_MEM;
+	if (RIVER_MODIFIER_O8 & ri->modifiers) {
+		opType |= RIVER_OPSIZE_8;
+	}
+	else if (RIVER_MODIFIER_O16 & ri->modifiers) {
+		opType |= RIVER_OPSIZE_16;
+	}
+
+	ri->opTypes[opIdx] = opType;
+	ri->operands[opIdx].asAddress = rAddr;
+
+/*	if (0x03 == mod) {
 		TranslateRegisterOperand(cg, opIdx, ri, rm);
 		(*px86)++;
 		return;
 	}
 	
-	rAddr = cg->AllocAddr(); //new RiverAddress;
 	rAddr->type = 0;
 	rAddr->modRM = **px86;
 	
@@ -147,8 +161,8 @@ void TranslateModRMOperand(RiverCodeGen *cg, BYTE opIdx, RiverInstruction *ri, B
 
 	ri->opTypes[opIdx] = opType;
 	ri->operands[opIdx].asAddress = rAddr;
-
-	switch (mod) {
+	*/
+	/*switch (mod) {
 		case 0: 
 			if (0x05 == rm) {
 				rAddr->type |= RIVER_ADDR_DISP32;
@@ -188,7 +202,7 @@ void TranslateModRMOperand(RiverCodeGen *cg, BYTE opIdx, RiverInstruction *ri, B
 			break;
 		default :
 			__asm int 3;
-	}
+	}*/
 }
 
 /* classic opcode decoders */

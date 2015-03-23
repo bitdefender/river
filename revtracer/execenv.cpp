@@ -5,74 +5,85 @@
 //#include "lup.h" //for now
 #include "extern.h"
 
-struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize) {
+void *_exec_env::operator new(size_t sz){
+	void *storage = EnvMemoryAlloc(sz);
+	if (NULL == storage) {
+		throw "alloc fail";
+	}
+	return storage;
+}
+
+void _exec_env::operator delete(void *ptr) {
+	EnvMemoryFree((BYTE *)ptr);
+}
+
+_exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize) {
+	bValid = false;
+	if (0 == heap.Init(heapSize)) {
+		return;
+	}
+
+	//if (0 == InitBlock(pEnv, logHashSize, historySize)) {
+	if (0 == blockCache.Init(&heap, logHashSize, historySize)) {
+		heap.Destroy();
+		return;
+	}
+
+	if (0 == (executionBuffer = (UINT_PTR *)EnvMemoryAlloc(executionSize))) {
+		blockCache.Destroy();
+		heap.Destroy();
+		return;
+	}
+
+	if (!codeGen.Init(&heap, outBufferSize)) {
+		EnvMemoryFree(executionBuffer);
+		blockCache.Destroy();
+		heap.Destroy();
+		return;
+	}
+
+	if (NULL == (pStack = (unsigned char *)EnvMemoryAlloc(0x100000))) {
+		codeGen.Destroy();
+		EnvMemoryFree(executionBuffer);
+		blockCache.Destroy();
+		heap.Destroy();
+		return;
+	}
+
+	memset(pStack, 0, 0x100000);
+
+	runtimeContext.execBuff = (DWORD)executionBuffer + executionSize;
+	runtimeContext.virtualStack = (DWORD)pStack + 0xFFFF0;
+	bValid = true;
+}
+
+/*struct _exec_env *_exec_env::NewEnv(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize) {
 	struct _exec_env *pEnv;
 
 	if (NULL == (pEnv = (struct _exec_env *)EnvMemoryAlloc(sizeof(*pEnv)))) {
 		return NULL;
 	}
 
-	memset(pEnv, 0, sizeof(*pEnv));
+	struct _exec_env *tEnv = new (pEnv)_exec_env(heapSize, historySize, executionSize, logHashSize, outBufferSize);
 
-	if (0 == pEnv->heap.Init(heapSize)) {
+	if ((NULL == tEnv) || (!tEnv->bValid)) {
 		EnvMemoryFree((BYTE *)pEnv);
 		return NULL;
 	}
-
-	//if (0 == InitBlock(pEnv, logHashSize, historySize)) {
-	if (0 == pEnv->blockCache.Init(&pEnv->heap, logHashSize, historySize)) {
-		pEnv->heap.Destroy();
-		EnvMemoryFree((BYTE *)pEnv);
-		return NULL;
-	}
-
-	if (0 == (pEnv->executionBuffer = (UINT_PTR *)EnvMemoryAlloc(executionSize))) {
-		pEnv->blockCache.Destroy();
-		pEnv->heap.Destroy();
-		EnvMemoryFree((BYTE *)pEnv);
-		return NULL;
-	}
-
-	if (!pEnv->codeGen.Init(&pEnv->heap, outBufferSize)) {
-		EnvMemoryFree(pEnv->executionBuffer);
-		pEnv->blockCache.Destroy();
-		pEnv->heap.Destroy();
-		EnvMemoryFree((BYTE *)pEnv);
-		return NULL;
-	}
-	
-	if (NULL == (pEnv->pStack = (unsigned char *)EnvMemoryAlloc (0x100000))) {
-		pEnv->codeGen.Destroy();
-		EnvMemoryFree(pEnv->executionBuffer); 
-		pEnv->blockCache.Destroy(); 
-		pEnv->heap.Destroy();
-		EnvMemoryFree((BYTE *)pEnv);
-		return NULL;
-	}
-
-	memset (pEnv->pStack, 0, 0x100000);
-
-	pEnv->runtimeContext.execBuff = (DWORD)pEnv->executionBuffer + executionSize;
-	pEnv->runtimeContext.virtualStack = (DWORD)pEnv->pStack + 0xFFFF0;
 
 	return pEnv;
-}
+}*/
 
-void DeleteEnv(struct _exec_env *pEnv) {
-	if (pEnv != NULL) {
-		DeleteUserContext(pEnv);
+_exec_env::~_exec_env() {
+	DeleteUserContext(this);
 
-		pEnv->blockCache.Destroy(); 
-		pEnv->heap.Destroy();
+	blockCache.Destroy(); 
+	heap.Destroy();
 
-		EnvMemoryFree((BYTE *)pEnv->executionBuffer);
+	EnvMemoryFree((BYTE *)executionBuffer);
 
-		EnvMemoryFree((BYTE *)pEnv->pStack);
-		pEnv->pStack = NULL;
-
-		EnvMemoryFree((BYTE *)pEnv);
-		pEnv = NULL;
-	}
+	EnvMemoryFree((BYTE *)pStack);
+	pStack = NULL;
 }
 
 void *AllocUserContext(struct _exec_env *pEnv, unsigned int size) {

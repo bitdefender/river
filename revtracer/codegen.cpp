@@ -55,25 +55,22 @@ void RiverCodeGen::Reset() {
 	memset(regVersions, 0, sizeof(regVersions));
 }
 
-struct RiverAddress *RiverCodeGen::AllocAddr() {
+struct RiverAddress *RiverCodeGen::AllocAddr(WORD flags) {
 	struct RiverAddress *ret = &trRiverAddr[addrCount];
 	addrCount++;
 	return ret;
 }
 
-#define STRIP_REG_SIZE(reg) do { \
-	if (RIVER_REG_NONE == (reg)) return reg; \
-	reg &= 0x07; \
-} while (0)
-
 unsigned int RiverCodeGen::GetCurrentReg(unsigned char regName) const {
-	STRIP_REG_SIZE(regName);
-	return regVersions[regName] | regName;
+	if (RIVER_REG_NONE == (regName)) return regName;
+	BYTE rTmp = regName & 0x07;
+	return regVersions[rTmp] | regName;
 }
 
 unsigned int RiverCodeGen::GetPrevReg(unsigned char regName) const {
-	STRIP_REG_SIZE(regName); 
-	return (regVersions[regName] - 0x100) | regName;
+	if (RIVER_REG_NONE == (regName)) return regName;
+	BYTE rTmp = regName & 0x07;
+	return (regVersions[rTmp] - 0x100) | regName;
 }
 
 unsigned int RiverCodeGen::NextReg(unsigned char regName) {

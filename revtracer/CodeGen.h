@@ -17,7 +17,7 @@ public :
 	struct RiverInstruction trRiverInst[RIVER_TRANSLATE_INSTRUCTIONS]; // to be removed in the near future
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];
-	struct RiverAddress trRiverAddr[512];
+	struct RiverAddress32 trRiverAddr[512];
 	DWORD trInstCount, fwInstCount, bkInstCount, addrCount, outBufferSize;
 
 	unsigned char *outBuffer;
@@ -30,7 +30,7 @@ public :
 	bool Destroy();
 	void Reset();
 
-	struct RiverAddress *AllocAddr();
+	struct RiverAddress *AllocAddr(WORD flags);
 
 	unsigned int GetCurrentReg(unsigned char regName) const;
 	unsigned int GetPrevReg(unsigned char regName) const;

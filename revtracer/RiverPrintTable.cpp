@@ -81,6 +81,11 @@ void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
 			break;
 
 		case RIVER_OPTYPE_MEM :
+			if (0 == ri->operands[idx].asAddress->type) {
+				printf("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				break;
+			}
+
 			printf("%s ptr [", MemSizes[ri->opTypes[idx] & 0x03]);
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_BASE) {
 				printf("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
@@ -100,19 +105,19 @@ void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
 				bWr = true;
 			}
 
-			if (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP16 | RIVER_ADDR_DISP32)) {
+			if (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 				if (bWr) {
 					printf("+");
 				}
 
-				switch (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP16 | RIVER_ADDR_DISP32)) {
+				switch (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 					case RIVER_ADDR_DISP8 :
 						printf("0x%02x", ri->operands[idx].asAddress->disp.d8);
 						break;
-					case RIVER_ADDR_DISP16:
+					/*case RIVER_ADDR_DISP16:
 						printf("0x%04x", ri->operands[idx].asAddress->disp.d16);
-						break;
-					case RIVER_ADDR_DISP32:
+						break;*/
+					case RIVER_ADDR_DISP:
 						printf("0x%08x", ri->operands[idx].asAddress->disp.d32);
 						break;
 				}

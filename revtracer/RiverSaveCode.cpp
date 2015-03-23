@@ -3,8 +3,8 @@
 #include "mm.h"
 #include "execenv.h"
 
-struct RiverAddress *CloneAddress(RiverCodeGen *cg, struct RiverAddress *mem) {
-	struct RiverAddress *ret = cg->AllocAddr();
+struct RiverAddress *CloneAddress(RiverCodeGen *cg, struct RiverAddress *mem, WORD flags) {
+	struct RiverAddress *ret = cg->AllocAddr(flags);
 	memcpy(ret, mem, sizeof(*ret));
 	return ret;
 }
@@ -13,11 +13,11 @@ void CopyInstruction(RiverCodeGen *cg, struct RiverInstruction *rOut, struct Riv
 	memcpy(rOut, rIn, sizeof(*rOut));
 
 	if ((RIVER_OPTYPE_NONE != rIn->opTypes[0]) && (RIVER_OPTYPE_MEM & rIn->opTypes[0])) {
-		rOut->operands[0].asAddress = CloneAddress(cg, rIn->operands[0].asAddress);
+		rOut->operands[0].asAddress = CloneAddress(cg, rIn->operands[0].asAddress, rIn->modifiers);
 	}
 
 	if ((RIVER_OPTYPE_NONE != rIn->opTypes[1]) && (RIVER_OPTYPE_MEM & rIn->opTypes[1])) {
-		rOut->operands[1].asAddress = CloneAddress(cg, rIn->operands[1].asAddress);
+		rOut->operands[1].asAddress = CloneAddress(cg, rIn->operands[1].asAddress, rIn->modifiers);
 	}
 }
 
@@ -51,7 +51,7 @@ inline void MakeSaveMem(RiverCodeGen *cg, struct RiverInstruction *rOut, struct 
 	rOut->subOpCode = 0x06;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
-	rOut->operands[0].asAddress = CloneAddress(cg, mem);
+	rOut->operands[0].asAddress = CloneAddress(cg, mem, 0); // FIXME: needs te kind of address to be cloned
 	rOut->operands[0].asAddress->modRM &= 0xC7;
 	rOut->operands[0].asAddress->modRM |= rOut->subOpCode << 3;
 
@@ -107,7 +107,7 @@ void MakeSaveOp(RiverCodeGen *cg, struct RiverInstruction *rOut, unsigned char o
 }
 
 void MakeSaveAtEsp(RiverCodeGen *cg, struct RiverInstruction *rOut) {
-	struct RiverAddress rTmp;
+	struct RiverAddress32 rTmp;
 
 	rTmp.type = RIVER_ADDR_BASE | RIVER_ADDR_DISP8;
 	rTmp.base.versioned = cg->GetPrevReg(RIVER_REG_xSP); // Here lies the original xSP

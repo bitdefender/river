@@ -51,90 +51,6 @@ void EndRiverConversion(RiverRuntime *rt, BYTE **px86, DWORD *pFlags) {
 	}
 }
 
-bool UpdateModRM(struct RiverAddress *addr) {
-	unsigned char mod, rm;
-
-	// move esp from base to index
-	if (addr->type & RIVER_ADDR_BASE) { // todo check scale is = 1
-		if (addr->base.name == RIVER_REG_xSP) {
-			if (0 == (addr->type & RIVER_ADDR_INDEX)) {
-				addr->index.versioned = addr->base.versioned;
-				addr->base.name = RIVER_REG_NONE;
-
-				addr->type &= ~RIVER_ADDR_BASE;
-				addr->type |= RIVER_ADDR_INDEX;
-			} else {
-				return false;
-			}
-		}
-	}
-
-	switch (addr->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP16 | RIVER_ADDR_DISP32)) {
-		case 0 :
-			mod = 0;
-			break;
-		case RIVER_ADDR_DISP8:
-			mod = 1;
-			break;
-		case RIVER_ADDR_DISP32:
-			mod = 2;
-			break;
-		default :
-			return false;
-	}
-
-	if ((addr->type & RIVER_ADDR_INDEX) || (addr->type & RIVER_ADDR_SCALE)) {
-		// handle sib
-		rm = 4;
-
-		unsigned char ss, idx, base;
-		if (addr->type & RIVER_ADDR_SCALE) {
-			switch (addr->scale) {
-			case 1:
-				ss = 0;
-				break;
-			case 2:
-				ss = 1;
-				break;
-			case 4:
-				ss = 2;
-				break;
-			case 8:
-				ss = 3;
-				break;
-			default:
-				return false;
-			}
-		} else {
-			ss = 0;
-		}
-
-		if (addr->type & RIVER_ADDR_BASE) {
-			base = addr->base.name;
-		} else {
-			base = 4;
-		}
-
-		idx = addr->index.name;
-
-		addr->sib = (ss << 6) | (idx << 3) | (base);
-	} else {
-		if (0 == (addr->type & RIVER_ADDR_BASE)) { // there is no base
-			if (addr->type & RIVER_ADDR_DISP32) { // simply a displacement
-				mod = 0;
-				rm = 5;
-			} else { // no 32bit displacement either
-				return false;
-			}
-		} else {
-			rm = addr->base.name;
-		}
-	}
-
-	addr->modRM = (mod << 6) | rm;
-	return true;
-}
-
 void FixRiverEspOp(BYTE opType, RiverOperand *op) {
 	switch (opType & 0xFC) {
 	case RIVER_OPTYPE_IMM :
@@ -146,19 +62,6 @@ void FixRiverEspOp(BYTE opType, RiverOperand *op) {
 		}
 		break;
 	case RIVER_OPTYPE_MEM :
-		if (op->asAddress->type & RIVER_ADDR_BASE) {
-			if (op->asAddress->base.name == RIVER_REG_xSP) {
-				op->asAddress->base.name = RIVER_REG_xAX;
-			}
-		}
-
-		if (op->asAddress->type & RIVER_ADDR_INDEX) {
-			if (op->asAddress->index.name == RIVER_REG_xSP) {
-				op->asAddress->index.name = RIVER_REG_xAX;
-			}
-		}
-
-		UpdateModRM(op->asAddress);
 		break;
 	default :
 		__asm int 3;
@@ -255,7 +158,7 @@ void ConvertRiverInstruction(RiverCodeGen *cg, RiverRuntime *rt, struct RiverIns
 	}
 
 	RiverInstruction rInstr;
-	RiverAddress rAddr;
+	RiverAddress32 rAddr;
 
 	RiverInstruction *rOut = FixRiverEspInstruction(ri, &rInstr, &rAddr);
 
@@ -490,37 +393,7 @@ static void TranslateImmOp(RiverCodeGen *cg, unsigned int opIdx, RiverInstructio
 }
 
 static void TranslateModRMOp(RiverCodeGen *cg, unsigned int opIdx, RiverInstruction *ri, BYTE **px86, BYTE extra) {
-	if (ri->opTypes[opIdx] & RIVER_OPTYPE_REG) {
-		**px86 = 0xC0 | ((extra & 0x07) << 3) | (ri->operands[opIdx].asRegister.name & 0x07);
-		(*px86)++;
-
-		return;
-	}
-
-	**px86 = ri->operands[opIdx].asAddress->modRM;
-	(*px86)++;
-
-	if ((ri->operands[opIdx].asAddress->modRM & 0x07) == 0x04) {
-		**px86 = ri->operands[opIdx].asAddress->sib;
-		(*px86)++;
-	}
-
-	switch (ri->operands[opIdx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP16 | RIVER_ADDR_DISP32)) {
-	case RIVER_ADDR_DISP8:
-		*((BYTE *)(*px86)) = ri->operands[opIdx].asAddress->disp.d8;
-		(*px86)++;
-		break;
-	case RIVER_ADDR_DISP16:
-		*((WORD *)(*px86)) = ri->operands[opIdx].asAddress->disp.d16;
-		(*px86) += 2;
-		break;
-	case RIVER_ADDR_DISP32:
-		*((DWORD *)(*px86)) = ri->operands[opIdx].asAddress->disp.d32;
-		(*px86) += 4;
-		break;
-	default:
-		__asm int 3;
-	}
+	ri->operands[opIdx].asAddress->EncodeTox86(*px86, extra, ri->modifiers);
 }
 
 static void TranslateUnknownOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
@@ -559,9 +432,9 @@ static void Translate0xFFOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86)
 
 static void TranslateRiverAddSubOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86) {
 	RiverInstruction rTmp;
-	RiverAddress addr;
+	RiverAddress32 addr;
 
-	addr.type = RIVER_ADDR_BASE | RIVER_ADDR_DISP8;
+	addr.type = RIVER_ADDR_DIRTY | RIVER_ADDR_BASE | RIVER_ADDR_DISP8;
 	addr.base.versioned = ri->operands[0].asRegister.versioned;
 	
 	addr.disp.d8 = ri->operands[1].asImm8;
@@ -570,7 +443,6 @@ static void TranslateRiverAddSubOp(RiverCodeGen *cg, RiverInstruction *ri, BYTE 
 		addr.disp.d8 = ~addr.disp.d8 + 1;
 	}
 
-	UpdateModRM(&addr);
 	addr.modRM |= ri->operands[0].asRegister.name << 3;
 
 	rTmp.opTypes[0] = ri->opTypes[0];

@@ -153,7 +153,7 @@ int main() {
 	struct _exec_env *pEnv;
 	struct UserCtx *ctx;
 	DWORD dwCount = 0;
-	pEnv = NewEnv(0x100000, 0x10000, 0x10000, 16, 0x10000);
+	pEnv = new _exec_env(0x100000, 0x10000, 0x10000, 16, 0x10000);
 
 	pEnv->userContext = AllocUserContext(pEnv, sizeof(struct UserCtx));
 	ctx = (struct UserCtx *)pEnv->userContext;

@@ -15,6 +15,7 @@
     <ClInclude Include="cb.h" />
     <ClInclude Include="CodeGen.h" />
     <ClInclude Include="river.h" />
+    <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="translatetbl.h" />
@@ -44,6 +45,7 @@
     <ClCompile Include="mm.cpp" />
     <ClCompile Include="modrm32.cpp" />
     <ClCompile Include="river.cpp" />
+    <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseCode.cpp" />
     <ClCompile Include="RiverSaveCode.cpp" />

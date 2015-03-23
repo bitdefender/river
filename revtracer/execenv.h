@@ -38,12 +38,16 @@ struct _exec_env {
 
 	RiverCodeGen codeGen;
 
-
+	bool bValid;
 	void *userContext;
-};
 
-struct _exec_env *NewEnv(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize);
-void DeleteEnv(struct _exec_env *pEnv);
+public :
+	void* operator new(size_t);
+	void operator delete(void*);
+
+	_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize);
+	~_exec_env();
+};
 
 void *AllocUserContext(struct _exec_env *pEnv, unsigned int size);
 void DeleteUserContext(struct _exec_env *pEnv);

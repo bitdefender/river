@@ -9,16 +9,20 @@
 
 /* River mofifiers (present in riverInstruction.modifiers) */
 #define RIVER_MODIFIER_EXT 			0x0001
-#define RIVER_MODIFIER_FSSEG		0x0002
-#define RIVER_MODIFIER_GSSEG		0x0004
+#define RIVER_MODIFIER_ESSEG		0x0002
+#define RIVER_MODIFIER_CSSEG		0x0004
+#define RIVER_MODIFIER_SSSEG		0x0008
+#define RIVER_MODIFIER_DSSEG		0x0010
+#define RIVER_MODIFIER_FSSEG		0x0020
+#define RIVER_MODIFIER_GSSEG		0x0040
 /* no corresponding prefix */
-#define RIVER_MODIFIER_O8			0x0008
-#define RIVER_MODIFIER_O16 			0x0010
-#define RIVER_MODIFIER_A16 			0x0020
-#define RIVER_MODIFIER_LOCK			0x0040
-#define RIVER_MODIFIER_REP 			0x0080
-#define RIVER_MODIFIER_REPZ			0x0100
-#define RIVER_MODIFIER_REPNZ		0x0200
+#define RIVER_MODIFIER_O8			0x0080
+#define RIVER_MODIFIER_O16 			0x0100
+#define RIVER_MODIFIER_A16 			0x0200
+#define RIVER_MODIFIER_LOCK			0x0400
+#define RIVER_MODIFIER_REP 			0x0800
+#define RIVER_MODIFIER_REPZ			0x1000
+#define RIVER_MODIFIER_REPNZ		0x2000
 
 /* this instruction is a meta instruction... it respecifies the previous one in order to optimize reverse code generation */
 #define RIVER_MODIFIER_METAOP		0x1000
@@ -60,25 +64,14 @@ union RiverRegister {
 
 /* River address components, to be used in RiverAddress::type */
 #define RIVER_ADDR_DISP8			0x01
-#define RIVER_ADDR_DISP16			0x02
-#define RIVER_ADDR_DISP32			0x04
-#define RIVER_ADDR_SCALE			0x08
-#define RIVER_ADDR_BASE				0x10
-#define RIVER_ADDR_INDEX			0x20
+#define RIVER_ADDR_DISP				0x02
+#define RIVER_ADDR_SCALE			0x04
+#define RIVER_ADDR_BASE				0x08
+#define RIVER_ADDR_INDEX			0x10
+/* Marks the address as needing recalculation */
+#define RIVER_ADDR_DIRTY			0x80
 
-struct RiverAddress {
-	BYTE type; 						/* 0x00 - combination of RIVER_ADDR* flags */
-	BYTE scale;						/* 0x01 - scale 1, 2, 4, (or 8) */
-	BYTE modRM; 					/* 0x02 - original modrm byte */
-	BYTE sib;   					/* 0x03 - original sib byte */
-	union RiverRegister base;		/* 0x04 - base register */
-	union RiverRegister index;		/* 0x08 - index register */
-	union {
-		BYTE d8;
-		WORD d16;
-		DWORD d32;
-	} disp;							/* 0x0C - displacement */
-};
+#include "RiverAddress.h"
 
 /* River operand types */
 #define RIVER_OPTYPE_IMM			0x00
@@ -105,8 +98,8 @@ union RiverOperand {
 	BYTE asImm8;
 	WORD asImm16;
 	DWORD asImm32;
-	union RiverRegister asRegister;
-	struct RiverAddress *asAddress;
+	RiverRegister asRegister;
+	RiverAddress *asAddress;
 };
 
 struct RiverInstruction {
