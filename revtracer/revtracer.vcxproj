@@ -17,6 +17,7 @@
     <ClInclude Include="river.h" />
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
+    <ClInclude Include="RiverX86Assembler.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="translatetbl.h" />
     <ClInclude Include="common.h" />
@@ -50,6 +51,7 @@
     <ClCompile Include="RiverReverseCode.cpp" />
     <ClCompile Include="RiverSaveCode.cpp" />
     <ClCompile Include="RiverTox86.cpp" />
+    <ClCompile Include="RiverX86Assembler.cpp" />
     <ClCompile Include="src.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>

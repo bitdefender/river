@@ -130,10 +130,12 @@ void ConvertRiverInstruction(RiverCodeGen *cg, RiverRuntime *rt, struct RiverIns
 			if (*pFlags & FLAG_GENERATE_RIVER_xSP) {
 				SwitchToRiverEsp(rt, px86);
 				*pFlags &= ~FLAG_GENERATE_RIVER_xSP;
+
 			}
 
 			SwitchToRiver(rt, px86);
 			*pFlags &= ~FLAG_GENERATE_RIVER;
+
 		}
 	}
 
