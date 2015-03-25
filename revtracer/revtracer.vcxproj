@@ -50,7 +50,6 @@
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseCode.cpp" />
     <ClCompile Include="RiverSaveCode.cpp" />
-    <ClCompile Include="RiverTox86.cpp" />
     <ClCompile Include="RiverX86Assembler.cpp" />
     <ClCompile Include="src.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>

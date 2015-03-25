@@ -12,6 +12,7 @@ private :
 
 	void SwitchToRiver(BYTE *&px86, DWORD &instrCounter);
 	void SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter);
+	void EndRiverConversion(BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 
 	typedef void(RiverX86Assembler::*AssembleOpcodeFunc)(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 	typedef void(RiverX86Assembler::*AssembleOperandsFunc)(const RiverInstruction &ri, BYTE *&px86);
@@ -24,6 +25,8 @@ private :
 public :
 	bool Init(RiverRuntime *rt);
 	bool Translate(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
+
+	bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter);
 
 private :
 	/* opcodes assemblers */

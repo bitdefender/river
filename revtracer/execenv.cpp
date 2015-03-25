@@ -35,7 +35,7 @@ _exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned i
 		return;
 	}
 
-	if (!codeGen.Init(&heap, outBufferSize)) {
+	if (!codeGen.Init(&heap, &runtimeContext, outBufferSize)) {
 		EnvMemoryFree(executionBuffer);
 		blockCache.Destroy();
 		heap.Destroy();

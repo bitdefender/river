@@ -8,30 +8,33 @@
 #include "environment.h"
 
 /* River mofifiers (present in riverInstruction.modifiers) */
-#define RIVER_MODIFIER_EXT 			0x0001
-#define RIVER_MODIFIER_ESSEG		0x0002
-#define RIVER_MODIFIER_CSSEG		0x0004
-#define RIVER_MODIFIER_SSSEG		0x0008
-#define RIVER_MODIFIER_DSSEG		0x0010
-#define RIVER_MODIFIER_FSSEG		0x0020
-#define RIVER_MODIFIER_GSSEG		0x0040
+#define RIVER_MODIFIER_NOSEG		0x0000
+#define RIVER_MODIFIER_ESSEG		0x0001
+#define RIVER_MODIFIER_CSSEG		0x0002
+#define RIVER_MODIFIER_SSSEG		0x0003
+#define RIVER_MODIFIER_DSSEG		0x0004
+#define RIVER_MODIFIER_FSSEG		0x0005
+#define RIVER_MODIFIER_GSSEG		0x0006
+
+
+#define RIVER_MODIFIER_EXT 			0x0008
 /* no corresponding prefix */
-#define RIVER_MODIFIER_O8			0x0080
-#define RIVER_MODIFIER_O16 			0x0100
-#define RIVER_MODIFIER_A16 			0x0200
-#define RIVER_MODIFIER_LOCK			0x0400
-#define RIVER_MODIFIER_REP 			0x0800
-#define RIVER_MODIFIER_REPZ			0x1000
-#define RIVER_MODIFIER_REPNZ		0x2000
+#define RIVER_MODIFIER_O8			0x0010
+#define RIVER_MODIFIER_O16 			0x0020
+#define RIVER_MODIFIER_A16 			0x0040
+#define RIVER_MODIFIER_LOCK			0x0080
+#define RIVER_MODIFIER_REP 			0x0100
+#define RIVER_MODIFIER_REPZ			0x0200
+#define RIVER_MODIFIER_REPNZ		0x0400
 
 /* this instruction is a meta instruction... it respecifies the previous one in order to optimize reverse code generation */
-#define RIVER_MODIFIER_METAOP		0x1000
+#define RIVER_MODIFIER_METAOP		0x0800
 /* lazy deletion flag */
-#define RIVER_MODIFIER_IGNORE		0x2000
+#define RIVER_MODIFIER_IGNORE		0x1000
 /* this river instruction uses the original xSP register */
-#define RIVER_MODIFIER_ORIG_xSP		0x4000
+#define RIVER_MODIFIER_ORIG_xSP		0x2000
 /* this is a river instruction */
-#define RIVER_MODIFIER_RIVEROP		0x8000
+#define RIVER_MODIFIER_RIVEROP		0x4000
 
 /* River translation flags present in the pFlags argument */
 #define RIVER_FLAG_PFX				0x00000001

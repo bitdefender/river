@@ -51,34 +51,3 @@ DWORD x86toriver(RiverCodeGen *cg, BYTE *px86, struct RiverInstruction *pRiver, 
 	return pTmp - px86;
 }
 
-/* rivertox86 converts a block of river instructions to x86 */
-/* returns the nuber of bytes written in px86 */
-DWORD rivertox86(RiverCodeGen *cg, RiverRuntime *rt, struct RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg) {
-	BYTE *pTmp = px86, *pAux;
-	DWORD pFlags = flg;
-
-	DbgPrint("= river to x86 ================================================================\n");
-
-	for (DWORD i = 0; i < dwInstrCount; ++i) {
-		pAux = pTmp;
-
-		//pFlags = flg;
-		ConvertRiverInstruction(cg, rt, &pRiver[i], &pTmp, &pFlags);
-
-		for (; pAux < pTmp; ++pAux) {
-			DbgPrint("%02x ", *pAux);
-		}
-		DbgPrint("\n");
-	}
-
-	pAux = pTmp;
-	EndRiverConversion(rt, &pTmp, &pFlags);
-	for (; pAux < pTmp; ++pAux) {
-		DbgPrint("%02x ", *pAux);
-	}
-	DbgPrint("\n");
-
-	DbgPrint("===============================================================================\n");
-	return pTmp - px86;
-}
-

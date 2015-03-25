@@ -33,13 +33,14 @@ RiverCodeGen::~RiverCodeGen() {
 	}
 }
 
-bool RiverCodeGen::Init(RiverHeap *hp, DWORD buffSz) {
+bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 	heap = hp;
 	if (NULL == (outBuffer = (unsigned char *)EnvMemoryAlloc(buffSz))) {
 		return false;
 	}
 	outBufferSize = buffSz;
-	return true;
+
+	return assembler.Init(rt);
 }
 
 bool RiverCodeGen::Destroy() {
@@ -125,7 +126,7 @@ void MakeJMP(struct RiverInstruction *ri, DWORD jmpAddr) {
 	ri->operands[1].asImm32 = 0;
 }
 
-bool RiverCodeGen::Translate(RiverBasicBlock *pCB, RiverRuntime *rt, DWORD dwTranslationFlags) {
+bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 	DWORD tmp;
 
 	if (dwTranslationFlags & 0x80000000) {
@@ -151,13 +152,16 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, RiverRuntime *rt, DWORD dwTra
 
 		bkInstCount = fwInstCount + 1;
 
-		outBufferSize = rivertox86(this, rt, trRiverInst, trInstCount, outBuffer, 0x00);
-		pCB->pCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
+		//outBufferSize = rivertox86(this, rt, trRiverInst, trInstCount, outBuffer, 0x00);
+		//assembler.Assemble(trRiverInst, trInstCount, outBuffer, 0x00, pCB->, outBufferSize);
+		//pCB->pCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 
-		outBufferSize = rivertox86(this, rt, fwRiverInst, fwInstCount, outBuffer, 0x01);
+		//outBufferSize = rivertox86(this, rt, fwRiverInst, fwInstCount, outBuffer, 0x01);
+		assembler.Assemble(fwRiverInst, fwInstCount, outBuffer, 0x01, pCB->dwFwOpCount, outBufferSize);
 		pCB->pFwCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 		
-		outBufferSize = rivertox86(this, rt, bkRiverInst, bkInstCount, outBuffer, 0x00);
+		//outBufferSize = rivertox86(this, rt, bkRiverInst, bkInstCount, outBuffer, 0x00);
+		assembler.Assemble(bkRiverInst, bkInstCount, outBuffer, 0x01, pCB->dwBkOpCount, outBufferSize);
 		pCB->pBkCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 
 

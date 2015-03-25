@@ -35,6 +35,18 @@ void RiverX86Assembler::SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter) {
 	instrCounter++;
 }
 
+void RiverX86Assembler::EndRiverConversion(BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
+	if (pFlags & FLAG_GENERATE_RIVER) {
+		if (pFlags & FLAG_GENERATE_RIVER_xSP) {
+			SwitchToRiverEsp(px86, instrCounter);
+			pFlags &= ~FLAG_GENERATE_RIVER_xSP;
+		}
+
+		SwitchToRiver(px86, instrCounter);
+		pFlags &= ~FLAG_GENERATE_RIVER;
+	}
+}
+
 bool RiverX86Assembler::Init(RiverRuntime *rt) {
 	runtime = rt;
 	return true;
@@ -80,7 +92,6 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 		return &rIn;
 	}
 }
-
 
 bool RiverX86Assembler::Translate(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
 	// skip ignored instructions
@@ -166,7 +177,38 @@ bool RiverX86Assembler::Translate(const RiverInstruction &ri, BYTE *&px86, DWORD
 	return true;
 }
 
+bool RiverX86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) {
+	BYTE *pTmp, *pAux = px86;
+	DWORD pFlags = flg;
 
+	DbgPrint("= river to x86 ================================================================\n");
+
+	for (DWORD i = 0; i < dwInstrCount; ++i) {
+		pTmp = pAux;
+
+		//pFlags = flg;
+		if (!Translate(pRiver[i], pAux, pFlags, instrCounter)) {
+			return false;
+		}
+		//ConvertRiverInstruction(cg, rt, &pRiver[i], &pTmp, &pFlags);
+
+		for (; pTmp < pAux; ++pTmp) {
+			DbgPrint("%02x ", *pTmp);
+		}
+		DbgPrint("\n");
+	}
+
+	pTmp = pAux;
+	EndRiverConversion(pAux, pFlags, instrCounter);
+	for (; pTmp < pAux; ++pTmp) {
+		DbgPrint("%02x ", *pTmp);
+	}
+	DbgPrint("\n");
+
+	DbgPrint("===============================================================================\n");
+	byteCounter = pAux - px86;
+	return true;
+}
 
 
 /* =========================================== */
@@ -278,7 +320,7 @@ void RiverX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, BYTE
 	*(unsigned int *)(&(px86[0x1A])) = (unsigned int)&dwBranchHandler;
 	*(unsigned int *)(&(px86[0x22])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86[0x28])) = (unsigned int)&runtime->jumpBuff;
-	(*px86) += sizeof(pBranchJCC);
+	px86 += sizeof(pBranchJCC);
 
 
 	memcpy(px86, pBranchJCC, sizeof(pBranchJCC));
@@ -289,7 +331,7 @@ void RiverX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, BYTE
 	*(unsigned int *)(&(px86[0x1A])) = (unsigned int)&dwBranchHandler;
 	*(unsigned int *)(&(px86[0x22])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86[0x28])) = (unsigned int)&runtime->jumpBuff;
-	(*px86) += sizeof(pBranchJCC);
+	px86 += sizeof(pBranchJCC);
 
 	pFlags |= RIVER_FLAG_BRANCH;
 	instrCounter += 25;

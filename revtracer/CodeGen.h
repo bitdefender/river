@@ -5,6 +5,8 @@
 #include "cb.h"
 #include "runtime.h"
 
+#include "RiverX86Assembler.h"
+
 #define RIVER_TRANSLATE_INSTRUCTIONS				128
 #define RIVER_FORWARD_INSTRUCTIONS					512
 #define RIVER_BACKWARD_INSTRUCTIONS					512
@@ -13,6 +15,8 @@
 class RiverCodeGen {
 private :
 	RiverHeap *heap;
+	
+	RiverX86Assembler assembler;
 public :
 	struct RiverInstruction trRiverInst[RIVER_TRANSLATE_INSTRUCTIONS]; // to be removed in the near future
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
@@ -26,7 +30,7 @@ public :
 	RiverCodeGen();
 	~RiverCodeGen();
 
-	bool Init(RiverHeap *hp, DWORD buffSz);
+	bool Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz);
 	bool Destroy();
 	void Reset();
 
@@ -37,7 +41,7 @@ public :
 
 	unsigned int NextReg(unsigned char regName);
 
-	bool Translate(RiverBasicBlock *pCB, RiverRuntime *rt, DWORD dwTranslationFlags);
+	bool Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags);
 };
 
 #endif

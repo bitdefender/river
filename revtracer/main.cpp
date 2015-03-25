@@ -68,7 +68,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 				DbgPrint("Not Found\n");
 				pCB = pEnv->blockCache.NewBlock(a);
 
-				pEnv->codeGen.Translate(pCB, &pEnv->runtimeContext, 0);
+				pEnv->codeGen.Translate(pCB, 0);
 
 				DbgPrint("= river saving code ===========================================================\n");
 				for (DWORD i = 0; i < pEnv->codeGen.fwInstCount; ++i) {
