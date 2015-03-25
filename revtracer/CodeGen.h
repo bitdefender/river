@@ -5,6 +5,7 @@
 #include "cb.h"
 #include "runtime.h"
 
+#include "RiverX86Disassembler.h"
 #include "RiverX86Assembler.h"
 
 #define RIVER_TRANSLATE_INSTRUCTIONS				128
@@ -16,6 +17,7 @@ class RiverCodeGen {
 private :
 	RiverHeap *heap;
 	
+	RiverX86Disassembler disassembler;
 	RiverX86Assembler assembler;
 public :
 	struct RiverInstruction trRiverInst[RIVER_TRANSLATE_INSTRUCTIONS]; // to be removed in the near future

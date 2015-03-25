@@ -22,12 +22,11 @@ private :
 
 	static AssembleOpcodeFunc assembleOpcodes[2][0x100];
 	static AssembleOperandsFunc assembleOperands[2][0x100];
+
+	bool Translate(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 public :
 	bool Init(RiverRuntime *rt);
-	bool Translate(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
-
 	bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter);
-
 private :
 	/* opcodes assemblers */
 	void AssembleUnkInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);

@@ -18,6 +18,7 @@
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
     <ClInclude Include="RiverX86Assembler.h" />
+    <ClInclude Include="RiverX86Disassembler.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="translatetbl.h" />
     <ClInclude Include="common.h" />
@@ -51,6 +52,7 @@
     <ClCompile Include="RiverReverseCode.cpp" />
     <ClCompile Include="RiverSaveCode.cpp" />
     <ClCompile Include="RiverX86Assembler.cpp" />
+    <ClCompile Include="RiverX86Disassembler.cpp" />
     <ClCompile Include="src.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
@@ -62,7 +64,6 @@
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
     </ClCompile>
     <ClCompile Include="sync.cpp" />
-    <ClCompile Include="x86ToRiver.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F348D3BE-A0A6-42C5-ACBE-806AC106ACC3}</ProjectGuid>

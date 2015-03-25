@@ -10,10 +10,12 @@
 
 #include "river.h"
 
+#include "RiverX86Disassembler.h"
+
 /* x86toriver converts a single x86 intruction to one ore more river instructions */
 /* returns the instruction length */
 /* dwInstrCount contains the number of generated river instructions */
-DWORD x86toriver(RiverCodeGen *pEnv, BYTE *px86, RiverInstruction *pRiver, DWORD *dwInstrCount);
+DWORD x86toriver(RiverCodeGen *pEnv, RiverX86Disassembler &dis, BYTE *px86, RiverInstruction *pRiver, DWORD *dwInstrCount);
 
 /* rivertox86 converts a block of river instructions to x86 */
 /* returns the nuber of bytes written in px86 */
@@ -40,6 +42,7 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 	}
 	outBufferSize = buffSz;
 
+	disassembler.Init(this);
 	return assembler.Init(rt);
 }
 
@@ -142,7 +145,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 
 		Reset();
 
-		pCB->dwSize = x86toriver(this, (BYTE *)pCB->address, trRiverInst, &trInstCount);
+		pCB->dwSize = x86toriver(this, disassembler, (BYTE *)pCB->address, trRiverInst, &trInstCount);
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 
 		for (DWORD i = 0; i < fwInstCount; ++i) {
