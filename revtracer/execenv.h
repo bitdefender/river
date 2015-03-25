@@ -4,7 +4,6 @@
 #include <Basetsd.h>
 #include "environment.h"
 #include "sync.h"
-#include "virtualreg.h"
 #include "river.h"
 #include "mm.h"
 #include "cb.h"

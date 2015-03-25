@@ -8,6 +8,8 @@
 #include "RiverX86Disassembler.h"
 #include "RiverX86Assembler.h"
 
+#include "RiverReverseTranslator.h"
+
 #define RIVER_TRANSLATE_INSTRUCTIONS				128
 #define RIVER_FORWARD_INSTRUCTIONS					512
 #define RIVER_BACKWARD_INSTRUCTIONS					512
@@ -18,6 +20,9 @@ private :
 	RiverHeap *heap;
 	
 	RiverX86Disassembler disassembler;
+
+	RiverReverseTranslator revTranslator;
+
 	RiverX86Assembler assembler;
 public :
 	struct RiverInstruction trRiverInst[RIVER_TRANSLATE_INSTRUCTIONS]; // to be removed in the near future

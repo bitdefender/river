@@ -17,6 +17,7 @@
     <ClInclude Include="river.h" />
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
+    <ClInclude Include="RiverReverseTranslator.h" />
     <ClInclude Include="RiverX86Assembler.h" />
     <ClInclude Include="RiverX86Disassembler.h" />
     <ClInclude Include="Runtime.h" />
@@ -29,7 +30,6 @@
     <ClInclude Include="mm.h" />
     <ClInclude Include="modrm32.h" />
     <ClInclude Include="sync.h" />
-    <ClInclude Include="virtualreg.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="callgates.cpp">
@@ -49,7 +49,7 @@
     <ClCompile Include="river.cpp" />
     <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverPrintTable.cpp" />
-    <ClCompile Include="RiverReverseCode.cpp" />
+    <ClCompile Include="RiverReverseTranslator.cpp" />
     <ClCompile Include="RiverSaveCode.cpp" />
     <ClCompile Include="RiverX86Assembler.cpp" />
     <ClCompile Include="RiverX86Disassembler.cpp" />
