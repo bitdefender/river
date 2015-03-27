@@ -18,6 +18,7 @@
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
     <ClInclude Include="RiverReverseTranslator.h" />
+    <ClInclude Include="RiverSaveTranslator.h" />
     <ClInclude Include="RiverX86Assembler.h" />
     <ClInclude Include="RiverX86Disassembler.h" />
     <ClInclude Include="Runtime.h" />
@@ -50,7 +51,7 @@
     <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseTranslator.cpp" />
-    <ClCompile Include="RiverSaveCode.cpp" />
+    <ClCompile Include="RiverSaveTranslator.cpp" />
     <ClCompile Include="RiverX86Assembler.cpp" />
     <ClCompile Include="RiverX86Disassembler.cpp" />
     <ClCompile Include="src.cpp">

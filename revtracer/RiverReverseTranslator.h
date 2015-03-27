@@ -9,8 +9,6 @@ class RiverCodeGen;
 class RiverReverseTranslator {
 private :
 	RiverCodeGen *codegen;
-
-	struct RiverAddress *CloneAddress(struct RiverAddress *mem, WORD flags);
 	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
 
 	typedef void(RiverReverseTranslator::*TranslateOpcodeFunc)(RiverInstruction &rOut, const RiverInstruction &rIn);
@@ -18,9 +16,7 @@ private :
 	static TranslateOpcodeFunc translateOpcodes[2][0x100];
 public :
 	bool Init(RiverCodeGen *cg);
-
 	void Translate(const RiverInstruction &rIn, RiverInstruction &rOut);
-
 private :
 	void TranslateUnk(RiverInstruction &rOut, const RiverInstruction &rIn);
 	void TranslatePushReg(RiverInstruction &rOut, const RiverInstruction &rIn);

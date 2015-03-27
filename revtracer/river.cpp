@@ -6,19 +6,19 @@
 #include "CodeGen.h"
 
 #include "RiverX86Disassembler.h"
+#include "RiverSaveTranslator.h"
 
 //void InitRiverInstruction(RiverCodeGen *cg, RiverInstruction *ri, BYTE **px86, DWORD *pFlags);
 void ConvertRiverInstruction(RiverCodeGen *cg, RiverRuntime *rt, RiverInstruction *ri, BYTE **px86, DWORD *pFlags);
 void EndRiverConversion(RiverRuntime *rt, BYTE **px86, DWORD *pFlags);
 void RiverPrintInstruction(RiverInstruction *ri);
 
-void TranslateSave(RiverCodeGen *cg, RiverInstruction *rIn, RiverInstruction *rOut, DWORD *outCount);
 void TranslateReverse(RiverCodeGen *cg, RiverInstruction *rIn, RiverInstruction *rOut, DWORD *outCount);
 
 /* x86toriver converts a single x86 intruction to one ore more river instructions */
 /* returns the instruction length */
 /* dwInstrCount contains the number of generated river instructions */
-DWORD x86toriver(RiverCodeGen *cg, RiverX86Disassembler &dis, BYTE *px86, struct RiverInstruction *pRiver, DWORD *dwInstrCount) {
+DWORD x86toriver(RiverCodeGen *cg, RiverX86Disassembler &dis, RiverSaveTranslator &save, BYTE *px86, struct RiverInstruction *pRiver, DWORD *dwInstrCount) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
 	*dwInstrCount = 0;
@@ -32,7 +32,9 @@ DWORD x86toriver(RiverCodeGen *cg, RiverX86Disassembler &dis, BYTE *px86, struct
 		DWORD iSize;
 		//InitRiverInstruction(cg, pRiver, &pTmp, &pFlags);
 		dis.Translate(pTmp, *pRiver, pFlags);
-		TranslateSave(cg, pRiver, &cg->fwRiverInst[cg->fwInstCount], &cg->fwInstCount);
+		//TranslateSave(cg, pRiver, &cg->fwRiverInst[cg->fwInstCount], &cg->fwInstCount);
+		save.Translate(*pRiver, &cg->fwRiverInst[cg->fwInstCount], cg->fwInstCount);
+
 
 		DbgPrint(".%08x    ", pAux);
 		iSize = pTmp - pAux;

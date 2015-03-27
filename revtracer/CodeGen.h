@@ -9,6 +9,7 @@
 #include "RiverX86Assembler.h"
 
 #include "RiverReverseTranslator.h"
+#include "RiverSaveTranslator.h"
 
 #define RIVER_TRANSLATE_INSTRUCTIONS				128
 #define RIVER_FORWARD_INSTRUCTIONS					512
@@ -20,10 +21,10 @@ private :
 	RiverHeap *heap;
 	
 	RiverX86Disassembler disassembler;
+	RiverX86Assembler assembler;
 
 	RiverReverseTranslator revTranslator;
-
-	RiverX86Assembler assembler;
+	RiverSaveTranslator saveTranslator;
 public :
 	struct RiverInstruction trRiverInst[RIVER_TRANSLATE_INSTRUCTIONS]; // to be removed in the near future
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
@@ -42,6 +43,7 @@ public :
 	void Reset();
 
 	struct RiverAddress *AllocAddr(WORD flags);
+	struct RiverAddress *CloneAddress(const RiverAddress &mem, WORD flags);
 
 	unsigned int GetCurrentReg(unsigned char regName) const;
 	unsigned int GetPrevReg(unsigned char regName) const;

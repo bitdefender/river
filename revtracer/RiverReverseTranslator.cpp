@@ -1,20 +1,14 @@
 #include "CodeGen.h"
 
-struct RiverAddress *RiverReverseTranslator::CloneAddress(struct RiverAddress *mem, WORD flags) {
-	struct RiverAddress *ret = codegen->AllocAddr(flags);
-	memcpy(ret, mem, sizeof(*ret));
-	return ret;
-}
-
 void RiverReverseTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
 	memcpy(&rOut, &rIn, sizeof(rOut));
 
 	if ((RIVER_OPTYPE_NONE != rIn.opTypes[0]) && (RIVER_OPTYPE_MEM & rIn.opTypes[0])) {
-		rOut.operands[0].asAddress = CloneAddress(rIn.operands[0].asAddress, rIn.modifiers);
+		rOut.operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);
 	}
 
 	if ((RIVER_OPTYPE_NONE != rIn.opTypes[1]) && (RIVER_OPTYPE_MEM & rIn.opTypes[1])) {
-		rOut.operands[1].asAddress = CloneAddress(rIn.operands[1].asAddress, rIn.modifiers);
+		rOut.operands[1].asAddress = codegen->CloneAddress(*rIn.operands[1].asAddress, rIn.modifiers);
 	}
 }
 
