@@ -35,6 +35,8 @@
 #define RIVER_MODIFIER_ORIG_xSP		0x2000
 /* this is a river instruction */
 #define RIVER_MODIFIER_RIVEROP		0x4000
+/* this is a symbop instruction */
+#define RIVER_MODIFIER_SYMBOP		0x8000
 
 /* River translation flags present in the pFlags argument */
 #define RIVER_FLAG_PFX				0x00000001
@@ -82,6 +84,8 @@ union RiverRegister {
 #define RIVER_OPTYPE_MEM			0x08
 #define RIVER_OPTYPE_NONE			0xFF
 
+#define RIVER_OPTYPE(type) ((type) & 0x0C)
+
 /* River operand sizes */
 #define RIVER_OPSIZE_32				0x00
 #define RIVER_OPSIZE_16				0x01
@@ -93,6 +97,9 @@ union RiverRegister {
 #define RIVER_SPEC_MODIFIES_FLG		0x0004
 /* Modifies some onther fields also (maybe use a function table) */
 #define RIVER_SPEC_MODIFIES_xSP		0x0008
+
+#define RIVER_SPEC_USES_FLG			0x0010
+#define RIVER_SPER_USES_xSP			0x0020
 
 /* Use a secondary table for lookup*/
 #define RIVER_SPEC_MODIFIES_EXT		0x8000
