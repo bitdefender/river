@@ -180,24 +180,24 @@ void RiverX86Disassembler::DisassembleImm32(BYTE *&px86, RiverInstruction &ri) {
 
 RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpcodes[2][0x100] = {
 	{
-		/*0x00*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+		/*0x00*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x04*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
-		/*0x08*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+		/*0x08*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x0C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
-		/*0x10*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+		/*0x10*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x14*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
-		/*0x18*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+		/*0x18*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x1C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
-		/*0x20*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+		/*0x20*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x24*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
-		/*0x28*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+		/*0x28*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x2C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
-		/*0x30*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
+		/*0x30*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x34*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
-		/*0x38*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
+		/*0x38*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x3C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
 		/*0x40*/ &RiverX86Disassembler::DisassemblePlusRegInstr<0x40>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x40>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x40>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x40>,
@@ -344,24 +344,24 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 
 RiverX86Disassembler::DisassembleOperandsFunc RiverX86Disassembler::disassembleOperands[2][0x100] = {
 	{
-		/*0x00*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x00*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleModRMReg, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x04*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
-		/*0x08*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x08*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleModRMReg, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x0C*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
 
-		/*0x10*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x10*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleModRMReg, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x14*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
-		/*0x18*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x18*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleModRMReg, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x1C*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
 
-		/*0x20*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x20*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleModRMReg, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x24*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
-		/*0x28*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x28*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleModRMReg, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x2C*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
 
-		/*0x30*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
+		/*0x30*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleModRMReg, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x34*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
-		/*0x38*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
+		/*0x38*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleModRMReg, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x3C*/ &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp, &RiverX86Disassembler::DisassembleUnkOp,
 
 		/*0x40*/ &RiverX86Disassembler::DisassembleNoOp, &RiverX86Disassembler::DisassembleNoOp, &RiverX86Disassembler::DisassembleNoOp, &RiverX86Disassembler::DisassembleNoOp,
