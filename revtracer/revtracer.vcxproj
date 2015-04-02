@@ -48,7 +48,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mm.cpp" />
     <ClCompile Include="modrm32.cpp" />
-    <ClCompile Include="river.cpp" />
     <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseTranslator.cpp" />

@@ -20,6 +20,10 @@ void PrintPrefixes(struct RiverInstruction *ri) {
 		printf("river");
 	}
 
+	if (ri->modifiers & RIVER_MODIFIER_SYMBOP) {
+		printf("symbop");
+	}
+
 	if (ri->modifiers & RIVER_MODIFIER_ORIG_xSP) {
 		printf("esp");
 	}
@@ -166,7 +170,7 @@ const char PrintMnemonicTable00[][10] = {
 	/*0x30*/"", "", "", "xor", "", "", "", "", "", "", "", "cmp", "", "", "", "",
 	/*0x40*/"inc", "inc", "inc", "inc", "inc", "inc", "inc", "inc", "dec", "dec", "dec", "dec", "dec", "dec", "dec", "dec",
 	/*0x50*/"push", "push", "push", "push", "push", "push", "push", "push", "pop", "pop", "pop", "pop", "pop", "pop", "pop", "pop",
-	/*0x60*/"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+	/*0x60*/"", "", "", "", "", "", "", "", "push", "", "", "", "", "", "", "",
 	/*0x70*/"jo", "jno", "jc", "jnc", "jz", "jnz", "jbe", "jnbe", "js", "jns", "jp", "jnp", "jl", "jnl", "jle", "jnle",
 	/*0x80*/"\1", "\1", "\1", "\1", "", "", "", "", "", "mov", "", "mov", "", "lea", "", "pop",
 	/*0x90*/"nop", "xchg", "xchg", "xchg", "xchg", "xchg", "xchg", "xchg", "", "", "", "", "pushf", "popf", "", "",

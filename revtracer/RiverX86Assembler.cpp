@@ -99,6 +99,11 @@ bool RiverX86Assembler::Translate(const RiverInstruction &ri, BYTE *&px86, DWORD
 		return true;
 	}
 
+	//FIXME skip all symbop instructions
+	if (ri.modifiers & RIVER_MODIFIER_SYMBOP) {
+		return true;
+	}
+
 	// when generating fwcode skip meta instructions
 	if (ri.modifiers & RIVER_MODIFIER_METAOP) {
 		if (pFlags & FLAG_SKIP_METAOP) {

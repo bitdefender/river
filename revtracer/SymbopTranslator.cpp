@@ -2,6 +2,18 @@
 
 #include "CodeGen.h"
 
+void SymbopTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
+	memcpy(&rOut, &rIn, sizeof(rOut));
+
+	if ((RIVER_OPTYPE_NONE != rIn.opTypes[0]) && (RIVER_OPTYPE_MEM & rIn.opTypes[0])) {
+		rOut.operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);
+	}
+
+	if ((RIVER_OPTYPE_NONE != rIn.opTypes[1]) && (RIVER_OPTYPE_MEM & rIn.opTypes[1])) {
+		rOut.operands[1].asAddress = codegen->CloneAddress(*rIn.operands[1].asAddress, rIn.modifiers);
+	}
+}
+
 DWORD SymbopTranslator::GetMemRepr(const RiverAddress &mem) {
 	return 0;
 }
@@ -14,6 +26,8 @@ bool SymbopTranslator::Init(RiverCodeGen *cg) {
 bool SymbopTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount) {
 	if (rIn.modifiers & RIVER_MODIFIER_RIVEROP) {
 		/* do not track river operations */
+		CopyInstruction(rMainOut[instrCount], rIn);
+		instrCount++;
 		return true;
 	}
 
@@ -70,42 +84,40 @@ void SymbopTranslator::MakeTrackMem(const RiverAddress &mem, RiverInstruction *r
 	if (0 == mem.type) {
 		MakeTrackReg(mem.base, rMainOut, instrCount, rTrackOut, trackCount);
 		trackCount++;
+		return;
 	}
 
-	rMainOut->opCode = 0x8D; // lea eax, [mem]
-	rMainOut->modifiers = RIVER_MODIFIER_SYMBOP;
+	rMainOut[instrCount].opCode = 0x8D; // lea eax, [mem]
+	rMainOut[instrCount].modifiers = RIVER_MODIFIER_SYMBOP;
+	
+	rMainOut[instrCount].opTypes[0] = RIVER_OPTYPE_REG;
+	rMainOut[instrCount].operands[0].asRegister.versioned = RIVER_REG_xAX;
 
-	rMainOut->opTypes[0] = RIVER_OPTYPE_REG;
-	rMainOut->operands[0].asRegister.versioned = RIVER_REG_xAX;
+	rMainOut[instrCount].opTypes[1] = RIVER_OPTYPE_MEM;
+	rMainOut[instrCount].operands[1].asAddress = codegen->CloneAddress(mem, 0);
+	instrCount++;
 
-	rMainOut->opTypes[1] = RIVER_OPTYPE_MEM;
-	rMainOut->operands[1].asAddress = codegen->CloneAddress(mem, 0);
-	rMainOut++;
+	rMainOut[instrCount].opCode = 0x50;
+	rMainOut[instrCount].modifiers = RIVER_MODIFIER_SYMBOP;
+	rMainOut[instrCount].opTypes[0] = RIVER_OPTYPE_REG;
+	rMainOut[instrCount].operands[0].asRegister.versioned = RIVER_REG_xAX; //reg.name & 0xFFFFFF07;
 
-	rMainOut->opCode = 0x50;
-	rMainOut->modifiers = RIVER_MODIFIER_SYMBOP;
-	rMainOut->opTypes[0] = RIVER_OPTYPE_REG;
-	rMainOut->operands[0].asRegister.versioned = RIVER_REG_xAX; //reg.name & 0xFFFFFF07;
+	rMainOut[instrCount].opTypes[1] = RIVER_OPTYPE_NONE;
+	instrCount++;
 
-	rMainOut->opTypes[1] = RIVER_OPTYPE_NONE;
-	rMainOut++;
+	rMainOut[instrCount].opCode = 0x68;
+	rMainOut[instrCount].modifiers = RIVER_MODIFIER_SYMBOP;
+	rMainOut[instrCount].opTypes[0] = RIVER_OPTYPE_IMM;
+	rMainOut[instrCount].operands[0].asImm32 = GetMemRepr(mem);
 
-	rMainOut->opCode = 0x68;
-	rMainOut->modifiers = RIVER_MODIFIER_SYMBOP;
-	rMainOut->opTypes[0] = RIVER_OPTYPE_IMM;
-	rMainOut->operands[0].asImm32 = GetMemRepr(mem);
+	rMainOut[instrCount].opTypes[1] = RIVER_OPTYPE_NONE;
+	instrCount++;
 
-	rMainOut->opTypes[1] = RIVER_OPTYPE_NONE;
-	rMainOut++;
-
-	instrCount += 2;
-
-
-
-	rTrackOut->opCode = 0xFF;
-	rTrackOut->subOpCode = 0x06;
-	rTrackOut->opTypes[0] = RIVER_OPTYPE_MEM;
-	rTrackOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
+	rTrackOut[trackCount].opCode = 0xFF;
+	rTrackOut[trackCount].subOpCode = 0x06;
+	rTrackOut[trackCount].opTypes[0] = RIVER_OPTYPE_MEM;
+	rTrackOut[trackCount].operands[0].asAddress = codegen->CloneAddress(mem, 0);
+	trackCount++;
 }
 
 void SymbopTranslator::MakeMarkMem(const RiverAddress &mem, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount) {
@@ -166,6 +178,9 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 	}
 
 	// make opcode
+	CopyInstruction(rMainOut[instrCount], rIn);
+	instrCount++;
+	
 
 	if (RIVER_SPEC_MODIFIES_FLG & rIn.specifiers) {
 		MakeMarkFlg(rMainOut, instrCount, rTrackOut, trackCount);
@@ -202,9 +217,9 @@ SymbopTranslator::TranslateOpcodeFunc SymbopTranslator::translateOpcodes[2][0x10
 		/* 0x28 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0x2C */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 
-		/* 0x30 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* 0x30 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 		/* 0x34 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
-		/* 0x38 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* 0x38 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 		/* 0x3C */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 
 		/* 0x40 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
@@ -212,24 +227,25 @@ SymbopTranslator::TranslateOpcodeFunc SymbopTranslator::translateOpcodes[2][0x10
 		/* 0x48 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0x4C */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 
-		/* 0x50 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
-		/* 0x54 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
-		/* 0x58 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
-		/* 0x5C */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* not really default */
+		/* 0x50 */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault,
+		/* 0x54 */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault,
+		/* 0x58 */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault,
+		/* 0x5C */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault,
 
 		/* 0x60 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0x64 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0x68 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0x6C */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 
-		/* 0x70 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
-		/* 0x74 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* 0x70 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk,
+		/* 0x74 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 		/* 0x78 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0x7C */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 
-		/* 0x80 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* 0x80 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 		/* 0x84 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
-		/* 0x88 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* 0x88 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 		/* 0x8C */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 
 		/* 0x90 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
@@ -247,7 +263,7 @@ SymbopTranslator::TranslateOpcodeFunc SymbopTranslator::translateOpcodes[2][0x10
 		/* 0xB8 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0xBC */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 
-		/* 0xC0 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* 0xC0 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 		/* 0xC4 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0xC8 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0xCC */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
@@ -259,7 +275,7 @@ SymbopTranslator::TranslateOpcodeFunc SymbopTranslator::translateOpcodes[2][0x10
 
 		/* 0xE0 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0xE4 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
-		/* 0xE8 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* 0xE8 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0xEC */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 
 		/* 0xF0 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,

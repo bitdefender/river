@@ -30,6 +30,8 @@ class SymbopTranslator {
 private :
 	RiverCodeGen *codegen;
 
+	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
+
 	DWORD GetMemRepr(const RiverAddress &mem);
 
 	typedef void(SymbopTranslator::*TranslateOpcodeFunc)(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
