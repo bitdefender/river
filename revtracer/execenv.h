@@ -37,6 +37,8 @@ struct _exec_env {
 
 	RiverCodeGen codeGen;
 
+	DWORD exitAddr;
+
 	bool bValid;
 	void *userContext;
 

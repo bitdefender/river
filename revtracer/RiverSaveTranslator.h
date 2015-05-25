@@ -13,7 +13,10 @@ private :
 	void RiverSaveTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
 
 	typedef void(RiverSaveTranslator::*TranslateOpcodeFunc)(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	
 	static TranslateOpcodeFunc translateOpcodes[2][0x100];
+	static TranslateOpcodeFunc translate0xF7[8], translate0xFF[8];
+
 public :
 	bool Init(RiverCodeGen *cg);
 	void Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount);
@@ -35,6 +38,16 @@ private :
 	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslatePush(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslatePop(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslateRetn(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslateSavexAX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslateSavexDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslateSavexAXxDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslateSavexSPxBP(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslateSavexSIxDI(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslateSaveCPUID(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	template <TranslateOpcodeFunc *fSubOps> void TranslateSubOp(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+		(this->*fSubOps[rIn.subOpCode])(rOut, rIn, instrCount);
+	}
 };
 
 #endif

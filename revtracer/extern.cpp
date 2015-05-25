@@ -6,6 +6,7 @@
 
 #include "extern.h"
 
+DWORD dwExitProcess = (DWORD)ExitProcess;
 
 void DbgPrint(const char *fmt, ...) {
 	va_list va;
@@ -13,6 +14,8 @@ void DbgPrint(const char *fmt, ...) {
 	va_start(va, fmt);
 	vprintf(fmt, va);
 	va_end(va);
+
+	fflush(stdout);
 }
 
 void *EnvMemoryAlloc(unsigned long dwSize) {
@@ -25,4 +28,25 @@ void *EnvMemoryAlloc(unsigned long dwSize) {
 void EnvMemoryFree(void *b) {
 	//ExFreePoolWithTag(b, 0x3070754C);
 	//VirtualFree(b);
+}
+
+typedef BOOL (*MyIPFPFunc)(DWORD ProcessorFeature);
+
+BOOL __stdcall MyIsProcessorFeaturePresent(DWORD ProcessorFeature) {
+	static MyIPFPFunc func = NULL;
+
+	if (NULL == func) {
+		HMODULE hKernel = GetModuleHandle("kernel32.dll");
+		func = (MyIPFPFunc)GetProcAddress(hKernel, "IsProcessorFeaturePresent");
+	}
+
+	switch (ProcessorFeature) {
+	case PF_MMX_INSTRUCTIONS_AVAILABLE :
+	case PF_SSE3_INSTRUCTIONS_AVAILABLE :
+	case PF_XMMI64_INSTRUCTIONS_AVAILABLE :
+	case PF_XMMI_INSTRUCTIONS_AVAILABLE :
+		return FALSE;
+	default:
+		return func(ProcessorFeature);
+	}
 }

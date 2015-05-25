@@ -4,6 +4,11 @@
 #include "callgates.h"
 
 #include "river.h"
+#include <intrin.h>
+
+#include <stdio.h>
+
+FILE *fBlocks;
 
 struct UserCtx {
 	DWORD callCount;
@@ -24,11 +29,60 @@ DWORD PopFromExecutionBuffer(struct _exec_env *pEnv) {
 	return ret;
 }
 
+extern DWORD dwExitProcess;
+
+DWORD __stdcall SegmentHandler(struct _exec_env *pEnv, DWORD addr, WORD sg) {
+/*#pragma pack (push, 1)
+	struct {
+		WORD limit;
+		DWORD base;
+	} gdt;
+#pragma pack (pop)
+	_sgdt(&gdt);
+
+	BYTE (*gdtEntries)[8] = (BYTE (*)[8])((void *)gdt.base);
+
+	DWORD newBase = gdtEntries[seg][7];
+	newBase <<= 8;
+	newBase |= gdtEntries[seg][4];
+	newBase <<= 8;
+	newBase |= gdtEntries[seg][3];
+	newBase <<= 8;
+	newBase |= gdtEntries[seg][2];*/
+
+	WORD tmp;
+	DWORD rt;
+
+	__asm mov ax, gs
+	__asm mov tmp, ax
+
+	__asm mov ax, sg
+	__asm mov gs, ax
+
+	__asm mov eax, addr
+	__asm lea eax, gs:[eax]
+	__asm mov rt, eax
+
+	__asm mov ax, tmp
+	__asm mov gs, ax
+
+	return 0;
+}
+
 void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	RiverBasicBlock *pCB;
 	struct UserCtx *ctx = (struct UserCtx *)pEnv->userContext;
 
 	DbgPrint("BranchHandler: %08X\n", a);
+
+	fprintf(fBlocks, "0x%08x\n", a /*& 0xFFFF*/);
+	fflush(fBlocks);
+
+	if (a == dwExitProcess) {
+		a = pEnv->exitAddr;
+	}
+
+
 	//DbgPrint("pEnv %08X\n", pEnv);
 	//DbgPrint("sizes: %08X, %08X, %08X, %08X\n", pEnv->heapSize, pEnv->historySize, pEnv->logHashSize, pEnv->outBufferSize);
 	if (pEnv->bForward) {
@@ -37,7 +91,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 
 	ctx->callCount++;
 
-	if (ctx->callCount % 3 == 0) {
+	if (/*ctx->callCount % 3*/ 1 == 0) {
 		// go backwards
 		DbgPrint("Going Backwards!!!\n");
 		DWORD addr = PopFromExecutionBuffer(pEnv);
@@ -88,6 +142,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 			pEnv->lastFwBlock = pCB->address;
 			pEnv->bForward = 1;
 			pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
+			fflush(stdout);
 		}
 		__except (1) { //EXCEPTION_EXECUTE_HANDLER
 			pEnv->runtimeContext.jumpBuff = a;
@@ -101,11 +156,12 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 }
 
 
-void __cdecl SysHandler(struct _exec_env *pEnv,
-	DWORD r7, DWORD r6, DWORD r5, DWORD r4,
-	DWORD r3, DWORD r2, DWORD r1, DWORD r0
-	)
-{
+void __stdcall SysHandler(struct _exec_env *pEnv) {
+	DbgPrint("SysHandler!!!\n");
+
+	fprintf(fBlocks, "Syscall!!\n");
+	fflush(fBlocks);
+
 	/*UINT_PTR a;
 	struct _cb_info *pCB;
 
@@ -148,27 +204,41 @@ void __cdecl SysEndHandler(struct _exec_env *pEnv,
 
 int overlap(unsigned int a1, unsigned int a2, unsigned int b1, unsigned int b2);
 
+bool MapPE(DWORD &baseAddr);
 
-int main() {
+int main(unsigned int argc, char *argv[]) {
+	DWORD baseAddr = 0xf000000;
+	if (!MapPE(baseAddr)) {
+		return false;
+	}
+
+	//SegmentHandler(NULL, 0x756b271e, 0x33);
+
+	fopen_s(&fBlocks, "blocks.log", "wt");
+	
 	struct _exec_env *pEnv;
 	struct UserCtx *ctx;
 	DWORD dwCount = 0;
-	pEnv = new _exec_env(0x100000, 0x10000, 0x10000, 16, 0x10000);
+	pEnv = new _exec_env(0x1000000, 0x10000, 0x1000000, 16, 0x10000);
 
 	pEnv->userContext = AllocUserContext(pEnv, sizeof(struct UserCtx));
 	ctx = (struct UserCtx *)pEnv->userContext;
 	ctx->callCount = 0;
 
-	unsigned char *pOverlap = (unsigned char *)*(unsigned int *)((unsigned char *)overlap + 1);
-	pOverlap += (UINT_PTR)overlap + 5;
+	//unsigned char *pOverlap = (unsigned char *)*(unsigned int *)((unsigned char *)overlap + 1);
+	//pOverlap += (UINT_PTR)overlap + 5;
 
 	/*x86toriver(pEnv, pOverlap, ris, &dwCount);
 	rivertox86(pEnv, ris, dwCount, tBuff);*/
 
-	DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, (void *)3, (void *)7, (void *)2, (void *)10);
+	//DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, (void *)3, (void *)7, (void *)2, (void *)10);
+	unsigned char *pMain = (unsigned char *)baseAddr + 0x96CE;
+	DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)pMain, (void *)argc, (void *)argv);
 	DbgPrint("Done. ret = %d\n", ret);
 
-	DbgPrint("Test %d\n", overlap(3, 7, 2, 10));
+	/*DbgPrint("Test %d\n", overlap(3, 7, 2, 10));*/
+
+	fclose(fBlocks);
 
 	return 0;
 }

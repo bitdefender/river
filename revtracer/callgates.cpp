@@ -15,6 +15,7 @@ void Stopper(struct _exec_env *pEnv, BYTE *s) {
 	DbgPrint("STOPPER: %p.\n", s);
 	pStop = pEnv->blockCache.NewBlock((UINT_PTR)s);
 	pEnv->codeGen.Translate(pStop, 0x80000000); // this will fix pStop->CRC and pStop->Size
+	pEnv->exitAddr = (DWORD)s;
 }
 
 

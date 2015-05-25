@@ -14,6 +14,10 @@
     <ClInclude Include="callgates.h" />
     <ClInclude Include="cb.h" />
     <ClInclude Include="CodeGen.h" />
+    <ClInclude Include="Loader\Abstract.Mapper.h" />
+    <ClInclude Include="Loader\Inproc.Mapper.h" />
+    <ClInclude Include="Loader\PE.ldr.h" />
+    <ClInclude Include="Loader\Types.h" />
     <ClInclude Include="river.h" />
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
@@ -44,7 +48,10 @@
     <ClCompile Include="crc32.cpp" />
     <ClCompile Include="execenv.cpp" />
     <ClCompile Include="extern.cpp" />
+    <ClCompile Include="Loader\Inproc.Mapper.cpp" />
+    <ClCompile Include="Loader\PE.ldr.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MapPE.cpp" />
     <ClCompile Include="mm.cpp" />
     <ClCompile Include="modrm32.cpp" />
     <ClCompile Include="river.cpp" />

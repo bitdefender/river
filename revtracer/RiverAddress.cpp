@@ -1,6 +1,12 @@
 #include "river.h"
 #include "CodeGen.h"
 
+void RiverAddress::DecodeFlags(WORD flags) {
+	if (flags & 0x0007) {
+		SetSegment(flags);
+	}
+}
+
 BYTE RiverAddress32::DecodeRegister(BYTE id, WORD flags) {
 	if (flags & RIVER_MODIFIER_O8) { // we expect a 8 byte register
 		return (id & 0x03) | ((id & 0x04) ? RIVER_REG_SZ8_H : RIVER_REG_SZ8_L);
@@ -20,7 +26,6 @@ BYTE RiverAddress32::EncodeRegister(WORD flags) {
 }
 
 bool RiverAddress32::DecodeSib(RiverCodeGen &cg, unsigned char *&px86) {
-	static const BYTE scales[4] = { 1, 2, 4, 8 };
 	sib = *px86;
 
 	BYTE ss = sib >> 6;
@@ -28,14 +33,14 @@ bool RiverAddress32::DecodeSib(RiverCodeGen &cg, unsigned char *&px86) {
 	BYTE bs = sib & 0x7;
 
 	type |= RIVER_ADDR_SCALE;
-	scale = scales[idx];
+	CopyScale(ss);
 
 	if (4 != idx) {
 		type |= RIVER_ADDR_INDEX;
 		index.versioned = cg.GetCurrentReg(idx);
 	}
 
-	if (5 == idx) {
+	if (5 == bs) {
 		BYTE mod = modRM >> 6;
 
 		type |= (1 & mod) ? RIVER_ADDR_DISP8 : RIVER_ADDR_DISP;
@@ -48,11 +53,13 @@ bool RiverAddress32::DecodeSib(RiverCodeGen &cg, unsigned char *&px86) {
 		base.versioned = cg.GetCurrentReg(bs);
 	}
 
+	px86++;
 	return true;
 }
 
 bool RiverAddress32::DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, BYTE &extra, WORD flags) {
-	scale = 1;
+	scaleAndSegment = 0;
+	DecodeFlags(flags);
 	index.versioned = RIVER_REG_NONE;
 	base.versioned = RIVER_REG_NONE;
 	sib = 0;
@@ -121,8 +128,7 @@ void RiverAddress32::FixEsp() {
 
 bool RiverAddress32::CleanAddr(WORD flags) {
 	unsigned char mod, rm;
-	static const BYTE scales[] = { 0xFF, 0, 1, 0xFF, 2, 0xFF, 0xFF, 0xFF, 3 };
-
+	
 	if (0 == type) {
 		mod = 3;
 		rm = EncodeRegister(flags);
@@ -140,7 +146,7 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 					type &= ~RIVER_ADDR_BASE;
 					type |= RIVER_ADDR_INDEX | RIVER_ADDR_SCALE;
 
-					scale = 1;
+					scaleAndSegment = 0;
 				}
 			}
 		}
@@ -165,10 +171,7 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 
 			unsigned char ss, idx, bs;
 			if (type & RIVER_ADDR_SCALE) {
-				ss = scales[scale];
-				if (ss > 3) {
-					return false;
-				}
+				ss = GetScale();
 			} else {
 				ss = 0;
 			}

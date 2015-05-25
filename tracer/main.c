@@ -3,10 +3,16 @@
 #include "cb.h"
 #include "callgates.h"
 
+#include <stdio.h>
+
+FILE *fBlocks;
+
 void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	struct _cb_info *pCB;
 
 	DbgPrint("BranchHandler: %08X\n", a);
+	fprintf(fBlocks, "0x%04x\n", a & 0xFFFF);
+	fflush(fBlocks);
 	//DbgPrint("pEnv %08X\n", pEnv);
 	//DbgPrint("sizes: %08X, %08X, %08X, %08X\n", pEnv->heapSize, pEnv->historySize, pEnv->logHashSize, pEnv->outBufferSize);
 
@@ -38,6 +44,8 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 		*a = arr;
 		}*/
 	}
+
+	fflush(stdout);
 }
 
 
@@ -88,9 +96,10 @@ void __cdecl SysEndHandler(struct _exec_env *pEnv,
 
 int overlap(unsigned int a1, unsigned int a2, unsigned int b1, unsigned int b2);
 
+BYTE MapPE(DWORD *baseAddr);
 
-int main() {
-	struct _exec_env *pEnv;
+int main(unsigned int argc, char *argv[]) {
+	/*struct _exec_env *pEnv;
 	pEnv = NewEnv(0x100000, 0x10000, 16, 0x10000);
 
 	DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, 3, 7, 2, 10);
@@ -99,6 +108,37 @@ int main() {
 	printf("Done. ret = %d\n", ret);
 	printf("Test %d\n", overlap(3, 7, 2, 10));
 
+
+	return 0;*/
+
+	fopen_s(&fBlocks, "blocks.log", "wt");
+
+	DWORD baseAddr = 0;
+	if (!MapPE(&baseAddr)) {
+		return 0;
+	}
+
+
+
+	struct _exec_env *pEnv;
+	struct UserCtx *ctx;
+	DWORD dwCount = 0;
+	pEnv = NewEnv(0x100000, 0x10000, 16, 0x10000);
+	
+	//unsigned char *pOverlap = (unsigned char *)*(unsigned int *)((unsigned char *)overlap + 1);
+	//pOverlap += (UINT_PTR)overlap + 5;
+
+	/*x86toriver(pEnv, pOverlap, ris, &dwCount);
+	rivertox86(pEnv, ris, dwCount, tBuff);*/
+
+	//DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, (void *)3, (void *)7, (void *)2, (void *)10);
+	unsigned char *pMain = (unsigned char *)baseAddr + 0x96CE;
+	DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)pMain, (void *)argc, (void *)argv);
+	DbgPrint("Done. ret = %d\n", ret);
+
+	DbgPrint("Test %d\n", overlap(3, 7, 2, 10));
+
+	fclose(fBlocks);
 
 	return 0;
 }

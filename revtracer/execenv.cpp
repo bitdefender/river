@@ -19,6 +19,7 @@ void _exec_env::operator delete(void *ptr) {
 
 _exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize) {
 	bValid = false;
+	exitAddr = 0xFFFFCAFE;
 	if (0 == heap.Init(heapSize)) {
 		return;
 	}

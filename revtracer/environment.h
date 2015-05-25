@@ -7,7 +7,7 @@ void *EnvMemoryAlloc (DWORD dwSize);
 void EnvMemoryFree (void *b);
 
 void __stdcall BranchHandler(struct _exec_env *, DWORD);
-void __cdecl   SysHandler(struct _exec_env *, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD);
+void __stdcall SysHandler(struct _exec_env *);
 void __cdecl   SysEndHandler(struct _exec_env *, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD);
 
 int dbg0(char *pFormat);

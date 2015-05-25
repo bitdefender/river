@@ -168,11 +168,11 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		//pCB->pCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 
 		//outBufferSize = rivertox86(this, rt, fwRiverInst, fwInstCount, outBuffer, 0x01);
-		assembler.Assemble(fwRiverInst, fwInstCount, outBuffer, 0x01, pCB->dwFwOpCount, outBufferSize);
+		assembler.Assemble(fwRiverInst, fwInstCount, outBuffer, 0x10, pCB->dwFwOpCount, outBufferSize);
 		pCB->pFwCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 		
 		//outBufferSize = rivertox86(this, rt, bkRiverInst, bkInstCount, outBuffer, 0x00);
-		assembler.Assemble(bkRiverInst, bkInstCount, outBuffer, 0x01, pCB->dwBkOpCount, outBufferSize);
+		assembler.Assemble(bkRiverInst, bkInstCount, outBuffer, 0x00, pCB->dwBkOpCount, outBufferSize);
 		pCB->pBkCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 
 

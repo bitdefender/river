@@ -15,6 +15,13 @@ void RiverPrintInstruction(RiverInstruction *ri);
 
 void TranslateReverse(RiverCodeGen *cg, RiverInstruction *rIn, RiverInstruction *rOut, DWORD *outCount);
 
+BYTE GetFundamentalRegister(BYTE reg) {
+	if (reg < 0x20) {
+		return reg & 0x07;
+	}
+	return reg;
+}
+
 /* x86toriver converts a single x86 intruction to one ore more river instructions */
 /* returns the instruction length */
 /* dwInstrCount contains the number of generated river instructions */

@@ -57,8 +57,41 @@
 #define RIVER_REG_SZ8_L				0x10
 #define RIVER_REG_SZ8_H				0x18
 
+#define RIVER_REG_SEGMENT			0x20
+#define RIVER_REG_ES				0x20
+#define RIVER_REG_CS				0x21
+#define RIVER_REG_SS				0x22
+#define RIVER_REG_DS				0x23
+#define RIVER_REG_FS				0x24
+#define RIVER_REG_GS				0x25
+
+#define RIVER_REG_CONTROL			0x30
+#define RIVER_REG_CR0				0x30
+#define RIVER_REG_CR2				0x32
+#define RIVER_REG_CR3				0x33
+#define RIVER_REG_CR4				0x34
+
+#define RIVER_REG_DEBUG				0x40
+#define RIVER_REG_DR0				0x40
+#define RIVER_REG_DR1				0x41
+#define RIVER_REG_DR2				0x42
+#define RIVER_REG_DR3				0x43
+#define RIVER_REG_DR4				0x44
+#define RIVER_REG_DR5				0x45
+#define RIVER_REG_DR6				0x46
+#define RIVER_REG_DR7				0x47
+
+BYTE GetFundamentalRegister(BYTE reg);
+
+/* TODO: add MM0-7 and XMM0-7 */
+
 /* River void virtual register */
 #define RIVER_REG_NONE				0x20
+
+/* Define some widely used registers */
+#define RIVER_REG_AL				(RIVER_REG_xAX | RIVER_REG_SZ8_L)
+#define RIVER_REG_AH				(RIVER_REG_xAX | RIVER_REG_SZ8_H)
+#define RIVER_REG_CL				(RIVER_REG_xCX | RIVER_REG_SZ8_L)
 
 union RiverRegister {
 	DWORD versioned;
@@ -80,6 +113,7 @@ union RiverRegister {
 #define RIVER_OPTYPE_IMM			0x00
 #define RIVER_OPTYPE_REG			0x04
 #define RIVER_OPTYPE_MEM			0x08
+#define RIVER_OPTYPE_ALL			0x0C
 #define RIVER_OPTYPE_NONE			0xFF
 
 /* River operand sizes */
@@ -88,14 +122,29 @@ union RiverRegister {
 #define RIVER_OPSIZE_8				0x02
 
 /* River operation specifiers */
-#define RIVER_SPEC_MODIFIES_OP1		0x0001
-#define RIVER_SPEC_MODIFIES_OP2		0x0002
-#define RIVER_SPEC_MODIFIES_FLG		0x0004
+#define RIVER_SPEC_MODIFIES_OP1		0x01
+#define RIVER_SPEC_MODIFIES_OP2		0x02
+#define RIVER_SPEC_MODIFIES_OP3		0x04
+#define RIVER_SPEC_MODIFIES_OP4		0x08
+
+#define RIVER_SPEC_MODIFIES_OP(idx) (1 << (idx))
+
+#define RIVER_SPEC_MODIFIES_FLG		0x10
 /* Modifies some onther fields also (maybe use a function table) */
-#define RIVER_SPEC_MODIFIES_xSP		0x0008
+#define RIVER_SPEC_MODIFIES_xSP		0x20
+
+/* Modifies customm fields, must have a custom save/restore function */
+#define RIVER_SPEC_MODIFIES_CUSTOM  0x40
 
 /* Use a secondary table for lookup*/
-#define RIVER_SPEC_MODIFIES_EXT		0x8000
+#define RIVER_SPEC_MODIFIES_EXT		0x80
+
+/* When xSP is needed these registers can be used for the swap */
+#define RIVER_UNUSED_xAX			0x01
+#define RIVER_UNUSED_xCX			0x02
+#define RIVER_UNUSED_xDX			0x04
+#define RIVER_UNUSED_xBX			0x08
+#define RIVER_UNUSED_ALL			0x0F
 
 union RiverOperand {
 	BYTE asImm8;
@@ -107,13 +156,127 @@ union RiverOperand {
 
 struct RiverInstruction {
 	WORD modifiers;
-	WORD specifiers;
+	BYTE specifiers;
+	BYTE unusedRegisters;
+
 	BYTE opCode;
 
 	BYTE subOpCode;
 
-	BYTE opTypes[2];
-	union RiverOperand operands[2];
+	WORD _padding;
+
+	BYTE opTypes[4];
+	union RiverOperand operands[4];
+
+	inline void PromoteModifiers() {
+		for (int i = 0; i < 4; ++i) {
+			if ((RIVER_OPTYPE_NONE != opTypes[i]) && (RIVER_OPTYPE_MEM & opTypes[i])) {
+				if (operands[i].asAddress->HasSegment()) {
+					modifiers |= operands[i].asAddress->GetSegment();
+					break;
+				}
+
+				/*if ((operands[0].asAddress->type & RIVER_ADDR_BASE) && (RIVER_REG_xSP == GetFundamentalRegister(operands[0].asAddress->base.name))) {
+				modifiers |= RIVER_MODIFIER_ORIG_xSP;
+				}
+
+				if ((operands[0].asAddress->type & RIVER_ADDR_INDEX) && (RIVER_REG_xSP == GetFundamentalRegister(operands[0].asAddress->index.name))) {
+				modifiers |= RIVER_MODIFIER_ORIG_xSP;
+				}*/
+			}
+		}
+	}
+
+	inline BYTE GetUnusedRegister() const {
+		if (unusedRegisters & 0x03) {
+			if (unusedRegisters & 0x01) {
+				return RIVER_REG_xAX;
+			}
+			return RIVER_REG_xCX;
+		} else if (unusedRegisters & 0x0C) {
+			if (unusedRegisters & 0x04) {
+				return RIVER_REG_xDX;
+			}
+			return RIVER_REG_xBX;
+		} else {
+			__asm int 3;
+		}
+	}
+
+	void TrackUnusedRegistersOperand(BYTE optype, const RiverOperand &op) {
+		BYTE reg;
+		switch (optype & RIVER_OPTYPE_ALL) {
+			case RIVER_OPTYPE_IMM:
+				break;
+			case RIVER_OPTYPE_REG:
+				reg = GetFundamentalRegister(op.asRegister.name);
+				if (reg < 4) {
+					unusedRegisters &= ~(1 << reg);
+				}
+				break;
+			case RIVER_OPTYPE_MEM:
+				if (op.asAddress->type & RIVER_ADDR_BASE) {
+					reg = GetFundamentalRegister(op.asAddress->base.name);
+					if (reg < 4) {
+						unusedRegisters &= ~(1 << reg);
+					}
+				}
+				if (op.asAddress->type & RIVER_ADDR_INDEX) {
+					reg = GetFundamentalRegister(op.asAddress->index.name);
+					if (reg < 4) {
+						unusedRegisters &= ~(1 << reg);
+					}
+				}
+				break;
+		}
+	}
+
+	void TrackEspOperand(BYTE optype, const RiverOperand &op) {
+		BYTE reg; 
+		switch (optype & RIVER_OPTYPE_ALL) {
+			case RIVER_OPTYPE_IMM:
+				break;
+			case RIVER_OPTYPE_REG:
+				reg = GetFundamentalRegister(op.asRegister.name);
+				if (RIVER_REG_xSP == reg) {
+					specifiers |= RIVER_SPEC_MODIFIES_xSP;
+				}
+				break;
+			case RIVER_OPTYPE_MEM:
+				if (op.asAddress->type & RIVER_ADDR_BASE) {
+					reg = GetFundamentalRegister(op.asAddress->base.name);
+					if (RIVER_REG_xSP == reg) {
+						specifiers |= RIVER_SPEC_MODIFIES_xSP;
+					}
+				}
+				if (op.asAddress->type & RIVER_ADDR_INDEX) {
+					reg = GetFundamentalRegister(op.asAddress->index.name);
+					if (RIVER_REG_xSP == reg) {
+						specifiers |= RIVER_SPEC_MODIFIES_xSP;
+					}
+				}
+				break;
+		}
+	}
+
+	void TrackEspAsParameter() {
+		for (int i = 0; i < 4; ++i) {
+			TrackEspOperand(opTypes[i], operands[i]);
+		}
+	}
+
+	void TrackUnusedRegisters() {
+		unusedRegisters = 0x00;
+		if ((RIVER_SPEC_MODIFIES_xSP & specifiers) || (RIVER_MODIFIER_ORIG_xSP & modifiers)) {
+			unusedRegisters = RIVER_UNUSED_ALL;
+
+			for (int i = 0; i < 4; ++i) {
+				//if (RIVER_SPEC_MODIFIES_OP2 & specifiers) {
+				TrackUnusedRegistersOperand(opTypes[i], operands[i]);
+				//}
+			}
+		}
+	}
 };
 
 //#include "execenv.h"
