@@ -75,6 +75,30 @@ void RiverSaveTranslator::MakeSaveMem(RiverInstruction *rOut, const RiverAddress
 	}
 }
 
+void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags) {
+	if (mem.type == 0) {
+		__asm int 3;
+	}
+	else {
+		RiverAddress32 tMem;
+		memcpy(&tMem, &mem, sizeof(tMem));
+
+		if (tMem.type & RIVER_ADDR_DISP8) {
+			tMem.disp.d32 = tMem.disp.d8;
+			tMem.type &= ~RIVER_ADDR_DISP8;
+			tMem.type |= RIVER_ADDR_DISP | RIVER_ADDR_DIRTY;
+		}
+
+		if (0 == (tMem.type & RIVER_ADDR_DISP)) {
+			tMem.disp.d32 = 0;
+			tMem.type |= RIVER_ADDR_DISP | RIVER_ADDR_DIRTY;
+		}
+
+		tMem.disp.d32 += offset;
+		MakeSaveMem(rOut, mem, auxFlags);
+	}
+}
+
 void RiverSaveTranslator::MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short auxFlags) {
 	unsigned char rg = (reg.name & 0x07) | RIVER_OPSIZE_32;
 
@@ -326,6 +350,32 @@ void RiverSaveTranslator::TranslateSaveCPUID(RiverInstruction *rOut, const River
 	rOut++;
 }
 
+void RiverSaveTranslator::TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	RiverRegister tmpReg; 
+
+	MakeSaveFlags(rOut);
+	instrCount++;
+	rOut++;
+
+	tmpReg.name = RIVER_REG_xAX;
+	MakeSaveReg(rOut, tmpReg, 0);
+	instrCount++;
+	rOut++;
+
+	tmpReg.name = RIVER_REG_xDX;
+	MakeSaveReg(rOut, tmpReg, 0);
+	instrCount++;
+	rOut++;
+
+	MakeSaveMem(rOut, *(rIn.operands[0].asAddress), 0);
+	instrCount++;
+	rOut++;
+
+	MakeSaveMemOffset(rOut, *(rIn.operands[0].asAddress), 0x04, 0);
+	instrCount++;
+	rOut++;
+}
+
 /* =========================================== */
 /* Translation table                           */
 /* =========================================== */
@@ -463,9 +513,9 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translateOpcodes[2
 		/*0x9C*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 
 		/*0xA0*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateSaveCPUID, &RiverSaveTranslator::TranslateUnk,
-		/*0xA4*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+		/*0xA4*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0xA8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
-		/*0xAC*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault,
+		/*0xAC*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault,
 
 		/*0xB0*/&RiverSaveTranslator::TranslateSavexAX, &RiverSaveTranslator::TranslateSavexAX, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0xB4*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
@@ -473,7 +523,7 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translateOpcodes[2
 		/*0xBC*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 
 		/*0xC0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
-		/*0xC4*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+		/*0xC4*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateSubOp<RiverSaveTranslator::translate0x0FC7>,
 		/*0xC8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0xCC*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 
@@ -503,4 +553,9 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translate0xF7[8] =
 RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translate0xFF[8] = {
 	&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslatePush, &RiverSaveTranslator::TranslatePush,
 	&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslatePush, &RiverSaveTranslator::TranslateUnk
+};
+
+RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translate0x0FC7[8] = {
+	&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateSaveCMPXCHG8B, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+	&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk
 };

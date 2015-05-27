@@ -26,10 +26,13 @@ private:
 	static DisassembleOperandsFunc disassemble0xFFOp[8];
 
 	static DisassembleOpcodeFunc disassemble0xF6Instr[8];
+	static DisassembleOperandsFunc disassemble0xF6Op[8]; 
+	
 	static DisassembleOpcodeFunc disassemble0xF7Instr[8];
-
-	static DisassembleOperandsFunc disassemble0xF6Op[8];
 	static DisassembleOperandsFunc disassemble0xF7Op[8];
+
+	static DisassembleOpcodeFunc disassemble0x0FC7Instr[8];
+	static DisassembleOperandsFunc disassemble0x0FC7Op[8];
 public :
 	bool Init(RiverCodeGen *cg);
 
@@ -142,6 +145,7 @@ private :
 
 	void DisassembleRegModRMImm32(BYTE *&px86, RiverInstruction &ri);
 	void DisassembleRegModRMImm8(BYTE *&px86, RiverInstruction &ri);
+	void DisassembleModRMRegImm8(BYTE *&px86, RiverInstruction &ri);
 	
 	template <BYTE opIdx> void DisassembleMoffs8(BYTE *&px86, RiverInstruction &ri) {
 		DisassembleMoffs32(opIdx, px86, ri);

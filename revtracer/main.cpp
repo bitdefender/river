@@ -7,6 +7,7 @@
 #include <intrin.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 FILE *fBlocks;
 
@@ -31,44 +32,6 @@ DWORD PopFromExecutionBuffer(struct _exec_env *pEnv) {
 
 extern DWORD dwExitProcess;
 
-DWORD __stdcall SegmentHandler(struct _exec_env *pEnv, DWORD addr, WORD sg) {
-/*#pragma pack (push, 1)
-	struct {
-		WORD limit;
-		DWORD base;
-	} gdt;
-#pragma pack (pop)
-	_sgdt(&gdt);
-
-	BYTE (*gdtEntries)[8] = (BYTE (*)[8])((void *)gdt.base);
-
-	DWORD newBase = gdtEntries[seg][7];
-	newBase <<= 8;
-	newBase |= gdtEntries[seg][4];
-	newBase <<= 8;
-	newBase |= gdtEntries[seg][3];
-	newBase <<= 8;
-	newBase |= gdtEntries[seg][2];*/
-
-	WORD tmp;
-	DWORD rt;
-
-	__asm mov ax, gs
-	__asm mov tmp, ax
-
-	__asm mov ax, sg
-	__asm mov gs, ax
-
-	__asm mov eax, addr
-	__asm lea eax, gs:[eax]
-	__asm mov rt, eax
-
-	__asm mov ax, tmp
-	__asm mov gs, ax
-
-	return 0;
-}
-
 void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	RiverBasicBlock *pCB;
 	struct UserCtx *ctx = (struct UserCtx *)pEnv->userContext;
@@ -79,7 +42,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	fflush(fBlocks);
 
 	if (a == dwExitProcess) {
-		a = pEnv->exitAddr;
+		exit(0);
 	}
 
 

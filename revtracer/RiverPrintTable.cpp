@@ -204,7 +204,7 @@ const char PrintMnemonicTable0F[][10] = {
 	/*0x90*/"seto", "setno", "setc", "setnc", "setz", "setnz", "setbe", "setnbe", "sets", "setns", "setp", "setnp", "setl", "setnl", "setle", "setnle",
 	/*0xA0*/"", "", "cpuid", "", "shld", "shld", "", "", "", "", "", "", "shrd", "shrd", "", "imul",
 	/*0xB0*/"cmpxchg", "cmpxchg", "", "", "", "", "movzx", "movzx", "", "", "\5", "", "bsf", "bsr", "movsx", "movsx",
-	/*0xC0*/"xadd", "xadd", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+	/*0xC0*/"xadd", "xadd", "", "", "", "", "", "\7", "", "", "", "", "", "", "", "",
 	/*0xD0*/"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
 	/*0xE0*/"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
 	/*0xF0*/"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
@@ -217,5 +217,6 @@ const char PrintMnemonicExt[][8][10] = {
 	/*for 0xFF    */{ "inc", "dec", "call", "call", "jmp", "jmp", "push", "___" },
 	/*for 0xF6/F7 */{ "test", "test", "not", "neg", "mul", "imul", "div", "idiv" },
 	/*for 0x0FBA  */{ "___", "___", "___", "___", "bt", "bts", "btr", "btc" },
-	/*for 0xFE    */{ "inc", "dec", "___", "___", "___", "___", "___", "___" }
+	/*for 0xFE    */{ "inc", "dec", "___", "___", "___", "___", "___", "___" },
+	/*for 0x0FC7  */{ "___", "cmpxchg8b", "___", "___", "___", "___", "___", "___" }
 };

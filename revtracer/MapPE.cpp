@@ -3,15 +3,22 @@
 #include "Loader/Inproc.Mapper.h"
 
 int __stdcall MyIsProcessorFeaturePresent(DWORD ProcessorFeature);
+void __stdcall MyExitProcess(DWORD retCode);
 
 class HookedMapper : public InprocMapper {
 public :
 	virtual DWORD FindImport(const char *moduleName, const char *funcName) {
-		if ((0 == _strcmpi(moduleName, "kernel32.dll")) && (0 == _strcmpi(funcName, "IsProcessorFeaturePresent"))) {
-			return (DWORD)MyIsProcessorFeaturePresent;
-		}
+		if (0 == _strcmpi(moduleName, "kernel32.dll")) {
+			if (0 == _strcmpi(funcName, "IsProcessorFeaturePresent")) {
+				return (DWORD)MyIsProcessorFeaturePresent;
+			}
 
+			/*if (0 == _strcmpi(funcName, "ExitProcess")) {
+				return (DWORD)MyExitProcess;
+			}*/
+		}
 		return InprocMapper::FindImport(moduleName, funcName);
+
 	}
 };
 

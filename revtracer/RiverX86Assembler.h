@@ -26,6 +26,9 @@ private :
 	static AssembleOpcodeFunc assemble0xFFInstr[8];
 	static AssembleOperandsFunc assemble0xFFOp[8];
 
+	static AssembleOpcodeFunc assemble0x0FC7Instr[8];
+	static AssembleOperandsFunc assemble0x0FC7Op[8];
+
 	static AssembleOpcodeFunc assembleOpcodes[2][0x100];
 	static AssembleOperandsFunc assembleOperands[2][0x100];
 
@@ -104,6 +107,8 @@ private :
 
 	void AssembleRegModRMImm32Op(const RiverInstruction &ri, BYTE *&px86);
 	void AssembleRegModRMImm8Op(const RiverInstruction &ri, BYTE *&px86);
+
+	void AssembleModRMRegImm8Op(const RiverInstruction &ri, BYTE *&px86);
 
 	template <AssembleOperandsFunc fRiver, AssembleOperandsFunc fNormal> void AssembleRiverOp(const RiverInstruction &ri, BYTE *&px86) {
 		if (ri.modifiers & RIVER_MODIFIER_RIVEROP) {

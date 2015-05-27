@@ -905,6 +905,11 @@ void RiverX86Assembler::AssembleRegModRMImm8Op(const RiverInstruction &ri, BYTE 
 	AssembleImmOp(2, ri, px86, RIVER_OPSIZE_8);
 }
 
+void RiverX86Assembler::AssembleModRMRegImm8Op(const RiverInstruction &ri, BYTE *&px86) {
+	AssembleModRMOp(0, ri, px86, ri.operands[1].asRegister.name);
+	AssembleImmOp(2, ri, px86, RIVER_OPSIZE_8);
+}
+
 /* =========================================== */
 /* Additional assembly tables                  */
 /* =========================================== */
@@ -937,6 +942,16 @@ RiverX86Assembler::AssembleOpcodeFunc RiverX86Assembler::assemble0xFFInstr[8] = 
 RiverX86Assembler::AssembleOperandsFunc RiverX86Assembler::assemble0xFFOp[8] = {
 	/*0x00*/ &RiverX86Assembler::AssembleSubOpModRMOp, &RiverX86Assembler::AssembleSubOpModRMOp, &RiverX86Assembler::AssembleNoOp, &RiverX86Assembler::AssembleUnknownOp,
 	/*0x04*/ &RiverX86Assembler::AssembleNoOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleModRMOp<6>, &RiverX86Assembler::AssembleUnknownOp,
+};
+
+RiverX86Assembler::AssembleOpcodeFunc RiverX86Assembler::assemble0x0FC7Instr[8] = {
+	/*0x00*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
+	/*0x04*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr
+};
+
+RiverX86Assembler::AssembleOperandsFunc RiverX86Assembler::assemble0x0FC7Op[8] = {
+	/*0x00*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
+	/*0x04*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 };
 
 /* =========================================== */
@@ -1076,9 +1091,9 @@ RiverX86Assembler::AssembleOpcodeFunc RiverX86Assembler::assembleOpcodes[2][0x10
 		/*0x9C*/ &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr,
 
 		/*0xA0*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr,
-		/*0xA4*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
+		/*0xA4*/ &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 		/*0xA8*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
-		/*0xAC*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleDefaultInstr,
+		/*0xAC*/ &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleDefaultInstr,
 
 		/*0xB0*/ &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 		/*0xB4*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr,
@@ -1086,7 +1101,7 @@ RiverX86Assembler::AssembleOpcodeFunc RiverX86Assembler::assembleOpcodes[2][0x10
 		/*0xBC*/ &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr,
 
 		/*0xC0*/ &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
-		/*0xC4*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
+		/*0xC4*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleSubOpInstr<RiverX86Assembler::assemble0x0FC7Instr>,
 		/*0xC8*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 		/*0xCC*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 
@@ -1240,9 +1255,9 @@ RiverX86Assembler::AssembleOperandsFunc RiverX86Assembler::assembleOperands[2][0
 		/*0x9C*/ &RiverX86Assembler::AssembleModRMOp<0>, &RiverX86Assembler::AssembleModRMOp<0>, &RiverX86Assembler::AssembleModRMOp<0>, &RiverX86Assembler::AssembleModRMOp<0>,
 
 		/*0xA0*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleNoOp, &RiverX86Assembler::AssembleUnknownOp,
-		/*0xA4*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleModRMRegOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
+		/*0xA4*/ &RiverX86Assembler::AssembleModRMRegImm8Op, &RiverX86Assembler::AssembleModRMRegOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 		/*0xA8*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
-		/*0xAC*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleModRMRegOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleRegModRMOp,
+		/*0xAC*/ &RiverX86Assembler::AssembleModRMRegImm8Op, &RiverX86Assembler::AssembleModRMRegOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleRegModRMOp,
 
 		/*0xB0*/ &RiverX86Assembler::AssembleModRMRegOp, &RiverX86Assembler::AssembleModRMRegOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 		/*0xB4*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleRegModRMOp, &RiverX86Assembler::AssembleRegModRMOp,
@@ -1250,7 +1265,7 @@ RiverX86Assembler::AssembleOperandsFunc RiverX86Assembler::assembleOperands[2][0
 		/*0xBC*/ &RiverX86Assembler::AssembleRegModRMOp, &RiverX86Assembler::AssembleRegModRMOp, &RiverX86Assembler::AssembleRegModRMOp, &RiverX86Assembler::AssembleRegModRMOp,
 
 		/*0xC0*/ &RiverX86Assembler::AssembleModRMRegOp, &RiverX86Assembler::AssembleModRMRegOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
-		/*0xC4*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
+		/*0xC4*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleSubOpOp<RiverX86Assembler::assemble0x0FC7Op>,
 		/*0xC8*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 		/*0xCC*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 

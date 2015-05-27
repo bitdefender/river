@@ -45,8 +45,15 @@ BOOL __stdcall MyIsProcessorFeaturePresent(DWORD ProcessorFeature) {
 	case PF_SSE3_INSTRUCTIONS_AVAILABLE :
 	case PF_XMMI64_INSTRUCTIONS_AVAILABLE :
 	case PF_XMMI_INSTRUCTIONS_AVAILABLE :
+	case PF_COMPARE_EXCHANGE_DOUBLE :
+	case PF_COMPARE_EXCHANGE128 :
+	case PF_COMPARE64_EXCHANGE128 :
 		return FALSE;
 	default:
 		return func(ProcessorFeature);
 	}
+}
+
+VOID __stdcall MyExitProcess(DWORD retCode) {
+	//printf("Guest process exited with code %d\n", retCode);
 }
