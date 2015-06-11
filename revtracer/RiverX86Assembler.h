@@ -64,7 +64,7 @@ private :
 	);
 
 	template <AssembleOpcodeFunc fRiver, AssembleOpcodeFunc fNormal> void AssembleRiverInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
-		if (ri.modifiers & RIVER_MODIFIER_RIVEROP) {
+		if (ri.family & RIVER_FAMILY_RIVEROP) {
 			(this->*fRiver)(ri, px86, pFlags, instrCounter);
 		}
 		else {
@@ -111,7 +111,7 @@ private :
 	void AssembleModRMRegImm8Op(const RiverInstruction &ri, BYTE *&px86);
 
 	template <AssembleOperandsFunc fRiver, AssembleOperandsFunc fNormal> void AssembleRiverOp(const RiverInstruction &ri, BYTE *&px86) {
-		if (ri.modifiers & RIVER_MODIFIER_RIVEROP) {
+		if (ri.family & RIVER_FAMILY_RIVEROP) {
 			(this->*fRiver)(ri, px86);
 		} else {
 			(this->*fNormal)(ri, px86);

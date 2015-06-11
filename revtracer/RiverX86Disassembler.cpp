@@ -50,6 +50,7 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 	
 	rOut.modifiers = 0;
 	rOut.specifiers = 0;
+	rOut.family = 0;
 	rOut.subOpCode = 0;
 	rOut.opTypes[0] = rOut.opTypes[1] = rOut.opTypes[2] = rOut.opTypes[3] = RIVER_OPTYPE_NONE;
 

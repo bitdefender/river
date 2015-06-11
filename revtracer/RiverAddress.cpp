@@ -210,17 +210,17 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 }
 
 
-bool RiverAddress32::EncodeTox86(unsigned char *&px86, BYTE extra, WORD flags) {
-	if (flags & RIVER_MODIFIER_ORIG_xSP) {
+bool RiverAddress32::EncodeTox86(unsigned char *&px86, BYTE extra, BYTE family, WORD modifiers) {
+	if (family & RIVER_FAMILY_ORIG_xSP) {
 		RiverAddress32 rAddr;
 		memcpy(&rAddr, this, sizeof(rAddr));
 
 		rAddr.FixEsp();
-		return rAddr.EncodeTox86(px86, extra, flags & (~RIVER_MODIFIER_ORIG_xSP));
+		return rAddr.EncodeTox86(px86, extra, family & (~RIVER_FAMILY_ORIG_xSP), modifiers);
 	}
 
 	if (type & RIVER_ADDR_DIRTY) {
-		if (!CleanAddr(flags)) {
+		if (!CleanAddr(modifiers)) {
 			return false;
 		}
 	}

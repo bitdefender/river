@@ -12,15 +12,15 @@ extern const char RegNames[][4];
 extern const char MemSizes[][6];
 
 void PrintPrefixes(struct RiverInstruction *ri) {
-	if (ri->modifiers & RIVER_MODIFIER_IGNORE) {
+	if (ri->family & RIVER_FAMILY_IGNORE) {
 		DbgPrint("ignore");
 	}
 
-	if (ri->modifiers & RIVER_MODIFIER_RIVEROP) {
+	if (ri->family & RIVER_FAMILY_RIVEROP) {
 		DbgPrint("river");
 	}
 
-	if (ri->modifiers & RIVER_MODIFIER_ORIG_xSP) {
+	if (ri->family & RIVER_FAMILY_ORIG_xSP) {
 		DbgPrint("esp");
 	}
 
@@ -147,7 +147,7 @@ void PrintOperands(struct RiverInstruction *ri) {
 }
 
 void RiverPrintInstruction(struct RiverInstruction *ri) {
-	if (ri->modifiers & RIVER_MODIFIER_IGNORE) {
+	if (ri->family & RIVER_FAMILY_IGNORE) {
 		return;
 	}
 	PrintPrefixes(ri);

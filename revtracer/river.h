@@ -27,14 +27,15 @@
 #define RIVER_MODIFIER_REPZ			0x0200
 #define RIVER_MODIFIER_REPNZ		0x0400
 
-/* this instruction is a meta instruction... it respecifies the previous one in order to optimize reverse code generation */
-#define RIVER_MODIFIER_METAOP		0x0800
+#define RIVER_FAMILY_NATIVE			0x00
 /* lazy deletion flag */
-#define RIVER_MODIFIER_IGNORE		0x1000
+#define RIVER_FAMILY_IGNORE			0x01
+/* this instruction is a meta instruction... it respecifies the previous one in order to optimize reverse code generation */
+#define RIVER_FAMILY_METAOP			0x20
 /* this river instruction uses the original xSP register */
-#define RIVER_MODIFIER_ORIG_xSP		0x2000
+#define RIVER_FAMILY_ORIG_xSP		0x40
 /* this is a river instruction */
-#define RIVER_MODIFIER_RIVEROP		0x4000
+#define RIVER_FAMILY_RIVEROP		0x80
 
 /* River translation flags present in the pFlags argument */
 #define RIVER_FLAG_PFX				0x00000001
@@ -155,15 +156,13 @@ union RiverOperand {
 };
 
 struct RiverInstruction {
-	WORD modifiers;
-	BYTE specifiers;
+	WORD modifiers; // modifiers introduced by prefixes or opcode
+	WORD specifiers; // instruction specific flags
+
+	BYTE family; // instruction family (allows for multiple instruction streams to be interleaved
 	BYTE unusedRegisters;
-
 	BYTE opCode;
-
 	BYTE subOpCode;
-
-	WORD _padding;
 
 	BYTE opTypes[4];
 	union RiverOperand operands[4];
@@ -267,7 +266,7 @@ struct RiverInstruction {
 
 	void TrackUnusedRegisters() {
 		unusedRegisters = 0x00;
-		if ((RIVER_SPEC_MODIFIES_xSP & specifiers) || (RIVER_MODIFIER_ORIG_xSP & modifiers)) {
+		if ((RIVER_SPEC_MODIFIES_xSP & specifiers) || (RIVER_FAMILY_ORIG_xSP & family)) {
 			unusedRegisters = RIVER_UNUSED_ALL;
 
 			for (int i = 0; i < 4; ++i) {

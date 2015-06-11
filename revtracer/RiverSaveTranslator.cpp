@@ -30,37 +30,40 @@ void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstructio
 
 void RiverSaveTranslator::MakeSaveFlags(RiverInstruction *rOut) {
 	rOut->opCode = 0x9C; // PUSHF
-	rOut->modifiers = RIVER_MODIFIER_RIVEROP;
+	rOut->modifiers = 0;
+	rOut->family = RIVER_FAMILY_RIVEROP;
 	rOut->specifiers = 0; // maybe
 	rOut->unusedRegisters = RIVER_UNUSED_ALL;
 
 	rOut->opTypes[0] = rOut->opTypes[1] = rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
 }
 
-void RiverSaveTranslator::MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short auxFlags) {
+void RiverSaveTranslator::MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short familyFlag) {
 	//unsigned char rg = (reg.name & 0x07) | RIVER_OPSIZE_32;
 
 	rOut->opCode = 0x50; // | (reg.name & 0x07); //PUSH
-	rOut->modifiers = RIVER_MODIFIER_RIVEROP | auxFlags;
+	rOut->modifiers = 0;
+	rOut->family = RIVER_FAMILY_RIVEROP | familyFlag;
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
 	rOut->operands[0].asRegister.versioned = codegen->GetPrevReg(reg.name);
 
 	if (RIVER_REG_xSP == GetFundamentalRegister(reg.name)) {
-		rOut->modifiers |= RIVER_MODIFIER_ORIG_xSP;
+		rOut->family |= RIVER_FAMILY_ORIG_xSP;
 	}
 
 	rOut->opTypes[1] = rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
 	rOut->TrackUnusedRegisters();
 }
 
-void RiverSaveTranslator::MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short auxFlags, const RiverInstruction &rIn) {
+void RiverSaveTranslator::MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short familyFlag, const RiverInstruction &rIn) {
 	if (mem.type == 0) {
-		MakeSaveReg(rOut, mem.base, auxFlags);
+		MakeSaveReg(rOut, mem.base, familyFlag);
 	} else {
 		rOut->opCode = 0xFF; // PUSH (ext + 6)
-		rOut->modifiers = RIVER_MODIFIER_RIVEROP | auxFlags | ((rIn.specifiers & RIVER_SPEC_MODIFIES_xSP) ? RIVER_MODIFIER_ORIG_xSP : 0);
+		rOut->modifiers = 0;
+		rOut->family = RIVER_FAMILY_RIVEROP | familyFlag | ((rIn.specifiers & RIVER_SPEC_MODIFIES_xSP) ? RIVER_FAMILY_ORIG_xSP : 0);
 		rOut->subOpCode = 0x06;
 
 		rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
@@ -98,12 +101,13 @@ void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverA
 	}
 }
 
-void RiverSaveTranslator::MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short auxFlags) {
+void RiverSaveTranslator::MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short familyFlag) {
 	unsigned char rg = (reg.name & 0x07) | RIVER_OPSIZE_32;
 
 	rOut->opCode = 0x83;
 	rOut->subOpCode = 0;
-	rOut->modifiers = RIVER_MODIFIER_RIVEROP | auxFlags;
+	rOut->modifiers = 0;
+	rOut->family = RIVER_FAMILY_RIVEROP | familyFlag;
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
@@ -117,12 +121,13 @@ void RiverSaveTranslator::MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const Ri
 	rOut->TrackUnusedRegisters();
 }
 
-void RiverSaveTranslator::MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short auxFlags) {
+void RiverSaveTranslator::MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short familyFlag) {
 	unsigned char rg = (reg.name & 0x07) | RIVER_OPSIZE_32;
 
 	rOut->opCode = 0x83;
 	rOut->subOpCode = 5;
-	rOut->modifiers = RIVER_MODIFIER_RIVEROP | auxFlags;
+	rOut->modifiers = 0;
+	rOut->family = RIVER_FAMILY_RIVEROP | familyFlag;
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
@@ -163,7 +168,7 @@ void RiverSaveTranslator::MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstr
 
 	rTmp.modRM = 0x70; // actually save xAX (because xSP is used for other stuff
 
-	MakeSaveMem(rOut, rTmp, RIVER_MODIFIER_ORIG_xSP, rIn);
+	MakeSaveMem(rOut, rTmp, RIVER_FAMILY_ORIG_xSP, rIn);
 }
 
 void RiverSaveTranslator::SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
@@ -211,12 +216,12 @@ void RiverSaveTranslator::TranslatePush(RiverInstruction *rOut, const RiverInstr
 	rOut++;
 
 	tmpReg.versioned = RIVER_REG_xSP;
-	MakeSaveReg(rOut, tmpReg, RIVER_MODIFIER_ORIG_xSP);
+	MakeSaveReg(rOut, tmpReg, RIVER_FAMILY_ORIG_xSP);
 	instrCount++;
 	rOut++;
 
 	tmpReg.versioned = RIVER_REG_xSP;
-	MakeSubNoFlagsRegImm8(rOut, tmpReg, 0x04, RIVER_MODIFIER_ORIG_xSP | RIVER_MODIFIER_METAOP);
+	MakeSubNoFlagsRegImm8(rOut, tmpReg, 0x04, RIVER_FAMILY_ORIG_xSP | RIVER_FAMILY_METAOP);
 	instrCount++;
 	rOut++;
 
@@ -227,12 +232,12 @@ void RiverSaveTranslator::TranslatePop(RiverInstruction *rOut, const RiverInstru
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xSP;
-	MakeSaveReg(rOut, tmpReg, RIVER_MODIFIER_ORIG_xSP);
+	MakeSaveReg(rOut, tmpReg, RIVER_FAMILY_ORIG_xSP);
 	instrCount++;
 	rOut++;
 
 	tmpReg.versioned = RIVER_REG_xSP;
-	MakeAddNoFlagsRegImm8(rOut, tmpReg, 0x04, RIVER_MODIFIER_ORIG_xSP | RIVER_MODIFIER_METAOP);
+	MakeAddNoFlagsRegImm8(rOut, tmpReg, 0x04, RIVER_FAMILY_ORIG_xSP | RIVER_FAMILY_METAOP);
 	instrCount++;
 	rOut++;
 
@@ -243,12 +248,12 @@ void RiverSaveTranslator::TranslateRetn(RiverInstruction *rOut, const RiverInstr
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xSP;
-	MakeSaveReg(rOut, tmpReg, RIVER_MODIFIER_ORIG_xSP);
+	MakeSaveReg(rOut, tmpReg, RIVER_FAMILY_ORIG_xSP);
 	instrCount++;
 	rOut++;
 
 	tmpReg.versioned = RIVER_REG_xSP;
-	MakeAddNoFlagsRegImm8(rOut, tmpReg, 0x04 + rIn.operands[0].asImm16, RIVER_MODIFIER_ORIG_xSP | RIVER_MODIFIER_METAOP);
+	MakeAddNoFlagsRegImm8(rOut, tmpReg, 0x04 + rIn.operands[0].asImm16, RIVER_FAMILY_ORIG_xSP | RIVER_FAMILY_METAOP);
 	instrCount++;
 	rOut++;
 

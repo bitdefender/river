@@ -130,6 +130,7 @@ unsigned char *ConsolidateBlock(RiverHeap *h, unsigned char *outBuff, unsigned i
 void MakeJMP(struct RiverInstruction *ri, DWORD jmpAddr) {
 	ri->modifiers = 0;
 	ri->specifiers = 0;
+	ri->family = 0;
 	ri->opCode = 0xE9;
 	ri->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
 	ri->operands[0].asImm32 = jmpAddr;

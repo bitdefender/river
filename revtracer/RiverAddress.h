@@ -56,14 +56,14 @@ struct RiverAddress {
 	void DecodeFlags(WORD flags);
 
 	virtual bool DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, BYTE &extra, WORD flags) = 0;
-	virtual bool EncodeTox86(unsigned char *&px86, BYTE extra, WORD flags) = 0;
+	virtual bool EncodeTox86(unsigned char *&px86, BYTE extra, BYTE family, WORD modifiers) = 0;
 };
 
 struct RiverAddress16 : public RiverAddress {
 	bool DecodeSib(RiverCodeGen &cg, unsigned char *&px86);
 
 	virtual bool DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, BYTE &extra, WORD flags);
-	virtual bool EncodeTox86(unsigned char *&px86, BYTE extra, WORD flags);
+	virtual bool EncodeTox86(unsigned char *&px86, BYTE extra, BYTE family, WORD modifiers);
 };
 
 struct RiverAddress32 : public RiverAddress {
@@ -76,7 +76,7 @@ struct RiverAddress32 : public RiverAddress {
 	bool DecodeSib(RiverCodeGen &cg, unsigned char *&px86);
 
 	virtual bool DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, BYTE &extra, WORD flags);
-	virtual bool EncodeTox86(unsigned char *&px86, BYTE extra, WORD flags);
+	virtual bool EncodeTox86(unsigned char *&px86, BYTE extra, BYTE family, WORD modifiers);
 };
 
 

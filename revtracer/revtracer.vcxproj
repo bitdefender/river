@@ -21,6 +21,7 @@
     <ClInclude Include="river.h" />
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
+    <ClInclude Include="RiverOptimizer.h" />
     <ClInclude Include="RiverReverseTranslator.h" />
     <ClInclude Include="RiverSaveTranslator.h" />
     <ClInclude Include="RiverX86Assembler.h" />
@@ -56,6 +57,9 @@
     <ClCompile Include="modrm32.cpp" />
     <ClCompile Include="river.cpp" />
     <ClCompile Include="RiverAddress.cpp" />
+    <ClCompile Include="RiverOptimizer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseTranslator.cpp" />
     <ClCompile Include="RiverSaveTranslator.cpp" />

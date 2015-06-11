@@ -91,7 +91,7 @@ static void FixRiverEspOp(BYTE opType, RiverOperand *op, BYTE repReg) {
 }
 
 const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, RiverInstruction *rTmp, RiverAddress *aTmp) {
-	if (rIn.modifiers & RIVER_MODIFIER_ORIG_xSP) {
+	if (rIn.family & RIVER_FAMILY_ORIG_xSP) {
 		BYTE repReg = rIn.GetUnusedRegister();
 
 		memcpy(rTmp, &rIn, sizeof(*rTmp));
@@ -118,14 +118,14 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 
 bool RiverX86Assembler::GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
 	// ensure state transitions between river and x86
-	if (ri.modifiers & RIVER_MODIFIER_RIVEROP) { // current instr is river
+	if (ri.family & RIVER_FAMILY_RIVEROP) { // current instr is river
 		if (0 == (pFlags & FLAG_GENERATE_RIVER)) {
 			SwitchToRiver(px86, instrCounter);
 			pFlags |= FLAG_GENERATE_RIVER;
 		}
 
 		// ensure state transitions between riveresp and river
-		if (ri.modifiers & RIVER_MODIFIER_ORIG_xSP) { // ri needs riveresp
+		if (ri.family & RIVER_FAMILY_ORIG_xSP) { // ri needs riveresp
 			if (0 == (pFlags & FLAG_GENERATE_RIVER_xSP)) {
 				repReg = ri.GetUnusedRegister();
 				SwitchToRiverEsp(px86, instrCounter, repReg);
@@ -240,12 +240,12 @@ bool RiverX86Assembler::ClearPrefixes(const RiverInstruction &ri, BYTE *&px86) {
 
 bool RiverX86Assembler::Translate(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
 	// skip ignored instructions
-	if (ri.modifiers & RIVER_MODIFIER_IGNORE) {
+	if (ri.family & RIVER_FAMILY_IGNORE) {
 		return true;
 	}
 
 	// when generating fwcode skip meta instructions
-	if (ri.modifiers & RIVER_MODIFIER_METAOP) {
+	if (ri.family & RIVER_FAMILY_METAOP) {
 		if (pFlags & FLAG_SKIP_METAOP) {
 			return true;
 		}
@@ -617,7 +617,7 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 	memcpy(px86, pGetAddrCode, sizeof(pGetAddrCode));
 	*(unsigned int *)(&(px86[1])) = (unsigned int)&runtime->returnRegister;
 	px86 += sizeof(pGetAddrCode);
-	ri.operands[0].asAddress->EncodeTox86(px86, RIVER_REG_xAX, 0); // use flags?
+	ri.operands[0].asAddress->EncodeTox86(px86, RIVER_REG_xAX, 0, 0); // use flags?
 
 	memcpy(px86, pBranchFFCall, sizeof(pBranchFFCall));
 	*(unsigned int *)(&(px86[0x02])) = (unsigned int)&runtime->virtualStack;
@@ -675,7 +675,7 @@ void RiverX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, BYTE *&p
 	GeneratePrefixes(ri, px86);
 	*px86 = 0x8B; // mov eax, [jmpAddr]
 	++px86;
-	ri.operands[0].asAddress->EncodeTox86(px86, RIVER_REG_xAX, 0); // use flags?
+	ri.operands[0].asAddress->EncodeTox86(px86, RIVER_REG_xAX, 0, 0); // use flags?
 
 	memcpy(px86, pBranchFFCall, sizeof(pBranchFFCall));
 
@@ -788,7 +788,7 @@ void RiverX86Assembler::AssembleRiverAddSubInstr(const RiverInstruction &ri, BYT
 /* =========================================== */
 
 void RiverX86Assembler::AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, BYTE *&px86, BYTE extra) {
-	ri.operands[opIdx].asAddress->EncodeTox86(px86, extra, ri.modifiers);
+	ri.operands[opIdx].asAddress->EncodeTox86(px86, extra, ri.family, ri.modifiers);
 }
 
 void RiverX86Assembler::AssembleImmOp(unsigned int opIdx, const RiverInstruction &ri, BYTE *&px86, BYTE immSize) {

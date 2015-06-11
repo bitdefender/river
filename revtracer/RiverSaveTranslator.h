@@ -24,7 +24,7 @@ public :
 private :
 	/* Translation helpers */
 	void MakeSaveFlags(RiverInstruction *rOut);
-	void MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short auxFlags);
+	void MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short familyFlag);
 	void MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short auxFlags, const RiverInstruction &rIn);
 	void MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags, const RiverInstruction &rIn);
 	void MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short auxFlags);
