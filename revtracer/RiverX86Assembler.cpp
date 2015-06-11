@@ -603,14 +603,14 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 		0x68, 0x46, 0x02, 0x00, 0x00,				// 0x08 - push 0x00000246 - NEW FLAGS
 		0x9D,										// 0x0D - popf
 		0x50,                            			// 0x0E - push eax
-		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x0F - push <execution_environment>
-		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,         // 0x14 - call [<dwBranchHandler>]
-
-		0x61,										// 0x1A - popa
-		0x9D,										// 0x1B - popf
-		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x1C - xchg esp, large ds:<dwVirtualStack>
-		0xA1, 0x00, 0x00, 0x00, 0x00,               // 0x22 - mov eax, [<dwEaxSave>]
-		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x27 - jmp large dword ptr ds:<jumpbuff>
+		0xA1, 0x00, 0x00, 0x00, 0x00,				// 0x0F	- mov eax, [<dwEaxSave>]
+		0x89, 0x44, 0x24, 0x20,						// 0x14 - mov [esp+0x20], eax // fix the eax value
+		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x18 - push <execution_environment>
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,         // 0x1D - call [<dwBranchHandler>]
+		0x61,										// 0x23 - popa
+		0x9D,										// 0x24 - popf
+		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x25 - xchg esp, large ds:<dwVirtualStack>
+		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x2B - jmp large dword ptr ds:<jumpbuff>
 	};
 
 
@@ -621,15 +621,15 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 
 	memcpy(px86, pBranchFFCall, sizeof(pBranchFFCall));
 	*(unsigned int *)(&(px86[0x02])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86[0x10])) = (unsigned int)runtime;
-	*(unsigned int *)(&(px86[0x16])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&(px86[0x1E])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86[0x23])) = (unsigned int)&runtime->returnRegister;
-	*(unsigned int *)(&(px86[0x29])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86[0x10])) = (unsigned int)&runtime->returnRegister;
+	*(unsigned int *)(&(px86[0x19])) = (unsigned int)runtime;
+	*(unsigned int *)(&(px86[0x1F])) = (unsigned int)&dwBranchHandler;
+	*(unsigned int *)(&(px86[0x27])) = (unsigned int)&runtime->virtualStack;
+	*(unsigned int *)(&(px86[0x2D])) = (unsigned int)&runtime->jumpBuff;
 	px86 += sizeof(pBranchFFCall);
 	pFlags |= RIVER_FLAG_BRANCH;
 
-	instrCounter += 15;
+	instrCounter += 16;
 }
 
 void RiverX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
@@ -646,14 +646,15 @@ void RiverX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, BYTE *&p
 		0x68, 0x46, 0x02, 0x00, 0x00,				// 0x0D - push 0x00000246 - NEW FLAGS
 		0x9D,										// 0x12 - popf
 		0x50,                            			// 0x13 - push eax
-		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x14 - push <execution_environment>
-		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,         // 0x19 - call [<dwBranchHandler>]
+		0xA1, 0x00, 0x00, 0x00, 0x00,				// 0x14	- mov eax, [<dwEaxSave>]
+		0x89, 0x44, 0x24, 0x20,						// 0x19 - mov [esp+0x20], eax // fix the eax value
+		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x1D - push <execution_environment>
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,         // 0x22 - call [<dwBranchHandler>]
 
-		0x61,										// 0x1F - popa
-		0x9D,										// 0x20 - popf
-		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x21 - xchg esp, large ds:<dwVirtualStack>
-		0xA1, 0x00, 0x00, 0x00, 0x00,               // 0x27 - mov eax, [<dwEaxSave>]
-		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x3C - jmp large dword ptr ds:<jumpbuff>
+		0x61,										// 0x28 - popa
+		0x9D,										// 0x29 - popf
+		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x2A - xchg esp, large ds:<dwVirtualStack>
+		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x30 - jmp large dword ptr ds:<jumpbuff>
 	};
 
 	ClearPrefixes(ri, px86);
@@ -680,15 +681,15 @@ void RiverX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, BYTE *&p
 
 	*(unsigned int *)(&(px86[0x01])) = retAddr;
 	*(unsigned int *)(&(px86[0x07])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86[0x15])) = (unsigned int)runtime;
-	*(unsigned int *)(&(px86[0x1B])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&(px86[0x23])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86[0x28])) = (unsigned int)&runtime->returnRegister;
-	*(unsigned int *)(&(px86[0x2E])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86[0x15])) = (unsigned int)&runtime->returnRegister;
+	*(unsigned int *)(&(px86[0x1E])) = (unsigned int)runtime;
+	*(unsigned int *)(&(px86[0x24])) = (unsigned int)&dwBranchHandler;
+	*(unsigned int *)(&(px86[0x2C])) = (unsigned int)&runtime->virtualStack;
+	*(unsigned int *)(&(px86[0x32])) = (unsigned int)&runtime->jumpBuff;
 	px86 += sizeof(pBranchFFCall);
 	pFlags |= RIVER_FLAG_BRANCH;
 
-	instrCounter += 16;
+	instrCounter += 17;
 }
 
 void RiverX86Assembler::AssembleRetnInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
@@ -704,15 +705,16 @@ void RiverX86Assembler::AssembleRetnInstr(const RiverInstruction &ri, BYTE *&px8
 		0x68, 0x46, 0x02, 0x00, 0x00,				// 0x0E - push 0x00000246 - NEW FLAGS
 		0x9D,										// 0x13 - popf
 		0x50,										// 0x14 - push eax
-		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x15 - push <execution_environment>
-		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,			// 0x1A - call <branch_handler>
+		0xA1, 0x00, 0x00, 0x00, 0x00,				// 0x15	- mov eax, [<dwEaxSave>]
+		0x89, 0x44, 0x24, 0x20,						// 0x1A - mov [esp+0x20], eax // fix the eax value
+		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x1E - push <execution_environment>
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,			// 0x23 - call <branch_handler>
 
-		0x61,										// 0x20 - popa
-		0x9D,										// 0x21 - popf
-		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x22 - xchg esp, large ds:<dwVirtualStack>
-		0xA1, 0x00, 0x00, 0x00, 0x00,				// 0x28 - mov eax, large ds:<dwEaxSave>
-		0x8D, 0xA4, 0x24, 0x00, 0x00, 0x00, 0x00,   // 0x2D - lea esp, [esp + <pI>] // probably sub esp, xxx
-		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x34 - jmp large dword ptr ds:<jumpbuff>
+		0x61,										// 0x29 - popa
+		0x9D,										// 0x2A - popf
+		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x2B - xchg esp, large ds:<dwVirtualStack>
+		0x8D, 0xA4, 0x24, 0x00, 0x00, 0x00, 0x00,   // 0x31 - lea esp, [esp + <pI>] // probably sub esp, xxx
+		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x38 - jmp large dword ptr ds:<jumpbuff>
 	};
 
 	unsigned short stackSpace = 0;
@@ -720,16 +722,16 @@ void RiverX86Assembler::AssembleRetnInstr(const RiverInstruction &ri, BYTE *&px8
 
 	*(unsigned int *)(&(px86[0x01])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86[0x08])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86[0x16])) = (unsigned int)runtime;
-	*(unsigned int *)(&(px86[0x1C])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&(px86[0x24])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86[0x29])) = (unsigned int)&runtime->returnRegister;
-	*(unsigned int *)(&(px86[0x30])) = stackSpace;
-	*(unsigned int *)(&(px86[0x36])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86[0x16])) = (unsigned int)&runtime->returnRegister; 
+	*(unsigned int *)(&(px86[0x1F])) = (unsigned int)runtime;
+	*(unsigned int *)(&(px86[0x25])) = (unsigned int)&dwBranchHandler;
+	*(unsigned int *)(&(px86[0x2D])) = (unsigned int)&runtime->virtualStack;
+	*(unsigned int *)(&(px86[0x34])) = stackSpace;
+	*(unsigned int *)(&(px86[0x3A])) = (unsigned int)&runtime->jumpBuff;
 
 	px86 += sizeof(pBranchRet);
 	pFlags |= RIVER_FLAG_BRANCH;
-	instrCounter += 16;
+	instrCounter += 17;
 }
 
 void RiverX86Assembler::AssembleRetnImmInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
@@ -745,15 +747,16 @@ void RiverX86Assembler::AssembleRetnImmInstr(const RiverInstruction &ri, BYTE *&
 		0x68, 0x46, 0x02, 0x00, 0x00,				// 0x0E - push 0x00000246 - NEW FLAGS
 		0x9D,										// 0x13 - popf
 		0x50,										// 0x14 - push eax
-		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x15 - push <execution_environment>
-		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,			// 0x1A - call <branch_handler>
+		0xA1, 0x00, 0x00, 0x00, 0x00,				// 0x15	- mov eax, [<dwEaxSave>]
+		0x89, 0x44, 0x24, 0x20,						// 0x1A - mov [esp+0x20], eax // fix the eax value
+		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x1E - push <execution_environment>
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,			// 0x23 - call <branch_handler>
 
-		0x61,										// 0x20 - popa
-		0x9D,										// 0x21 - popf
-		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x22 - xchg esp, large ds:<dwVirtualStack>
-		0xA1, 0x00, 0x00, 0x00, 0x00,				// 0x28 - mov eax, large ds:<dwEaxSave>
-		0x8D, 0xA4, 0x24, 0x00, 0x00, 0x00, 0x00,   // 0x2D - lea esp, [esp + <pI>] // probably sub esp, xxx
-		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x34 - jmp large dword ptr ds:<jumpbuff>
+		0x61,										// 0x29 - popa
+		0x9D,										// 0x2A - popf
+		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x2B - xchg esp, large ds:<dwVirtualStack>
+		0x8D, 0xA4, 0x24, 0x00, 0x00, 0x00, 0x00,   // 0x31 - lea esp, [esp + <pI>] // probably sub esp, xxx
+		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x38 - jmp large dword ptr ds:<jumpbuff>
 	};
 
 	unsigned short stackSpace = ri.operands[0].asImm16;
@@ -761,16 +764,17 @@ void RiverX86Assembler::AssembleRetnImmInstr(const RiverInstruction &ri, BYTE *&
 
 	*(unsigned int *)(&(px86[0x01])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86[0x08])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86[0x16])) = (unsigned int)runtime;
-	*(unsigned int *)(&(px86[0x1C])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&(px86[0x24])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86[0x29])) = (unsigned int)&runtime->returnRegister;
-	*(unsigned int *)(&(px86[0x30])) = stackSpace;
-	*(unsigned int *)(&(px86[0x36])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86[0x16])) = (unsigned int)&runtime->returnRegister; 
+	*(unsigned int *)(&(px86[0x1F])) = (unsigned int)runtime;
+	*(unsigned int *)(&(px86[0x25])) = (unsigned int)&dwBranchHandler;
+	*(unsigned int *)(&(px86[0x2D])) = (unsigned int)&runtime->virtualStack;
+	
+	*(unsigned int *)(&(px86[0x34])) = stackSpace;
+	*(unsigned int *)(&(px86[0x3A])) = (unsigned int)&runtime->jumpBuff;
 
 	px86 += sizeof(pBranchRet);
 	pFlags |= RIVER_FLAG_BRANCH;
-	instrCounter += 16;
+	instrCounter += 17;
 }
 
 void RiverX86Assembler::AssembleRiverAddSubInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {

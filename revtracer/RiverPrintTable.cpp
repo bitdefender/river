@@ -13,31 +13,31 @@ extern const char MemSizes[][6];
 
 void PrintPrefixes(struct RiverInstruction *ri) {
 	if (ri->modifiers & RIVER_MODIFIER_IGNORE) {
-		printf("ignore");
+		DbgPrint("ignore");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_RIVEROP) {
-		printf("river");
+		DbgPrint("river");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_ORIG_xSP) {
-		printf("esp");
+		DbgPrint("esp");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_LOCK) {
-		printf("lock ");
+		DbgPrint("lock ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REP) {
-		printf("rep ");
+		DbgPrint("rep ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REPZ) {
-		printf("repz ");
+		DbgPrint("repz ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REPNZ) {
-		printf("repnz ");
+		DbgPrint("repnz ");
 	}
 }
 
@@ -49,14 +49,14 @@ void PrintMnemonic(struct RiverInstruction *ri) {
 	}
 
 	if ('a' <= mTable[ri->opCode][0]) {
-		printf("%s ", mTable[ri->opCode]);
+		DbgPrint("%s ", mTable[ri->opCode]);
 	} else {
-		printf("%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
+		DbgPrint("%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
 	}
 }
 
 void PrintRegister(struct RiverInstruction *ri, union RiverRegister *reg) {
-	printf("%s$%d", RegNames[reg->name], reg->versioned >> 8);
+	DbgPrint("%s$%d", RegNames[reg->name], reg->versioned >> 8);
 }
 
 void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
@@ -65,72 +65,72 @@ void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
 		case RIVER_OPTYPE_IMM :
 			switch (ri->opTypes[idx] & 0x03) {
 				case RIVER_OPSIZE_8 :
-					printf("0x%02x", ri->operands[idx].asImm8);
+					DbgPrint("0x%02x", ri->operands[idx].asImm8);
 					break;
 				case RIVER_OPSIZE_16:
-					printf("0x%04x", ri->operands[idx].asImm16);
+					DbgPrint("0x%04x", ri->operands[idx].asImm16);
 					break;
 				case RIVER_OPSIZE_32:
-					printf("0x%08x", ri->operands[idx].asImm32);
+					DbgPrint("0x%08x", ri->operands[idx].asImm32);
 					break;
 			};
 			break;
 
 		case RIVER_OPTYPE_REG :
-			printf("%s$%d", RegNames[ri->operands[idx].asRegister.name], ri->operands[idx].asRegister.versioned >> 8);
+			DbgPrint("%s$%d", RegNames[ri->operands[idx].asRegister.name], ri->operands[idx].asRegister.versioned >> 8);
 			break;
 
 		case RIVER_OPTYPE_MEM :
 			if (0 == ri->operands[idx].asAddress->type) {
-				printf("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				DbgPrint("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
 				break;
 			}
 
-			printf("%s ptr ", MemSizes[ri->opTypes[idx] & 0x03]);
+			DbgPrint("%s ptr ", MemSizes[ri->opTypes[idx] & 0x03]);
 
 			if (ri->operands[idx].asAddress->HasSegment()) {
-				printf("%s:", RegNames[RIVER_REG_SEGMENT | (ri->operands[idx].asAddress->GetSegment() - 1)]);
+				DbgPrint("%s:", RegNames[RIVER_REG_SEGMENT | (ri->operands[idx].asAddress->GetSegment() - 1)]);
 			}
 
-			printf("[");
+			DbgPrint("[");
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_BASE) {
-				printf("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				DbgPrint("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
 				bWr = true;
 			}
 
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_INDEX) {
 				if (bWr) {
-					printf("+");
+					DbgPrint("+");
 				}
 
 				if (ri->operands[idx].asAddress->type & RIVER_ADDR_SCALE) {
-					printf("%d*", ri->operands[idx].asAddress->GetScale());
+					DbgPrint("%d*", ri->operands[idx].asAddress->GetScale());
 				}
 
-				printf("%s$%d", RegNames[ri->operands[idx].asAddress->index.name], ri->operands[idx].asAddress->index.versioned >> 8);
+				DbgPrint("%s$%d", RegNames[ri->operands[idx].asAddress->index.name], ri->operands[idx].asAddress->index.versioned >> 8);
 				bWr = true;
 			}
 
 			if (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 				if (bWr) {
-					printf("+");
+					DbgPrint("+");
 				}
 
 				switch (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 					case RIVER_ADDR_DISP8 :
-						printf("0x%02x", ri->operands[idx].asAddress->disp.d8);
+						DbgPrint("0x%02x", ri->operands[idx].asAddress->disp.d8);
 						break;
 					/*case RIVER_ADDR_DISP16:
-						printf("0x%04x", ri->operands[idx].asAddress->disp.d16);
+						DbgPrint("0x%04x", ri->operands[idx].asAddress->disp.d16);
 						break;*/
 					case RIVER_ADDR_DISP:
-						printf("0x%08x", ri->operands[idx].asAddress->disp.d32);
+						DbgPrint("0x%08x", ri->operands[idx].asAddress->disp.d32);
 						break;
 				}
 			}
 				 
 
-			printf("]");
+			DbgPrint("]");
 			break;
 	}
 }
@@ -140,7 +140,7 @@ void PrintOperands(struct RiverInstruction *ri) {
 
 	for (int i = 1; i < 4; ++i) {
 		if (ri->opTypes[i] != RIVER_OPTYPE_NONE) {
-			printf(", ");
+			DbgPrint(", ");
 			PrintOperand(ri, i);
 		}
 	}
@@ -153,7 +153,7 @@ void RiverPrintInstruction(struct RiverInstruction *ri) {
 	PrintPrefixes(ri);
 	PrintMnemonic(ri);
 	PrintOperands(ri);
-	printf("\n");
+	DbgPrint("\n");
 	//printf("%s", )
 }
 

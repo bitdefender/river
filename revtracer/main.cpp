@@ -31,8 +31,100 @@ DWORD PopFromExecutionBuffer(struct _exec_env *pEnv) {
 }
 
 extern DWORD dwExitProcess;
+struct Regs {
+	DWORD edi;
+	DWORD esi;
+	DWORD ebp;
+	DWORD esp;
+
+	DWORD ebx;
+	DWORD edx;
+	DWORD ecx;
+	DWORD eax;
+	DWORD eflags;
+} regClone[2];
+
+bool RegCheck(struct _exec_env *pEnv, const Regs &r1, const Regs &r2) {
+	if (r1.eax != r2.eax) {
+		DbgPrint("EAX inconsistent!\n");
+		return false;
+	}
+
+	if (r1.ecx != r2.ecx) {
+		DbgPrint("ECX inconsistent!\n");
+		return false;
+	}
+
+	if (r1.edx != r2.edx) {
+		DbgPrint("EDX inconsistent!\n");
+		return false;
+	}
+
+	if (r1.ebx != r2.ebx) {
+		DbgPrint("EBX inconsistent!\n");
+		return false;
+	}
+
+	if (r1.esp != r2.esp) {
+		DbgPrint("ESP inconsistent!\n");
+		return false;
+	}
+
+	if (r1.ebp != r2.ebp) {
+		DbgPrint("EBP inconsistent!\n");
+		return false;
+	}
+
+	if (r1.esi != r2.esi) {
+		DbgPrint("ESI inconsistent!\n");
+		return false;
+	}
+
+	if (r1.edi != r2.edi) {
+		DbgPrint("ESI inconsistent!\n");
+		return false;
+	}
+
+	if (r1.eflags != r2.eflags) {
+		DbgPrint("EFLAGS inconsistent!\n");
+		return false;
+	}
+	return true;
+}
+
+struct ExecStats {
+	int blocksForward, blocksBackward;
+	int nativeForward, nativeBackward;
+	int transForward, transBackward;
+};
+
+void AddStates(void *ctx, RiverBasicBlock *bb) {
+	ExecStats *stats = (ExecStats *)ctx;
+
+	stats->blocksForward += bb->dwFwPasses;
+	stats->blocksBackward += bb->dwBkPasses;
+
+	stats->transForward += bb->dwFwPasses * bb->dwFwOpCount;
+	stats->transBackward += bb->dwBkPasses * bb->dwBkOpCount;
+
+	stats->nativeForward += bb->dwFwPasses * bb->dwOrigOpCount;
+	stats->nativeBackward += bb->dwBkPasses * bb->dwOrigOpCount;
+}
+
+void PrintStats(struct _exec_env *env) {
+	ExecStats stats;
+	memset(&stats, 0, sizeof(stats));
+
+	env->blockCache.ForEachBlock(&stats, AddStates);
+	DbgPrint("========================================\n");
+	DbgPrint("Native fw:%9d; Native bw:%9d\n", stats.nativeForward, stats.nativeBackward);
+	DbgPrint("Blocks fw:%9d; Blocks bw:%9d\n", stats.blocksForward, stats.blocksBackward);
+	DbgPrint("Trans fw: %9d; Trans bw: %9d\n", stats.transForward,  stats.transBackward);
+	DbgPrint("========================================\n");
+}
 
 void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
+	Regs *currentRegs = (Regs *)((&a) + 1);
 	RiverBasicBlock *pCB;
 	struct UserCtx *ctx = (struct UserCtx *)pEnv->userContext;
 
@@ -42,6 +134,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	fflush(fBlocks);
 
 	if (a == dwExitProcess) {
+		PrintStats(pEnv);
 		exit(0);
 	}
 
@@ -50,11 +143,29 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	//DbgPrint("sizes: %08X, %08X, %08X, %08X\n", pEnv->heapSize, pEnv->historySize, pEnv->logHashSize, pEnv->outBufferSize);
 	if (pEnv->bForward) {
 		PushToExecutionBuffer(pEnv, pEnv->lastFwBlock);
+	} else {
+		/*if (!RegCheck(pEnv, *currentRegs, regClone)) {
+			__asm int 3;
+		}*/
+		switch (ctx->callCount % 5) {
+		case 3:
+			//copy the registers to validate them later
+			if (!RegCheck(pEnv, *currentRegs, regClone[1])) {
+				__asm int 3;
+			}
+			break;
+		case 4:
+			//copy the registers to validate them later
+			if (!RegCheck(pEnv, *currentRegs, regClone[0])) {
+				__asm int 3;
+			}
+			break;
+		}
 	}
 
 	ctx->callCount++;
 
-	if (/*ctx->callCount % 3*/ 1 == 0) {
+	if ((ctx->callCount % 5) > 2) {
 		// go backwards
 		DbgPrint("Going Backwards!!!\n");
 		DWORD addr = PopFromExecutionBuffer(pEnv);
@@ -104,6 +215,19 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 			//TouchBlock(pEnv, pCB);
 			pEnv->lastFwBlock = pCB->address;
 			pEnv->bForward = 1;
+
+			switch (ctx->callCount % 5) {
+				case 1: 
+					//copy the registers to validate them later
+					memcpy(&regClone[0], currentRegs, sizeof(regClone[0]));
+					break;
+				case 2:
+					//copy the registers to validate them later
+					memcpy(&regClone[1], currentRegs, sizeof(regClone[1]));
+					break;
+			}
+			
+
 			pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
 			fflush(stdout);
 		}
@@ -169,6 +293,8 @@ int overlap(unsigned int a1, unsigned int a2, unsigned int b1, unsigned int b2);
 
 bool MapPE(DWORD &baseAddr);
 
+unsigned char goat[] = { /*0xEB, 0x00, 0x90,*/ 0xEB, 0x00, 0x90, 0xB8, 0x10, 0x00, 0x00, 0x00, 0x29, 0xC4, 0x01, 0xC4, 0xEB, 0x00, 0x90, 0xC3 };
+
 int main(unsigned int argc, char *argv[]) {
 	DWORD baseAddr = 0xf000000;
 	if (!MapPE(baseAddr)) {
@@ -196,8 +322,12 @@ int main(unsigned int argc, char *argv[]) {
 
 	//DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, (void *)3, (void *)7, (void *)2, (void *)10);
 	unsigned char *pMain = (unsigned char *)baseAddr + 0x96CE;
+	//unsigned char *pMain = (unsigned char *)baseAddr + 0x1347;
+	//unsigned char *pMain = goat;
 	DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)pMain, (void *)argc, (void *)argv);
 	DbgPrint("Done. ret = %d\n", ret);
+
+	PrintStats(pEnv);
 
 	/*DbgPrint("Test %d\n", overlap(3, 7, 2, 10));*/
 

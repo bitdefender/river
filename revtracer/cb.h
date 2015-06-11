@@ -49,6 +49,9 @@ public :
 
 	RiverBasicBlock *NewBlock(UINT_PTR addr);
 	RiverBasicBlock *FindBlock(UINT_PTR addr);
+
+	typedef void(*BlockCallback)(void *, RiverBasicBlock *);
+	void ForEachBlock(void *ctx, BlockCallback cb);
 };
 
 //RiverBasicBlock *NewBlock(struct _exec_env *pEnv);

@@ -166,12 +166,13 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 		}
 
 		if ((type & RIVER_ADDR_INDEX) || (type & RIVER_ADDR_SCALE)) {
+		//if ((type & RIVER_ADDR_INDEX) && (type & RIVER_ADDR_SCALE)) {
 			// handle sib
 			rm = 4;
 
 			unsigned char ss, idx, bs;
 			if (type & RIVER_ADDR_SCALE) {
-				ss = GetScale();
+				ss = GetScaleBits();
 			} else {
 				ss = 0;
 			}
@@ -179,10 +180,15 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 			if (type & RIVER_ADDR_BASE) {
 				bs = base.name;
 			} else {
+				__asm int 3;
 				bs = 4;
 			}
 
-			idx = index.name;
+			if (type & RIVER_ADDR_INDEX) {
+				idx = index.name;
+			} else {
+				idx = 4;
+			}
 
 			sib = (ss << 6) | (idx << 3) | (bs);
 		} else {

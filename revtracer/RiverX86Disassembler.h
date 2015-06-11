@@ -49,6 +49,21 @@ private :
 		px86++;
 	}
 
+	template <WORD modifiers = 0, WORD tflags = 0> void DisassembleExtInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+		/*ri.opCode = *px86;
+		px86++;
+
+		ri.subOpCode = (*px86 >> 3) & 0x07;
+		ri.specifiers = GetSpecifiers(ri);*/
+
+		ri.opCode = *px86;
+		px86++;
+		ri.subOpCode = (*px86 >> 3) & 0x07;
+		ri.modifiers |= modifiers;
+		ri.specifiers = GetSpecifiers(ri);
+		flags |= tflags;
+	}
+
 	template <WORD segment> void DisassembleSegInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
 		flags |= RIVER_FLAG_PFX;
 		ri.modifiers &= 0xF8;
@@ -112,7 +127,7 @@ private :
 		flags |= RIVER_FLAG_BRANCH;
 	}
 
-	void DisassembleExtInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags);
+	/*void DisassembleExtInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags);*/
 
 	template <DisassembleOpcodeFunc *fSubOps> void DisassembleSubOpInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
 		ri.subOpCode = (*(px86 + 1) >> 3) & 0x7;

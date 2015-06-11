@@ -25,12 +25,12 @@ private :
 	/* Translation helpers */
 	void MakeSaveFlags(RiverInstruction *rOut);
 	void MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short auxFlags);
-	void MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short auxFlags);
-	void MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags);
+	void MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short auxFlags, const RiverInstruction &rIn);
+	void MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags, const RiverInstruction &rIn);
 	void MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short auxFlags);
 	void MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short auxFlags);
-	void MakeSaveOp(RiverInstruction *rOut, unsigned char opType, const RiverOperand &op);
-	void MakeSaveAtxSP(RiverInstruction *rOut);
+	void MakeSaveOp(RiverInstruction *rOut, unsigned char opType, const RiverOperand &op, const RiverInstruction &rIn);
+	void MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstruction &rIn);
 
 	void SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 
@@ -47,6 +47,19 @@ private :
 	void TranslateSavexSIxDI(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateSaveCPUID(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+
+	template <TranslateOpcodeFunc subOp> void TranslateRep(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+		if ((rIn.modifiers & RIVER_MODIFIER_REP) || (rIn.modifiers & RIVER_MODIFIER_REPZ) || (rIn.modifiers & RIVER_MODIFIER_REPNZ)) {
+			RiverRegister tmpReg;
+
+			tmpReg.name = RIVER_REG_xCX;
+			MakeSaveReg(rOut, tmpReg, 0);
+			instrCount++;
+			rOut++;
+		}
+
+		(this->*subOp)(rOut, rIn, instrCount);
+	}
 
 	template <TranslateOpcodeFunc *fSubOps> void TranslateSubOp(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 		(this->*fSubOps[rIn.subOpCode])(rOut, rIn, instrCount);

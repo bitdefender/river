@@ -215,7 +215,7 @@ struct RiverInstruction {
 				}
 				break;
 			case RIVER_OPTYPE_MEM:
-				if (op.asAddress->type & RIVER_ADDR_BASE) {
+				if ((op.asAddress->type & RIVER_ADDR_BASE) || (op.asAddress->type == 0)){
 					reg = GetFundamentalRegister(op.asAddress->base.name);
 					if (reg < 4) {
 						unusedRegisters &= ~(1 << reg);
@@ -243,7 +243,7 @@ struct RiverInstruction {
 				}
 				break;
 			case RIVER_OPTYPE_MEM:
-				if (op.asAddress->type & RIVER_ADDR_BASE) {
+				if ((op.asAddress->type & RIVER_ADDR_BASE) || (0 == op.asAddress->type)) {
 					reg = GetFundamentalRegister(op.asAddress->base.name);
 					if (RIVER_REG_xSP == reg) {
 						specifiers |= RIVER_SPEC_MODIFIES_xSP;

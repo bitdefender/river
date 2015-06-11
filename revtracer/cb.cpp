@@ -107,6 +107,17 @@ void TouchBlock(struct _exec_env *pEnv, struct _cb_info *pCB) {
 	//TbmMutexUnlock(&pEnv->cbLock);
 }
 
+void RiverBasicBlockCache::ForEachBlock(void *ctx, BlockCallback cb) {
+	for (int i = 0; i < (1 << logHashSize); ++i) {
+		RiverBasicBlock *pWalk = hashTable[i];
+
+		while (pWalk) {
+			cb(ctx, pWalk);
+			pWalk = pWalk->pNext;
+		}
+	}
+}
+
 bool RiverBasicBlockCache::Init(RiverHeap *hp, DWORD logHSize, DWORD histSize) {
 	heap = hp;
 

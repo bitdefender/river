@@ -152,7 +152,9 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 
 		Reset();
 
-		pCB->dwSize = x86toriver(this, disassembler, saveTranslator, (BYTE *)pCB->address, trRiverInst, &trInstCount);
+		pCB->dwOrigOpCount = 0;
+		pCB->dwSize = x86toriver(this, disassembler, saveTranslator, (BYTE *)pCB->address, trRiverInst, &pCB->dwOrigOpCount);
+		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 
 		for (DWORD i = 0; i < fwInstCount; ++i) {

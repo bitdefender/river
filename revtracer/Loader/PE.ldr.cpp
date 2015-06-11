@@ -1,7 +1,8 @@
 #include <stdio.h>
-
 #include <vector>
 using namespace std;
+
+#include "..\extern.h"
 
 //#define DONOTPRINT
 
@@ -12,7 +13,7 @@ using namespace std;
 #include "PE.ldr.h"
 
 //#include "common/debug-log.h"
-#define dbg_log printf
+#define dbg_log DbgPrint
 
 #define IMAGE_DIRECTORY_ENTRY_EXPORT          0   // Export Directory
 #define IMAGE_DIRECTORY_ENTRY_IMPORT          1   // Import Directory

@@ -82,14 +82,6 @@ void RiverX86Disassembler::DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri
 	px86++;
 }
 
-void RiverX86Disassembler::DisassembleExtInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
-	ri.opCode = *px86;
-	px86++;
-
-	ri.subOpCode = (*px86 >> 3) & 0x07;
-	ri.specifiers = GetSpecifiers(ri);
-}
-
 /* =========================================== */
 /* Operand helpers                             */
 /* =========================================== */
@@ -353,7 +345,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 		/*0x78*/ &RiverX86Disassembler::DisassembleRelJmpInstr<2>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>,
 		/*0x7C*/ &RiverX86Disassembler::DisassembleRelJmpInstr<2>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>,
 
-		/*0x80*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleExtInstr,
+		/*0x80*/ &RiverX86Disassembler::DisassembleExtInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleExtInstr, &RiverX86Disassembler::DisassembleExtInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleExtInstr,
 		/*0x84*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x88*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr,
 		/*0x8C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
@@ -850,8 +842,8 @@ const BYTE specTbl[2][0x100] = {
 };
 
 const BYTE _specTblExt[][8] = {
-	{ RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_OP1, 0 },
-	/* for 0xFF    */{ RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_xSP, RIVER_SPEC_MODIFIES_xSP, 0, 0, 0, 0},
-	/* for 0xF6/F7 */{ RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_OP1, RIVER_SPEC_MODIFIES_CUSTOM | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_CUSTOM | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_CUSTOM | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_CUSTOM | RIVER_SPEC_MODIFIES_FLG },
+	{ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_FLG },
+	/* for 0xFF    */{ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_xSP, RIVER_SPEC_MODIFIES_xSP, 0, 0, 0, 0 },
+	/* for 0xF6/F7 */{ RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_CUSTOM | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_CUSTOM | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_CUSTOM | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_CUSTOM | RIVER_SPEC_MODIFIES_FLG },
 	/* for 0x0FBA  */{ 0xFF, 0xFF, 0xFF, 0xFF, RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG },
 };

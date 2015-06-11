@@ -22,6 +22,10 @@ struct RiverAddress {
 		return 1 << (scaleAndSegment & 0x3);
 	}
 
+	inline BYTE GetScaleBits() const {
+		return scaleAndSegment & 0x03;
+	}
+
 	inline void CopyScale(BYTE scale) {
 		scaleAndSegment &= 0xFC;
 		scaleAndSegment |= scale;

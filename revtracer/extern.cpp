@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <share.h>
 
 #include <Windows.h>
 
@@ -8,14 +9,21 @@
 
 DWORD dwExitProcess = (DWORD)ExitProcess;
 
+struct _ {
+	FILE *fDbg;
+	_() {
+		fDbg = _fsopen("translation.log", "wt", _SH_DENYWR);
+	}
+} __;
+
 void DbgPrint(const char *fmt, ...) {
 	va_list va;
 
 	va_start(va, fmt);
-	vprintf(fmt, va);
+	vfprintf(__.fDbg, fmt, va);
 	va_end(va);
 
-	fflush(stdout);
+	fflush(__.fDbg);
 }
 
 void *EnvMemoryAlloc(unsigned long dwSize) {
