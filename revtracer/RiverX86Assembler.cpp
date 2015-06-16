@@ -118,7 +118,7 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 
 bool RiverX86Assembler::GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
 	//FIXME skip all symbop instructions
-	if (ri.modifiers & RIVER_FAMILY_SYMBOP) {
+	if (ri.family & RIVER_FAMILY_SYMBOP) {
 		return true;
 	}
 

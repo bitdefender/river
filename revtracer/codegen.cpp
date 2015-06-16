@@ -162,7 +162,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86) {
 		//saveTranslator.Translate(dis, &fwRiverInst[fwInstCount], fwInstCount);
 		//saveTranslator.Translate(dis, disSave, svCount);
 
-		saveTranslator.Translate(dis, fwRiverInst, fwInstCount);
+		saveTranslator.Translate(dis, &fwRiverInst[fwInstCount], fwInstCount);
 
 		/*for (DWORD i = 0; i < svCount; ++i) {
 			symbopTranslator.Translate(disSave[i], fwRiverInst, fwInstCount, &symbopInst[symbopInstCount], symbopInstCount);
