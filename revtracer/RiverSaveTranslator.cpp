@@ -111,7 +111,7 @@ void RiverSaveTranslator::MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const Ri
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
-	rOut->operands[0].asRegister.versioned = reg.versioned & 0xFFFFFF07; //cg->GetCurrentReg(rg);
+	rOut->operands[0].asRegister.versioned = codegen->GetCurrentReg(rg);
 
 	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
 	rOut->operands[1].asImm8 = offset;
@@ -131,7 +131,7 @@ void RiverSaveTranslator::MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const Ri
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
-	rOut->operands[0].asRegister.versioned = reg.versioned & 0xFFFFFF07;
+	rOut->operands[0].asRegister.versioned = codegen->GetCurrentReg(rg);
 
 	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
 	rOut->operands[1].asImm8 = offset;

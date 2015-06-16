@@ -27,6 +27,7 @@
     <ClInclude Include="RiverX86Assembler.h" />
     <ClInclude Include="RiverX86Disassembler.h" />
     <ClInclude Include="Runtime.h" />
+    <ClInclude Include="SymbopTranslator.h" />
     <ClInclude Include="translatetbl.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="crc32.h" />
@@ -55,7 +56,6 @@
     <ClCompile Include="MapPE.cpp" />
     <ClCompile Include="mm.cpp" />
     <ClCompile Include="modrm32.cpp" />
-    <ClCompile Include="river.cpp" />
     <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverOptimizer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -75,6 +75,14 @@
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">None</DebugInformationFormat>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
     </ClCompile>
+    <ClCompile Include="SymbolicPages.cpp">
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">All</AssemblerOutput>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
+      <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+    </ClCompile>
+    <ClCompile Include="SymbopTranslator.cpp" />
     <ClCompile Include="sync.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

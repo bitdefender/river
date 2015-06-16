@@ -6,7 +6,7 @@
 
 class RiverCodeGen;
 
-BYTE GetSpecifiers(RiverInstruction &ri);
+WORD GetSpecifiers(RiverInstruction &ri);
 
 class RiverX86Disassembler {
 private:

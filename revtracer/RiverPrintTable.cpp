@@ -23,6 +23,10 @@ void PrintPrefixes(struct RiverInstruction *ri) {
 	if (ri->family & RIVER_FAMILY_ORIG_xSP) {
 		DbgPrint("esp");
 	}
+	
+    if (ri->modifiers & RIVER_FAMILY_SYMBOP) {
+		printf("symbop");
+	}
 
 	if (ri->modifiers & RIVER_MODIFIER_LOCK) {
 		DbgPrint("lock ");

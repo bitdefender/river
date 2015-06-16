@@ -45,6 +45,9 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 	disassembler.Init(this);
 	revTranslator.Init(this);
 	saveTranslator.Init(this);
+
+	symbopTranslator.Init(this);
+
 	return assembler.Init(rt);
 }
 
@@ -58,6 +61,7 @@ bool RiverCodeGen::Destroy() {
 
 void RiverCodeGen::Reset() {
 	addrCount = trInstCount = fwInstCount = bkInstCount = 0;
+	symbopInstCount = 0;
 	memset(regVersions, 0, sizeof(regVersions));
 }
 
@@ -139,6 +143,51 @@ void MakeJMP(struct RiverInstruction *ri, DWORD jmpAddr) {
 	ri->operands[1].asImm32 = 0;
 }
 
+void RiverPrintInstruction(RiverInstruction *ri);
+
+DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86) {
+	BYTE *pTmp = px86;
+	DWORD pFlags = 0;
+	DbgPrint("= x86 to river ================================================================\n");
+
+	RiverInstruction dis, disSave[16];
+	DWORD svCount;
+
+	do {
+		BYTE *pAux = pTmp;
+		DWORD iSize;
+		disassembler.Translate(pTmp, dis, pFlags);
+
+		svCount = 0;
+		//saveTranslator.Translate(dis, &fwRiverInst[fwInstCount], fwInstCount);
+		//saveTranslator.Translate(dis, disSave, svCount);
+
+		saveTranslator.Translate(dis, fwRiverInst, fwInstCount);
+
+		/*for (DWORD i = 0; i < svCount; ++i) {
+			symbopTranslator.Translate(disSave[i], fwRiverInst, fwInstCount, &symbopInst[symbopInstCount], symbopInstCount);
+		}*/
+
+
+		DbgPrint(".%08x    ", pAux);
+		iSize = pTmp - pAux;
+		for (DWORD i = 0; i < iSize; ++i) {
+			DbgPrint("%02x ", pAux[i]);
+		}
+
+		for (DWORD i = iSize; i < 8; ++i) {
+			DbgPrint("   ");
+		}
+
+		RiverPrintInstruction(&dis);
+
+		//trInstCount++;
+	} while (!(pFlags & RIVER_FLAG_BRANCH));
+
+	DbgPrint("===============================================================================\n");
+	return pTmp - px86;
+}
+
 bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 	if (dwTranslationFlags & 0x80000000) {
 		pCB->dwSize = 0;
@@ -154,7 +203,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		Reset();
 
 		pCB->dwOrigOpCount = 0;
-		pCB->dwSize = x86toriver(this, disassembler, saveTranslator, (BYTE *)pCB->address, trRiverInst, &pCB->dwOrigOpCount);
+		pCB->dwSize = TranslateBasicBlock((BYTE *)pCB->address); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
 		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 

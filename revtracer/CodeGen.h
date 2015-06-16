@@ -11,9 +11,13 @@
 #include "RiverReverseTranslator.h"
 #include "RiverSaveTranslator.h"
 
+#include "SymbopTranslator.h"
+
 #define RIVER_TRANSLATE_INSTRUCTIONS				128
 #define RIVER_FORWARD_INSTRUCTIONS					512
 #define RIVER_BACKWARD_INSTRUCTIONS					512
+
+#define SYMBOP_TRACK_INSTRUCTIONS					128
 
 /* A resettable river code translator */
 class RiverCodeGen {
@@ -25,12 +29,20 @@ private :
 
 	RiverReverseTranslator revTranslator;
 	RiverSaveTranslator saveTranslator;
+
+	SymbopTranslator symbopTranslator;
+
+	DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86);
 public :
-	struct RiverInstruction trRiverInst[RIVER_TRANSLATE_INSTRUCTIONS]; // to be removed in the near future
+	//struct RiverInstruction trRiverInst[RIVER_TRANSLATE_INSTRUCTIONS]; // to be removed in the near future
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];
+	struct RiverInstruction symbopInst[SYMBOP_TRACK_INSTRUCTIONS];
+
 	struct RiverAddress32 trRiverAddr[512];
+	
 	DWORD trInstCount, fwInstCount, bkInstCount, addrCount, outBufferSize;
+	DWORD symbopInstCount;
 
 	unsigned char *outBuffer;
 	unsigned int regVersions[8];

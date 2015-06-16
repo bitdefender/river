@@ -117,6 +117,11 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 }
 
 bool RiverX86Assembler::GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
+	//FIXME skip all symbop instructions
+	if (ri.modifiers & RIVER_FAMILY_SYMBOP) {
+		return true;
+	}
+
 	// ensure state transitions between river and x86
 	if (ri.family & RIVER_FAMILY_RIVEROP) { // current instr is river
 		if (0 == (pFlags & FLAG_GENERATE_RIVER)) {

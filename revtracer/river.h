@@ -30,6 +30,8 @@
 #define RIVER_FAMILY_NATIVE			0x00
 /* lazy deletion flag */
 #define RIVER_FAMILY_IGNORE			0x01
+/* the symbolic operation instruction family */
+#define RIVER_FAMILY_SYMBOP			0x10
 /* this instruction is a meta instruction... it respecifies the previous one in order to optimize reverse code generation */
 #define RIVER_FAMILY_METAOP			0x20
 /* this river instruction uses the original xSP register */
@@ -117,28 +119,37 @@ union RiverRegister {
 #define RIVER_OPTYPE_ALL			0x0C
 #define RIVER_OPTYPE_NONE			0xFF
 
+#define RIVER_OPTYPE(type) ((type) & 0x0C)
+
 /* River operand sizes */
 #define RIVER_OPSIZE_32				0x00
 #define RIVER_OPSIZE_16				0x01
 #define RIVER_OPSIZE_8				0x02
 
 /* River operation specifiers */
-#define RIVER_SPEC_MODIFIES_OP1		0x01
-#define RIVER_SPEC_MODIFIES_OP2		0x02
-#define RIVER_SPEC_MODIFIES_OP3		0x04
-#define RIVER_SPEC_MODIFIES_OP4		0x08
+#define RIVER_SPEC_MODIFIES_OP1		0x0001
+#define RIVER_SPEC_MODIFIES_OP2		0x0002
+#define RIVER_SPEC_MODIFIES_OP3		0x0004
+#define RIVER_SPEC_MODIFIES_OP4		0x0008
+#define RIVER_SPEC_MODIFIES_OP(idx) (0x0001 << (idx))
 
-#define RIVER_SPEC_MODIFIES_OP(idx) (1 << (idx))
-
-#define RIVER_SPEC_MODIFIES_FLG		0x10
+#define RIVER_SPEC_MODIFIES_FLG		0x0010
 /* Modifies some onther fields also (maybe use a function table) */
-#define RIVER_SPEC_MODIFIES_xSP		0x20
+#define RIVER_SPEC_MODIFIES_xSP		0x0020
 
 /* Modifies customm fields, must have a custom save/restore function */
-#define RIVER_SPEC_MODIFIES_CUSTOM  0x40
+#define RIVER_SPEC_MODIFIES_CUSTOM  0x0040
+
+/* Means that the particular operand is only used as a destination */
+#define RIVER_SPEC_IGNORES_OP1		0x0100
+#define RIVER_SPEC_IGNORES_OP2		0x0200
+#define RIVER_SPEC_IGNORES_OP3		0x0400
+#define RIVER_SPEC_IGNORES_OP4		0x0800
+#define RIVER_SPEC_IGNORES_OP(idx)		(0x0100 << (idx))
+#define RIVER_SPEC_IGNORES_FLG		0x1000
 
 /* Use a secondary table for lookup*/
-#define RIVER_SPEC_MODIFIES_EXT		0x80
+#define RIVER_SPEC_MODIFIES_EXT		0x8000
 
 /* When xSP is needed these registers can be used for the swap */
 #define RIVER_UNUSED_xAX			0x01

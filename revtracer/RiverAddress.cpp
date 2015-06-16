@@ -1,6 +1,13 @@
 #include "river.h"
 #include "CodeGen.h"
 
+BYTE GetFundamentalRegister(BYTE reg) {
+	if (reg < 0x20) {
+		return reg & 0x07;
+	}
+	return reg;
+}
+
 void RiverAddress::DecodeFlags(WORD flags) {
 	if (flags & 0x0007) {
 		SetSegment(flags);
