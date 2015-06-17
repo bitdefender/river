@@ -4,11 +4,11 @@
 void RiverSaveTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
 	memcpy(&rOut, &rIn, sizeof(rOut));
 
-	if ((RIVER_OPTYPE_NONE != rIn.opTypes[0]) && (RIVER_OPTYPE_MEM & rIn.opTypes[0])) {
+	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[0])) {
 		rOut.operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);
 	}
 
-	if ((RIVER_OPTYPE_NONE != rIn.opTypes[1]) && (RIVER_OPTYPE_MEM & rIn.opTypes[1])) {
+	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[1])) {
 		rOut.operands[1].asAddress = codegen->CloneAddress(*rIn.operands[1].asAddress, rIn.modifiers);
 	}
 }
@@ -143,7 +143,7 @@ void RiverSaveTranslator::MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const Ri
 
 
 void RiverSaveTranslator::MakeSaveOp(RiverInstruction *rOut, unsigned char opType, const RiverOperand &op, const RiverInstruction &rIn) {
-	switch (opType & RIVER_OPTYPE_ALL) {
+	switch (RIVER_OPTYPE(opType)) {
 	case RIVER_OPTYPE_NONE:
 	case RIVER_OPTYPE_IMM:
 		__asm int 3;

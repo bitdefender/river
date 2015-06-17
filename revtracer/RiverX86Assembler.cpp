@@ -74,7 +74,7 @@ bool RiverX86Assembler::Init(RiverRuntime *rt) {
 }
 
 static void FixRiverEspOp(BYTE opType, RiverOperand *op, BYTE repReg) {
-	switch (opType & 0xFC) {
+	switch (RIVER_OPTYPE(opType)) {
 	case RIVER_OPTYPE_IMM:
 	case RIVER_OPTYPE_NONE:
 		break;
@@ -96,7 +96,7 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 
 		memcpy(rTmp, &rIn, sizeof(*rTmp));
 		if (rIn.opTypes[0] != RIVER_OPTYPE_NONE) {
-			if (rIn.opTypes[0] & RIVER_OPTYPE_MEM) {
+			if (RIVER_OPTYPE(rIn.opTypes[0]) == RIVER_OPTYPE_MEM) {
 				rTmp->operands[0].asAddress = aTmp;
 				memcpy(aTmp, rIn.operands[0].asAddress, sizeof(*aTmp));
 			}
@@ -104,7 +104,7 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 		}
 
 		if (rIn.opTypes[1] != RIVER_OPTYPE_NONE) {
-			if (rIn.opTypes[1] & RIVER_OPTYPE_MEM) {
+			if (RIVER_OPTYPE(rIn.opTypes[1]) == RIVER_OPTYPE_MEM) {
 				rTmp->operands[1].asAddress = aTmp;
 				memcpy(aTmp, rIn.operands[1].asAddress, sizeof(*aTmp));
 			}
@@ -351,7 +351,7 @@ void RiverX86Assembler::AssembleRelJMPInstr(const RiverInstruction &ri, BYTE *&p
 
 	int addrJump = (int)(ri.operands[1].asImm32);
 
-	switch (ri.opTypes[0] & 0x03) {
+	switch (RIVER_OPSIZE(ri.opTypes[0])) {
 	case RIVER_OPSIZE_8:
 		addrJump += (char)ri.operands[0].asImm8;
 		break;
@@ -491,7 +491,7 @@ void RiverX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, BYTE
 	int addrFallThrough = (int)(ri.operands[1].asImm32);
 	int addrJump = addrFallThrough;
 
-	switch (ri.opTypes[0] & 0x03) {
+	switch (RIVER_OPSIZE(ri.opTypes[0])) {
 	case RIVER_OPSIZE_8:
 		addrJump += (char)ri.operands[0].asImm8;
 		break;
@@ -507,7 +507,7 @@ void RiverX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, BYTE
 	*px86 = ri.opCode;
 	px86++;
 
-	switch (ri.opTypes[0] & 0x03) {
+	switch (RIVER_OPSIZE(ri.opTypes[0])) {
 		case RIVER_OPSIZE_8:
 			*px86 = sizeof(pBranchJCC);
 			px86 += 1;
@@ -569,7 +569,7 @@ void RiverX86Assembler::AssembleCallInstr(const RiverInstruction &ri, BYTE *&px8
 	int retAddr = (int)(ri.operands[1].asImm32);
 	int addrJump = (int)(ri.operands[1].asImm32);
 
-	switch (ri.opTypes[0] & 0x03) {
+	switch (RIVER_OPSIZE(ri.opTypes[0])) {
 	case RIVER_OPSIZE_8:
 		addrJump += (char)ri.operands[0].asImm8;
 		break;

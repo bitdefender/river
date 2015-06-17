@@ -31,11 +31,11 @@ void RiverX86Disassembler::TrackModifiedRegisters(RiverInstruction &ri) {
 		//modifiysp = false;
 	}
 
-	if ((RIVER_SPEC_MODIFIES_OP2 & ri.specifiers) && (RIVER_OPTYPE_REG & ri.opTypes[1])) {
+	if ((RIVER_SPEC_MODIFIES_OP2 & ri.specifiers) && (RIVER_OPTYPE_REG == RIVER_OPTYPE(ri.opTypes[1]))) {
 		ri.operands[1].asRegister.versioned = codegen->NextReg(ri.operands[1].asRegister.name);
 	}
 
-	if ((RIVER_SPEC_MODIFIES_OP1 & ri.specifiers) && (RIVER_OPTYPE_REG & ri.opTypes[0])) {
+	if ((RIVER_SPEC_MODIFIES_OP1 & ri.specifiers) && (RIVER_OPTYPE_REG == RIVER_OPTYPE(ri.opTypes[0]))) {
 		ri.operands[0].asRegister.versioned = codegen->NextReg(ri.operands[0].asRegister.name);
 	}
 }

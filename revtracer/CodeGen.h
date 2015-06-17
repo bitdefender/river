@@ -32,7 +32,7 @@ private :
 
 	SymbopTranslator symbopTranslator;
 
-	DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86);
+	DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst);
 public :
 	//struct RiverInstruction trRiverInst[RIVER_TRANSLATE_INSTRUCTIONS]; // to be removed in the near future
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];

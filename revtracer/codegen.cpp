@@ -145,7 +145,7 @@ void MakeJMP(struct RiverInstruction *ri, DWORD jmpAddr) {
 
 void RiverPrintInstruction(RiverInstruction *ri);
 
-DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86) {
+DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
 	DbgPrint("= x86 to river ================================================================\n");
@@ -181,7 +181,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86) {
 
 		RiverPrintInstruction(&dis);
 
-		//trInstCount++;
+		dwInst++;
 	} while (!(pFlags & RIVER_FLAG_BRANCH));
 
 	DbgPrint("===============================================================================\n");
@@ -203,7 +203,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		Reset();
 
 		pCB->dwOrigOpCount = 0;
-		pCB->dwSize = TranslateBasicBlock((BYTE *)pCB->address); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
+		pCB->dwSize = TranslateBasicBlock((BYTE *)pCB->address, pCB->dwOrigOpCount); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
 		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 

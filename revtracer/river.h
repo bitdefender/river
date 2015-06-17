@@ -112,19 +112,25 @@ union RiverRegister {
 
 #include "RiverAddress.h"
 
-/* River operand types */
-#define RIVER_OPTYPE_IMM			0x00
-#define RIVER_OPTYPE_REG			0x04
-#define RIVER_OPTYPE_MEM			0x08
-#define RIVER_OPTYPE_ALL			0x0C
-#define RIVER_OPTYPE_NONE			0xFF
 
-#define RIVER_OPTYPE(type) ((type) & 0x0C)
+
+/* River operand types */
+#define RIVER_OPTYPE_NONE			0x00
+#define RIVER_OPTYPE_IMM			0x04
+#define RIVER_OPTYPE_REG			0x08
+#define RIVER_OPTYPE_MEM			0x0C
+#define RIVER_OPTYPE_ALL			0x10
+
+#define RIVER_OPTYPE(type) ((type) & 0x1C)
+#define RIVER_OPSIZE(type) ((type) & 0x03)
 
 /* River operand sizes */
 #define RIVER_OPSIZE_32				0x00
 #define RIVER_OPSIZE_16				0x01
 #define RIVER_OPSIZE_8				0x02
+
+/* River operand flags */
+#define RIVER_OPFLAG_IMPLICIT		0x80
 
 /* River operation specifiers */
 #define RIVER_SPEC_MODIFIES_OP1		0x0001
@@ -180,7 +186,7 @@ struct RiverInstruction {
 
 	inline void PromoteModifiers() {
 		for (int i = 0; i < 4; ++i) {
-			if ((RIVER_OPTYPE_NONE != opTypes[i]) && (RIVER_OPTYPE_MEM & opTypes[i])) {
+			if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(opTypes[i])) {
 				if (operands[i].asAddress->HasSegment()) {
 					modifiers |= operands[i].asAddress->GetSegment();
 					break;
@@ -215,7 +221,7 @@ struct RiverInstruction {
 
 	void TrackUnusedRegistersOperand(BYTE optype, const RiverOperand &op) {
 		BYTE reg;
-		switch (optype & RIVER_OPTYPE_ALL) {
+		switch (RIVER_OPTYPE(optype)) {
 			case RIVER_OPTYPE_IMM:
 				break;
 			case RIVER_OPTYPE_REG:
@@ -243,7 +249,7 @@ struct RiverInstruction {
 
 	void TrackEspOperand(BYTE optype, const RiverOperand &op) {
 		BYTE reg; 
-		switch (optype & RIVER_OPTYPE_ALL) {
+		switch (RIVER_OPTYPE(optype)) {
 			case RIVER_OPTYPE_IMM:
 				break;
 			case RIVER_OPTYPE_REG:

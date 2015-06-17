@@ -192,7 +192,7 @@ private :
 	template <BYTE regName> void DisassembleModRMRegThirdFixed(BYTE *&px86, RiverInstruction &ri) {
 		DisassembleModRMReg(px86, ri);
 
-		ri.opTypes[2] = RIVER_OPTYPE_REG;
+		ri.opTypes[2] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
 		ri.operands[2].asRegister.versioned = codegen->GetCurrentReg(regName);
 	}
 

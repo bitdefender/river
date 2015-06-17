@@ -5,11 +5,11 @@
 void SymbopTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
 	memcpy(&rOut, &rIn, sizeof(rOut));
 
-	if ((RIVER_OPTYPE_NONE != rIn.opTypes[0]) && (RIVER_OPTYPE_MEM & rIn.opTypes[0])) {
+	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[0])) {
 		rOut.operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);
 	}
 
-	if ((RIVER_OPTYPE_NONE != rIn.opTypes[1]) && (RIVER_OPTYPE_MEM & rIn.opTypes[1])) {
+	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[1])) {
 		rOut.operands[1].asAddress = codegen->CloneAddress(*rIn.operands[1].asAddress, rIn.modifiers);
 	}
 }
@@ -41,7 +41,8 @@ void SymbopTranslator::MakeTrackFlg(RiverInstruction *rMainOut, DWORD &instrCoun
 	rTrackOut->opCode = 0x9C; // pushf
 	rTrackOut->opTypes[0] = rTrackOut->opTypes[1] = RIVER_OPTYPE_NONE;
 	rTrackOut->subOpCode = 0;
-	rTrackOut->modifiers = RIVER_FAMILY_SYMBOP;
+	rTrackOut->modifiers = 0;
+	rTrackOut->family = RIVER_FAMILY_SYMBOP;
 
 	trackCount++;
 }
@@ -50,7 +51,8 @@ void SymbopTranslator::MakeMarkFlg(RiverInstruction *rMainOut, DWORD &instrCount
 	rTrackOut->opCode = 0x9D; // popf
 	rTrackOut->opTypes[0] = rTrackOut->opTypes[1] = RIVER_OPTYPE_NONE;
 	rTrackOut->subOpCode = 0;
-	rTrackOut->modifiers = RIVER_FAMILY_SYMBOP;
+	rTrackOut->modifiers = 0;
+	rTrackOut->family = RIVER_FAMILY_SYMBOP;
 
 	trackCount++;
 }
@@ -88,33 +90,35 @@ void SymbopTranslator::MakeTrackMem(const RiverAddress &mem, RiverInstruction *r
 	}
 
 	rMainOut[instrCount].opCode = 0x8D; // lea eax, [mem]
-	rMainOut[instrCount].modifiers = RIVER_FAMILY_SYMBOP;
-	
+	rMainOut[instrCount].modifiers = 0;
+	rMainOut[instrCount].family = RIVER_FAMILY_SYMBOP;
 	rMainOut[instrCount].opTypes[0] = RIVER_OPTYPE_REG;
 	rMainOut[instrCount].operands[0].asRegister.versioned = RIVER_REG_xAX;
-
 	rMainOut[instrCount].opTypes[1] = RIVER_OPTYPE_MEM;
 	rMainOut[instrCount].operands[1].asAddress = codegen->CloneAddress(mem, 0);
 	instrCount++;
 
 	rMainOut[instrCount].opCode = 0x50;
-	rMainOut[instrCount].modifiers = RIVER_FAMILY_SYMBOP;
+	rMainOut[instrCount].modifiers = 0;
+	rMainOut[instrCount].family = RIVER_FAMILY_SYMBOP;
 	rMainOut[instrCount].opTypes[0] = RIVER_OPTYPE_REG;
 	rMainOut[instrCount].operands[0].asRegister.versioned = RIVER_REG_xAX; //reg.name & 0xFFFFFF07;
-
 	rMainOut[instrCount].opTypes[1] = RIVER_OPTYPE_NONE;
 	instrCount++;
 
 	rMainOut[instrCount].opCode = 0x68;
-	rMainOut[instrCount].modifiers = RIVER_FAMILY_SYMBOP;
+	rMainOut[instrCount].modifiers = 0;
+	rMainOut[instrCount].family = RIVER_FAMILY_SYMBOP;
 	rMainOut[instrCount].opTypes[0] = RIVER_OPTYPE_IMM;
 	rMainOut[instrCount].operands[0].asImm32 = GetMemRepr(mem);
-
 	rMainOut[instrCount].opTypes[1] = RIVER_OPTYPE_NONE;
 	instrCount++;
+	
 
 	rTrackOut[trackCount].opCode = 0xFF;
 	rTrackOut[trackCount].subOpCode = 0x06;
+	rTrackOut[trackCount].modifiers = 0;
+	rTrackOut[trackCount].family = RIVER_FAMILY_NATIVE;
 	rTrackOut[trackCount].opTypes[0] = RIVER_OPTYPE_MEM;
 	rTrackOut[trackCount].operands[0].asAddress = codegen->CloneAddress(mem, 0);
 	trackCount++;

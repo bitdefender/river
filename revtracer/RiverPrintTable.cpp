@@ -65,7 +65,7 @@ void PrintRegister(struct RiverInstruction *ri, union RiverRegister *reg) {
 
 void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
 	bool bWr = false;
-	switch (ri->opTypes[idx] & ~0x03) {
+	switch (RIVER_OPTYPE(ri->opTypes[idx])) {
 		case RIVER_OPTYPE_IMM :
 			switch (ri->opTypes[idx] & 0x03) {
 				case RIVER_OPSIZE_8 :
