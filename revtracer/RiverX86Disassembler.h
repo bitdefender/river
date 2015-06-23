@@ -17,6 +17,7 @@ private:
 	void TrackUnusedRegistersOperand(RiverInstruction &ri, BYTE optype, const RiverOperand &op);*/
 
 	typedef void(RiverX86Disassembler::*DisassembleOpcodeFunc)(BYTE *&px86, RiverInstruction &ri, DWORD &flags);
+	typedef void(RiverX86Disassembler::*DisassembleExtraFunc)(BYTE extra, RiverInstruction &ri);
 	typedef void(RiverX86Disassembler::*DisassembleOperandsFunc)(BYTE *&px86, RiverInstruction &ri);
 
 	static DisassembleOpcodeFunc disassembleOpcodes[2][0x100];
@@ -142,6 +143,15 @@ private :
 	void DisassembleMoffs8(BYTE opIdx, BYTE *&px86, RiverInstruction &ri);
 	void DisassembleMoffs32(BYTE opIdx, BYTE *&px86, RiverInstruction &ri);
 
+	/* extra disassemblers */
+	void DropExtra(BYTE extra, RiverInstruction &ri) {}
+	void SubOpExtra(BYTE extra, RiverInstruction &ri) {
+		ri.subOpCode = extra;
+	}
+	template <BYTE opIdx> void RegExtra(BYTE extra, RiverInstruction &ri) {
+		DisassembleRegOp(opIdx, ri, extra);
+	}
+
 	/* operand disassemblers */
 	void DisassembleUnkOp(BYTE *&px86, RiverInstruction &ri);
 	void DisassembleNoOp(BYTE *&px86, RiverInstruction &ri);
@@ -189,15 +199,38 @@ private :
 		DisassembleRegOp(0, ri, sec);
 	}
 
-	template <BYTE regName> void DisassembleModRMRegThirdFixed(BYTE *&px86, RiverInstruction &ri) {
-		DisassembleModRMReg(px86, ri);
+	template <BYTE opIdx, BYTE opFlg, BYTE regName, DisassembleOperandsFunc cont> void DisassembleConstRegOperand(BYTE *&px86, RiverInstruction &ri) {
+		(this->*cont)(px86, ri);
 
-		ri.opTypes[2] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
-		ri.operands[2].asRegister.versioned = codegen->GetCurrentReg(regName);
+		//ri.opTypes[opIdx] = RIVER_OPTYPE_REG | opFlg;
+		//ri.operands[opIdx].asRegister.versioned = codegen->GetCurrentReg(regName);
+
+		DisassembleRegOp(opIdx, ri, regName);
+		ri.opTypes[opIdx] |= opFlg;
 	}
 
-	template <BYTE regName> void DisassembleDefaultSecondRegOp(BYTE *&px86, RiverInstruction &ri) {
-		DisassembleRegOp(1, ri, regName);
+	template <BYTE opIdx, BYTE opFlg, BYTE base, BYTE disp8, DisassembleOperandsFunc cont> void DisassembleConstMemOperand(BYTE *&px86, RiverInstruction &ri) {
+		(this->*cont)(px86, ri);
+
+		RiverAddress32 *rAddr = (RiverAddress32 *)codegen->AllocAddr(ri.modifiers); //new RiverAddress;
+		
+		rAddr->scaleAndSegment = 0;
+		rAddr->type = RIVER_ADDR_BASE | RIVER_ADDR_DIRTY;
+		rAddr->type |= (disp8 != 0) ? RIVER_ADDR_DISP8 : 0;
+		
+		BYTE opType = RIVER_OPTYPE_MEM | opFlg;
+		if (RIVER_MODIFIER_O8 & ri.modifiers) {
+			opType |= RIVER_OPSIZE_8;
+		}
+		else if (RIVER_MODIFIER_O16 & ri.modifiers) {
+			opType |= RIVER_OPSIZE_16;
+		}
+
+		rAddr->base.versioned = codegen->GetCurrentReg(base);
+		rAddr->disp.d8 = disp8;
+
+		ri.opTypes[opIdx] = opType;
+		ri.operands[opIdx].asAddress = rAddr;
 	}
 };
 

@@ -37,7 +37,7 @@ private :
 	/* Opcode translators */
 	void TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslatePush(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void _TranslatePush(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslatePop(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateRetn(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateSavexAX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);

@@ -43,6 +43,7 @@ struct Regs {
 	DWORD eax;
 	DWORD eflags;
 } regClone[2];
+DWORD execStack[2];
 
 bool RegCheck(struct _exec_env *pEnv, const Regs &r1, const Regs &r2) {
 	if (r1.eax != r2.eax) {
@@ -128,7 +129,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	RiverBasicBlock *pCB;
 	struct UserCtx *ctx = (struct UserCtx *)pEnv->userContext;
 
-	DbgPrint("BranchHandler: %08X\n", a);
+	//DbgPrint("BranchHandler: %08X\n", a);
 
 	fprintf(fBlocks, "0x%08x\n", a /*& 0xFFFF*/);
 	fflush(fBlocks);
@@ -153,11 +154,19 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 			if (!RegCheck(pEnv, *currentRegs, regClone[1])) {
 				__asm int 3;
 			}
+
+			if (execStack[1] != pEnv->runtimeContext.virtualStack) {
+				__asm int 3
+			}
 			break;
 		case 4:
 			//copy the registers to validate them later
 			if (!RegCheck(pEnv, *currentRegs, regClone[0])) {
 				__asm int 3;
+			}
+
+			if (execStack[0] != pEnv->runtimeContext.virtualStack) {
+				__asm int 3
 			}
 			break;
 		}
@@ -165,11 +174,18 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 
 	ctx->callCount++;
 
+	DWORD *stk = (DWORD *)pEnv->runtimeContext.virtualStack;
+	DbgPrint("Stack :\n");
+	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x00, stk[0], stk[1], stk[2], stk[3]);
+	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x10, stk[4], stk[5], stk[6], stk[7]);
+	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x20, stk[8], stk[9], stk[10], stk[11]);
+	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x30, stk[12], stk[13], stk[14], stk[15]);
+
 	if ((ctx->callCount % 5) > 2) {
 		// go backwards
-		DbgPrint("Going Backwards!!!\n");
 		DWORD addr = PopFromExecutionBuffer(pEnv);
-
+		DbgPrint("Going Backwards to %08X!!!\n", addr);
+		
 		DbgPrint("Looking for block\n");
 		pCB = pEnv->blockCache.FindBlock(addr);
 		if (pCB) {
@@ -186,7 +202,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 
 	} else {
 		// go forwards
-		DbgPrint("Going Forwards!!!\n");
+		DbgPrint("Going Forwards from %08X!!!\n", a);
 		__try {
 			DbgPrint("Looking for block\n");
 			pCB = pEnv->blockCache.FindBlock(a);
@@ -220,10 +236,12 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 				case 1: 
 					//copy the registers to validate them later
 					memcpy(&regClone[0], currentRegs, sizeof(regClone[0]));
+					execStack[0] = pEnv->runtimeContext.virtualStack;
 					break;
 				case 2:
 					//copy the registers to validate them later
 					memcpy(&regClone[1], currentRegs, sizeof(regClone[1]));
+					execStack[1] = pEnv->runtimeContext.virtualStack;
 					break;
 			}
 			

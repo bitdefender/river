@@ -85,6 +85,11 @@
     <ClCompile Include="SymbopTranslator.cpp" />
     <ClCompile Include="sync.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RiverX86DisassemblerTable.cpp">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F348D3BE-A0A6-42C5-ACBE-806AC106ACC3}</ProjectGuid>
     <RootNamespace>revtracer</RootNamespace>

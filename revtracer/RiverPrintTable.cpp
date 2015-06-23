@@ -28,6 +28,10 @@ void PrintPrefixes(struct RiverInstruction *ri) {
 		DbgPrint("symbop");
 	}
 
+	if (ri->family & RIVER_FAMILY_METAOP) {
+		DbgPrint("meta");
+	}
+
 	if (ri->modifiers & RIVER_MODIFIER_LOCK) {
 		DbgPrint("lock ");
 	}
@@ -65,6 +69,11 @@ void PrintRegister(struct RiverInstruction *ri, union RiverRegister *reg) {
 
 void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
 	bool bWr = false;
+
+	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
+		DbgPrint("{");
+	}
+
 	switch (RIVER_OPTYPE(ri->opTypes[idx])) {
 		case RIVER_OPTYPE_IMM :
 			switch (ri->opTypes[idx] & 0x03) {
@@ -136,6 +145,10 @@ void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
 
 			DbgPrint("]");
 			break;
+	}
+
+	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
+		DbgPrint("}");
 	}
 }
 
