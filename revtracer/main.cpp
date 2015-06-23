@@ -156,7 +156,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 			}
 
 			if (execStack[1] != pEnv->runtimeContext.virtualStack) {
-				__asm int 3
+				//__asm int 3
 			}
 			break;
 		case 4:
@@ -166,7 +166,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 			}
 
 			if (execStack[0] != pEnv->runtimeContext.virtualStack) {
-				__asm int 3
+				//__asm int 3
 			}
 			break;
 		}
