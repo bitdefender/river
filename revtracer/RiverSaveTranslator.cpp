@@ -224,7 +224,7 @@ void RiverSaveTranslator::_TranslatePush(RiverInstruction *rOut, const RiverInst
 	SaveOperands(rOut, rIn, instrCount);
 }
 
-void RiverSaveTranslator::TranslatePop(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::_TranslatePop(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xSP;
@@ -240,7 +240,7 @@ void RiverSaveTranslator::TranslatePop(RiverInstruction *rOut, const RiverInstru
 	SaveOperands(rOut, rIn, instrCount);
 }
 
-void RiverSaveTranslator::TranslateRetn(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::_TranslateRetn(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xSP;
@@ -256,7 +256,7 @@ void RiverSaveTranslator::TranslateRetn(RiverInstruction *rOut, const RiverInstr
 	SaveOperands(rOut, rIn, instrCount);
 }
 
-void RiverSaveTranslator::TranslateSavexAX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::_TranslateSavexAX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xAX;
@@ -267,7 +267,7 @@ void RiverSaveTranslator::TranslateSavexAX(RiverInstruction *rOut, const RiverIn
 	SaveOperands(rOut, rIn, instrCount);
 }
 
-void RiverSaveTranslator::TranslateSavexAXxDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::_TranslateSavexAXxDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xAX;
@@ -283,7 +283,7 @@ void RiverSaveTranslator::TranslateSavexAXxDX(RiverInstruction *rOut, const Rive
 	SaveOperands(rOut, rIn, instrCount);
 }
 
-void RiverSaveTranslator::TranslateSavexDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::_TranslateSavexDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xDX;
@@ -294,7 +294,7 @@ void RiverSaveTranslator::TranslateSavexDX(RiverInstruction *rOut, const RiverIn
 	SaveOperands(rOut, rIn, instrCount);
 }
 
-void RiverSaveTranslator::TranslateSavexSPxBP(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::_TranslateSavexSPxBP(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xSP;
@@ -310,7 +310,7 @@ void RiverSaveTranslator::TranslateSavexSPxBP(RiverInstruction *rOut, const Rive
 	SaveOperands(rOut, rIn, instrCount);
 }
 
-void RiverSaveTranslator::TranslateSavexSIxDI(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::_TranslateSavexSIxDI(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xSI;
@@ -429,22 +429,22 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translateOpcodes[2
 
 		/*0x90*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 		/*0x94*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
-		/*0x98*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateSavexDX, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
+		/*0x98*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 		/*0x9C*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 
 		/*0xA0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
-		/*0xA4*/&RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateSavexSIxDI>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateSavexSIxDI>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateSavexSIxDI>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateSavexSIxDI>,
-		/*0xA8*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateSavexSIxDI>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateSavexSIxDI>,
-		/*0xAC*/&RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateUnk>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateUnk>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateSavexSIxDI>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateSavexSIxDI>,
+		/*0xA4*/&RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateDefault>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateDefault>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateDefault>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateDefault>,
+		/*0xA8*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateDefault>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateDefault>,
+		/*0xAC*/&RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateUnk>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateUnk>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateDefault>, &RiverSaveTranslator::TranslateRep<&RiverSaveTranslator::TranslateDefault>,
 
 		/*0xB0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 		/*0xB4*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 		/*0xB8*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 		/*0xBC*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 
-		/*0xC0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateRetn, &RiverSaveTranslator::TranslatePop,
+		/*0xC0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 		/*0xC4*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
-		/*0xC8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateSavexSPxBP, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+		/*0xC8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0xCC*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 
 		/*0xD0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
@@ -477,7 +477,7 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translateOpcodes[2
 		/*0x28*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0x2C*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 
-		/*0x30*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateSavexAXxDX, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+		/*0x30*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0x34*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0x38*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0x3C*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
@@ -517,7 +517,7 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translateOpcodes[2
 		/*0xA8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0xAC*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault,
 
-		/*0xB0*/&RiverSaveTranslator::TranslateSavexAX, &RiverSaveTranslator::TranslateSavexAX, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+		/*0xB0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0xB4*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 		/*0xB8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk,
 		/*0xBC*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
@@ -545,8 +545,14 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translateOpcodes[2
 };
 
 RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translate0xF7[8] = {
-	&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
-	&RiverSaveTranslator::TranslateSavexAXxDX, &RiverSaveTranslator::TranslateSavexAXxDX, &RiverSaveTranslator::TranslateSavexAXxDX, &RiverSaveTranslator::TranslateSavexAXxDX
+	&RiverSaveTranslator::TranslateDefault, 
+	&RiverSaveTranslator::TranslateDefault, 
+	&RiverSaveTranslator::TranslateDefault, 
+	&RiverSaveTranslator::TranslateDefault,
+	&RiverSaveTranslator::TranslateDefault,
+	&RiverSaveTranslator::TranslateDefault,
+	&RiverSaveTranslator::TranslateDefault,
+	&RiverSaveTranslator::TranslateDefault
 };
 
 
@@ -562,6 +568,12 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translate0xFF[8] =
 };
 
 RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translate0x0FC7[8] = {
-	&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateSaveCMPXCHG8B, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
-	&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk
+	&RiverSaveTranslator::TranslateUnk, 
+	&RiverSaveTranslator::TranslateSaveCMPXCHG8B, 
+	&RiverSaveTranslator::TranslateUnk, 
+	&RiverSaveTranslator::TranslateUnk,
+	&RiverSaveTranslator::TranslateUnk, 
+	&RiverSaveTranslator::TranslateUnk, 
+	&RiverSaveTranslator::TranslateUnk, 
+	&RiverSaveTranslator::TranslateUnk
 };

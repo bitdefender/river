@@ -38,13 +38,13 @@ private :
 	void TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void _TranslatePush(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslatePop(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateRetn(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateSavexAX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateSavexDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateSavexAXxDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateSavexSPxBP(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateSavexSIxDI(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void _TranslatePop(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void _TranslateRetn(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void _TranslateSavexAX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void _TranslateSavexDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void _TranslateSavexAXxDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void _TranslateSavexSPxBP(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void _TranslateSavexSIxDI(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateSaveCPUID(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 
