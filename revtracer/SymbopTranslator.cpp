@@ -173,12 +173,10 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 		MakeTrackFlg(rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
-	if (RIVER_OPTYPE_NONE != rIn.opTypes[1]) {
-		MakeTrackOp(rIn.opTypes[1], rIn.operands[1], rMainOut, instrCount, rTrackOut, trackCount);
-	}
-
-	if (RIVER_OPTYPE_NONE != rIn.opTypes[0]) {
-		MakeTrackOp(rIn.opTypes[0], rIn.operands[0], rMainOut, instrCount, rTrackOut, trackCount);
+	for (int i = 3; i >= 0; --i) {
+		if ((RIVER_OPTYPE_NONE != rIn.opTypes[i]) && (0 == (RIVER_SPEC_IGNORES_OP(i) & rIn.specifiers))) {
+			MakeTrackOp(rIn.opTypes[i], rIn.operands[i], rMainOut, instrCount, rTrackOut, trackCount);
+		}
 	}
 
 	// make opcode
@@ -190,12 +188,10 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 		MakeMarkFlg(rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
-	if ((RIVER_SPEC_MODIFIES_OP2 & rIn.specifiers) && (RIVER_OPTYPE_NONE != rIn.opTypes[1])) {
-		MakeMarkOp(rIn.opTypes[1], rIn.operands[1], rMainOut, instrCount, rTrackOut, trackCount);
-	}
-
-	if ((RIVER_SPEC_MODIFIES_OP1 & rIn.specifiers) && (RIVER_OPTYPE_NONE != rIn.opTypes[0])) {
-		MakeMarkOp(rIn.opTypes[1], rIn.operands[1], rMainOut, instrCount, rTrackOut, trackCount);
+	for (int i = 3; i >= 0; --i) {
+		if ((RIVER_OPTYPE_NONE != rIn.opTypes[1]) && (RIVER_SPEC_MODIFIES_OP(i) & rIn.specifiers)) {
+			MakeMarkOp(rIn.opTypes[1], rIn.operands[1], rMainOut, instrCount, rTrackOut, trackCount);
+		}
 	}
 }
 

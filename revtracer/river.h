@@ -151,8 +151,21 @@ union RiverRegister {
 #define RIVER_SPEC_IGNORES_OP2		0x0200
 #define RIVER_SPEC_IGNORES_OP3		0x0400
 #define RIVER_SPEC_IGNORES_OP4		0x0800
-#define RIVER_SPEC_IGNORES_OP(idx)		(0x0100 << (idx))
+#define RIVER_SPEC_IGNORES_OP(idx)	(0x0100 << (idx))
 #define RIVER_SPEC_IGNORES_FLG		0x1000
+
+/* Operation flags */
+#define RIVER_SPEC_FLAG_CF			0x01
+#define RIVER_SPEC_FLAG_PF			0x02
+#define RIVER_SPEC_FLAG_AF			0x04
+#define RIVER_SPEC_FLAG_ZF			0x08
+#define RIVER_SPEC_FLAG_SF			0x10
+#define RIVER_SPEC_FLAG_OF			0x20
+#define RIVER_SPEC_FLAG_DF			0x40
+
+#define RIVER_SPEC_FLAG_OSZAP		(RIVER_SPEC_FLAG_PF | RIVER_SPEC_FLAG_AF | RIVER_SPEC_FLAG_ZF | RIVER_SPEC_FLAG_SF | RIVER_SPEC_FLAG_OF)
+#define RIVER_SPEC_FLAG_OSZAPC		(RIVER_SPEC_FLAG_CF | RIVER_SPEC_FLAG_OSZAP)
+
 
 /* Use a secondary table for lookup*/
 #define RIVER_SPEC_MODIFIES_EXT		0x8000
@@ -180,6 +193,8 @@ struct RiverInstruction {
 	BYTE unusedRegisters;
 	BYTE opCode;
 	BYTE subOpCode;
+
+	BYTE modFlags, testFlags;
 
 	BYTE opTypes[4];
 	union RiverOperand operands[4];
