@@ -10,6 +10,9 @@ class RiverX86Assembler {
 private :
 	RiverRuntime *runtime;
 
+	bool needsRAFix;
+	BYTE *rvAddress;
+
 	void SwitchToRiver(BYTE *&px86, DWORD &instrCounter);
 	void SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE repReg);
 	void EndRiverConversion(BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter);
@@ -39,6 +42,15 @@ private :
 public :
 	bool Init(RiverRuntime *rt);
 	bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter);
+
+	void CopyFix(BYTE *dst, BYTE *src) {
+		if (needsRAFix) {
+			DWORD offset = (rvAddress - src);
+			DWORD adjust = src - dst;
+
+			*(DWORD *)(&src[offset]) += adjust;
+		}
+	}
 private :
 	/* opcodes assemblers */
 	void AssembleUnkInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
