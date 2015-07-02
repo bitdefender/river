@@ -438,6 +438,12 @@ void RiverX86Assembler::AssembleLeaveForSyscall(
 
 	// assemble actual syscall
 	GeneratePrefixes(ri, px86);
+
+	if (ri.modifiers & RIVER_MODIFIER_EXT) {
+		*px86 = 0x0F;
+		px86++;
+	}
+
 	(*this.*opcodeFunc)(ri, px86, pFlags, instrCounter);
 	(*this.*operandsFunc)(ri, px86);
 
@@ -638,6 +644,8 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 }
 
 void RiverX86Assembler::AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
+	px86--;
+	ClearPrefixes(ri, px86);
 	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleNoOp);
 }
 

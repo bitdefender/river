@@ -84,6 +84,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="SymbopTranslator.cpp" />
     <ClCompile Include="sync.cpp" />
