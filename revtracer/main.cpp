@@ -181,7 +181,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x20, stk[8], stk[9], stk[10], stk[11]);
 	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x30, stk[12], stk[13], stk[14], stk[15]);
 
-	if ((ctx->callCount % 5) > 2) {
+	if ((ctx->callCount % 5) > 5) {
 		// go backwards
 		DWORD addr = PopFromExecutionBuffer(pEnv);
 		DbgPrint("Going Backwards to %08X!!!\n", addr);
@@ -267,6 +267,8 @@ void __stdcall SysHandler(struct _exec_env *pEnv) {
 	fprintf(fBlocks, "Syscall!!\n");
 	fflush(fBlocks);
 
+	TakeSnapshot();
+
 	/*UINT_PTR a;
 	struct _cb_info *pCB;
 
@@ -318,6 +320,10 @@ int main(unsigned int argc, char *argv[]) {
 	if (!MapPE(baseAddr)) {
 		return false;
 	}
+
+#ifdef _USE_VBOX_SNAPSHOTS
+	
+#endif
 
 	//SegmentHandler(NULL, 0x756b271e, 0x33);
 

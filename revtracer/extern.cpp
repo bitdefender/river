@@ -7,6 +7,60 @@
 
 #include "extern.h"
 
+#ifdef USE_VBOX_SNAPSHOTS
+#include "VBoxSnapshotDll.h"
+
+HMODULE hVboxDll = NULL;
+BDTakeSnapshotType takeSnapshot = NULL;
+BDRestoreSnapshotType restoreSnapshot = NULL;
+BDSnapshotInitType initSnapshot = NULL;
+
+struct SnapshotInitializer {
+	SnapshotInitializer() {
+		hVboxDll = LoadLibrary(VBOXSNAPSHOTDLL_DLL_NAME);
+
+		if (NULL == hVboxDll) {
+			return;
+		}
+
+		initSnapshot = (BDSnapshotInitType)GetProcAddress(hVboxDll, "BDSnapshotInit");
+
+		if ((NULL == initSnapshot) || (FALSE == initSnapshot())) {
+			return;
+		}
+
+		takeSnapshot = (BDTakeSnapshotType)GetProcAddress(hVboxDll, "BDTakeSnapshot");
+		restoreSnapshot = (BDTakeSnapshotType)GetProcAddress(hVboxDll, "BDRestoreSnapshot");
+	}
+
+	~SnapshotInitializer() {
+		if (NULL != hVboxDll) {
+			FreeLibrary(hVboxDll);
+		}
+	}
+} _snapshotInitializer;
+#endif
+
+unsigned long long TakeSnapshot() {
+#ifdef USE_VBOX_SNAPSHOTS
+	if (NULL != takeSnapshot) {
+		return takeSnapshot();
+	}
+	return BD_SNAPSHOT_FAIL;
+#endif
+	return 0;
+}
+
+unsigned long long RestoreSnapshot() {
+#ifdef USE_VBOX_SNAPSHOTS
+	if (NULL != restoreSnapshot) {
+		return restoreSnapshot();
+	}
+	return BD_SNAPSHOT_FAIL;
+#endif
+	return 0;
+}
+
 DWORD dwExitProcess = (DWORD)ExitProcess;
 
 struct _ {

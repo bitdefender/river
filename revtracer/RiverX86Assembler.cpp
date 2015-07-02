@@ -637,6 +637,10 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 	instrCounter += 16;
 }
 
+void RiverX86Assembler::AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
+	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleNoOp);
+}
+
 void RiverX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
 	/*static const char pGetAddrCode[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - [<dwEaxSave>], eax
@@ -1065,7 +1069,7 @@ RiverX86Assembler::AssembleOpcodeFunc RiverX86Assembler::assembleOpcodes[2][0x10
 		/*0x2C*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 
 		/*0x30*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
-		/*0x34*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
+		/*0x34*/ &RiverX86Assembler::AssembleSyscall, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 		/*0x38*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 		/*0x3C*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 
@@ -1229,7 +1233,7 @@ RiverX86Assembler::AssembleOperandsFunc RiverX86Assembler::assembleOperands[2][0
 		/*0x2C*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 
 		/*0x30*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleNoOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
-		/*0x34*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
+		/*0x34*/ &RiverX86Assembler::AssembleNoOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 		/*0x38*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 		/*0x3C*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 

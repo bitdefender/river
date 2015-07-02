@@ -47,4 +47,7 @@ void DbgPrint(const char *fmt, ...);
 void *EnvMemoryAlloc(unsigned long dwSize);
 void EnvMemoryFree(void *b);
 
+unsigned long long TakeSnapshot();
+unsigned long long RestoreSnapshot();
+
 #endif

@@ -21,7 +21,9 @@
     <ClInclude Include="river.h" />
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
-    <ClInclude Include="RiverOptimizer.h" />
+    <ClInclude Include="RiverOptimizer.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="RiverReverseTranslator.h" />
     <ClInclude Include="RiverSaveTranslator.h" />
     <ClInclude Include="RiverX86Assembler.h" />
@@ -59,6 +61,7 @@
     <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverOptimizer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseTranslator.cpp" />
@@ -124,6 +127,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>USE_VBOX_SNAPSHOTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
