@@ -54,6 +54,7 @@ private :
 	void AssembleRetnInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 	void AssembleRetnImmInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 	void AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleSyscall2(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 
 	void AssembleLeaveForSyscall(
 		const RiverInstruction &ri,

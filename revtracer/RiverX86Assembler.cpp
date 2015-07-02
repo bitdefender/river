@@ -439,11 +439,6 @@ void RiverX86Assembler::AssembleLeaveForSyscall(
 	// assemble actual syscall
 	GeneratePrefixes(ri, px86);
 
-	if (ri.modifiers & RIVER_MODIFIER_EXT) {
-		*px86 = 0x0F;
-		px86++;
-	}
-
 	(*this.*opcodeFunc)(ri, px86, pFlags, instrCounter);
 	(*this.*operandsFunc)(ri, px86);
 
@@ -643,10 +638,24 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 	instrCounter += 16;
 }
 
+void RiverX86Assembler::AssembleSyscall2(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
+	static const char pSaveEdxCode[] = {
+		0x89, 0x15, 0x00, 0x00, 0x00, 0x00,				// 0x00 - [<dwEaxSave>], edx
+		0xba, 0x00, 0x00, 0x00, 0x00,					// 0x05 - mov edx, retaddr
+		0x0F, 0x34,										// 0x0A - syscall
+		0x8B, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x0C - mov edx, [<dwEaxSave>]
+	};
+
+	memcpy(px86, pSaveEdxCode, sizeof(pSaveEdxCode));
+	*(unsigned int *)(&(px86[0x02])) = (unsigned int)&runtime->returnRegister;
+	*(unsigned int *)(&(px86[0x06])) = ((unsigned int)px86) + 0x0C;
+	*(unsigned int *)(&(px86[0x0E])) = (unsigned int)&runtime->returnRegister;
+}
+
 void RiverX86Assembler::AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
 	px86--;
 	ClearPrefixes(ri, px86);
-	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleNoOp);
+	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &RiverX86Assembler::AssembleSyscall2, &RiverX86Assembler::AssembleNoOp);
 }
 
 void RiverX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
