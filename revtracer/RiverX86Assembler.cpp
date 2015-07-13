@@ -637,6 +637,29 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 	instrCounter += 16;
 }
 
+void RiverX86Assembler::AssembleSyscall2(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
+	static const char pSaveEdxCode[] = {
+		0xC7, 0x02, 0x00, 0x00, 0x00, 0x00,				// 0x00 - mov [edx], imm32
+		0x0F, 0x34										// 0x06 - syscall
+	};
+
+	memcpy(px86, pSaveEdxCode, sizeof(pSaveEdxCode));
+	*(unsigned int *)(&(px86[0x02])) = ((unsigned int)px86) + 0x08;
+	
+	needsRAFix = true;
+	rvAddress = &px86[0x02];
+
+	px86 += sizeof(pSaveEdxCode);
+	instrCounter += 4;
+}
+
+
+void RiverX86Assembler::AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
+	px86--;
+	ClearPrefixes(ri, px86);
+	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &RiverX86Assembler::AssembleSyscall2, &RiverX86Assembler::AssembleNoOp);
+}
+
 void RiverX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
 	/*static const char pGetAddrCode[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - [<dwEaxSave>], eax

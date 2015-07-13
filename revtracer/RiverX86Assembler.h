@@ -10,6 +10,9 @@ class RiverX86Assembler {
 private :
 	RiverRuntime *runtime;
 
+	bool needsRAFix;
+	BYTE *rvAddress;
+
 	void SwitchToRiver(BYTE *&px86, DWORD &instrCounter);
 	void SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE repReg);
 	void EndRiverConversion(BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter);
@@ -39,6 +42,15 @@ private :
 public :
 	bool Init(RiverRuntime *rt);
 	bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter);
+
+	void CopyFix(BYTE *dst, BYTE *src) {
+		if (needsRAFix) {
+			DWORD offset = (rvAddress - src);
+
+			*(DWORD *)(&dst[offset]) -= (DWORD)src;
+			*(DWORD *)(&dst[offset]) += (DWORD)dst;
+		}
+	}
 private :
 	/* opcodes assemblers */
 	void AssembleUnkInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
@@ -53,6 +65,8 @@ private :
 	void AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 	void AssembleRetnInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 	void AssembleRetnImmInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleSyscall2(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter);
 
 	void AssembleLeaveForSyscall(
 		const RiverInstruction &ri,
