@@ -46,9 +46,9 @@ public :
 	void CopyFix(BYTE *dst, BYTE *src) {
 		if (needsRAFix) {
 			DWORD offset = (rvAddress - src);
-			DWORD adjust = src - dst;
 
-			*(DWORD *)(&src[offset]) += adjust;
+			*(DWORD *)(&dst[offset]) -= (DWORD)src;
+			*(DWORD *)(&dst[offset]) += (DWORD)dst;
 		}
 	}
 private :

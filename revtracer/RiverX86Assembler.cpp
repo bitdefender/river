@@ -642,23 +642,20 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 
 void RiverX86Assembler::AssembleSyscall2(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
 	static const char pSaveEdxCode[] = {
-		0x89, 0x15, 0x00, 0x00, 0x00, 0x00,				// 0x00 - [<dwEaxSave>], edx
-		0xba, 0x00, 0x00, 0x00, 0x00,					// 0x06 - mov edx, retaddr
-		0x0F, 0x34,										// 0x0B - syscall
-		0x8B, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x0D - mov edx, [<dwEaxSave>]
+		0xC7, 0x02, 0x00, 0x00, 0x00, 0x00,				// 0x00 - mov [edx], imm32
+		0x0F, 0x34										// 0x06 - syscall
 	};
 
 	memcpy(px86, pSaveEdxCode, sizeof(pSaveEdxCode));
-	*(unsigned int *)(&(px86[0x02])) = (unsigned int)&runtime->returnRegister;
-	*(unsigned int *)(&(px86[0x07])) = ((unsigned int)px86) + 0x0C;
-	*(unsigned int *)(&(px86[0x0F])) = (unsigned int)&runtime->returnRegister;
-
+	*(unsigned int *)(&(px86[0x02])) = ((unsigned int)px86) + 0x08;
+	
 	needsRAFix = true;
-	rvAddress = &px86[0x07];
+	rvAddress = &px86[0x02];
 
 	px86 += sizeof(pSaveEdxCode);
-	instrCounter += 16;
+	instrCounter += 4;
 }
+
 
 void RiverX86Assembler::AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
 	px86--;
