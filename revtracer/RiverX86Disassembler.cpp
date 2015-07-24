@@ -615,7 +615,7 @@ const WORD specTbl[2][0x100] = {
 			/*0x31*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_OP2 | RIVER_SPEC_IGNORES_OP1 | RIVER_SPEC_IGNORES_OP2 | RIVER_SPEC_IGNORES_FLG,
 			/*0x32*/ 0xFF,
 			/*0x33*/ 0xFF,
-			/*0x34*/ 0xFF,
+			/*0x34*/ 0x0,
 			/*0x35*/ 0xFF,
 			/*0x36*/ 0xFF,
 			/*0x37*/ 0xFF,

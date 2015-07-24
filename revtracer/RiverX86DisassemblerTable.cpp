@@ -104,7 +104,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 			/*0x2C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
 			/*0x30*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
-			/*0x34*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+			/*0x34*/ &RiverX86Disassembler::DisassembleRelJmpInstr<1>, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0x38*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0x3C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
@@ -557,7 +557,7 @@ RiverX86Disassembler::DisassembleOperandsFunc RiverX86Disassembler::disassembleO
 		>,
 		/*0x32*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0x33*/ &RiverX86Disassembler::DisassembleUnkOp,
-		/*0x34*/ &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x34*/ &RiverX86Disassembler::DisassembleNoOp,
 		/*0x35*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0x36*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0x37*/ &RiverX86Disassembler::DisassembleUnkOp,

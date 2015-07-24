@@ -282,6 +282,8 @@ bool RiverX86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, B
 	DWORD pFlags = flg;
 	BYTE repReg = 0;
 
+	needsRAFix = false;
+
 	DbgPrint("= river to x86 ================================================================\n");
 
 	for (DWORD i = 0; i < dwInstrCount; ++i) {
@@ -1088,7 +1090,7 @@ RiverX86Assembler::AssembleOpcodeFunc RiverX86Assembler::assembleOpcodes[2][0x10
 		/*0x2C*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 
 		/*0x30*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleDefaultInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
-		/*0x34*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
+		/*0x34*/ &RiverX86Assembler::AssembleSyscall, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 		/*0x38*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 		/*0x3C*/ &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr, &RiverX86Assembler::AssembleUnkInstr,
 
@@ -1252,7 +1254,7 @@ RiverX86Assembler::AssembleOperandsFunc RiverX86Assembler::assembleOperands[2][0
 		/*0x2C*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 
 		/*0x30*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleNoOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
-		/*0x34*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
+		/*0x34*/ &RiverX86Assembler::AssembleNoOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 		/*0x38*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 		/*0x3C*/ &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp, &RiverX86Assembler::AssembleUnknownOp,
 

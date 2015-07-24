@@ -478,7 +478,7 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translateOpcodes[2
 		/*0x2C*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 
 		/*0x30*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
-		/*0x34*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+		/*0x34*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0x38*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 		/*0x3C*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
 
