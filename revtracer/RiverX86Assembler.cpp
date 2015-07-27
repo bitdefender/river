@@ -663,6 +663,15 @@ void RiverX86Assembler::AssembleSyscall(const RiverInstruction &ri, BYTE *&px86,
 	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &RiverX86Assembler::AssembleSyscall2, &RiverX86Assembler::AssembleNoOp);
 }
 
+}
+
+
+void RiverX86Assembler::AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
+	px86--;
+	ClearPrefixes(ri, px86);
+	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &RiverX86Assembler::AssembleSyscall2, &RiverX86Assembler::AssembleNoOp);
+}
+
 void RiverX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
 	/*static const char pGetAddrCode[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - [<dwEaxSave>], eax

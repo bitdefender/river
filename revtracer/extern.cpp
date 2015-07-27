@@ -4,6 +4,7 @@
 #include <share.h>
 
 #include <Windows.h>
+#include <winternl.h>
 
 #include "extern.h"
 
@@ -63,21 +64,39 @@ unsigned long long RestoreSnapshot() {
 
 DWORD dwExitProcess = (DWORD)ExitProcess;
 
+__declspec(dllimport) int vsnprintf_s(
+	char *buffer,
+	size_t sizeOfBuffer,
+	size_t count,
+	const char *format,
+	va_list argptr
+);
+
 struct _ {
-	FILE *fDbg;
+	HANDLE fDbg;
 	_() {
-		fDbg = _fsopen("translation.log", "wt", _SH_DENYWR);
+		fDbg = CreateFile("translation.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, TRUNCATE_EXISTING, 0, NULL);
+		if (INVALID_HANDLE_VALUE == fDbg) {
+			__asm int 3;
+		}
+	}
+
+	~_() {
+		CloseHandle(fDbg);
 	}
 } __;
 
 void DbgPrint(const char *fmt, ...) {
 	va_list va;
+	char tmpBuff[512];
 
 	va_start(va, fmt);
-	vfprintf(__.fDbg, fmt, va);
+	int sz = _vsnprintf_s(tmpBuff, sizeof(tmpBuff) - 1, fmt, va);
 	va_end(va);
 
-	fflush(__.fDbg);
+	unsigned long wr;
+	WriteFile(__.fDbg, tmpBuff, sz * sizeof(tmpBuff[0]), &wr, NULL);
+	//FlushFileBuffers(__.fDbg);
 }
 
 void *EnvMemoryAlloc(unsigned long dwSize) {

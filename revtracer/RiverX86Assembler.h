@@ -49,6 +49,7 @@ public :
 
 			*(DWORD *)(&dst[offset]) -= (DWORD)src;
 			*(DWORD *)(&dst[offset]) += (DWORD)dst;
+			needsRAFix = false;
 		}
 	}
 private :

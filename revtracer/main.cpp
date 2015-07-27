@@ -177,9 +177,12 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	DWORD *stk = (DWORD *)pEnv->runtimeContext.virtualStack;
 	DbgPrint("Stack :\n");
 	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x00, stk[0], stk[1], stk[2], stk[3]);
-	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x10, stk[4], stk[5], stk[6], stk[7]);
+	DbgPrint("EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n", currentRegs->eax, currentRegs->ecx, currentRegs->edx, currentRegs->ebx);
+	DbgPrint("ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n", currentRegs->esp, currentRegs->ebp, currentRegs->esi, currentRegs->edi);
+	DbgPrint("Flags: 0x%08x\n", currentRegs->eflags);
+	/*DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x10, stk[4], stk[5], stk[6], stk[7]);
 	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x20, stk[8], stk[9], stk[10], stk[11]);
-	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x30, stk[12], stk[13], stk[14], stk[15]);
+	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x30, stk[12], stk[13], stk[14], stk[15]);*/
 
 	if ((ctx->callCount % 5) > 5) {
 		// go backwards
@@ -332,7 +335,7 @@ int main(unsigned int argc, char *argv[]) {
 	struct _exec_env *pEnv;
 	struct UserCtx *ctx;
 	DWORD dwCount = 0;
-	pEnv = new _exec_env(0x1000000, 0x10000, 0x1000000, 16, 0x10000);
+	pEnv = new _exec_env(0x1000000, 0x10000, 0x2000000, 16, 0x10000);
 
 	pEnv->userContext = AllocUserContext(pEnv, sizeof(struct UserCtx));
 	ctx = (struct UserCtx *)pEnv->userContext;
