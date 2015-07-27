@@ -653,7 +653,7 @@ void RiverX86Assembler::AssembleSyscall2(const RiverInstruction &ri, BYTE *&px86
 	rvAddress = &px86[0x02];
 
 	px86 += sizeof(pSaveEdxCode);
-	instrCounter += 4;
+	instrCounter += 2;
 }
 
 
