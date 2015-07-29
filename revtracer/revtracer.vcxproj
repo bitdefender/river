@@ -21,6 +21,7 @@
     <ClInclude Include="river.h" />
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
+    <ClInclude Include="RiverMetaTranslator.h" />
     <ClInclude Include="RiverOptimizer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
@@ -59,6 +60,7 @@
     <ClCompile Include="mm.cpp" />
     <ClCompile Include="modrm32.cpp" />
     <ClCompile Include="RiverAddress.cpp" />
+    <ClCompile Include="RiverMetaTranslator.cpp" />
     <ClCompile Include="RiverOptimizer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

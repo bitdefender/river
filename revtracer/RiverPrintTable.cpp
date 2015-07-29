@@ -28,8 +28,12 @@ void PrintPrefixes(struct RiverInstruction *ri) {
 		DbgPrint("symbop");
 	}
 
-	if (ri->family & RIVER_FAMILY_METAOP) {
-		DbgPrint("meta");
+	if (ri->family & RIVER_FAMILY_PREMETAOP) {
+		DbgPrint("premeta");
+	}
+
+	if (ri->family & RIVER_FAMILY_POSTMETAOP) {
+		DbgPrint("postmeta");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_LOCK) {

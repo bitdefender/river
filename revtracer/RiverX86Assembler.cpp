@@ -250,7 +250,7 @@ bool RiverX86Assembler::Translate(const RiverInstruction &ri, BYTE *&px86, DWORD
 	}
 
 	// when generating fwcode skip meta instructions
-	if (ri.family & RIVER_FAMILY_METAOP) {
+	if (ri.family & (RIVER_FAMILY_PREMETAOP | RIVER_FAMILY_POSTMETAOP)) {
 		if (pFlags & FLAG_SKIP_METAOP) {
 			return true;
 		}
@@ -642,27 +642,27 @@ void RiverX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, BYTE *&p
 
 void RiverX86Assembler::AssembleSyscall2(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
 	static const char pSaveEdxCode[] = {
-		0xC7, 0x02, 0x00, 0x00, 0x00, 0x00,				// 0x00 - mov [edx], imm32
-		0x0F, 0x34										// 0x06 - syscall
+		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x00 - mov [<eaxSave>], eax
+		0x8B, 0x02,										// 0x05 - mov eax, [edx]
+		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x07 - mov [<espSave>], eax
+		0xA1, 0x00, 0x00, 0x00, 0x00,					// 0x0C - mov eax, [<eaxSave>]
+		0xC7, 0x02, 0x00, 0x00, 0x00, 0x00,				// 0x11 - mov [edx], imm32
+		0x0F, 0x34,										// 0x17 - syscall
+		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00				// 0x19 - push [<espSave>]
 	};
 
 	memcpy(px86, pSaveEdxCode, sizeof(pSaveEdxCode));
-	*(unsigned int *)(&(px86[0x02])) = ((unsigned int)px86) + 0x08;
-	
+	*(unsigned int *)(&(px86[0x01])) = (unsigned int)&runtime->returnRegister;
+	*(unsigned int *)(&(px86[0x08])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86[0x0D])) = (unsigned int)&runtime->returnRegister;
+	*(unsigned int *)(&(px86[0x13])) = ((unsigned int)px86) + 0x19;
+	*(unsigned int *)(&(px86[0x1B])) = (unsigned int)&runtime->jumpBuff;
+
 	needsRAFix = true;
-	rvAddress = &px86[0x02];
+	rvAddress = &px86[0x13];
 
 	px86 += sizeof(pSaveEdxCode);
-	instrCounter += 2;
-}
-
-
-void RiverX86Assembler::AssembleSyscall(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, DWORD &instrCounter) {
-	px86--;
-	ClearPrefixes(ri, px86);
-	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &RiverX86Assembler::AssembleSyscall2, &RiverX86Assembler::AssembleNoOp);
-}
-
+	instrCounter += 7;
 }
 
 

@@ -31,9 +31,10 @@
 /* lazy deletion flag */
 #define RIVER_FAMILY_IGNORE			0x01
 /* the symbolic operation instruction family */
-#define RIVER_FAMILY_SYMBOP			0x10
+#define RIVER_FAMILY_SYMBOP			0x08
 /* this instruction is a meta instruction... it respecifies the previous one in order to optimize reverse code generation */
-#define RIVER_FAMILY_METAOP			0x20
+#define RIVER_FAMILY_PREMETAOP		0x10
+#define RIVER_FAMILY_POSTMETAOP		0x20
 /* this river instruction uses the original xSP register */
 #define RIVER_FAMILY_ORIG_xSP		0x40
 /* this is a river instruction */
