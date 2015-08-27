@@ -40,6 +40,41 @@ void RiverX86Disassembler::TrackModifiedRegisters(RiverInstruction &ri) {
 	}
 }
 
+void RiverX86Disassembler::TrackFlagUsage(RiverInstruction &ri) {
+	DWORD dwTable = (RIVER_MODIFIER_EXT & ri.modifiers) ? 1 : 0;
+	BYTE tmp = modFlags[dwTable][ri.opCode];
+
+	if (tmp == 0xFF) {
+		__asm int 3;
+	}
+
+	if (tmp & RIVER_SPEC_FLAG_EXT) {
+		tmp = 0; //modFlagExt[tmp & 0x7F][ri.subOpCode];
+	}
+
+	if (tmp == 0xFF) {
+		__asm int 3;
+	}
+
+	ri.modFlags = tmp;
+
+	tmp = testFlags[dwTable][ri.opCode];
+
+	if (tmp == 0xFF) {
+		__asm int 3;
+	}
+
+	if (tmp & RIVER_SPEC_FLAG_EXT) {
+		tmp = 0; //testFlagExt[tmp & 0x7F][ri.subOpCode];
+	}
+
+	if (tmp == 0xFF) {
+		__asm int 3;
+	}
+
+	ri.testFlags = tmp;
+}
+
 bool RiverX86Disassembler::Init(RiverCodeGen *cg) {
 	codegen = cg;
 	return true;
@@ -66,6 +101,7 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 	
 	(this->*disassembleOperands[dwTable][rOut.opCode])(px86, rOut);
 	TrackModifiedRegisters(rOut);
+	TrackFlagUsage(rOut);
 	rOut.TrackEspAsParameter();
 	rOut.TrackUnusedRegisters();
 	return true;

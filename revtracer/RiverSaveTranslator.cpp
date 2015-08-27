@@ -4,12 +4,10 @@
 void RiverSaveTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
 	memcpy(&rOut, &rIn, sizeof(rOut));
 
-	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[0])) {
-		rOut.operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);
-	}
-
-	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[1])) {
-		rOut.operands[1].asAddress = codegen->CloneAddress(*rIn.operands[1].asAddress, rIn.modifiers);
+	for (int i = 0; i < 4; ++i) {
+		if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[i])) {
+			rOut.operands[i].asAddress = codegen->CloneAddress(*rIn.operands[i].asAddress, rIn.modifiers);
+		}
 	}
 }
 
@@ -21,7 +19,12 @@ bool RiverSaveTranslator::Init(RiverCodeGen *cg) {
 void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
 	DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
 
-	(this->*translateOpcodes[dwTable][rIn.opCode])(rOut, rIn, instrCount);
+	if (rIn.family == RIVER_FAMILY_NATIVE) {
+		(this->*translateOpcodes[dwTable][rIn.opCode])(rOut, rIn, instrCount);
+	} else {
+		CopyInstruction(rOut[0], rIn);
+		instrCount++;
+	}
 }
 
 /* =========================================== */
@@ -100,47 +103,6 @@ void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverA
 		MakeSaveMem(rOut, mem, auxFlags, rIn);
 	}
 }
-
-void RiverSaveTranslator::MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short familyFlag) {
-	unsigned char rg = (reg.name & 0x07) | RIVER_OPSIZE_32;
-
-	rOut->opCode = 0x83;
-	rOut->subOpCode = 0;
-	rOut->modifiers = 0;
-	rOut->family = RIVER_FAMILY_RIVEROP | familyFlag;
-	rOut->specifiers = 0;
-
-	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
-	rOut->operands[0].asRegister.versioned = codegen->GetCurrentReg(rg);
-
-	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
-	rOut->operands[1].asImm8 = offset;
-
-	rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
-
-	rOut->TrackUnusedRegisters();
-}
-
-void RiverSaveTranslator::MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short familyFlag) {
-	unsigned char rg = (reg.name & 0x07) | RIVER_OPSIZE_32;
-
-	rOut->opCode = 0x83;
-	rOut->subOpCode = 5;
-	rOut->modifiers = 0;
-	rOut->family = RIVER_FAMILY_RIVEROP | familyFlag;
-	rOut->specifiers = 0;
-
-	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
-	rOut->operands[0].asRegister.versioned = codegen->GetCurrentReg(rg);
-
-	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
-	rOut->operands[1].asImm8 = offset;
-
-	rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
-
-	rOut->TrackUnusedRegisters();
-}
-
 
 void RiverSaveTranslator::MakeSaveOp(RiverInstruction *rOut, unsigned char opType, const RiverOperand &op, const RiverInstruction &rIn) {
 	switch (RIVER_OPTYPE(opType)) {

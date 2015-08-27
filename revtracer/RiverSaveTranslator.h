@@ -37,14 +37,6 @@ private :
 	/* Opcode translators */
 	void TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void _TranslatePush(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void _TranslatePop(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void _TranslateRetn(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void _TranslateSavexAX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void _TranslateSavexDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void _TranslateSavexAXxDX(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void _TranslateSavexSPxBP(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void _TranslateSavexSIxDI(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateSaveCPUID(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 

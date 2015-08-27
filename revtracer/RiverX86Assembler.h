@@ -5,11 +5,11 @@
 #include "river.h"
 #include "Runtime.h"
 
+#include "GenericX86Assembler.h"
 
-class RiverX86Assembler {
+
+class RiverX86Assembler : public GenericX86Assembler {
 private :
-	RiverRuntime *runtime;
-
 	bool needsRAFix;
 	BYTE *rvAddress;
 
@@ -40,7 +40,7 @@ private :
 	bool ClearPrefixes(const RiverInstruction &ri, BYTE *&px86);
 	bool Translate(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter);
 public :
-	bool Init(RiverRuntime *rt);
+	//bool Init(RiverRuntime *rt);
 	bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter);
 
 	void CopyFix(BYTE *dst, BYTE *src) {

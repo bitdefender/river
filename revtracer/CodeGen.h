@@ -8,6 +8,8 @@
 #include "RiverX86Disassembler.h"
 #include "RiverX86Assembler.h"
 
+#include "RiverMetaTranslator.h"
+
 #include "RiverReverseTranslator.h"
 #include "RiverSaveTranslator.h"
 
@@ -17,7 +19,7 @@
 #define RIVER_FORWARD_INSTRUCTIONS					512
 #define RIVER_BACKWARD_INSTRUCTIONS					512
 
-#define SYMBOP_TRACK_INSTRUCTIONS					128
+#define SYMBOP_TRACK_INSTRUCTIONS					256
 
 /* A resettable river code translator */
 class RiverCodeGen {
@@ -26,6 +28,8 @@ private :
 	
 	RiverX86Disassembler disassembler;
 	RiverX86Assembler assembler;
+
+	RiverMetaTranslator metaTranslator;
 
 	RiverReverseTranslator revTranslator;
 	RiverSaveTranslator saveTranslator;

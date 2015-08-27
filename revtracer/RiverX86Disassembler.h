@@ -23,6 +23,10 @@ private:
 	static DisassembleOpcodeFunc disassembleOpcodes[2][0x100];
 	static DisassembleOperandsFunc disassembleOperands[2][0x100];
 
+	static BYTE testFlags[2][0x100];
+	static BYTE modFlags[2][0x100];
+	void TrackFlagUsage(RiverInstruction &ri);
+
 	static DisassembleOpcodeFunc disassemble0xFFInstr[8];
 	static DisassembleOperandsFunc disassemble0xFFOp[8];
 

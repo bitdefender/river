@@ -34,7 +34,7 @@ private :
 
 	DWORD GetMemRepr(const RiverAddress &mem);
 
-	typedef void(SymbopTranslator::*TranslateOpcodeFunc)(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
+	typedef void(SymbopTranslator::*TranslateOpcodeFunc)(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 	static TranslateOpcodeFunc translateOpcodes[2][0x100];
 public :
 	bool Init(RiverCodeGen *cg);
@@ -43,23 +43,25 @@ public :
 
 private :
 	/* Translation helpers */
-	void MakeTrackFlg(RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
-	void MakeTrackReg(const RiverRegister &reg, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
-	void MakeTrackMem(const RiverAddress &mem, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
+	void MakeInitTrack(RiverInstruction *&rTrackOut, DWORD &trackCount);
 
-	void MakeMarkFlg(RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
-	void MakeMarkReg(const RiverRegister &reg, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
-	void MakeMarkMem(const RiverAddress &mem, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
-	void MakeSkipMem(const RiverAddress &mem, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
+	void MakeTrackFlg(RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeTrackReg(const RiverRegister &reg, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeTrackMem(const RiverAddress &mem, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+
+	void MakeMarkFlg(RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeMarkReg(const RiverRegister &reg, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeMarkMem(const RiverAddress &mem, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeSkipMem(const RiverAddress &mem, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 	
 	/*  */
-	void MakeTrackOp(const BYTE type, const RiverOperand &op, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
-	void MakeMarkOp(const BYTE type, const RiverOperand &op, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
+	void MakeTrackOp(const BYTE type, const RiverOperand &op, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeMarkOp(const BYTE type, const RiverOperand &op, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 
 
 	/* Translators */
-	void TranslateUnk(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
-	void TranslateDefault(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
+	void TranslateUnk(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 };
 
 

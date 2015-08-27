@@ -10,6 +10,9 @@ struct RiverRuntime {
 	UINT_PTR returnRegister;			// + 0x04 - ax/eax/rax value
 	UINT_PTR jumpBuff;					// + 0x08
 	UINT_PTR execBuff;					// + 0x0C
+
+	UINT_PTR taintedFlags[8];			// + 0x10
+	UINT_PTR taintedRegisters[8];		// + 0x30
 };
 
 #endif

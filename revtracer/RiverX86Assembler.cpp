@@ -68,11 +68,6 @@ void RiverX86Assembler::EndRiverConversion(BYTE *&px86, DWORD &pFlags, BYTE &rep
 	}
 }
 
-bool RiverX86Assembler::Init(RiverRuntime *rt) {
-	runtime = rt;
-	return true;
-}
-
 static void FixRiverEspOp(BYTE opType, RiverOperand *op, BYTE repReg) {
 	switch (RIVER_OPTYPE(opType)) {
 	case RIVER_OPTYPE_IMM:
@@ -246,6 +241,10 @@ bool RiverX86Assembler::ClearPrefixes(const RiverInstruction &ri, BYTE *&px86) {
 bool RiverX86Assembler::Translate(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
 	// skip ignored instructions
 	if (ri.family & RIVER_FAMILY_IGNORE) {
+		return true;
+	}
+
+	if (ri.family & RIVER_FAMILY_SYMBOP) {
 		return true;
 	}
 

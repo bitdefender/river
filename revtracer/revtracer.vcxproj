@@ -14,6 +14,7 @@
     <ClInclude Include="callgates.h" />
     <ClInclude Include="cb.h" />
     <ClInclude Include="CodeGen.h" />
+    <ClInclude Include="GenericX86Assembler.h" />
     <ClInclude Include="Loader\Abstract.Mapper.h" />
     <ClInclude Include="Loader\Inproc.Mapper.h" />
     <ClInclude Include="Loader\PE.ldr.h" />
@@ -53,6 +54,7 @@
     <ClCompile Include="crc32.cpp" />
     <ClCompile Include="execenv.cpp" />
     <ClCompile Include="extern.cpp" />
+    <ClCompile Include="GenericX86Assembler.cpp" />
     <ClCompile Include="Loader\Inproc.Mapper.cpp" />
     <ClCompile Include="Loader\PE.ldr.cpp" />
     <ClCompile Include="main.cpp" />

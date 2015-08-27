@@ -43,6 +43,9 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 	outBufferSize = buffSz;
 
 	disassembler.Init(this);
+
+	metaTranslator.Init(this);
+
 	revTranslator.Init(this);
 	saveTranslator.Init(this);
 
@@ -148,26 +151,34 @@ void RiverPrintInstruction(RiverInstruction *ri);
 DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
+
 	DbgPrint("= x86 to river ================================================================\n");
 
-	RiverInstruction dis, disSave[16];
-	DWORD svCount;
+	RiverInstruction dis, disMeta[16];
+	RiverInstruction symbopMain[16]; // , symbopTrack[16];
+	DWORD svCount, metaCount; // , trackCount;
 
 	do {
 		BYTE *pAux = pTmp;
-		DWORD iSize;
+		DWORD iSize, mSize = 0;
 		disassembler.Translate(pTmp, dis, pFlags);
+		metaTranslator.Translate(dis, disMeta, mSize);
 
 		svCount = 0;
 		//saveTranslator.Translate(dis, &fwRiverInst[fwInstCount], fwInstCount);
 		//saveTranslator.Translate(dis, disSave, svCount);
 
-		saveTranslator.Translate(dis, &fwRiverInst[fwInstCount], fwInstCount);
+		metaCount = 0;
+		//trackCount = 0;
+		//symbopInstCount = 0;
+		for (DWORD i = 0; i < mSize; ++i) {
+			//saveTranslator.Translate(disMeta[i], &fwRiverInst[fwInstCount], fwInstCount);
+			saveTranslator.Translate(disMeta[i], &symbopMain[metaCount], metaCount);
+		}
 
-		/*for (DWORD i = 0; i < svCount; ++i) {
-			symbopTranslator.Translate(disSave[i], fwRiverInst, fwInstCount, &symbopInst[symbopInstCount], symbopInstCount);
-		}*/
-
+		for (DWORD i = 0; i < metaCount; ++i) {
+			symbopTranslator.Translate(symbopMain[i], &fwRiverInst[fwInstCount], fwInstCount, &symbopInst[symbopInstCount], symbopInstCount);
+		}
 
 		DbgPrint(".%08x    ", pAux);
 		iSize = pTmp - pAux;
@@ -212,6 +223,12 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 			revTranslator.Translate(fwRiverInst[fwInstCount - 1 - i], bkRiverInst[i]);
 		}
 		MakeJMP(&bkRiverInst[fwInstCount], pCB->address);
+
+		DbgPrint("= SymbopTrack =================================================================\n");
+		for (unsigned int i = 0; i < symbopInstCount; ++i) {
+			RiverPrintInstruction(&symbopInst[i]);
+		}
+		DbgPrint("===============================================================================\n");
 
 		bkInstCount = fwInstCount + 1;
 
