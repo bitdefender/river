@@ -15,10 +15,14 @@
     <ClInclude Include="cb.h" />
     <ClInclude Include="CodeGen.h" />
     <ClInclude Include="GenericX86Assembler.h" />
+    <ClInclude Include="X86AssemblerFuncs.h" />
+    <ClInclude Include="RelocableCodeBuffer.h" />
+    <ClInclude Include="X86Assembler.h" />
     <ClInclude Include="Loader\Abstract.Mapper.h" />
     <ClInclude Include="Loader\Inproc.Mapper.h" />
     <ClInclude Include="Loader\PE.ldr.h" />
     <ClInclude Include="Loader\Types.h" />
+    <ClInclude Include="NativeX86Assembler.h" />
     <ClInclude Include="river.h" />
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
@@ -61,6 +65,7 @@
     <ClCompile Include="MapPE.cpp" />
     <ClCompile Include="mm.cpp" />
     <ClCompile Include="modrm32.cpp" />
+    <ClCompile Include="RelocableCodeBuffer.cpp" />
     <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverMetaTranslator.cpp" />
     <ClCompile Include="RiverOptimizer.cpp">
@@ -72,6 +77,7 @@
     <ClCompile Include="RiverSaveTranslator.cpp" />
     <ClCompile Include="RiverX86Assembler.cpp" />
     <ClCompile Include="RiverX86Disassembler.cpp" />
+    <ClCompile Include="NativeX86Assembler.cpp" />
     <ClCompile Include="src.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
@@ -93,6 +99,8 @@
     </ClCompile>
     <ClCompile Include="SymbopTranslator.cpp" />
     <ClCompile Include="sync.cpp" />
+    <ClCompile Include="X86Assembler.cpp" />
+    <ClCompile Include="X86AssemblerFuncs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RiverX86DisassemblerTable.cpp">

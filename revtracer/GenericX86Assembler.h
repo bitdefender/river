@@ -5,12 +5,18 @@
 #include "river.h"
 #include "Runtime.h"
 
+#include "RelocableCodeBuffer.h"
+
 class GenericX86Assembler {
 protected :
 	RiverRuntime *runtime;
-public :
-	bool Init(RiverRuntime *rt);
-	virtual bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) = 0;
+
+public:
+	virtual bool Init(RiverRuntime *rt);
+	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) = 0;
 };
+
+bool GeneratePrefixes(const RiverInstruction &ri, BYTE *&px86);
+bool ClearPrefixes(const RiverInstruction &ri, BYTE *&px86);
 
 #endif

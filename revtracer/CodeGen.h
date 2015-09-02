@@ -6,7 +6,8 @@
 #include "runtime.h"
 
 #include "RiverX86Disassembler.h"
-#include "RiverX86Assembler.h"
+
+#include "X86Assembler.h"
 
 #include "RiverMetaTranslator.h"
 
@@ -27,7 +28,7 @@ private :
 	RiverHeap *heap;
 	
 	RiverX86Disassembler disassembler;
-	RiverX86Assembler assembler;
+	X86Assembler assembler;
 
 	RiverMetaTranslator metaTranslator;
 
@@ -50,6 +51,8 @@ public :
 
 	unsigned char *outBuffer;
 	unsigned int regVersions[8];
+
+	RelocableCodeBuffer codeBuffer;
 public :
 	RiverCodeGen();
 	~RiverCodeGen();

@@ -41,6 +41,7 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 		return false;
 	}
 	outBufferSize = buffSz;
+	codeBuffer.Init(outBuffer);
 
 	disassembler.Init(this);
 
@@ -237,14 +238,18 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		//pCB->pCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 
 		//outBufferSize = rivertox86(this, rt, fwRiverInst, fwInstCount, outBuffer, 0x01);
-		assembler.Assemble(fwRiverInst, fwInstCount, outBuffer, 0x10, pCB->dwFwOpCount, outBufferSize);
+		codeBuffer.Reset();
+		assembler.Assemble(fwRiverInst, fwInstCount, codeBuffer, 0x10, pCB->dwFwOpCount, outBufferSize);
 		pCB->pFwCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
-		assembler.CopyFix(pCB->pFwCode, outBuffer);
+		//assembler.CopyFix(pCB->pFwCode, outBuffer);
+		codeBuffer.CopyToFixed(pCB->pFwCode);
 		
 		//outBufferSize = rivertox86(this, rt, bkRiverInst, bkInstCount, outBuffer, 0x00);
-		assembler.Assemble(bkRiverInst, bkInstCount, outBuffer, 0x00, pCB->dwBkOpCount, outBufferSize);
+		codeBuffer.Reset();
+		assembler.Assemble(bkRiverInst, bkInstCount, codeBuffer, 0x00, pCB->dwBkOpCount, outBufferSize);
 		pCB->pBkCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
-		assembler.CopyFix(pCB->pBkCode, outBuffer);
+		//assembler.CopyFix(pCB->pBkCode, outBuffer);
+		codeBuffer.CopyToFixed(pCB->pBkCode);
 
 		return true;
 	}
