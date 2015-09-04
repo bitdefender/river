@@ -12,34 +12,6 @@ extern const char RegNames[][4];
 extern const char MemSizes[][6];
 
 void PrintPrefixes(struct RiverInstruction *ri) {
-	if (ri->family & RIVER_FAMILY_IGNORE) {
-		DbgPrint("ignore");
-	}
-
-	if (ri->family & RIVER_FAMILY_RIVEROP) {
-		DbgPrint("river");
-	}
-
-	if (ri->family & RIVER_FAMILY_ORIG_xSP) {
-		DbgPrint("esp");
-	}
-	
-	if (ri->family & RIVER_FAMILY_SYMBOP) {
-		DbgPrint("symbop");
-	}
-
-	if (ri->family & RIVER_FAMILY_PREMETAOP) {
-		DbgPrint("premeta");
-	}
-
-	if (ri->family & RIVER_FAMILY_POSTMETAOP) {
-		DbgPrint("postmeta");
-	}
-
-	if (ri->modifiers & RIVER_MODIFIER_LOCK) {
-		DbgPrint("lock ");
-	}
-
 	if (ri->modifiers & RIVER_MODIFIER_REP) {
 		DbgPrint("rep ");
 	}
@@ -50,6 +22,33 @@ void PrintPrefixes(struct RiverInstruction *ri) {
 
 	if (ri->modifiers & RIVER_MODIFIER_REPNZ) {
 		DbgPrint("repnz ");
+	}
+
+
+	if (ri->family & RIVER_FAMILY_FLAG_IGNORE) {
+		DbgPrint("ignore");
+	}
+
+	if (ri->family & RIVER_FAMILY_FLAG_ORIG_xSP) {
+		DbgPrint("esp");
+	}
+
+	switch (RIVER_FAMILY(ri->family)) {
+		case RIVER_FAMILY_RIVER:
+			DbgPrint("river");
+			break;
+		case RIVER_FAMILY_TRACK :
+			DbgPrint("track");
+			break;
+		case RIVER_FAMILY_PRETRACK :
+			DbgPrint("pretrack");
+			break;
+		case RIVER_FAMILY_PREMETAOP :
+			DbgPrint("premeta");
+			break;
+		case RIVER_FAMILY_POSTMETAOP:
+			DbgPrint("postmeta");
+			break;
 	}
 }
 
@@ -168,7 +167,7 @@ void PrintOperands(struct RiverInstruction *ri) {
 }
 
 void RiverPrintInstruction(struct RiverInstruction *ri) {
-	if (ri->family & RIVER_FAMILY_IGNORE) {
+	if (ri->family & RIVER_FAMILY_FLAG_IGNORE) {
 		return;
 	}
 	PrintPrefixes(ri);

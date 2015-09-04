@@ -14,6 +14,23 @@ void RiverAddress::DecodeFlags(WORD flags) {
 	}
 }
 
+BYTE RiverAddress::GetUnusedRegisters() const {
+	BYTE ret = 0x0F;
+	BYTE tmp;
+
+	if ((0 == type) || (type & RIVER_ADDR_BASE)) {
+		tmp = GetFundamentalRegister(base.name);
+		ret &= ~(1 << tmp);
+	}
+
+	if (type & RIVER_ADDR_INDEX) {
+		tmp = GetFundamentalRegister(index.name);
+		ret &= ~(1 << tmp);
+	}
+
+	return ret;
+}
+
 BYTE RiverAddress32::DecodeRegister(BYTE id, WORD flags) {
 	if (flags & RIVER_MODIFIER_O8) { // we expect a 8 byte register
 		return (id & 0x03) | ((id & 0x04) ? RIVER_REG_SZ8_H : RIVER_REG_SZ8_L);
@@ -218,12 +235,12 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 
 
 bool RiverAddress32::EncodeTox86(unsigned char *&px86, BYTE extra, BYTE family, WORD modifiers) {
-	if (family & RIVER_FAMILY_ORIG_xSP) {
+	if (family & RIVER_FAMILY_FLAG_ORIG_xSP) {
 		RiverAddress32 rAddr;
 		memcpy(&rAddr, this, sizeof(rAddr));
 
 		rAddr.FixEsp();
-		return rAddr.EncodeTox86(px86, extra, family & (~RIVER_FAMILY_ORIG_xSP), modifiers);
+		return rAddr.EncodeTox86(px86, extra, family & (~RIVER_FAMILY_FLAG_ORIG_xSP), modifiers);
 	}
 
 	if (type & RIVER_ADDR_DIRTY) {

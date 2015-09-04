@@ -53,6 +53,8 @@ struct RiverAddress {
 		scaleAndSegment |= segment << 2;
 	}
 
+	BYTE GetUnusedRegisters() const;
+
 	void DecodeFlags(WORD flags);
 
 	virtual bool DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, BYTE &extra, WORD flags) = 0;

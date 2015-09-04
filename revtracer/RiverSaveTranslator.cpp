@@ -34,7 +34,7 @@ void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstructio
 void RiverSaveTranslator::MakeSaveFlags(RiverInstruction *rOut) {
 	rOut->opCode = 0x9C; // PUSHF
 	rOut->modifiers = 0;
-	rOut->family = RIVER_FAMILY_RIVEROP;
+	rOut->family = RIVER_FAMILY_RIVER;
 	rOut->specifiers = 0; // maybe
 	rOut->unusedRegisters = RIVER_UNUSED_ALL;
 
@@ -46,14 +46,14 @@ void RiverSaveTranslator::MakeSaveReg(RiverInstruction *rOut, const RiverRegiste
 
 	rOut->opCode = 0x50; // | (reg.name & 0x07); //PUSH
 	rOut->modifiers = 0;
-	rOut->family = RIVER_FAMILY_RIVEROP | familyFlag;
+	rOut->family = RIVER_FAMILY_RIVER | familyFlag;
 	rOut->specifiers = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
 	rOut->operands[0].asRegister.versioned = codegen->GetPrevReg(reg.name);
 
 	if (RIVER_REG_xSP == GetFundamentalRegister(reg.name)) {
-		rOut->family |= RIVER_FAMILY_ORIG_xSP;
+		rOut->family |= RIVER_FAMILY_FLAG_ORIG_xSP;
 	}
 
 	rOut->opTypes[1] = rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
@@ -66,7 +66,7 @@ void RiverSaveTranslator::MakeSaveMem(RiverInstruction *rOut, const RiverAddress
 	} else {
 		rOut->opCode = 0xFF; // PUSH (ext + 6)
 		rOut->modifiers = 0;
-		rOut->family = RIVER_FAMILY_RIVEROP | familyFlag | ((rIn.specifiers & RIVER_SPEC_MODIFIES_xSP) ? RIVER_FAMILY_ORIG_xSP : 0);
+		rOut->family = RIVER_FAMILY_RIVER | familyFlag | ((rIn.specifiers & RIVER_SPEC_MODIFIES_xSP) ? RIVER_FAMILY_FLAG_ORIG_xSP : 0);
 		rOut->subOpCode = 0x06;
 
 		rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
@@ -130,7 +130,7 @@ void RiverSaveTranslator::MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstr
 
 	rTmp.modRM = 0x70; // actually save xAX (because xSP is used for other stuff)
 
-	MakeSaveMem(rOut, rTmp, RIVER_FAMILY_ORIG_xSP, rIn);
+	MakeSaveMem(rOut, rTmp, RIVER_FAMILY_FLAG_ORIG_xSP, rIn);
 }
 
 void RiverSaveTranslator::SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {

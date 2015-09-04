@@ -11,8 +11,9 @@ struct RiverRuntime {
 	UINT_PTR jumpBuff;					// + 0x08
 	UINT_PTR execBuff;					// + 0x0C
 
-	UINT_PTR taintedFlags[8];			// + 0x10
-	UINT_PTR taintedRegisters[8];		// + 0x30
+	DWORD taintedFlags[8];			// + 0x10
+	DWORD taintedRegisters[8];		// + 0x30
+	UINT_PTR taintedAddresses;		// + 0x50
 };
 
 #endif

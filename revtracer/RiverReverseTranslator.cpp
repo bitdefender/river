@@ -18,9 +18,9 @@ bool RiverReverseTranslator::Init(RiverCodeGen *cg) {
 }
 
 void RiverReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstruction &rOut) {
-	if (0 == (RIVER_FAMILY_RIVEROP & rIn.family)) {
+	if (RIVER_FAMILY_RIVER != RIVER_FAMILY(rIn.family)) {
 		CopyInstruction(rOut, rIn);
-		rOut.family |= RIVER_FAMILY_IGNORE;
+		rOut.family |= RIVER_FAMILY_FLAG_IGNORE;
 		return;
 	}
 
@@ -56,7 +56,7 @@ void RiverReverseTranslator::TranslatePushModRM(RiverInstruction &rOut, const Ri
 	CopyInstruction(rOut, rIn);
 	
 	if (rOut.subOpCode != 6) {
-		rOut.family |= RIVER_FAMILY_IGNORE;
+		rOut.family |= RIVER_FAMILY_FLAG_IGNORE;
 	} else {
 		rOut.opCode = 0x8F; // pop
 		rOut.subOpCode = 0x00;
@@ -69,7 +69,7 @@ void RiverReverseTranslator::TranslatePopModRM(RiverInstruction &rOut, const Riv
 	CopyInstruction(rOut, rIn);
 	
 	if (rOut.subOpCode != 0) {
-		rOut.family |= RIVER_FAMILY_IGNORE;
+		rOut.family |= RIVER_FAMILY_FLAG_IGNORE;
 	}
 	else {
 		rOut.opCode = 0xFF; // push

@@ -27,19 +27,31 @@
 #define RIVER_MODIFIER_REPZ			0x0200
 #define RIVER_MODIFIER_REPNZ		0x0400
 
-#define RIVER_FAMILY_NATIVE			0x00
-/* lazy deletion flag */
-#define RIVER_FAMILY_IGNORE			0x01
-/* the symbolic operation instruction family */
-#define RIVER_FAMILY_SYMBOP			0x08
-/* this instruction is a meta instruction... it respecifies the previous one in order to optimize reverse code generation */
-#define RIVER_FAMILY_PREMETAOP		0x10
-#define RIVER_FAMILY_POSTMETAOP		0x20
-/* this river instruction uses the original xSP register */
-#define RIVER_FAMILY_ORIG_xSP		0x40
-/* this is a river instruction */
-#define RIVER_FAMILY_RIVEROP		0x80
+#define RIVER_FAMILY(fam) ((fam) & 0x3F)
 
+#define RIVER_FAMILY_NATIVE				0x00
+#define RIVER_FAMILY_RIVER				0x01
+#define RIVER_FAMILY_TRACK				0x02
+#define RIVER_FAMILY_PRETRACK			0x03
+#define RIVER_FAMILY_PREMETAOP			0x04
+#define RIVER_FAMILY_POSTMETAOP			0x05
+
+#define RIVER_FAMILY_FLAG_ORIG_xSP		0x40
+#define RIVER_FAMILY_FLAG_IGNORE		0x80
+
+//#define RIVER_FAMILY_NATIVE			0x00
+///* lazy deletion flag */
+//#define RIVER_FAMILY_IGNORE			0x01
+///* the symbolic operation instruction family */
+//#define RIVER_FAMILY_SYMBOP			0x08
+///* this instruction is a meta instruction... it respecifies the previous one in order to optimize reverse code generation */
+//#define RIVER_FAMILY_PREMETAOP		0x10
+//#define RIVER_FAMILY_POSTMETAOP		0x20
+///* this river instruction uses the original xSP register */
+//#define RIVER_FAMILY_ORIG_xSP		0x40
+///* this is a river instruction */
+//#define RIVER_FAMILY_RIVEROP		0x80
+//
 /* River translation flags present in the pFlags argument */
 #define RIVER_FLAG_PFX				0x00000001
 #define RIVER_FLAG_OPCODE			0x00000002
@@ -301,7 +313,7 @@ struct RiverInstruction {
 
 	void TrackUnusedRegisters() {
 		unusedRegisters = 0x00;
-		if ((RIVER_SPEC_MODIFIES_xSP & specifiers) || (RIVER_FAMILY_ORIG_xSP & family)) {
+		if ((RIVER_SPEC_MODIFIES_xSP & specifiers) || (RIVER_FAMILY_FLAG_ORIG_xSP & family)) {
 			unusedRegisters = RIVER_UNUSED_ALL;
 
 			for (int i = 0; i < 4; ++i) {

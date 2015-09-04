@@ -29,7 +29,7 @@ static void FixRiverEspOp(BYTE opType, RiverOperand *op, BYTE repReg) {
 }
 
 const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, RiverInstruction *rTmp, RiverAddress *aTmp) {
-	if (rIn.family & RIVER_FAMILY_ORIG_xSP) {
+	if (rIn.family & RIVER_FAMILY_FLAG_ORIG_xSP) {
 		BYTE repReg = rIn.GetUnusedRegister();
 
 		memcpy(rTmp, &rIn, sizeof(*rTmp));
@@ -91,16 +91,16 @@ void RiverX86Assembler::EndRiverConversion(BYTE *&px86, DWORD &pFlags, BYTE &rep
 
 bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
 	// skip ignored instructions
-	if (ri.family & RIVER_FAMILY_IGNORE) {
+	if (ri.family & RIVER_FAMILY_FLAG_IGNORE) {
 		return true;
 	}
 
-	if (ri.family & RIVER_FAMILY_SYMBOP) {
+	if (/*(RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) || */(RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK)) {
 		return true;
 	}
 
 	// when generating fwcode skip meta instructions
-	if (ri.family & (RIVER_FAMILY_PREMETAOP | RIVER_FAMILY_POSTMETAOP)) {
+	if ((RIVER_FAMILY(ri.family) == RIVER_FAMILY_PREMETAOP) || (RIVER_FAMILY(ri.family) == RIVER_FAMILY_POSTMETAOP)) {
 		if (pFlags & FLAG_SKIP_METAOP) {
 			return true;
 		}
@@ -127,14 +127,15 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 
 	GenericX86Assembler *casm = &nAsm;
 
-	if (ri.family & RIVER_FAMILY_RIVEROP) {
+	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_RIVER) {
 		casm = &rAsm;
-	}
-	else if (ri.family & RIVER_FAMILY_SYMBOP) {
-		//casm = &sAsm;
+	} else if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) {
+		casm = &tAsm; 
+	} else if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK) {
+		casm = &ptAsm; 
 	}
 
-	casm->Translate(ri, px86, pFlags, repReg, instrCounter);
+	casm->Translate(*rOut, px86, pFlags, repReg, instrCounter);
 
 
 	return true;
@@ -189,19 +190,23 @@ void X86Assembler::EndRiverConversion(BYTE *&px86, DWORD &pFlags, BYTE &repReg, 
 
 bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
 	//FIXME skip all symbop instructions
-	if (ri.family & RIVER_FAMILY_SYMBOP) {
+	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK) {
+		return true;
+	}
+
+	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) {
 		return true;
 	}
 
 	// ensure state transitions between river and x86
-	if (ri.family & RIVER_FAMILY_RIVEROP) { // current instr is river
+	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_RIVER) { // current instr is river
 		if (0 == (pFlags & FLAG_GENERATE_RIVER)) {
 			SwitchToRiver(px86, instrCounter);
 			pFlags |= FLAG_GENERATE_RIVER;
 		}
 
 		// ensure state transitions between riveresp and river
-		if (ri.family & RIVER_FAMILY_ORIG_xSP) { // ri needs riveresp
+		if (ri.family & RIVER_FAMILY_FLAG_ORIG_xSP) { // ri needs riveresp
 			if (0 == (pFlags & FLAG_GENERATE_RIVER_xSP)) {
 				repReg = ri.GetUnusedRegister();
 				SwitchToRiverEsp(px86, instrCounter, repReg);
@@ -243,6 +248,8 @@ bool X86Assembler::Init(RiverRuntime *runtime) {
 
 	nAsm.Init(runtime);
 	rAsm.Init(runtime);
+	ptAsm.Init(runtime);
+	tAsm.Init(runtime);
 
 	return true;
 }

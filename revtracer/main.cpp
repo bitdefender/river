@@ -11,6 +11,9 @@
 
 FILE *fBlocks;
 
+DWORD dwAddressTrackHandler = 0;
+DWORD dwAddressMarkHandler = 0;
+
 struct UserCtx {
 	DWORD callCount;
 };
