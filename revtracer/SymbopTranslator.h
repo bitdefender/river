@@ -28,6 +28,8 @@ class RiverCodeGen;
 
 class SymbopTranslator {
 private :
+	BYTE trackedValues;
+
 	RiverCodeGen *codegen;
 
 	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
@@ -44,10 +46,11 @@ public :
 private :
 	/* Translation helpers */
 	void MakeInitTrack(RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeCleanTrack(RiverInstruction *&rTrackOut, DWORD &trackCount);
 
 	void MakeTrackFlg(RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 	void MakeTrackReg(const RiverRegister &reg, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
-	void MakeTrackMem(const RiverAddress &mem, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeTrackMem(const RiverAddress &mem, WORD specifiers, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 
 	void MakeMarkFlg(RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 	void MakeMarkReg(const RiverRegister &reg, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
@@ -55,7 +58,7 @@ private :
 	void MakeSkipMem(const RiverAddress &mem, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 	
 	/*  */
-	void MakeTrackOp(const BYTE type, const RiverOperand &op, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeTrackOp(const BYTE type, const RiverOperand &op, WORD specifiers, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 	void MakeMarkOp(const BYTE type, const RiverOperand &op, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 
 

@@ -13,7 +13,7 @@ protected :
 
 public:
 	virtual bool Init(RiverRuntime *rt);
-	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) = 0;
+	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) = 0;
 };
 
 bool GeneratePrefixes(const RiverInstruction &ri, BYTE *&px86);

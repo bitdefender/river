@@ -159,6 +159,9 @@ union RiverRegister {
 /* Modifies customm fields, must have a custom save/restore function */
 #define RIVER_SPEC_MODIFIES_CUSTOM  0x0040
 
+/* Memory contents gets not addressed. (LEA for instance). */
+#define RIVER_SPEC_IGNORES_MEMORY	0x0080
+
 /* Means that the particular operand is only used as a destination */
 #define RIVER_SPEC_IGNORES_OP1		0x0100
 #define RIVER_SPEC_IGNORES_OP2		0x0200
@@ -286,6 +289,7 @@ struct RiverInstruction {
 				reg = GetFundamentalRegister(op.asRegister.name);
 				if (RIVER_REG_xSP == reg) {
 					specifiers |= RIVER_SPEC_MODIFIES_xSP;
+					family |= RIVER_FAMILY_FLAG_ORIG_xSP;
 				}
 				break;
 			case RIVER_OPTYPE_MEM:
@@ -293,15 +297,21 @@ struct RiverInstruction {
 					reg = GetFundamentalRegister(op.asAddress->base.name);
 					if (RIVER_REG_xSP == reg) {
 						specifiers |= RIVER_SPEC_MODIFIES_xSP;
+						family |= RIVER_FAMILY_FLAG_ORIG_xSP;
 					}
 				}
 				if (op.asAddress->type & RIVER_ADDR_INDEX) {
 					reg = GetFundamentalRegister(op.asAddress->index.name);
 					if (RIVER_REG_xSP == reg) {
 						specifiers |= RIVER_SPEC_MODIFIES_xSP;
+						family |= RIVER_FAMILY_FLAG_ORIG_xSP;
 					}
 				}
 				break;
+		}
+
+		if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(family)) {
+			family &= ~RIVER_FAMILY_FLAG_ORIG_xSP;
 		}
 	}
 

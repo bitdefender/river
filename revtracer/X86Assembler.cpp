@@ -9,7 +9,7 @@
 #define FLAG_GENERATE_RIVER_xSP_xBX	0x08*/
 
 #define FLAG_SKIP_METAOP			0x10
-#define FLAG_GENERATE_RIVER			0x20
+//#define FLAG_GENERATE_RIVER			0x20
 
 static void FixRiverEspOp(BYTE opType, RiverOperand *op, BYTE repReg) {
 	switch (RIVER_OPTYPE(opType)) {
@@ -33,21 +33,16 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 		BYTE repReg = rIn.GetUnusedRegister();
 
 		memcpy(rTmp, &rIn, sizeof(*rTmp));
-		if (rIn.opTypes[0] != RIVER_OPTYPE_NONE) {
-			if (RIVER_OPTYPE(rIn.opTypes[0]) == RIVER_OPTYPE_MEM) {
-				rTmp->operands[0].asAddress = aTmp;
-				memcpy(aTmp, rIn.operands[0].asAddress, sizeof(*aTmp));
+		for (BYTE i = 0; i < 4; ++i) {
+			if (rIn.opTypes[i] != RIVER_OPTYPE_NONE) {
+				if (RIVER_OPTYPE(rIn.opTypes[i]) == RIVER_OPTYPE_MEM) {
+					rTmp->operands[i].asAddress = aTmp;
+					memcpy(aTmp, rIn.operands[i].asAddress, sizeof(*aTmp));
+				}
+				FixRiverEspOp(rTmp->opTypes[i], &rTmp->operands[i], repReg);
 			}
-			FixRiverEspOp(rTmp->opTypes[0], &rTmp->operands[0], repReg);
 		}
 
-		if (rIn.opTypes[1] != RIVER_OPTYPE_NONE) {
-			if (RIVER_OPTYPE(rIn.opTypes[1]) == RIVER_OPTYPE_MEM) {
-				rTmp->operands[1].asAddress = aTmp;
-				memcpy(aTmp, rIn.operands[1].asAddress, sizeof(*aTmp));
-			}
-			FixRiverEspOp(rTmp->opTypes[1], &rTmp->operands[1], repReg);
-		}
 		return rTmp;
 	}
 	else {
@@ -76,26 +71,39 @@ void X86Assembler::SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE repRe
 	instrCounter++;
 }
 
-void RiverX86Assembler::EndRiverConversion(BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
-	if (pFlags & FLAG_GENERATE_RIVER) {
-		if (pFlags & FLAG_GENERATE_RIVER_xSP) {
-			SwitchToRiverEsp(px86, instrCounter, repReg);
-			pFlags &= ~FLAG_GENERATE_RIVER_xSP;
-			repReg = 0;
+void X86Assembler::EndRiverConversion(RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
+	if (RIVER_FAMILY_NATIVE != currentFamily) {
+		DWORD currentStack;
+
+		switch (currentFamily)	{
+			case RIVER_FAMILY_NATIVE:
+				break;
+			case RIVER_FAMILY_RIVER:
+				currentStack = (DWORD)&runtime->execBuff;
+				break;
+			case RIVER_FAMILY_PRETRACK:
+				currentStack = (DWORD)&runtime->trackBuff;
+				break;
+			default:
+				__asm int 3;
+				break;
 		}
 
-		SwitchToRiver(px86, instrCounter);
-		pFlags &= ~FLAG_GENERATE_RIVER;
+		SwitchToNative(px86, currentFamily, repReg, instrCounter, currentStack);
 	}
 }
 
-bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
+bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
 	// skip ignored instructions
 	if (ri.family & RIVER_FAMILY_FLAG_IGNORE) {
 		return true;
 	}
 
-	if (/*(RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) || */(RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK)) {
+	//if (/*(RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) || */(RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK)) {
+	//	return true;
+	//}
+
+	if (RIVER_FAMILY_RIVER == RIVER_FAMILY(ri.family)) {
 		return true;
 	}
 
@@ -106,7 +114,7 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 		}
 	}
 
-	GenerateTransitions(ri, px86.cursor, pFlags, repReg, instrCounter);
+	GenerateTransitions(ri, px86, pFlags, currentFamily, repReg, instrCounter);
 	GeneratePrefixes(ri, px86.cursor);
 
 	RiverInstruction rInstr;
@@ -127,15 +135,15 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 
 	GenericX86Assembler *casm = &nAsm;
 
-	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_RIVER) {
+	if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_RIVER) {
 		casm = &rAsm;
-	} else if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) {
+	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_TRACK) {
 		casm = &tAsm; 
-	} else if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK) {
+	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_PRETRACK) {
 		casm = &ptAsm; 
 	}
 
-	casm->Translate(*rOut, px86, pFlags, repReg, instrCounter);
+	casm->Translate(*rOut, px86, pFlags, currentFamily, repReg, instrCounter);
 
 
 	return true;
@@ -145,6 +153,7 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) {
 	BYTE *pTmp = px86.cursor, *pAux = px86.cursor;
 	DWORD pFlags = flg;
+	BYTE currentFamily = RIVER_FAMILY_NATIVE;
 	BYTE repReg = 0;
 
 	DbgPrint("= river to x86 ================================================================\n");
@@ -153,7 +162,7 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		pTmp = px86.cursor;
 
 		//pFlags = flg;
-		if (!Translate(pRiver[i], px86, pFlags, repReg, instrCounter)) {
+		if (!Translate(pRiver[i], px86, pFlags, currentFamily, repReg, instrCounter)) {
 			return false;
 		}
 		//ConvertRiverInstruction(cg, rt, &pRiver[i], &pTmp, &pFlags);
@@ -164,7 +173,7 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		DbgPrint("\n");
 	}
 
-	EndRiverConversion(px86.cursor, pFlags, repReg, instrCounter);
+	EndRiverConversion(px86, pFlags, currentFamily, repReg, instrCounter);
 	for (; pTmp < px86.cursor; ++pTmp) {
 		DbgPrint("%02x ", *pTmp);
 	}
@@ -175,20 +184,119 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 	return true;
 }
 
-void X86Assembler::EndRiverConversion(BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
-	if (pFlags & FLAG_GENERATE_RIVER) {
-		if (pFlags & FLAG_GENERATE_RIVER_xSP) {
-			SwitchToRiverEsp(px86, instrCounter, repReg);
-			pFlags &= ~FLAG_GENERATE_RIVER_xSP;
-			repReg = 0;
-		}
+void X86Assembler::SwitchEspWithReg(RelocableCodeBuffer &px86, DWORD &instrCounter, BYTE repReg, DWORD dwStack) {
+	static const BYTE code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}
 
-		SwitchToRiver(px86, instrCounter);
-		pFlags &= ~FLAG_GENERATE_RIVER;
-	}
+	memcpy(px86.cursor, code, sizeof(code));
+	px86.cursor[0x01] |= (repReg & 0x03); // choose the acording replacement register
+	*(DWORD *)(&px86.cursor[0x02]) = dwStack;
+
+	px86.cursor += sizeof(code);
+	instrCounter++;
 }
 
-bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
+void X86Assembler::SwitchToStack(RelocableCodeBuffer &px86, DWORD &instrCounter, DWORD dwStack) {
+	static const unsigned char code[] = { 0x87, 0x25, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg esp, large ds:<dwVirtualStack>}
+
+	memcpy(px86.cursor, code, sizeof(code));
+	*(DWORD *)(&px86.cursor[0x02]) = dwStack;
+
+	px86.cursor += sizeof(code);
+	instrCounter++;
+}
+
+bool X86Assembler::SwitchToNative(RelocableCodeBuffer &px86, BYTE &currentFamily, BYTE repReg, DWORD &instrCounter, DWORD dwStack) {
+	if (currentFamily & RIVER_FAMILY_FLAG_ORIG_xSP) {
+		SwitchEspWithReg(px86, instrCounter, repReg, dwStack);
+		currentFamily &= ~RIVER_FAMILY_FLAG_ORIG_xSP;
+	}
+
+	switch (RIVER_FAMILY(currentFamily)) {
+		case RIVER_FAMILY_NATIVE : 
+			break;
+		case RIVER_FAMILY_RIVER :
+			SwitchToStack(px86, instrCounter, (DWORD)&runtime->execBuff);
+			break;
+		case RIVER_FAMILY_PRETRACK :
+			SwitchToStack(px86, instrCounter, (DWORD)&runtime->trackBuff);
+			break;
+		default:
+			__asm int 3;
+			break;
+	}
+
+	currentFamily = RIVER_FAMILY_NATIVE;
+	return true;
+}
+
+bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
+	BYTE cf = RIVER_FAMILY(currentFamily);
+	BYTE tf = RIVER_FAMILY(ri.family);
+
+	DWORD currentStack = 0;
+
+	switch (cf)	{
+		case RIVER_FAMILY_NATIVE:
+			break;
+		case RIVER_FAMILY_RIVER:
+			currentStack = (DWORD)&runtime->execBuff;
+			break;
+		case RIVER_FAMILY_PRETRACK:
+			currentStack = (DWORD)&runtime->trackBuff;
+			break;
+		default:
+			__asm int 3;
+			break;
+	}
+
+	if (cf != tf) {
+		SwitchToNative(px86, currentFamily, repReg, instrCounter, currentStack);
+		cf = RIVER_FAMILY(currentFamily);
+	}
+
+	if (cf != tf) {
+		switch (tf) {
+			case RIVER_FAMILY_NATIVE:
+				break;
+			case RIVER_FAMILY_RIVER:
+				SwitchToStack(px86, instrCounter, (DWORD)&runtime->execBuff);
+				currentFamily = RIVER_FAMILY_RIVER;
+				currentStack = (DWORD)&runtime->execBuff;
+				break;
+			case RIVER_FAMILY_PRETRACK:
+				SwitchToStack(px86, instrCounter, (DWORD)&runtime->trackBuff);
+				currentFamily = RIVER_FAMILY_PRETRACK;
+				currentStack = (DWORD)&runtime->trackBuff;
+				break;
+			default:
+				__asm int 3;
+				break;
+		}
+	}
+
+	// now both current and target families have the same value
+	if (RIVER_FAMILY_FLAG_ORIG_xSP & currentFamily) { // current family preservers ESP
+		if (RIVER_FAMILY_FLAG_ORIG_xSP & ri.family) { // target family preservers ESP
+			if (0 == ((1 << repReg) & ri.unusedRegisters)) { // switch repReg
+				SwitchEspWithReg(px86, instrCounter, repReg, currentStack);
+				repReg = ri.GetUnusedRegister();
+				SwitchEspWithReg(px86, instrCounter, repReg, currentStack);
+			}
+		} else {
+			SwitchEspWithReg(px86, instrCounter, repReg, currentStack);
+			currentFamily &= ~RIVER_FAMILY_FLAG_ORIG_xSP;
+		}
+	} else { // current family doesn't preserve ESP
+		if (RIVER_FAMILY_FLAG_ORIG_xSP & ri.family) {
+			SwitchEspWithReg(px86, instrCounter, repReg, currentStack);
+			currentFamily |= RIVER_FAMILY_FLAG_ORIG_xSP;
+		}
+	}
+
+	return true;
+}
+
+/*bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
 	//FIXME skip all symbop instructions
 	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK) {
 		return true;
@@ -241,7 +349,7 @@ bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, 
 	}
 
 	return true;
-}
+}*/
 
 bool X86Assembler::Init(RiverRuntime *runtime) {
 	this->runtime = runtime;

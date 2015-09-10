@@ -5,9 +5,9 @@
 
 class PreTrackingAssembler : public GenericX86Assembler {
 private :
-	void AssemblePreTrackMem(const RiverAddress *addr, RelocableCodeBuffer &px86, DWORD &instrCounter);
+	void AssemblePreTrackMem(RiverAddress *addr, BYTE riverFamily, RelocableCodeBuffer &px86, DWORD &instrCounter);
 public :
-	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter);
+	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter);
 };
 
 #endif

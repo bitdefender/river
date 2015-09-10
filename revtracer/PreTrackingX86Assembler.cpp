@@ -2,7 +2,7 @@
 
 #include "X86AssemblerFuncs.h"
 
-void PreTrackingAssembler::AssemblePreTrackMem(const RiverAddress *addr, RelocableCodeBuffer &px86, DWORD &instrCounter) {
+void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, BYTE riverFamily, RelocableCodeBuffer &px86, DWORD &instrCounter) {
 	const BYTE regByte[] = { 0x05, 0x0D, 0x15, 0x1D };
 
 	const BYTE preTrackMemPrefix[] = {
@@ -34,27 +34,48 @@ void PreTrackingAssembler::AssemblePreTrackMem(const RiverAddress *addr, Relocab
 
 	memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
 	px86.cursor[1] = regByte[cReg];
-	*(DWORD *)(px86.cursor[2]) = (DWORD)&runtime->returnRegister;
+	*(DWORD *)(&px86.cursor[2]) = (DWORD)&runtime->returnRegister;
 	px86.cursor += sizeof(preTrackMemPrefix);
 	instrCounter++;
 
-	RiverAddress32 rAddr;
-	memcpy(&rAddr, addr, sizeof(rAddr));
-	rAddr.type |= RIVER_ADDR_DIRTY;
+	RiverInstruction rLea;
+	rLea.opCode = 0x8D;
+	rLea.modifiers = rLea.specifiers = 0;
+	rLea.family = RIVER_FAMILY_PRETRACK;
+	rLea.opTypes[0] = RIVER_OPTYPE_REG;
+	rLea.operands[0].asRegister.versioned = cReg;
 	
-	px86.cursor[0] = 0x8D;
+	rLea.opTypes[1] = RIVER_OPTYPE_MEM;
+	rLea.operands[1].asAddress = addr;
+
+	rLea.opTypes[2] = rLea.opTypes[3] = RIVER_OPTYPE_NONE;
+	rLea.PromoteModifiers();
+	rLea.TrackEspAsParameter();
+	rLea.TrackUnusedRegisters();
+
+	DWORD flags = 0;
+	GeneratePrefixes(rLea, px86.cursor);
+	AssembleDefaultInstr(rLea, px86, flags, instrCounter);
+	AssembleRegModRMOp(rLea, px86);
+	
+
+	/*px86.cursor[0] = 0x8D;
 	px86.cursor++;
-	rAddr.EncodeTox86(px86.cursor, cReg, 0, 0);
+	addr->EncodeTox86(px86.cursor, cReg, riverFamily, 0);
+	instrCounter++;*/
+
+	px86.cursor[0] = 0x50 + cReg; // push reg;
+	px86.cursor++;
 	instrCounter++;
 
 	memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
 	px86.cursor[1] = regByte[cReg];
-	*(DWORD *)(px86.cursor[2]) = (DWORD)&runtime->returnRegister;
+	*(DWORD *)(&px86.cursor[2]) = (DWORD)&runtime->returnRegister;
 	px86.cursor += sizeof(preTrackMemSuffix);
 	instrCounter++;
 }
 
-bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
+bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
 	switch (ri.opCode) {
 		case 0x9C :
 			::AssembleDefaultInstr(ri, px86, pFlags, instrCounter);
@@ -67,13 +88,17 @@ bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 			instrCounter++;
 			break;
 
+		case 0x8D :
+			ClearPrefixes(ri, px86.cursor);
+			AssemblePreTrackMem(ri.operands[0].asAddress, ri.family, px86, instrCounter);
+			break;
+
 		case 0xFF :
 			if (6 == ri.subOpCode) {
+				::GeneratePrefixes(ri, px86.cursor);
 				::AssembleDefaultInstr(ri, px86, pFlags, instrCounter);
 				::AssembleModRMOp<6>(ri, px86);
 				instrCounter++;
-
-				AssemblePreTrackMem(ri.operands[0].asAddress, px86, instrCounter);
 				break;
 			} else {
 				__asm int 3;

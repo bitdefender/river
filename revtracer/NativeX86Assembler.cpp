@@ -6,7 +6,7 @@ extern DWORD dwSysHandler; // = 0; // &SysHandler
 extern DWORD dwSysEndHandler; // = 0; // &SysEndHandler
 extern DWORD dwBranchHandler; // = 0; // &BranchHandler
 
-bool NativeX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
+bool NativeX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
 	DWORD dwTable = 0;
 
 	if (ri.modifiers & RIVER_MODIFIER_EXT) {

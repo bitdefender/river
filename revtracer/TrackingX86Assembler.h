@@ -13,8 +13,10 @@ private :
 
 	void AssembleTrackMemory(const RiverAddress *addr, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 	void AssembleMarkMemory(const RiverAddress *addr, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+
+	void AssembleAdjustEcx(BYTE count, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 public :
-	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter);
+	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter);
 };
 
 

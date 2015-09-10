@@ -53,7 +53,8 @@ _exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned i
 
 	memset(pStack, 0, 0x100000);
 
-	runtimeContext.execBuff = (DWORD)executionBuffer + executionSize;
+	runtimeContext.execBuff = (DWORD)executionBuffer + executionSize - 4096; //TODO: make independant track buffer 
+	runtimeContext.trackBuff = runtimeContext.trackBase = (DWORD)executionBuffer + executionSize;
 	runtimeContext.virtualStack = (DWORD)pStack + 0xFFFF0;
 	bValid = true;
 }

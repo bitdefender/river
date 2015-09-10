@@ -132,6 +132,8 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	RiverBasicBlock *pCB;
 	struct UserCtx *ctx = (struct UserCtx *)pEnv->userContext;
 
+	pEnv->runtimeContext.trackBuff = pEnv->runtimeContext.trackBase;
+
 	//DbgPrint("BranchHandler: %08X\n", a);
 
 	fprintf(fBlocks, "0x%08x\n", a /*& 0xFFFF*/);
