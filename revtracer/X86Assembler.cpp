@@ -184,6 +184,77 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 	return true;
 }
 
+void X86Assembler::AssembleTrackingEnter(RelocableCodeBuffer &px86, DWORD &instrCounter) {
+	static const BYTE trackingEnter[] = {
+		0x55,								// 0x00 - push ebp
+		0x89, 0xE5,							// 0x01 - mov ebp, esp
+		0x57								// 0x03 - push edi
+	};
+
+	memcpy(px86.cursor, trackingEnter, sizeof(trackingEnter));
+	px86.cursor += sizeof(trackingEnter);
+
+	instrCounter += 3;
+}
+
+void X86Assembler::AssembleTrackingLeave(RelocableCodeBuffer &px86, DWORD &instrCounter) {
+	static const BYTE trackingLeave[] = {
+		0x5F,								// 0x00 - pop edi
+		0x89, 0xEC,							// 0x01 - mov esp, ebp
+		0x5D,								// 0x03 - pop ebp
+		0xC3								// 0x04 - ret
+	};
+
+	memcpy(px86.cursor, trackingLeave, sizeof(trackingLeave));
+	px86.cursor += sizeof(trackingLeave);
+
+	instrCounter += 3;
+}
+
+bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) {
+	BYTE *pTmp = px86.cursor, *pAux = px86.cursor;
+	DWORD pFlags = flg;
+	BYTE currentFamily = RIVER_FAMILY_TRACK;
+	BYTE repReg = 0;
+
+	DbgPrint("= tracking x86 ================================================================\n");
+
+	AssembleTrackingEnter(px86, instrCounter);
+	for (; pTmp < px86.cursor; ++pTmp) {
+		DbgPrint("%02x ", *pTmp);
+	}
+	DbgPrint("\n");
+
+	for (DWORD i = 0; i < dwInstrCount; ++i) {
+		pTmp = px86.cursor;
+
+		//pFlags = flg;
+		/*if (!Translate(pRiver[i], px86, pFlags, currentFamily, repReg, instrCounter)) {
+			return false;
+		}*/
+
+		GeneratePrefixes(pRiver[i], px86.cursor);
+		tAsm.Translate(pRiver[i], px86, flg, currentFamily, repReg, instrCounter);
+
+		//ConvertRiverInstruction(cg, rt, &pRiver[i], &pTmp, &pFlags);
+
+		for (; pTmp < px86.cursor; ++pTmp) {
+			DbgPrint("%02x ", *pTmp);
+		}
+		DbgPrint("\n");
+	}
+
+	AssembleTrackingLeave(px86, instrCounter);
+	for (; pTmp < px86.cursor; ++pTmp) {
+		DbgPrint("%02x ", *pTmp);
+	}
+	DbgPrint("\n");
+
+	DbgPrint("===============================================================================\n");
+	byteCounter = px86.cursor - pAux;
+	return true;
+}
+
 void X86Assembler::SwitchEspWithReg(RelocableCodeBuffer &px86, DWORD &instrCounter, BYTE repReg, DWORD dwStack) {
 	static const BYTE code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}
 
@@ -295,61 +366,6 @@ bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, RelocableCode
 
 	return true;
 }
-
-/*bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter) {
-	//FIXME skip all symbop instructions
-	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK) {
-		return true;
-	}
-
-	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) {
-		return true;
-	}
-
-	// ensure state transitions between river and x86
-	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_RIVER) { // current instr is river
-		if (0 == (pFlags & FLAG_GENERATE_RIVER)) {
-			SwitchToRiver(px86, instrCounter);
-			pFlags |= FLAG_GENERATE_RIVER;
-		}
-
-		// ensure state transitions between riveresp and river
-		if (ri.family & RIVER_FAMILY_FLAG_ORIG_xSP) { // ri needs riveresp
-			if (0 == (pFlags & FLAG_GENERATE_RIVER_xSP)) {
-				repReg = ri.GetUnusedRegister();
-				SwitchToRiverEsp(px86, instrCounter, repReg);
-				pFlags |= FLAG_GENERATE_RIVER_xSP;
-			}
-			else {
-				if (0 == ((1 << repReg) & ri.unusedRegisters)) { // switch repReg
-					SwitchToRiverEsp(px86, instrCounter, repReg);
-					repReg = ri.GetUnusedRegister();
-					SwitchToRiverEsp(px86, instrCounter, repReg);
-				}
-			}
-		}
-		else {
-			if (pFlags & FLAG_GENERATE_RIVER_xSP) {
-				SwitchToRiverEsp(px86, instrCounter, repReg);
-				pFlags &= ~FLAG_GENERATE_RIVER_xSP;
-			}
-		}
-	}
-	else { // current instr is x86
-		if (pFlags & FLAG_GENERATE_RIVER) {
-			if (pFlags & FLAG_GENERATE_RIVER_xSP) {
-				SwitchToRiverEsp(px86, instrCounter, repReg);
-				repReg = 0;
-				pFlags &= ~FLAG_GENERATE_RIVER_xSP;
-			}
-
-			SwitchToRiver(px86, instrCounter);
-			pFlags &= ~FLAG_GENERATE_RIVER;
-		}
-	}
-
-	return true;
-}*/
 
 bool X86Assembler::Init(RiverRuntime *runtime) {
 	this->runtime = runtime;

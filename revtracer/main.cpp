@@ -11,8 +11,18 @@
 
 FILE *fBlocks;
 
-DWORD dwAddressTrackHandler = 0;
-DWORD dwAddressMarkHandler = 0;
+DWORD __stdcall TrackAddr(struct _exec_env *pEnv, DWORD dwAddr) {
+	DbgPrint("TrackAddr 0x%08x\n", dwAddr);
+	return 0;
+}
+
+DWORD __stdcall MarkAddr(struct _exec_env *pEnv, DWORD dwAddr, DWORD value) {
+	DbgPrint("MarkAddr 0x%08x <= %d\n", dwAddr, value);
+	return 0;
+}
+
+DWORD dwAddressTrackHandler = (DWORD)&TrackAddr;
+DWORD dwAddressMarkHandler = (DWORD)&MarkAddr;
 
 struct UserCtx {
 	DWORD callCount;
@@ -31,6 +41,10 @@ DWORD PopFromExecutionBuffer(struct _exec_env *pEnv) {
 	DWORD ret = *((DWORD *)pEnv->runtimeContext.execBuff);
 	pEnv->runtimeContext.execBuff += 4;
 	return ret;
+}
+
+DWORD TopFromExecutionBuffer(struct _exec_env *pEnv) {
+	return *((DWORD *)pEnv->runtimeContext.execBuff);
 }
 
 extern DWORD dwExitProcess;
@@ -127,6 +141,8 @@ void PrintStats(struct _exec_env *env) {
 	DbgPrint("========================================\n");
 }
 
+typedef void(*TrackFunc)();
+
 void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	Regs *currentRegs = (Regs *)((&a) + 1);
 	RiverBasicBlock *pCB;
@@ -135,6 +151,13 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	pEnv->runtimeContext.trackBuff = pEnv->runtimeContext.trackBase;
 
 	//DbgPrint("BranchHandler: %08X\n", a);
+
+	DWORD dwLastBlock = TopFromExecutionBuffer(pEnv);
+	RiverBasicBlock *pLast = pEnv->blockCache.FindBlock(dwLastBlock);
+	if (NULL != pLast) {
+		((TrackFunc)pLast->pTrackCode)();
+	}
+
 
 	fprintf(fBlocks, "0x%08x\n", a /*& 0xFFFF*/);
 	fflush(fBlocks);

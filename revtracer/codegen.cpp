@@ -251,6 +251,11 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		//assembler.CopyFix(pCB->pBkCode, outBuffer);
 		codeBuffer.CopyToFixed(pCB->pBkCode);
 
+		codeBuffer.Reset();
+		assembler.AssembleTracking(symbopInst, symbopInstCount, codeBuffer, 0x00, pCB->dwTrOpCount, outBufferSize);
+		pCB->pTrackCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
+		codeBuffer.CopyToFixed(pCB->pTrackCode);
+
 		return true;
 	}
 }

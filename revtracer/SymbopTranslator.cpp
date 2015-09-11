@@ -47,7 +47,7 @@ void SymbopTranslator::MakeInitTrack(RiverInstruction *&rTrackOut, DWORD &trackC
 	rTrackOut->family = RIVER_FAMILY_TRACK;
 
 	rTrackOut->opTypes[0] = RIVER_OPTYPE_REG;
-	rTrackOut->operands[0].asRegister.versioned = RIVER_REG_xAX;
+	rTrackOut->operands[0].asRegister.versioned = RIVER_REG_xDI;
 
 	rTrackOut->opTypes[1] = RIVER_OPTYPE_IMM; 
 	rTrackOut->operands[1].asImm32 = 0;

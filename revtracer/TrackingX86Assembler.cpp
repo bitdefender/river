@@ -7,33 +7,37 @@ extern DWORD dwAddressTrackHandler;
 extern DWORD dwAddressMarkHandler;
 
 void TrackingX86Assembler::AssembleTrackFlag(DWORD testFlags, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const BYTE trackFlagInstr[] = { 0x0b, 0x05, 0x00, 0x00, 0x00, 0x00 };
+	const BYTE trackFlagInstr[] = { 0x0B, 0x3D, 0x00, 0x00, 0x00, 0x00 };
 
 	for (BYTE c = 0, m = 1; m < RIVER_SPEC_FLAG_EXT; ++c, m <<= 1) {
-		memcpy(px86.cursor, trackFlagInstr, sizeof(trackFlagInstr));
-		*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
-		px86.cursor += sizeof(trackFlagInstr);
-		instrCounter++;
+		if (m & testFlags) {
+			memcpy(px86.cursor, trackFlagInstr, sizeof(trackFlagInstr));
+			*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
+			px86.cursor += sizeof(trackFlagInstr);
+			instrCounter++;
+		}
 	}
 }
 
 void TrackingX86Assembler::AssembleMarkFlag(DWORD modFlags, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
 	// mov [offset], edx 0x89, 0x15, 0x00, 0x00, 0x00, 0x00
 	// TODO: implement register renaming and overlapping registers
-	const BYTE markFlagInstr[] = { 0x89, 0x15, 0x00, 0x00, 0x00, 0x00 };
+	const BYTE markFlagInstr[] = { 0x89, 0x3D, 0x00, 0x00, 0x00, 0x00 };
 
 	for (BYTE c = 0, m = 1; m < RIVER_SPEC_FLAG_EXT; ++c, m <<= 1) {
-		memcpy(px86.cursor, markFlagInstr, sizeof(markFlagInstr));
-		*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
-		px86.cursor += sizeof(markFlagInstr);
-		instrCounter++;
+		if (m & modFlags) {
+			memcpy(px86.cursor, markFlagInstr, sizeof(markFlagInstr));
+			*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
+			px86.cursor += sizeof(markFlagInstr);
+			instrCounter++;
+		}
 	}
 }
 
 void TrackingX86Assembler::AssembleTrackRegister(const RiverRegister &reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
 	// or edx, [offset] 0x0B, 0x15, 0x00, 0x00, 0x00, 0x00
 	// TODO: implement register renaming, and overlapping registers
-	const BYTE trackRegInstr[] = { 0x0b, 0x05, 0x00, 0x00, 0x00, 0x00 };
+	const BYTE trackRegInstr[] = { 0x0B, 0x3D, 0x00, 0x00, 0x00, 0x00 };
 
 	memcpy(px86.cursor, trackRegInstr, sizeof(trackRegInstr));
 	*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedRegisters[GetFundamentalRegister(reg.name)];
@@ -44,7 +48,7 @@ void TrackingX86Assembler::AssembleTrackRegister(const RiverRegister &reg, Reloc
 void TrackingX86Assembler::AssembleMarkRegister(const RiverRegister &reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
 	// mov [offset], edx 0x89, 0x15, 0x00, 0x00, 0x00, 0x00
 	// TODO: implement register renaming and overlapping registers
-	const BYTE markRegInstr[] = { 0x89, 0x15, 0x00, 0x00, 0x00, 0x00 };
+	const BYTE markRegInstr[] = { 0x89, 0x3D, 0x00, 0x00, 0x00, 0x00 };
 
 	memcpy(px86.cursor, markRegInstr, sizeof(markRegInstr));
 	*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedRegisters[GetFundamentalRegister(reg.name)];
@@ -57,7 +61,7 @@ void TrackingX86Assembler::AssembleTrackMemory(const RiverAddress *addr, Relocab
 		0xFF, 0x31,										// 0x00 - push [ecx] - effective address
 		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00,				// 0x02 - push [address_hash]
 		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,				// 0x08 - call [dwAddressTrackHandler]
-		0x09, 0xC2										// 0x0E - or edx, eax
+		0x09, 0xC7										// 0x0E - or edi, eax
 	};
 
 	memcpy(px86.cursor, trackMemInstr, sizeof(trackMemInstr));
@@ -69,14 +73,15 @@ void TrackingX86Assembler::AssembleTrackMemory(const RiverAddress *addr, Relocab
 
 void TrackingX86Assembler::AssembleMarkMemory(const RiverAddress *addr, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
 	const BYTE markMemInstr[] = { 
-		0x52,											// 0x00 - push edx
-		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00,				// 0x01 - push [address_hash]
-		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x07 - call [dwAddressMarkHandler]
+		0x57,											// 0x00 - push edi
+		0xFF, 0x31,										// 0x01 - push [ecx] - effective address
+		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00,				// 0x03 - push [address_hash]
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x09 - call [dwAddressMarkHandler]
 	};
 
 	memcpy(px86.cursor, markMemInstr, sizeof(markMemInstr));
-	*(DWORD *)(&px86.cursor[0x03]) = (DWORD)&runtime->taintedAddresses;
-	*(DWORD *)(&px86.cursor[0x09]) = (DWORD)&dwAddressMarkHandler;
+	*(DWORD *)(&px86.cursor[0x05]) = (DWORD)&runtime->taintedAddresses;
+	*(DWORD *)(&px86.cursor[0x0B]) = (DWORD)&dwAddressMarkHandler;
 	px86.cursor += sizeof(markMemInstr);
 	instrCounter += 4;
 }
@@ -115,8 +120,8 @@ bool TrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 				AssembleMarkFlag(ri.operands[0].asImm8, px86, pFlags, instrCounter);
 				break;
 
-			case 0xBA: // used as tracking initialization (mov eax, 0)
-				::AssembleDefaultInstr(ri, px86, pFlags, instrCounter);
+			case 0xB8: // used as tracking initialization (mov eax, 0)
+				::AssemblePlusRegInstr(ri, px86, pFlags, instrCounter);
 				::AssembleImmOp<1, RIVER_OPSIZE_32>(ri, px86);
 				break;
 
