@@ -74,7 +74,7 @@ void SymbopTranslator::MakeCleanTrack(RiverInstruction *&rTrackOut, DWORD &track
 
 }
 
-void SymbopTranslator::MakeTrackFlg(RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount) {
+void SymbopTranslator::MakeTrackFlg(BYTE flags, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount) {
 	trackedValues += 1;
 
 	rMainOut->opCode = 0x9C;
@@ -87,7 +87,10 @@ void SymbopTranslator::MakeTrackFlg(RiverInstruction *&rMainOut, DWORD &instrCou
 
 
 	rTrackOut->opCode = 0x9C; // pushf
-	rTrackOut->opTypes[0] = rTrackOut->opTypes[1] = rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
+	rTrackOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
+	rTrackOut->operands[0].asImm8 = flags;
+		
+	rTrackOut->opTypes[1] = rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
 	rTrackOut->subOpCode = 0;
 	rTrackOut->modifiers = 0;
 	rTrackOut->specifiers = 0;
@@ -97,9 +100,12 @@ void SymbopTranslator::MakeTrackFlg(RiverInstruction *&rMainOut, DWORD &instrCou
 	trackCount++;
 }
 
-void SymbopTranslator::MakeMarkFlg(RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount) {
+void SymbopTranslator::MakeMarkFlg(BYTE flags, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount) {
 	rTrackOut->opCode = 0x9D; // popf
-	rTrackOut->opTypes[0] = rTrackOut->opTypes[1] = rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
+	rTrackOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
+	rTrackOut->operands[0].asImm8 = flags;
+		
+	rTrackOut->opTypes[1] = rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
 	rTrackOut->subOpCode = 0;
 	rTrackOut->modifiers = 0;
 	rTrackOut->family = RIVER_FAMILY_TRACK;
@@ -269,7 +275,7 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 	MakeInitTrack(rTrackOut, trackCount);
 
 	if (0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) {
-		MakeTrackFlg(rMainOut, instrCount, rTrackOut, trackCount);
+		MakeTrackFlg(rIn.testFlags, rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
 	for (int i = 3; i >= 0; --i) {
@@ -285,7 +291,7 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 	
 
 	if (RIVER_SPEC_MODIFIES_FLG & rIn.specifiers) {
-		MakeMarkFlg(rMainOut, instrCount, rTrackOut, trackCount);
+		MakeMarkFlg(rIn.modFlags, rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
 	for (int i = 3; i >= 0; --i) {

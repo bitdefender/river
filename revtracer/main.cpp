@@ -141,7 +141,7 @@ void PrintStats(struct _exec_env *env) {
 	DbgPrint("========================================\n");
 }
 
-typedef void(*TrackFunc)();
+typedef void(*TrackFunc)(DWORD trackBuffer);
 
 void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	Regs *currentRegs = (Regs *)((&a) + 1);
@@ -155,7 +155,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	DWORD dwLastBlock = TopFromExecutionBuffer(pEnv);
 	RiverBasicBlock *pLast = pEnv->blockCache.FindBlock(dwLastBlock);
 	if (NULL != pLast) {
-		((TrackFunc)pLast->pTrackCode)();
+		((TrackFunc)pLast->pTrackCode)(pEnv->runtimeContext.trackBase - 4);
 	}
 
 

@@ -18,7 +18,9 @@ void RiverMetaTranslator::MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const Ri
 	rOut->subOpCode = 0;
 	rOut->modifiers = 0;
 	rOut->family = family;
-	rOut->specifiers = 0;
+	rOut->specifiers = RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_MODIFIES_OP1;
+
+	rOut->modFlags = rOut->testFlags = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
 	rOut->operands[0].asRegister.versioned = codegen->GetCurrentReg(rg);
@@ -38,7 +40,9 @@ void RiverMetaTranslator::MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const Ri
 	rOut->subOpCode = 5;
 	rOut->modifiers = 0;
 	rOut->family = family;
-	rOut->specifiers = 0;
+	rOut->specifiers = RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_MODIFIES_OP1;
+
+	rOut->modFlags = rOut->testFlags = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
 	rOut->operands[0].asRegister.versioned = codegen->GetCurrentReg(rg);
@@ -56,7 +60,9 @@ void RiverMetaTranslator::MakeMovRegMem32(RiverInstruction *rOut, const RiverReg
 	rOut->subOpCode = 0;
 	rOut->modifiers = 0;
 	rOut->family = family;
-	rOut->specifiers = 0;
+	rOut->specifiers = RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_IGNORES_OP1 | RIVER_SPEC_MODIFIES_OP1;
+
+	rOut->modFlags = rOut->testFlags = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
 	rOut->operands[0].asRegister.versioned = reg.versioned;
@@ -72,7 +78,9 @@ void RiverMetaTranslator::MakeMovMemReg32(RiverInstruction *rOut, const RiverAdd
 	rOut->subOpCode = 0;
 	rOut->modifiers = 0;
 	rOut->family = family;
-	rOut->specifiers = 0;
+	rOut->specifiers = RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_IGNORES_OP1 | RIVER_SPEC_MODIFIES_OP1;
+
+	rOut->modFlags = rOut->testFlags = 0;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
 	rOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);

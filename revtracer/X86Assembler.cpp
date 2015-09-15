@@ -188,27 +188,30 @@ void X86Assembler::AssembleTrackingEnter(RelocableCodeBuffer &px86, DWORD &instr
 	static const BYTE trackingEnter[] = {
 		0x55,								// 0x00 - push ebp
 		0x89, 0xE5,							// 0x01 - mov ebp, esp
-		0x57								// 0x03 - push edi
+		0x57,								// 0x03 - push edi
+		0x56,								// 0x04 - push esi
+		0x8B, 0x75, 0x08					// 0x05 - mov esi, [ebp + 8] ; esi <- trackbuffer
 	};
 
 	memcpy(px86.cursor, trackingEnter, sizeof(trackingEnter));
 	px86.cursor += sizeof(trackingEnter);
 
-	instrCounter += 3;
+	instrCounter += 5;
 }
 
 void X86Assembler::AssembleTrackingLeave(RelocableCodeBuffer &px86, DWORD &instrCounter) {
 	static const BYTE trackingLeave[] = {
-		0x5F,								// 0x00 - pop edi
-		0x89, 0xEC,							// 0x01 - mov esp, ebp
-		0x5D,								// 0x03 - pop ebp
-		0xC3								// 0x04 - ret
+		0x5E,								// 0x00 - pop esi
+		0x5F,								// 0x01 - pop edi
+		0x89, 0xEC,							// 0x02 - mov esp, ebp
+		0x5D,								// 0x04 - pop ebp
+		0xC3								// 0x05 - ret
 	};
 
 	memcpy(px86.cursor, trackingLeave, sizeof(trackingLeave));
 	px86.cursor += sizeof(trackingLeave);
 
-	instrCounter += 3;
+	instrCounter += 5;
 }
 
 bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) {
