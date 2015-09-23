@@ -20,7 +20,7 @@
 #define RIVER_FORWARD_INSTRUCTIONS					512
 #define RIVER_BACKWARD_INSTRUCTIONS					512
 
-#define SYMBOP_TRACK_INSTRUCTIONS					256
+#define SYMBOP_TRACK_INSTRUCTIONS					512
 
 /* A resettable river code translator */
 class RiverCodeGen {

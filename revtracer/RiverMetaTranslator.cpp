@@ -91,6 +91,42 @@ void RiverMetaTranslator::MakeMovMemReg32(RiverInstruction *rOut, const RiverAdd
 	rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
 }
 
+void RiverMetaTranslator::MakeMovMemImm32(RiverInstruction *rOut, const RiverAddress &mem, DWORD imm, BYTE family) {
+	rOut->opCode = 0xC7;
+	rOut->subOpCode = 0;
+	rOut->modifiers = 0;
+	rOut->family = family;
+	rOut->specifiers = RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_IGNORES_OP1 | RIVER_SPEC_MODIFIES_OP1;
+
+	rOut->modFlags = rOut->testFlags = 0;
+
+	rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
+	rOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
+
+	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
+	rOut->operands[1].asImm32 = imm;
+
+	rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
+}
+
+void RiverMetaTranslator::MakeMovMemMem32(RiverInstruction *rOut, const RiverAddress &memd, const RiverAddress &mems, BYTE family) {
+	rOut->opCode = 0xA5;
+	rOut->subOpCode = 0;
+	rOut->modifiers = 0;
+	rOut->family = family;
+	rOut->specifiers = RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_IGNORES_OP1 | RIVER_SPEC_MODIFIES_OP1;
+
+	rOut->modFlags = rOut->testFlags = 0;
+
+	rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
+	rOut->operands[0].asAddress = codegen->CloneAddress(memd, 0);
+
+	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
+	rOut->operands[1].asAddress = codegen->CloneAddress(mems, 0);
+
+	rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
+}
+
 bool RiverMetaTranslator::Init(RiverCodeGen *cg) {
 	codegen = cg;
 	return true;
@@ -121,13 +157,107 @@ void RiverMetaTranslator::TranslatePushReg(RiverInstruction *rOut, const RiverIn
 	MakeMovMemReg32(&rOut[0], *(rIn.operands[2].asAddress), rIn.operands[0].asRegister, RIVER_FAMILY_PREMETAOP);
 	MakeSubNoFlagsRegImm8(&rOut[1], rIn.operands[1].asRegister, 0x04, RIVER_FAMILY_PREMETAOP);
 	CopyInstruction(rOut[2], rIn);
+	rOut[2].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
 	instrCount += 3;
 }
 
-void RiverMetaTranslator::TranslatePopReg(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
-	CopyInstruction(rOut[0], rIn);
-	instrCount += 1;
+void RiverMetaTranslator::TranslatePusha(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	RiverAddress32 rStack;
+	RiverRegister rReg;
+
+	rStack.type = RIVER_ADDR_BASE | RIVER_ADDR_DISP8 | RIVER_ADDR_DIRTY;
+	rStack.base.versioned = codegen->GetPrevReg(RIVER_REG_xSP);
+	
+	rStack.disp.d8 = 0xFC;
+	rReg.versioned = codegen->GetCurrentReg(RIVER_REG_xAX);
+	MakeMovMemReg32(&rOut[0], rStack, rReg, RIVER_FAMILY_PREMETAOP);
+
+	rStack.disp.d8 = 0xF8;
+	rReg.versioned = codegen->GetCurrentReg(RIVER_REG_xCX);
+	MakeMovMemReg32(&rOut[1], rStack, rReg, RIVER_FAMILY_PREMETAOP);
+
+	rStack.disp.d8 = 0xF4;
+	rReg.versioned = codegen->GetCurrentReg(RIVER_REG_xDX);
+	MakeMovMemReg32(&rOut[2], rStack, rReg, RIVER_FAMILY_PREMETAOP);
+
+	rStack.disp.d8 = 0xF0;
+	rReg.versioned = codegen->GetCurrentReg(RIVER_REG_xBX);
+	MakeMovMemReg32(&rOut[3], rStack, rReg, RIVER_FAMILY_PREMETAOP);
+
+	rStack.disp.d8 = 0xEC;
+	rReg.versioned = codegen->GetPrevReg(RIVER_REG_xSP);
+	MakeMovMemReg32(&rOut[4], rStack, rReg, RIVER_FAMILY_PREMETAOP);
+
+	rStack.disp.d8 = 0xE8;
+	rReg.versioned = codegen->GetCurrentReg(RIVER_REG_xBP);
+	MakeMovMemReg32(&rOut[5], rStack, rReg, RIVER_FAMILY_PREMETAOP);
+
+	rStack.disp.d8 = 0xE4;
+	rReg.versioned = codegen->GetCurrentReg(RIVER_REG_xSI);
+	MakeMovMemReg32(&rOut[6], rStack, rReg, RIVER_FAMILY_PREMETAOP);
+
+	rStack.disp.d8 = 0xE0;
+	rReg.versioned = codegen->GetCurrentReg(RIVER_REG_xDI);
+	MakeMovMemReg32(&rOut[7], rStack, rReg, RIVER_FAMILY_PREMETAOP);
+
+	rReg.versioned = codegen->GetCurrentReg(RIVER_REG_xSP);
+	MakeSubNoFlagsRegImm8(&rOut[8], rReg, 0x20, RIVER_FAMILY_PREMETAOP);
+
+	CopyInstruction(rOut[9], rIn);
+	rOut[9].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
+	instrCount += 10;
 }
+
+void RiverMetaTranslator::TranslatePopReg(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	MakeMovRegMem32(&rOut[0], rIn.operands[0].asRegister, *rIn.operands[2].asAddress, RIVER_FAMILY_PREMETAOP);
+	MakeAddNoFlagsRegImm8(&rOut[1], rIn.operands[1].asRegister, 0x04, RIVER_FAMILY_PREMETAOP);
+	
+	CopyInstruction(rOut[2], rIn);
+	rOut[2].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
+	instrCount += 3;
+}
+
+void RiverMetaTranslator::TranslatePopMem(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	MakeMovMemMem32(&rOut[0], *rIn.operands[0].asAddress, *rIn.operands[2].asAddress, RIVER_FAMILY_PREMETAOP);
+	MakeAddNoFlagsRegImm8(&rOut[1], rIn.operands[1].asRegister, 0x04, RIVER_FAMILY_PREMETAOP);
+
+	CopyInstruction(rOut[2], rIn);
+	rOut[2].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
+	instrCount += 3;
+}
+
+void RiverMetaTranslator::TranslateCall(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	MakeMovMemImm32(&rOut[0], *(rIn.operands[3].asAddress), rIn.operands[1].asImm32, RIVER_FAMILY_PREMETAOP);
+	MakeSubNoFlagsRegImm8(&rOut[1], rIn.operands[2].asRegister, 0x04, RIVER_FAMILY_PREMETAOP);
+	CopyInstruction(rOut[2], rIn);
+	rOut[2].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
+	instrCount += 3;
+}
+
+void RiverMetaTranslator::TranslateRet(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	MakeAddNoFlagsRegImm8(&rOut[0], rIn.operands[0].asRegister, 0x04, RIVER_FAMILY_PREMETAOP);
+	CopyInstruction(rOut[1], rIn);
+	rOut[1].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
+	instrCount += 2;
+}
+
+void RiverMetaTranslator::TranslateRetn(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	MakeAddNoFlagsRegImm8(&rOut[0], rIn.operands[1].asRegister, rIn.operands[0].asImm16 + 0x04, RIVER_FAMILY_PREMETAOP);
+	CopyInstruction(rOut[1], rIn);
+	rOut[1].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
+	instrCount += 2;
+}
+
+RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translate0xFFOp[8] = {
+	&RiverMetaTranslator::TranslateDefault,
+	&RiverMetaTranslator::TranslateDefault,
+	&RiverMetaTranslator::TranslateCall,
+	&RiverMetaTranslator::TranslateDefault,
+	&RiverMetaTranslator::TranslateDefault,
+	&RiverMetaTranslator::TranslateDefault,
+	&RiverMetaTranslator::TranslateDefault,
+	&RiverMetaTranslator::TranslateDefault,
+};
 
 
 RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2][0x100] = {
@@ -228,7 +358,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0x5D */ &RiverMetaTranslator::TranslatePopReg,
 		/* 0x5E */ &RiverMetaTranslator::TranslatePopReg,
 		/* 0x5F */ &RiverMetaTranslator::TranslatePopReg,
-		/* 0x60 */ &RiverMetaTranslator::TranslateUnk,
+		/* 0x60 */ &RiverMetaTranslator::TranslatePusha,
 		/* 0x61 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x62 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x63 */ &RiverMetaTranslator::TranslateUnk,
@@ -275,7 +405,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0x8C */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x8D */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x8E */ &RiverMetaTranslator::TranslateUnk,
-		/* 0x8F */ &RiverMetaTranslator::TranslateUnk,
+		/* 0x8F */ &RiverMetaTranslator::TranslatePopMem,
 		/* 0x90 */ &RiverMetaTranslator::TranslateDefault, 
 		/* 0x91 */ &RiverMetaTranslator::TranslateDefault, 
 		/* 0x92 */ &RiverMetaTranslator::TranslateDefault, 
@@ -326,8 +456,8 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0xBF */ &RiverMetaTranslator::TranslateDefault, 
 		/* 0xC0 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xC1 */ &RiverMetaTranslator::TranslateDefault,
-		/* 0xC2 */ &RiverMetaTranslator::TranslateDefault,
-		/* 0xC3 */ &RiverMetaTranslator::TranslateDefault,
+		/* 0xC2 */ &RiverMetaTranslator::TranslateRetn,
+		/* 0xC3 */ &RiverMetaTranslator::TranslateRet,
 		/* 0xC4 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0xC5 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0xC6 */ &RiverMetaTranslator::TranslateDefault,
@@ -364,7 +494,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0xE5 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0xE6 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0xE7 */ &RiverMetaTranslator::TranslateUnk,
-		/* 0xE8 */ &RiverMetaTranslator::TranslateDefault,
+		/* 0xE8 */ &RiverMetaTranslator::TranslateCall,
 		/* 0xE9 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xEA */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xEB */ &RiverMetaTranslator::TranslateDefault,
@@ -387,7 +517,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0xFC */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xFD */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xFE */ &RiverMetaTranslator::TranslateDefault,
-		/* 0xFF */ &RiverMetaTranslator::TranslateDefault
+		/* 0xFF */ &RiverMetaTranslator::TranslateSubOp<translate0xFFOp>
 	}, {
 		/* 0x00 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x01 */ &RiverMetaTranslator::TranslateUnk,

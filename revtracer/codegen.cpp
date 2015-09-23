@@ -69,8 +69,11 @@ void RiverCodeGen::Reset() {
 	memset(regVersions, 0, sizeof(regVersions));
 }
 
+
+static int callCount = 0;
 struct RiverAddress *RiverCodeGen::AllocAddr(WORD flags) {
 	struct RiverAddress *ret = &trRiverAddr[addrCount];
+	callCount++;
 	addrCount++;
 	return ret;
 }
@@ -181,17 +184,23 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
 			symbopTranslator.Translate(symbopMain[i], &fwRiverInst[fwInstCount], fwInstCount, &symbopInst[symbopInstCount], symbopInstCount);
 		}
 
-		DbgPrint(".%08x    ", pAux);
-		iSize = pTmp - pAux;
-		for (DWORD i = 0; i < iSize; ++i) {
-			DbgPrint("%02x ", pAux[i]);
-		}
+		for (DWORD i = 0; i < mSize; ++i) {
+			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(disMeta[i].family)) {
 
-		for (DWORD i = iSize; i < 8; ++i) {
-			DbgPrint("   ");
-		}
+				DbgPrint(".%08x    ", pAux);
+				iSize = pTmp - pAux;
+				for (DWORD i = 0; i < iSize; ++i) {
+					DbgPrint("%02x ", pAux[i]);
+				}
 
-		RiverPrintInstruction(&dis);
+				for (DWORD i = iSize; i < 8; ++i) {
+					DbgPrint("   ");
+				}
+			} else {
+				DbgPrint(".                                    ");
+			}
+			RiverPrintInstruction(&disMeta[i]);
+		}
 
 		dwInst++;
 	} while (!(pFlags & RIVER_FLAG_BRANCH));

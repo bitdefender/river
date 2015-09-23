@@ -152,7 +152,7 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 
 	//DbgPrint("BranchHandler: %08X\n", a);
 
-	DWORD dwLastBlock = TopFromExecutionBuffer(pEnv);
+	DWORD dwLastBlock = pEnv->lastFwBlock; //TopFromExecutionBuffer(pEnv);
 	RiverBasicBlock *pLast = pEnv->blockCache.FindBlock(dwLastBlock);
 	if (NULL != pLast) {
 		((TrackFunc)pLast->pTrackCode)(pEnv->runtimeContext.trackBase - 4);
