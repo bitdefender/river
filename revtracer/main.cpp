@@ -11,13 +11,15 @@
 
 FILE *fBlocks;
 
-DWORD __stdcall TrackAddr(struct _exec_env *pEnv, DWORD dwAddr) {
-	DbgPrint("TrackAddr 0x%08x\n", dwAddr);
+extern DWORD segmentOffsets[0x100];
+
+DWORD __stdcall TrackAddr(struct _exec_env *pEnv, DWORD dwAddr, DWORD segSel) {
+	DbgPrint("TrackAddr 0x%08x\n", dwAddr + segmentOffsets[segSel & 0xFFFF]);
 	return 0;
 }
 
-DWORD __stdcall MarkAddr(struct _exec_env *pEnv, DWORD dwAddr, DWORD value) {
-	DbgPrint("MarkAddr 0x%08x <= %d\n", dwAddr, value);
+DWORD __stdcall MarkAddr(struct _exec_env *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
+	DbgPrint("MarkAddr 0x%08x <= %d\n", dwAddr + segmentOffsets[segSel & 0xFFFF], value);
 	return 0;
 }
 

@@ -64,12 +64,29 @@ void TrackingX86Assembler::AssembleTrackMemory(const RiverAddress *addr, BYTE of
 		0x09, 0xC7										// 0x0F - or edi, eax
 	};
 
+	const BYTE trackSegInstr[] = {
+		0xFF, 0x76, 0x00								// 0x00 - push [esi + 0x00] - segment index
+	};
+
+	const BYTE trackImmInstr[] = {
+		0x6A, 0x00										// 0x00 - push 0 - no segment
+	};
+
+	if (addr->HasSegment()) {
+		memcpy(px86.cursor, trackSegInstr, sizeof(trackSegInstr));
+		px86.cursor[0x02] = ~((offset - 1) << 2) + 1;
+		px86.cursor += sizeof(trackSegInstr);
+	} else {
+		memcpy(px86.cursor, trackImmInstr, sizeof(trackImmInstr));
+		px86.cursor += sizeof(trackImmInstr);
+	}
+
 	memcpy(px86.cursor, trackMemInstr, sizeof(trackMemInstr));
 	px86.cursor[0x02] = ~(offset << 2) + 1;
 	*(DWORD *)(&px86.cursor[0x05]) = (DWORD)&runtime->taintedAddresses;
 	*(DWORD *)(&px86.cursor[0x0B]) = (DWORD)&dwAddressTrackHandler;
 	px86.cursor += sizeof(trackMemInstr);
-	instrCounter += 4;
+	instrCounter += 5;
 }
 
 void TrackingX86Assembler::AssembleTrackAddress(const RiverAddress *addr, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
@@ -89,6 +106,24 @@ void TrackingX86Assembler::AssembleMarkMemory(const RiverAddress *addr, BYTE off
 		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00,				// 0x04 - push [address_hash]
 		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x0A - call [dwAddressMarkHandler]
 	};
+
+	const BYTE markSegInstr[] = {
+		0xFF, 0x76, 0x00								// 0x00 - push [esi + 0x00] - segment index
+	};
+
+	const BYTE markImmInstr[] = {
+		0x6A, 0x00										// 0x00 - push 0 - no segment
+	};
+
+	if (addr->HasSegment()) {
+		memcpy(px86.cursor, markSegInstr, sizeof(markSegInstr));
+		px86.cursor[0x02] = ~((offset - 1) << 2) + 1;
+		px86.cursor += sizeof(markSegInstr);
+	}
+	else {
+		memcpy(px86.cursor, markImmInstr, sizeof(markImmInstr));
+		px86.cursor += sizeof(markImmInstr);
+	}
 
 	memcpy(px86.cursor, markMemInstr, sizeof(markMemInstr));
 	*(BYTE *)(&px86.cursor[0x03]) = (BYTE)(~(offset << 2) + 1);

@@ -170,6 +170,10 @@ DWORD SymbopTranslator::MakeTrackAddress(const RiverOperand &op, BYTE optype, Ri
 	}
 
 	trackedValues += 1;
+	if (op.asAddress->HasSegment()) {
+		trackedValues += 1;
+	}
+
 	rMainOut->opCode = 0x8D;
 	rMainOut->specifiers = 0;
 	rMainOut->modifiers = 0;

@@ -53,6 +53,38 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, BYTE riverFam
 	rLea.TrackEspAsParameter();
 	rLea.TrackUnusedRegisters();
 
+	if (addr->HasSegment()) {
+		switch (addr->GetSegment()) {
+		case RIVER_MODIFIER_ESSEG:
+			px86.cursor[0] = 0x06; // push es
+			px86.cursor += 1;
+			break;
+		case RIVER_MODIFIER_CSSEG:
+			px86.cursor[0] = 0x0E; // push cs
+			px86.cursor += 1;
+			break;
+		case RIVER_MODIFIER_SSSEG:
+			px86.cursor[0] = 0x16; // push ss
+			px86.cursor += 1;
+			break;
+		case RIVER_MODIFIER_DSSEG:
+			px86.cursor[0] = 0x1E; // push ds
+			px86.cursor += 1;
+			break;
+		case RIVER_MODIFIER_FSSEG:
+			px86.cursor[0] = 0x0F; // push fs
+			px86.cursor[1] = 0xA0;
+			px86.cursor += 2;
+			break;
+		case RIVER_MODIFIER_GSSEG:
+			px86.cursor[0] = 0x0F; // push gs
+			px86.cursor[1] = 0xA8;
+			px86.cursor += 2;
+			break;
+		}
+		instrCounter++;
+	}
+
 	DWORD flags = 0;
 	GeneratePrefixes(rLea, px86.cursor);
 	AssembleDefaultInstr(rLea, px86, flags, instrCounter);

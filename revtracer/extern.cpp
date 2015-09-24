@@ -5,6 +5,7 @@
 
 #include <Windows.h>
 #include <winternl.h>
+#include <intrin.h>
 
 #include "extern.h"
 
@@ -41,6 +42,34 @@ struct SnapshotInitializer {
 	}
 } _snapshotInitializer;
 #endif
+
+
+DWORD segmentOffsets[0x100];
+class SegmentOffsets  {
+public :
+	void InitSegment(DWORD dwSeg) {
+		LDT_ENTRY entry;
+		GetThreadSelectorEntry(GetCurrentThread(), dwSeg, &entry);
+
+		DWORD base = entry.BaseLow | (entry.HighWord.Bytes.BaseMid << 16) | (entry.HighWord.Bytes.BaseHi << 24);
+		DWORD limit = entry.LimitLow | (entry.HighWord.Bits.LimitHi << 16);
+
+		if (entry.HighWord.Bits.Granularity) {
+			limit = (limit << 12) | 0x0FFF;
+		}
+
+		segmentOffsets[dwSeg] = base;
+	}
+
+
+	SegmentOffsets() {
+		for (DWORD i = 0; i < 0x100; ++i) {
+			InitSegment(i);
+		}
+	}
+} _segmentOffsets;
+
+
 
 unsigned long long TakeSnapshot() {
 #ifdef USE_VBOX_SNAPSHOTS
