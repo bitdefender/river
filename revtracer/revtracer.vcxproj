@@ -15,6 +15,7 @@
     <ClInclude Include="cb.h" />
     <ClInclude Include="CodeGen.h" />
     <ClInclude Include="GenericX86Assembler.h" />
+    <ClInclude Include="AddressContainer.h" />
     <ClInclude Include="PreTrackingX86Assembler.h" />
     <ClInclude Include="TrackingX86Assembler.h" />
     <ClInclude Include="X86AssemblerFuncs.h" />
@@ -49,6 +50,7 @@
     <ClInclude Include="sync.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AddressContainer.cpp" />
     <ClCompile Include="callgates.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>

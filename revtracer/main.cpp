@@ -3,6 +3,8 @@
 #include "cb.h"
 #include "callgates.h"
 
+#include "AddressContainer.h"
+
 #include "river.h"
 #include <intrin.h>
 
@@ -13,14 +15,16 @@ FILE *fBlocks;
 
 extern DWORD segmentOffsets[0x100];
 
+AddressContainer ac;
+
 DWORD __stdcall TrackAddr(struct _exec_env *pEnv, DWORD dwAddr, DWORD segSel) {
 	DbgPrint("TrackAddr 0x%08x\n", dwAddr + segmentOffsets[segSel & 0xFFFF]);
-	return 0;
+	return ac.Get(dwAddr + segmentOffsets[segSel & 0xFFFF]);
 }
 
 DWORD __stdcall MarkAddr(struct _exec_env *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
 	DbgPrint("MarkAddr 0x%08x <= %d\n", dwAddr + segmentOffsets[segSel & 0xFFFF], value);
-	return 0;
+	return ac.Set(dwAddr + segmentOffsets[segSel & 0xFFFF], value);
 }
 
 DWORD dwAddressTrackHandler = (DWORD)&TrackAddr;
@@ -150,6 +154,14 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	RiverBasicBlock *pCB;
 	struct UserCtx *ctx = (struct UserCtx *)pEnv->userContext;
 
+	if (0x0f00100a == a) {
+		ac.Set(0x0f000000 + 0x30540, 1);
+		ac.Set(0x0f000000 + 0x30544, 2);
+		ac.Set(0x0f000000 + 0x30548, 4);
+		ac.Set(0x0f000000 + 0x3054C, 8);
+
+	}
+
 	pEnv->runtimeContext.trackBuff = pEnv->runtimeContext.trackBase;
 
 	//DbgPrint("BranchHandler: %08X\n", a);
@@ -166,6 +178,9 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 
 	if (a == dwExitProcess) {
 		PrintStats(pEnv);
+		DbgPrint(" +++ Tainted addresses +++ \n");
+		ac.PrintAddreses();
+		DbgPrint(" +++++++++++++++++++++++++ \n");
 		exit(0);
 	}
 
@@ -382,9 +397,13 @@ int main(unsigned int argc, char *argv[]) {
 	//unsigned char *pMain = (unsigned char *)baseAddr + 0x1347;
 	//unsigned char *pMain = goat;
 	DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)pMain, (void *)argc, (void *)argv);
-	DbgPrint("Done. ret = %d\n", ret);
+	DbgPrint("Done. ret = %d\n\n", ret);
 
 	PrintStats(pEnv);
+
+	DbgPrint(" +++ Tainted addresses +++ \n");
+	ac.PrintAddreses();
+	DbgPrint(" +++++++++++++++++++++++++ \n");
 
 	/*DbgPrint("Test %d\n", overlap(3, 7, 2, 10));*/
 
