@@ -1,8 +1,10 @@
 #ifndef _RIVER_REVERSE_TRANSLATOR_H
 #define _RIVER_REVERSE_TRANSLATOR_H
 
-#include "extern.h"
+#include "revtracer.h"
 #include "river.h"
+
+using namespace rev;
 
 class RiverCodeGen;
 

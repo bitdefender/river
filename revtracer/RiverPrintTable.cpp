@@ -1,7 +1,9 @@
 #include "river.h"
 #include "riverinternl.h"
 
-#include <stdio.h>
+#include "revtracer.h"
+
+//#include <stdio.h>
 
 extern const char PrintMnemonicTable00[][10];
 extern const char PrintMnemonicTable0F[][10];
@@ -13,41 +15,41 @@ extern const char MemSizes[][6];
 
 void PrintPrefixes(struct RiverInstruction *ri) {
 	if (ri->modifiers & RIVER_MODIFIER_REP) {
-		DbgPrint("rep ");
+		revtracerAPI.dbgPrintFunc("rep ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REPZ) {
-		DbgPrint("repz ");
+		revtracerAPI.dbgPrintFunc("repz ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REPNZ) {
-		DbgPrint("repnz ");
+		revtracerAPI.dbgPrintFunc("repnz ");
 	}
 
 
 	if (ri->family & RIVER_FAMILY_FLAG_IGNORE) {
-		DbgPrint("ignore");
+		revtracerAPI.dbgPrintFunc("ignore");
 	}
 
 	if (ri->family & RIVER_FAMILY_FLAG_ORIG_xSP) {
-		DbgPrint("esp");
+		revtracerAPI.dbgPrintFunc("esp");
 	}
 
 	switch (RIVER_FAMILY(ri->family)) {
 		case RIVER_FAMILY_RIVER:
-			DbgPrint("river");
+			revtracerAPI.dbgPrintFunc("river");
 			break;
 		case RIVER_FAMILY_TRACK :
-			DbgPrint("track");
+			revtracerAPI.dbgPrintFunc("track");
 			break;
 		case RIVER_FAMILY_PRETRACK :
-			DbgPrint("pretrack");
+			revtracerAPI.dbgPrintFunc("pretrack");
 			break;
 		case RIVER_FAMILY_PREMETAOP :
-			DbgPrint("premeta");
+			revtracerAPI.dbgPrintFunc("premeta");
 			break;
 		case RIVER_FAMILY_POSTMETAOP:
-			DbgPrint("postmeta");
+			revtracerAPI.dbgPrintFunc("postmeta");
 			break;
 	}
 }
@@ -60,98 +62,98 @@ void PrintMnemonic(struct RiverInstruction *ri) {
 	}
 
 	if ('a' <= mTable[ri->opCode][0]) {
-		DbgPrint("%s ", mTable[ri->opCode]);
+		revtracerAPI.dbgPrintFunc("%s ", mTable[ri->opCode]);
 	} else {
-		DbgPrint("%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
+		revtracerAPI.dbgPrintFunc("%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
 	}
 }
 
 void PrintRegister(struct RiverInstruction *ri, union RiverRegister *reg) {
-	DbgPrint("%s$%d", RegNames[reg->name], reg->versioned >> 8);
+	revtracerAPI.dbgPrintFunc("%s$%d", RegNames[reg->name], reg->versioned >> 8);
 }
 
 void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
 	bool bWr = false;
 
 	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
-		DbgPrint("{");
+		revtracerAPI.dbgPrintFunc("{");
 	}
 
 	switch (RIVER_OPTYPE(ri->opTypes[idx])) {
 		case RIVER_OPTYPE_IMM :
 			switch (ri->opTypes[idx] & 0x03) {
 				case RIVER_OPSIZE_8 :
-					DbgPrint("0x%02x", ri->operands[idx].asImm8);
+					revtracerAPI.dbgPrintFunc("0x%02x", ri->operands[idx].asImm8);
 					break;
 				case RIVER_OPSIZE_16:
-					DbgPrint("0x%04x", ri->operands[idx].asImm16);
+					revtracerAPI.dbgPrintFunc("0x%04x", ri->operands[idx].asImm16);
 					break;
 				case RIVER_OPSIZE_32:
-					DbgPrint("0x%08x", ri->operands[idx].asImm32);
+					revtracerAPI.dbgPrintFunc("0x%08x", ri->operands[idx].asImm32);
 					break;
 			};
 			break;
 
 		case RIVER_OPTYPE_REG :
-			DbgPrint("%s$%d", RegNames[ri->operands[idx].asRegister.name], ri->operands[idx].asRegister.versioned >> 8);
+			revtracerAPI.dbgPrintFunc("%s$%d", RegNames[ri->operands[idx].asRegister.name], ri->operands[idx].asRegister.versioned >> 8);
 			break;
 
 		case RIVER_OPTYPE_MEM :
 			if (0 == ri->operands[idx].asAddress->type) {
-				DbgPrint("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				revtracerAPI.dbgPrintFunc("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
 				break;
 			}
 
-			DbgPrint("%s ptr ", MemSizes[ri->opTypes[idx] & 0x03]);
+			revtracerAPI.dbgPrintFunc("%s ptr ", MemSizes[ri->opTypes[idx] & 0x03]);
 
 			if (ri->operands[idx].asAddress->HasSegment()) {
-				DbgPrint("%s:", RegNames[RIVER_REG_SEGMENT | (ri->operands[idx].asAddress->GetSegment() - 1)]);
+				revtracerAPI.dbgPrintFunc("%s:", RegNames[RIVER_REG_SEGMENT | (ri->operands[idx].asAddress->GetSegment() - 1)]);
 			}
 
-			DbgPrint("[");
+			revtracerAPI.dbgPrintFunc("[");
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_BASE) {
-				DbgPrint("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				revtracerAPI.dbgPrintFunc("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
 				bWr = true;
 			}
 
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_INDEX) {
 				if (bWr) {
-					DbgPrint("+");
+					revtracerAPI.dbgPrintFunc("+");
 				}
 
 				if (ri->operands[idx].asAddress->type & RIVER_ADDR_SCALE) {
-					DbgPrint("%d*", ri->operands[idx].asAddress->GetScale());
+					revtracerAPI.dbgPrintFunc("%d*", ri->operands[idx].asAddress->GetScale());
 				}
 
-				DbgPrint("%s$%d", RegNames[ri->operands[idx].asAddress->index.name], ri->operands[idx].asAddress->index.versioned >> 8);
+				revtracerAPI.dbgPrintFunc("%s$%d", RegNames[ri->operands[idx].asAddress->index.name], ri->operands[idx].asAddress->index.versioned >> 8);
 				bWr = true;
 			}
 
 			if (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 				if (bWr) {
-					DbgPrint("+");
+					revtracerAPI.dbgPrintFunc("+");
 				}
 
 				switch (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 					case RIVER_ADDR_DISP8 :
-						DbgPrint("0x%02x", ri->operands[idx].asAddress->disp.d8);
+						revtracerAPI.dbgPrintFunc("0x%02x", ri->operands[idx].asAddress->disp.d8);
 						break;
 					/*case RIVER_ADDR_DISP16:
 						DbgPrint("0x%04x", ri->operands[idx].asAddress->disp.d16);
 						break;*/
 					case RIVER_ADDR_DISP:
-						DbgPrint("0x%08x", ri->operands[idx].asAddress->disp.d32);
+						revtracerAPI.dbgPrintFunc("0x%08x", ri->operands[idx].asAddress->disp.d32);
 						break;
 				}
 			}
 				 
 
-			DbgPrint("]");
+			revtracerAPI.dbgPrintFunc("]");
 			break;
 	}
 
 	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
-		DbgPrint("}");
+		revtracerAPI.dbgPrintFunc("}");
 	}
 }
 
@@ -160,7 +162,7 @@ void PrintOperands(struct RiverInstruction *ri) {
 
 	for (int i = 1; i < 4; ++i) {
 		if (ri->opTypes[i] != RIVER_OPTYPE_NONE) {
-			DbgPrint(", ");
+			revtracerAPI.dbgPrintFunc(", ");
 			PrintOperand(ri, i);
 		}
 	}
@@ -173,7 +175,7 @@ void RiverPrintInstruction(struct RiverInstruction *ri) {
 	PrintPrefixes(ri);
 	PrintMnemonic(ri);
 	PrintOperands(ri);
-	DbgPrint("\n");
+	revtracerAPI.dbgPrintFunc("\n");
 	//printf("%s", )
 }
 

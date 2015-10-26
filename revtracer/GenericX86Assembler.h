@@ -1,7 +1,7 @@
 #ifndef _GENERIC_X86_ASSEMBLER_H
 #define _GENERIC_X86_ASSEMBLER_H
 
-#include "extern.h"
+#include "revtracer.h"
 #include "river.h"
 #include "Runtime.h"
 

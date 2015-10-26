@@ -121,7 +121,7 @@ void RiverMetaTranslator::MakeMovMemMem32(RiverInstruction *rOut, const RiverAdd
 	rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
 	rOut->operands[0].asAddress = codegen->CloneAddress(memd, 0);
 
-	rOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
+	rOut->opTypes[1] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
 	rOut->operands[1].asAddress = codegen->CloneAddress(mems, 0);
 
 	rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
@@ -155,6 +155,14 @@ void RiverMetaTranslator::TranslateDefault(RiverInstruction *rOut, const RiverIn
 
 void RiverMetaTranslator::TranslatePushReg(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	MakeMovMemReg32(&rOut[0], *(rIn.operands[2].asAddress), rIn.operands[0].asRegister, RIVER_FAMILY_PREMETAOP);
+	MakeSubNoFlagsRegImm8(&rOut[1], rIn.operands[1].asRegister, 0x04, RIVER_FAMILY_PREMETAOP);
+	CopyInstruction(rOut[2], rIn);
+	rOut[2].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
+	instrCount += 3;
+}
+
+void RiverMetaTranslator::TranslatePushMem(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	MakeMovMemMem32(&rOut[0], *(rIn.operands[2].asAddress), *(rIn.operands[0].asAddress), RIVER_FAMILY_PREMETAOP);
 	MakeSubNoFlagsRegImm8(&rOut[1], rIn.operands[1].asRegister, 0x04, RIVER_FAMILY_PREMETAOP);
 	CopyInstruction(rOut[2], rIn);
 	rOut[2].family |= RIVER_FAMILY_FLAG_METAPROCESSED;
@@ -255,7 +263,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translate0xFFOp[8]
 	&RiverMetaTranslator::TranslateDefault,
 	&RiverMetaTranslator::TranslateDefault,
 	&RiverMetaTranslator::TranslateDefault,
-	&RiverMetaTranslator::TranslateDefault,
+	&RiverMetaTranslator::TranslatePushMem,
 	&RiverMetaTranslator::TranslateDefault,
 };
 

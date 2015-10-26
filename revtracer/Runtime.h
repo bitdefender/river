@@ -1,7 +1,9 @@
 #ifndef _RUNTIME_H
 #define _RUNTIME_H
 
-#include "extern.h"
+#include "revtracer.h"
+
+using namespace rev;
 
 /* River runtime context */
 /* TODO: make the runtime threadsafe */

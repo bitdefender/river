@@ -1,12 +1,13 @@
 #ifndef _RIVER_X86_ASSEMBLER_H
 #define _RIVER_X86_ASSEMBLER_H
 
-#include "extern.h"
+#include "revtracer.h"
 #include "river.h"
 #include "Runtime.h"
 
 #include "GenericX86Assembler.h"
 
+using namespace rev;
 
 class RiverX86Assembler : public GenericX86Assembler {
 private :

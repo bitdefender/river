@@ -1,9 +1,11 @@
 #ifndef _CB_H
 #define _CB_H
 
-#include "extern.h"
+#include "revtracer.h"
 #include "mm.h"
 #include "sync.h"
+
+using namespace rev;
 
 class RiverBasicBlock {
 public :

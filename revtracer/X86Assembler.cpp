@@ -1,3 +1,5 @@
+#include "revtracer.h"
+
 #include "X86Assembler.h"
 
 #include "mm.h"
@@ -156,7 +158,7 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 	BYTE currentFamily = RIVER_FAMILY_NATIVE;
 	BYTE repReg = 0;
 
-	DbgPrint("= river to x86 ================================================================\n");
+	revtracerAPI.dbgPrintFunc("= river to x86 ================================================================\n");
 
 	for (DWORD i = 0; i < dwInstrCount; ++i) {
 		pTmp = px86.cursor;
@@ -168,18 +170,18 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		//ConvertRiverInstruction(cg, rt, &pRiver[i], &pTmp, &pFlags);
 
 		for (; pTmp < px86.cursor; ++pTmp) {
-			DbgPrint("%02x ", *pTmp);
+			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
 		}
-		DbgPrint("\n");
+		revtracerAPI.dbgPrintFunc("\n");
 	}
 
 	EndRiverConversion(px86, pFlags, currentFamily, repReg, instrCounter);
 	for (; pTmp < px86.cursor; ++pTmp) {
-		DbgPrint("%02x ", *pTmp);
+		revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
 	}
-	DbgPrint("\n");
+	revtracerAPI.dbgPrintFunc("\n");
 
-	DbgPrint("===============================================================================\n");
+	revtracerAPI.dbgPrintFunc("===============================================================================\n");
 	byteCounter = px86.cursor - pAux;
 	return true;
 }
@@ -220,13 +222,13 @@ bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount
 	BYTE currentFamily = RIVER_FAMILY_TRACK;
 	BYTE repReg = 0;
 
-	DbgPrint("= tracking x86 ================================================================\n");
+	revtracerAPI.dbgPrintFunc("= tracking x86 ================================================================\n");
 
 	AssembleTrackingEnter(px86, instrCounter);
 	for (; pTmp < px86.cursor; ++pTmp) {
-		DbgPrint("%02x ", *pTmp);
+		revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
 	}
-	DbgPrint("\n");
+	revtracerAPI.dbgPrintFunc("\n");
 
 	for (DWORD i = 0; i < dwInstrCount; ++i) {
 		pTmp = px86.cursor;
@@ -242,18 +244,18 @@ bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount
 		//ConvertRiverInstruction(cg, rt, &pRiver[i], &pTmp, &pFlags);
 
 		for (; pTmp < px86.cursor; ++pTmp) {
-			DbgPrint("%02x ", *pTmp);
+			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
 		}
-		DbgPrint("\n");
+		revtracerAPI.dbgPrintFunc("\n");
 	}
 
 	AssembleTrackingLeave(px86, instrCounter);
 	for (; pTmp < px86.cursor; ++pTmp) {
-		DbgPrint("%02x ", *pTmp);
+		revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
 	}
-	DbgPrint("\n");
+	revtracerAPI.dbgPrintFunc("\n");
 
-	DbgPrint("===============================================================================\n");
+	revtracerAPI.dbgPrintFunc("===============================================================================\n");
 	byteCounter = px86.cursor - pAux;
 	return true;
 }

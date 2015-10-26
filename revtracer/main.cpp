@@ -18,8 +18,9 @@ extern DWORD segmentOffsets[0x100];
 AddressContainer ac;
 
 DWORD __stdcall TrackAddr(struct _exec_env *pEnv, DWORD dwAddr, DWORD segSel) {
-	DbgPrint("TrackAddr 0x%08x\n", dwAddr + segmentOffsets[segSel & 0xFFFF]);
-	return ac.Get(dwAddr + segmentOffsets[segSel & 0xFFFF]);
+	DWORD ret = ac.Get(dwAddr + segmentOffsets[segSel & 0xFFFF]);
+	DbgPrint("TrackAddr 0x%08x => %d\n", dwAddr + segmentOffsets[segSel & 0xFFFF], ret);
+	return ret;
 }
 
 DWORD __stdcall MarkAddr(struct _exec_env *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
@@ -225,6 +226,19 @@ void __stdcall BranchHandler(struct _exec_env *pEnv, DWORD a) {
 	DbgPrint("EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n", currentRegs->eax, currentRegs->ecx, currentRegs->edx, currentRegs->ebx);
 	DbgPrint("ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n", currentRegs->esp, currentRegs->ebp, currentRegs->esi, currentRegs->edi);
 	DbgPrint("Flags: 0x%08x\n", currentRegs->eflags);
+
+	DbgPrint("Tainted registers :\n");
+	DbgPrint("EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[0], pEnv->runtimeContext.taintedRegisters[1], pEnv->runtimeContext.taintedRegisters[2], pEnv->runtimeContext.taintedRegisters[3]);
+	DbgPrint("ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[4], pEnv->runtimeContext.taintedRegisters[5], pEnv->runtimeContext.taintedRegisters[6], pEnv->runtimeContext.taintedRegisters[7]);
+	DbgPrint("CF: 0x%08x  PF: 0x%08x  AF: 0x%08x  ZF: 0x%08x  SF: 0x%08x  OF: 0x%08x  DF: 0x%08x\n", 
+		pEnv->runtimeContext.taintedFlags[0],
+		pEnv->runtimeContext.taintedFlags[1],
+		pEnv->runtimeContext.taintedFlags[2],
+		pEnv->runtimeContext.taintedFlags[3],
+		pEnv->runtimeContext.taintedFlags[4],
+		pEnv->runtimeContext.taintedFlags[5],
+		pEnv->runtimeContext.taintedFlags[6]
+	);
 	/*DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x10, stk[4], stk[5], stk[6], stk[7]);
 	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x20, stk[8], stk[9], stk[10], stk[11]);
 	DbgPrint("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x30, stk[12], stk[13], stk[14], stk[15]);*/
@@ -316,64 +330,17 @@ void __stdcall SysHandler(struct _exec_env *pEnv) {
 	fflush(fBlocks);
 
 	TakeSnapshot();
-
-	/*UINT_PTR a;
-	struct _cb_info *pCB;
-
-	a = *(UINT_PTR*)pEnv->virtualStack;
-	pEnv->returnRegister = a;
-
-	pCB = FindBlock(pEnv, a);
-
-	if (pCB) {
-		if ((pCB->dwParses & CB_FLAG_SYSOUT) == CB_FLAG_SYSOUT) {
-			pCB->dwParses++;
-			*(UINT_PTR *)pEnv->virtualStack = (UINT_PTR)pCB->pCode;
-			return;
-		}
-		else {
-			//	dbg0 ("This CB receives control after a sysexit, but no CB_FLAG_SYSOUT!\n");
-			//	_asm int 3
-		}
-	}
-
-	pCB = NewBlock(pEnv);
-
-	pCB->address = a;
-	Translate(pEnv, pCB, CB_FLAG_SYSOUT);
-	AddBlock(pEnv, pCB);
-
-	*(UINT_PTR *)pEnv->virtualStack = (UINT_PTR)pCB->pCode;*/
 }
-
-
-void __cdecl SysEndHandler(struct _exec_env *pEnv,
-	DWORD r7, DWORD r6, DWORD r5, DWORD r4,
-	DWORD r3, DWORD r2, DWORD r1, DWORD r0,
-	DWORD eflags
-	)
-{
-	*(UINT_PTR *)(pEnv->runtimeContext.virtualStack - 4) = pEnv->runtimeContext.returnRegister;
-}
-
 
 int overlap(unsigned int a1, unsigned int a2, unsigned int b1, unsigned int b2);
 
 bool MapPE(DWORD &baseAddr);
-
-unsigned char goat[] = { /*0xEB, 0x00, 0x90,*/ 0xEB, 0x00, 0x90, 0xB8, 0x10, 0x00, 0x00, 0x00, 0x29, 0xC4, 0x01, 0xC4, 0xEB, 0x00, 0x90, 0xC3 };
 
 int main(unsigned int argc, char *argv[]) {
 	DWORD baseAddr = 0xf000000;
 	if (!MapPE(baseAddr)) {
 		return false;
 	}
-
-#ifdef _USE_VBOX_SNAPSHOTS
-	
-#endif
-
-	//SegmentHandler(NULL, 0x756b271e, 0x33);
 
 	fopen_s(&fBlocks, "blocks.log", "wt");
 	
@@ -395,7 +362,6 @@ int main(unsigned int argc, char *argv[]) {
 	//DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, (void *)3, (void *)7, (void *)2, (void *)10);
 	unsigned char *pMain = (unsigned char *)baseAddr + 0x96CE;
 	//unsigned char *pMain = (unsigned char *)baseAddr + 0x1347;
-	//unsigned char *pMain = goat;
 	DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)pMain, (void *)argc, (void *)argv);
 	DbgPrint("Done. ret = %d\n\n", ret);
 

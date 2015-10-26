@@ -1,8 +1,10 @@
 #ifndef _RIVER_META_TRANSLATOR_H
 #define _RIVER_META_TRANSLATOR_H
 
-#include "extern.h"
+#include "revtracer.h"
 #include "river.h"
+
+using namespace rev;
 
 class RiverCodeGen;
 
@@ -34,6 +36,7 @@ private:
 	void TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslatePushReg(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslatePushMem(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslatePusha(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 
 	void TranslatePopReg(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);

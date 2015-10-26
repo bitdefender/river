@@ -1,8 +1,10 @@
 #ifndef _RIVER_X86_DISASSEMBLER_H
 #define _RIVER_X86_DISASSEMBLER_H
 
-#include "extern.h"
+#include "revtracer.h"
 #include "river.h"
+
+using namespace rev;
 
 class RiverCodeGen;
 

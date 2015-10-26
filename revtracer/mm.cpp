@@ -4,7 +4,7 @@
 //volatile DWORD dwMMLock			= 0;
 
 #include "common.h"
-#include "extern.h"
+#include "revtracer.h"
 
 void memcpy(void *dest, const void *src, unsigned int size) {
 	for (unsigned int i = 0; i < size; ++i) {
@@ -41,7 +41,7 @@ bool RiverHeap::Init(DWORD heapSize) {
 	HeapZone *fz;
 	unsigned char *tHeap;
 
-	tHeap = pHeap = (unsigned char *)EnvMemoryAlloc(heapSize);
+	tHeap = pHeap = (unsigned char *)revtracerAPI.memoryAllocFunc(heapSize);
 
 	if (!tHeap) {
 		return false;
@@ -64,7 +64,7 @@ bool RiverHeap::Init(DWORD heapSize) {
 
 bool RiverHeap::Destroy() {
 	if (pHeap) {
-		EnvMemoryFree(pHeap);
+		revtracerAPI.memoryFreeFunc(pHeap);
 		pHeap = NULL;
 		pFirstFree = NULL;
 		size = 0;
@@ -75,13 +75,13 @@ bool RiverHeap::Destroy() {
 
 
 void RiverHeap::PrintInfo(HeapZone *fz) {
-	DbgPrint("FirstFree: %08X.\n", (DWORD)pFirstFree);
-	DbgPrint("fz  Addr : %08X.\n", (DWORD)fz);
-	DbgPrint("fz->Next : %08X.\n", (DWORD)fz->Next);
-	DbgPrint("fz->Prev : %08X.\n", (DWORD)fz->Prev);
-	DbgPrint("fz->Type : %08X.\n", (DWORD)fz->Type);
-	DbgPrint("fz->Size : %08X.\n", (DWORD)fz->Size);
-	DbgPrint("\n");
+	revtracerAPI.dbgPrintFunc("FirstFree: %08X.\n", (DWORD)pFirstFree);
+	revtracerAPI.dbgPrintFunc("fz  Addr : %08X.\n", (DWORD)fz);
+	revtracerAPI.dbgPrintFunc("fz->Next : %08X.\n", (DWORD)fz->Next);
+	revtracerAPI.dbgPrintFunc("fz->Prev : %08X.\n", (DWORD)fz->Prev);
+	revtracerAPI.dbgPrintFunc("fz->Type : %08X.\n", (DWORD)fz->Type);
+	revtracerAPI.dbgPrintFunc("fz->Size : %08X.\n", (DWORD)fz->Size);
+	revtracerAPI.dbgPrintFunc("\n");
 }
 
 

@@ -1,7 +1,7 @@
 #ifndef _SYMBOP_TRANSLATOR_H
 #define _SYMBOP_TRANSLATOR_H
 
-#include "extern.h"
+#include "revtracer.h"
 #include "river.h"
 
 /* SYMBOP ABI */
@@ -23,6 +23,8 @@
 /* - each instruction generates an inline push opcode instruction
    - each instruction generates a symboptrack instruction
 */
+
+using namespace rev;
 
 class RiverCodeGen;
 

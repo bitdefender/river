@@ -3,18 +3,18 @@
 #include "cb.h"
 
 //#include "lup.h" //for now
-#include "extern.h"
+#include "revtracer.h"
 
 void *_exec_env::operator new(size_t sz){
-	void *storage = EnvMemoryAlloc(sz);
+	void *storage = revtracerAPI.memoryAllocFunc(sz);
 	if (NULL == storage) {
-		throw "alloc fail";
+		return NULL;
 	}
 	return storage;
 }
 
 void _exec_env::operator delete(void *ptr) {
-	EnvMemoryFree((BYTE *)ptr);
+	revtracerAPI.memoryFreeFunc((BYTE *)ptr);
 }
 
 _exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize) {
@@ -30,22 +30,22 @@ _exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned i
 		return;
 	}
 
-	if (0 == (executionBuffer = (UINT_PTR *)EnvMemoryAlloc(executionSize))) {
+	if (0 == (executionBuffer = (UINT_PTR *)revtracerAPI.memoryAllocFunc(executionSize))) {
 		blockCache.Destroy();
 		heap.Destroy();
 		return;
 	}
 
 	if (!codeGen.Init(&heap, &runtimeContext, outBufferSize)) {
-		EnvMemoryFree(executionBuffer);
+		revtracerAPI.memoryFreeFunc(executionBuffer);
 		blockCache.Destroy();
 		heap.Destroy();
 		return;
 	}
 
-	if (NULL == (pStack = (unsigned char *)EnvMemoryAlloc(0x100000))) {
+	if (NULL == (pStack = (unsigned char *)revtracerAPI.memoryAllocFunc(0x100000))) {
 		codeGen.Destroy();
-		EnvMemoryFree(executionBuffer);
+		revtracerAPI.memoryFreeFunc(executionBuffer);
 		blockCache.Destroy();
 		heap.Destroy();
 		return;
@@ -82,9 +82,9 @@ _exec_env::~_exec_env() {
 	blockCache.Destroy(); 
 	heap.Destroy();
 
-	EnvMemoryFree((BYTE *)executionBuffer);
+	revtracerAPI.memoryFreeFunc((BYTE *)executionBuffer);
 
-	EnvMemoryFree((BYTE *)pStack);
+	revtracerAPI.memoryFreeFunc((BYTE *)pStack);
 	pStack = NULL;
 }
 

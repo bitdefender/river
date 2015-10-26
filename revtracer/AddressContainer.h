@@ -1,7 +1,9 @@
 #ifndef _ADDRESS_CONTAINER_H
 #define _ADDRESS_CONTAINER_H
 
-#include "extern.h"
+#include "revtracer.h"
+
+using namespace rev;
 
 #define MAX_CONTAINER_PAGES			1024
 
@@ -24,7 +26,8 @@ private :
 	DWORD RecursiveSet(ContainerPage *&page, DWORD dwAddress, DWORD value, DWORD mask, DWORD shift);
 	void RecursivePrintAddreses(ContainerPage *page, DWORD prefix, DWORD shift) const;
 public :
-	AddressContainer();
+	//AddressContainer();
+	void Init();
 
 	DWORD Set(DWORD dwAddress, DWORD value);
 	DWORD Get(DWORD dwAddress) const;

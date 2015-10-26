@@ -1,7 +1,9 @@
 #ifndef __MM_H
 #define __MM_H
 
-#include "extern.h"
+#include "revtracer.h"
+
+using namespace rev;
 
 #define HEAP_SIZE 0x100000
 

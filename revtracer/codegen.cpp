@@ -6,7 +6,7 @@
 #include "modrm32.h"
 #include "translatetbl.h"
 #include "crc32.h"
-#include "extern.h"
+#include "revtracer.h"
 
 #include "river.h"
 
@@ -37,7 +37,7 @@ RiverCodeGen::~RiverCodeGen() {
 
 bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 	heap = hp;
-	if (NULL == (outBuffer = (unsigned char *)EnvMemoryAlloc(buffSz))) {
+	if (NULL == (outBuffer = (unsigned char *)revtracerAPI.memoryAllocFunc(buffSz))) {
 		return false;
 	}
 	outBufferSize = buffSz;
@@ -56,7 +56,7 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 }
 
 bool RiverCodeGen::Destroy() {
-	EnvMemoryFree(outBuffer);
+	revtracerAPI.memoryFreeFunc(outBuffer);
 	outBuffer = NULL;
 	outBufferSize = 0;
 	heap = NULL;
@@ -107,9 +107,13 @@ unsigned int RiverCodeGen::NextReg(unsigned char regName) {
 
 DWORD dwTransLock = 0;
 
-DWORD dwSysHandler    = (DWORD) SysHandler;
-DWORD dwSysEndHandler = (DWORD) SysEndHandler;
-DWORD dwBranchHandler = (DWORD) BranchHandler;
+extern "C" {
+	void __stdcall BranchHandler(struct _exec_env *pEnv, ADDR_TYPE a);
+	void __stdcall SysHandler(struct _exec_env *pEnv);
+};
+
+DWORD dwSysHandler    = (DWORD) ::SysHandler;
+DWORD dwBranchHandler = (DWORD) ::BranchHandler;
 
 unsigned char *DuplicateBuffer(RiverHeap *h, unsigned char *p, unsigned int sz) {
 	unsigned int mSz = (sz + 0x0F) & ~0x0F;
@@ -156,7 +160,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
 
-	DbgPrint("= x86 to river ================================================================\n");
+	revtracerAPI.dbgPrintFunc("= x86 to river ================================================================\n");
 
 	RiverInstruction dis, disMeta[16];
 	RiverInstruction symbopMain[16]; // , symbopTrack[16];
@@ -187,17 +191,17 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
 		for (DWORD i = 0; i < mSize; ++i) {
 			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(disMeta[i].family)) {
 
-				DbgPrint(".%08x    ", pAux);
+				revtracerAPI.dbgPrintFunc(".%08x    ", pAux);
 				iSize = pTmp - pAux;
 				for (DWORD i = 0; i < iSize; ++i) {
-					DbgPrint("%02x ", pAux[i]);
+					revtracerAPI.dbgPrintFunc("%02x ", pAux[i]);
 				}
 
 				for (DWORD i = iSize; i < 8; ++i) {
-					DbgPrint("   ");
+					revtracerAPI.dbgPrintFunc("   ");
 				}
 			} else {
-				DbgPrint(".                                    ");
+				revtracerAPI.dbgPrintFunc(".                                    ");
 			}
 			RiverPrintInstruction(&disMeta[i]);
 		}
@@ -205,7 +209,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
 		dwInst++;
 	} while (!(pFlags & RIVER_FLAG_BRANCH));
 
-	DbgPrint("===============================================================================\n");
+	revtracerAPI.dbgPrintFunc("===============================================================================\n");
 	return pTmp - px86;
 }
 
@@ -234,11 +238,11 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		}
 		MakeJMP(&bkRiverInst[fwInstCount], pCB->address);
 
-		DbgPrint("= SymbopTrack =================================================================\n");
+		revtracerAPI.dbgPrintFunc("= SymbopTrack =================================================================\n");
 		for (unsigned int i = 0; i < symbopInstCount; ++i) {
 			RiverPrintInstruction(&symbopInst[i]);
 		}
-		DbgPrint("===============================================================================\n");
+		revtracerAPI.dbgPrintFunc("===============================================================================\n");
 
 		bkInstCount = fwInstCount + 1;
 

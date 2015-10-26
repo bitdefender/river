@@ -4,15 +4,21 @@
 #include "callgates.h"
 #include "cb.h"
 #include "mm.h"
-#include "BaseTsd.h"
+//#include "BaseTsd.h"
 
-void DbgPrint(const char *fmt, ...);
+#include "execenv.h"
+
+#include "revtracer.h"
+
+using namespace rev;
+
+//void DbgPrint(const char *fmt, ...);
 int Translate(struct _exec_env *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags);
 
 void Stopper(struct _exec_env *pEnv, BYTE *s) {
 	RiverBasicBlock *pStop;
 
-	DbgPrint("STOPPER: %p.\n", s);
+	revtracerAPI.dbgPrintFunc("STOPPER: %p.\n", s);
 	pStop = pEnv->blockCache.NewBlock((UINT_PTR)s);
 	pEnv->codeGen.Translate(pStop, 0x80000000); // this will fix pStop->CRC and pStop->Size
 	pEnv->exitAddr = (DWORD)s;

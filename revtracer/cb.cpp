@@ -1,5 +1,5 @@
 #include "common.h"
-#include "extern.h"
+#include "revtracer.h"
 #include "cb.h"
 #include "sync.h"
 #include "crc32.h"
@@ -64,7 +64,7 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(UINT_PTR a) {
 	int arr = 0;
 	unsigned long hash = HashFunc(logHashSize, a);
 
-	DbgPrint("HASH %08x\n", hash);
+	revtracerAPI.dbgPrintFunc("HASH %08x\n", hash);
 	cbLock.Lock();
 
 	pWalk = hashTable[hash];
@@ -123,7 +123,7 @@ bool RiverBasicBlockCache::Init(RiverHeap *hp, DWORD logHSize, DWORD histSize) {
 
 	logHashSize = logHSize;
 	historySize = histSize;
-	hashTable = (RiverBasicBlock **)EnvMemoryAlloc((1 << logHashSize) * sizeof (hashTable[0]));
+	hashTable = (RiverBasicBlock **)revtracerAPI.memoryAllocFunc((1 << logHashSize) * sizeof (hashTable[0]));
 
 	if (0 == hashTable) {
 		return false;
@@ -175,7 +175,7 @@ bool RiverBasicBlockCache::Destroy() {
 
 //	SC_Unlock (&dwCBLock);
 
-	EnvMemoryFree ((BYTE *)hashTable);
+	revtracerAPI.memoryFreeFunc((BYTE *)hashTable);
 	hashTable = NULL;
 	logHashSize = 0;
 

@@ -1,8 +1,10 @@
 #ifndef _RELOCABLE_CODE_BUFFER_H
 #define _RELOCABLE_CODE_BUFFER_H
 
-#include "extern.h"
+#include "revtracer.h"
 #include "mm.h"
+
+using namespace rev;
 
 class RelocableCodeBuffer {
 private :

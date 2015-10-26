@@ -1,8 +1,10 @@
 //#include <Wdm.h>
-#include "extern.h"
+#include "revtracer.h"
 #include "sync.h"
 
 #include <intrin.h>
+
+using namespace rev;
 
 RiverMutex::RiverMutex() {
 	mtx = 0;

@@ -2,7 +2,9 @@
 #define _CALL_GATES_H
 
 #include "environment.h"
-#include "execenv.h"
+#include "revtracer.h"
+
+using namespace rev;
 
 typedef DWORD (_cdecl *_fn_cdecl_0) (void);
 typedef DWORD (_cdecl *_fn_cdecl_1) (void *);

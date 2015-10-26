@@ -1,7 +1,7 @@
 #ifndef _EXEC_ENV_H
 #define _EXEC_ENV_H
 
-#include <Basetsd.h>
+//#include <Basetsd.h>
 #include "environment.h"
 #include "sync.h"
 #include "river.h"

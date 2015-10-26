@@ -1,5 +1,7 @@
+#include "revtracer.h"
 #include "AddressContainer.h"
 
+using namespace rev;
 
 void AddressContainer::InitPageAllocator() {
 	freePageCount = MAX_CONTAINER_PAGES;
@@ -28,7 +30,7 @@ void AddressContainer::FreePage(ContainerPage *page) {
 	freePageCount++;
 }
 
-AddressContainer::AddressContainer() {
+void AddressContainer::Init() {
 	root = NULL;
 
 	InitPageAllocator();
@@ -99,7 +101,7 @@ void AddressContainer::RecursivePrintAddreses(ContainerPage *page, DWORD prefix,
 	if (0 == shift) {
 		for (DWORD i = 0; i < 1024; ++i) {
 			if (0 != page->mem[i]) {
-				DbgPrint(" @ 0x%08x - %d\n", (prefix | i) << 2, page->mem[i]);
+				revtracerAPI.dbgPrintFunc(" @ 0x%08x - %d\n", (prefix | i) << 2, page->mem[i]);
 			}
 		}
 	} else {

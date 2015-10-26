@@ -15,6 +15,6 @@ typedef unsigned int (__stdcall *OpCopy)(
 extern OpCopy TranslateTable00[], TranslateTable0F[];
 extern OpCopy SaveTable00[],      SaveTable0F[];
 
-unsigned int AddSysEndPrefix(struct _exec_env *pEnv, char *p);
+//unsigned int AddSysEndPrefix(struct _exec_env *pEnv, char *p);
 
 #endif
