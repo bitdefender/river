@@ -19,7 +19,7 @@ bool RiverSaveTranslator::Init(RiverCodeGen *cg) {
 void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
 	DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
 
-	if (rIn.family == RIVER_FAMILY_NATIVE) {
+	if (RIVER_FAMILY(rIn.family) == RIVER_FAMILY_NATIVE) {
 		(this->*translateOpcodes[dwTable][rIn.opCode])(rOut, rIn, instrCount);
 	} else {
 		CopyInstruction(rOut[0], rIn);

@@ -181,10 +181,10 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
 		//symbopInstCount = 0;
 		for (DWORD i = 0; i < mSize; ++i) {
 			//saveTranslator.Translate(disMeta[i], &fwRiverInst[fwInstCount], fwInstCount);
-			saveTranslator.Translate(disMeta[i], &symbopMain[metaCount], metaCount);
+			saveTranslator.Translate(disMeta[i], &symbopMain[svCount], svCount);
 		}
 
-		for (DWORD i = 0; i < metaCount; ++i) {
+		for (DWORD i = 0; i < svCount; ++i) {
 			symbopTranslator.Translate(symbopMain[i], &fwRiverInst[fwInstCount], fwInstCount, &symbopInst[symbopInstCount], symbopInstCount);
 		}
 
@@ -265,7 +265,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		codeBuffer.CopyToFixed(pCB->pBkCode);
 
 		codeBuffer.Reset();
-		assembler.AssembleTracking(symbopInst, symbopInstCount, codeBuffer, 0x00, pCB->dwTrOpCount, outBufferSize);
+		assembler.AssembleTracking(symbopInst, symbopInstCount, codeBuffer, 0x10, pCB->dwTrOpCount, outBufferSize);
 		pCB->pTrackCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 		codeBuffer.CopyToFixed(pCB->pTrackCode);
 

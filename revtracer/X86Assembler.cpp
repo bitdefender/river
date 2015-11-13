@@ -105,9 +105,9 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 	//	return true;
 	//}
 
-	if (RIVER_FAMILY_RIVER == RIVER_FAMILY(ri.family)) {
+	/*if ((RIVER_FAMILY_RIVER == RIVER_FAMILY(ri.family)) && (0x10 & pFlags)) {
 		return true;
-	}
+	}*/
 
 	// when generating fwcode skip meta instructions
 	if ((RIVER_FAMILY(ri.family) == RIVER_FAMILY_PREMETAOP) || (RIVER_FAMILY(ri.family) == RIVER_FAMILY_POSTMETAOP)) {

@@ -38,16 +38,38 @@ typedef _W64 unsigned long ULONG_PTR, *PULONG_PTR;
 
 #endif
 
+typedef void *ADDR_TYPE;
+
+typedef unsigned long long QWORD;
 typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
 
-void DbgPrint(const char *fmt, ...);
+typedef void(*DbgPrintFunc)(const char *fmt, ...);
+typedef void *(*MemoryAllocFunc)(DWORD dwSize);
+typedef void(*MemoryFreeFunc)(void *ptr);
+
+
+typedef QWORD(*TakeSnapshotFunc)();
+typedef QWORD(*RestoreSnapshotFunc)();
+
+
+
+
+extern DbgPrintFunc DbgPrint;
+
+extern MemoryAllocFunc EnvMemoryAlloc;
+extern MemoryFreeFunc EnvMemoryFree;
+
+extern TakeSnapshotFunc TakeSnapshot;
+extern RestoreSnapshotFunc RestoreSnapshot;
+
+/*void DbgPrint(const char *fmt, ...);
 
 void *EnvMemoryAlloc(unsigned long dwSize);
 void EnvMemoryFree(void *b);
 
 unsigned long long TakeSnapshot();
-unsigned long long RestoreSnapshot();
+unsigned long long RestoreSnapshot();*/
 
 #endif

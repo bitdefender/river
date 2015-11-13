@@ -15,7 +15,7 @@ struct RiverRuntime {
 	UINT_PTR trackBuff;					// + 0x10
 	UINT_PTR trackBase;					// + 0x14
 	UINT_PTR taintedAddresses;			// + 0x18
-	DWORD __padding[1];					// + 0x1C
+	UINT_PTR registers;					// + 0x1C
 
 	DWORD taintedFlags[8];			// + 0x20
 	DWORD taintedRegisters[8];		// + 0x40
