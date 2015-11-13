@@ -62,10 +62,13 @@ namespace rev {
 
 #define EXECUTION_ADVANCE					0x00000000
 #define EXECUTION_BACKTRACK					0x00000001
+#define EXECUTION_TERMINATE					0x00000002
 
 	typedef void(*InitializeContextFunc)(void *context);
 	typedef void(*CleanupContextFunc)(void *context);
+	typedef DWORD(*ExecutionBeginFunc)(void *context, ADDR_TYPE firstInstruction, void *cbCtx);
 	typedef DWORD(*ExecutionControlFunc)(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
+	typedef DWORD(*ExecutionEndFunc)(void *context, void *cbCtx);
 	typedef void(*SyscallControlFunc)(void *context);
 	typedef void(*IpcLibInitFunc)();
 
@@ -96,7 +99,9 @@ namespace rev {
 		/* Execution callbacks */
 		InitializeContextFunc initializeContext;
 		CleanupContextFunc cleanupContext;
+		ExecutionBeginFunc executionBegin;
 		ExecutionControlFunc executionControl;
+		ExecutionEndFunc executionEnd;
 		SyscallControlFunc syscallControl;
 
 		/* IpcLib initialization */
@@ -145,7 +150,7 @@ namespace rev {
 		DLL_LINKAGE void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs);
 		DLL_LINKAGE void SetLowLevelAPI(LowLevelRevtracerAPI *llApi);
 		DLL_LINKAGE void SetContextMgmt(InitializeContextFunc initCtx, CleanupContextFunc cleanCtx);
-		DLL_LINKAGE void SetControlMgmt(ExecutionControlFunc execCtl, SyscallControlFunc syscallCtl);
+		DLL_LINKAGE void SetControlMgmt(ExecutionBeginFunc execBegin, ExecutionControlFunc execCtl, ExecutionEndFunc execEnd, SyscallControlFunc syscallCtl);
 
 		DLL_LINKAGE void SetContextSize(DWORD sz);
 		DLL_LINKAGE void SetEntryPoint(ADDR_TYPE ep);

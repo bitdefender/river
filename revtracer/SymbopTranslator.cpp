@@ -234,7 +234,7 @@ DWORD SymbopTranslator::MakeTrackMem(const RiverAddress &mem, WORD specifiers, D
 		rTrackOut->opTypes[0] = RIVER_OPTYPE_MEM;
 		rTrackOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
 		rTrackOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
-		rTrackOut->operands[1].asImm8 = addrOffset;
+		rTrackOut->operands[1].asImm8 = (BYTE)addrOffset;
 		rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
 		rTrackOut->TrackEspAsParameter();
 		rTrackOut->TrackUnusedRegisters();
@@ -261,7 +261,7 @@ void SymbopTranslator::MakeMarkMem(const RiverAddress &mem, WORD specifiers, DWO
 		rTrackOut->opTypes[0] = RIVER_OPTYPE_MEM;
 		rTrackOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
 		rTrackOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
-		rTrackOut->operands[1].asImm8 = addrOffset;
+		rTrackOut->operands[1].asImm8 = (BYTE)addrOffset;
 		rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
 		rTrackOut->TrackEspAsParameter();
 		rTrackOut->TrackUnusedRegisters();

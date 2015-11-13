@@ -137,6 +137,15 @@ namespace rev {
 	}
 
 
+	typedef NTSTATUS(__stdcall *NtTerminateProcessFunc)(
+		HANDLE ProcessHandle,
+		NTSTATUS ExitStatus
+	);
+
+	BOOL Kernel32TerminateProcess(HANDLE hProcess, DWORD uExitCode) {
+		return ((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(hProcess, uExitCode);
+	}
+
 	/* Default API functions ************************************************************/
 
 	void NoDbgPrint(const char *fmt, ...) { }
@@ -163,8 +172,16 @@ namespace rev {
 	void DefaultInitializeContextFunc(void *context) { }
 	void DefaultCleanupContextFunc(void *context) { }
 
+	DWORD DefaultExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
+		return EXECUTION_ADVANCE;
+	}
+
 	DWORD DefaultExecutionControlFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
 		return EXECUTION_ADVANCE;
+	}
+
+	DWORD DefaultExecutionEndFunc(void *context, void *cbCtx) {
+		return EXECUTION_TERMINATE;
 	}
 
 	void DefaultSyscallControlFunc(void *context) { }
@@ -209,7 +226,9 @@ namespace rev {
 
 		DefaultInitializeContextFunc,
 		DefaultCleanupContextFunc,
+		DefaultExecutionBeginFunc,
 		DefaultExecutionControlFunc,
+		DefaultExecutionEndFunc,
 		DefaultSyscallControlFunc,
 
 		DefaultIpcInitialize,
@@ -235,6 +254,10 @@ namespace rev {
 
 	struct _exec_env *pEnv = NULL;
 
+	void TerminateCurrentProcess() {
+		Kernel32TerminateProcess((HANDLE)0xFFFFFFFF, 0);
+	}
+
 	void TracerInitialization() {
 		Initialize();
 
@@ -244,7 +267,18 @@ namespace rev {
 		pEnv->bForward = 1;
 		pBlock->MarkForward();
 		
-		revtracerConfig.entryPoint = pBlock->pFwCode;
+		switch (revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+		case EXECUTION_ADVANCE :
+			revtracerConfig.entryPoint = pBlock->pFwCode;
+			break;
+		case EXECUTION_TERMINATE :
+			revtracerConfig.entryPoint = TerminateCurrentProcess;
+			break;
+		case EXECUTION_BACKTRACK :
+			revtracerAPI.dbgPrintFunc("EXECUTION_BACKTRACK @executionBegin");
+			revtracerConfig.entryPoint = TerminateCurrentProcess;
+			break;
+		}
 	}
 
 	__declspec(naked) void RevtracerPerform() {

@@ -139,6 +139,22 @@ namespace ipc {
 		}
 	}
 
+	DLL_LINKAGE DWORD ExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
+		ipcData.type = REQUEST_EXECUTION_BEGIN;
+		ipcData.data.asExecutionBeginRequest.context = context;
+		ipcData.data.asExecutionBeginRequest.nextInstruction = nextInstruction;
+		ipcData.data.asExecutionBeginRequest.cbCtx = cbCtx;
+		ipcToken.Release(INPROC_TOKEN_USER);
+		// remote execution here
+
+		ipcToken.Wait(INPROC_TOKEN_USER);
+		if (ipcData.type != REPLY_EXECUTION_BEGIN) {
+			__asm int 3;
+		}
+
+		return ipcData.data.asExecutionBeginReply;
+	}
+
 	DLL_LINKAGE DWORD ExecutionControlFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
 		ipcData.type = REQUEST_EXECUTION_CONTORL;
 		ipcData.data.asExecutionControlRequest.context = context;
@@ -153,6 +169,21 @@ namespace ipc {
 		}
 
 		return ipcData.data.asExecutionControlReply;
+	}
+
+	DLL_LINKAGE DWORD ExecutionEndFunc(void *context, void *cbCtx) {
+		ipcData.type = REQUEST_EXECUTION_END;
+		ipcData.data.asExecutionEndRequest.context = context;
+		ipcData.data.asExecutionEndRequest.cbCtx = cbCtx;
+		ipcToken.Release(INPROC_TOKEN_USER);
+		// remote execution here
+
+		ipcToken.Wait(INPROC_TOKEN_USER);
+		if (ipcData.type != REPLY_EXECUTION_END) {
+			__asm int 3;
+		}
+
+		return ipcData.data.asExecutionEndReply;
 	}
 
 	DLL_LINKAGE void SyscallControlFunc(void *context) {

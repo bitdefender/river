@@ -435,11 +435,23 @@ int main() {
 	}
 	revAPI->cleanupContext = (rev::CleanupContextFunc)(ipcLibAddr + dwIpcFuncOffset);
 
+	if (!fIpcLib->GetExport("ExecutionBeginFunc", dwIpcFuncOffset)) {
+		TerminateProcess(pInfo.hProcess, 0);
+		return 0;
+	}
+	revAPI->executionBegin = (rev::ExecutionBeginFunc)(ipcLibAddr + dwIpcFuncOffset);
+
 	if (!fIpcLib->GetExport("ExecutionControlFunc", dwIpcFuncOffset)) {
 		TerminateProcess(pInfo.hProcess, 0);
 		return 0;
 	}
 	revAPI->executionControl = (rev::ExecutionControlFunc)(ipcLibAddr + dwIpcFuncOffset);
+
+	if (!fIpcLib->GetExport("ExecutionEndFunc", dwIpcFuncOffset)) {
+		TerminateProcess(pInfo.hProcess, 0);
+		return 0;
+	}
+	revAPI->executionEnd = (rev::ExecutionEndFunc)(ipcLibAddr + dwIpcFuncOffset);
 
 	if (!fIpcLib->GetExport("SyscallControlFunc", dwIpcFuncOffset)) {
 		TerminateProcess(pInfo.hProcess, 0);
@@ -484,9 +496,6 @@ int main() {
 	ctx.Eip = dwLoaderBase + ldrPerform;
 	SetThreadContext(pInfo.hThread, &ctx);
 
-
-	bool isIPFPFixed = FixProcessorFeature(pInfo.hProcess, dwLoaderBase + ldrMyIPFPOffset);
-	
 	DWORD exitCode;
 	HANDLE hDbg = CreateFileA(
 		"debug.log",
@@ -521,11 +530,10 @@ int main() {
 	int cFile = _open_osfhandle((intptr_t)hOffs, _O_TEXT);
 	FILE *fOffs = _fdopen(cFile, "wt");
 
-	bool mmUnmapped = UnmapMainModule("a.exe", pInfo.dwProcessId, pInfo.hProcess);
-
 	ResumeThread(pInfo.hThread); 
 	
-	while (true) {
+	bool bRunning = true;
+	while (bRunning) {
 		GetExitCodeProcess(pInfo.hProcess, &exitCode);
 
 		if (STILL_ACTIVE != exitCode) {
@@ -542,13 +550,7 @@ int main() {
 			WriteFile(hDbg, debugBuffer, read, &written, NULL);
 		}
 
-		if (!isIPFPFixed) {
-			isIPFPFixed = FixProcessorFeature(pInfo.hProcess, dwLoaderBase + ldrMyIPFPOffset);
-		}
-
-		if (!mmUnmapped) {
-			mmUnmapped = UnmapMainModule("a.exe", pInfo.dwProcessId, pInfo.hProcess);
-		}
+		
 
 		switch (ipcData->type) {
 			case REPLY_MEMORY_ALLOC :
@@ -567,6 +569,18 @@ int main() {
 				ipcData->type = REPLY_MEMORY_ALLOC;
 				ipcData->data.asMemoryAllocReply.pointer = shmAlloc->Allocate(ipcData->data.asMemoryAllocRequest, offset);
 				ipcData->data.asMemoryAllocReply.offset = offset;
+				break;
+			}
+
+			case REQUEST_EXECUTION_BEGIN: {
+				ipc::ADDR_TYPE next = ipcData->data.asExecutionBeginRequest.nextInstruction;
+				
+				
+				ipcData->type = REPLY_EXECUTION_BEGIN;
+				ipcData->data.asExecutionBeginReply = EXECUTION_ADVANCE;
+				if (!FixProcessorFeature(pInfo.hProcess, dwLoaderBase + ldrMyIPFPOffset) || !UnmapMainModule("a.exe", pInfo.dwProcessId, pInfo.hProcess)) {
+					ipcData->data.asExecutionBeginReply = EXECUTION_TERMINATE;
+				}
 				break;
 			}
 
@@ -600,6 +614,12 @@ int main() {
 				ipcData->data.asExecutionControlReply = EXECUTION_ADVANCE;
 				break;
 			}
+
+			case REQUEST_EXECUTION_END:
+				ipcData->type = REPLY_EXECUTION_END;
+				ipcData->data.asExecutionEndReply = EXECUTION_TERMINATE;
+				bRunning = false;
+				break;
 
 			case REQUEST_SYSCALL_CONTROL:
 				ipcData->type = REPLY_SYSCALL_CONTROL;

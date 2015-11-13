@@ -58,15 +58,12 @@ extern "C" {
 		}*/
 
 
+		DWORD dwDirection = EXECUTION_ADVANCE;  
 		if (a == revtracerAPI.lowLevel.ntTerminateProcess) {
-			//PrintStats(pEnv);
-
 			// TODO: verify parameters
-
-			revtracerAPI.dbgPrintFunc(" +++ Tainted addresses +++ \n");
-			ac.PrintAddreses();
-			revtracerAPI.dbgPrintFunc(" +++++++++++++++++++++++++ \n");
-			((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
+			dwDirection = revtracerAPI.executionEnd(pEnv->userContext, pEnv);
+		} else {
+			dwDirection = revtracerAPI.executionControl(pEnv->userContext, a, pEnv);
 		}
 
 		if (pEnv->bForward) {
@@ -124,8 +121,6 @@ extern "C" {
 			pEnv->runtimeContext.taintedFlags[5],
 			pEnv->runtimeContext.taintedFlags[6]
 		);*/
-
-		DWORD dwDirection = revtracerAPI.executionControl(pEnv->userContext, a, pEnv);
 
 		if (EXECUTION_BACKTRACK == dwDirection) {
 			// go backwards
@@ -198,6 +193,12 @@ extern "C" {
 			//__except (1) { //EXCEPTION_EXECUTE_HANDLER
 			//	pEnv->runtimeContext.jumpBuff = (rev::UINT_PTR)a;
 			//}
+		} else if (EXECUTION_TERMINATE == dwDirection) {
+			revtracerAPI.dbgPrintFunc(" +++ Tainted addresses +++ \n");
+			ac.PrintAddreses();
+			revtracerAPI.dbgPrintFunc(" +++++++++++++++++++++++++ \n");
+			((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
+
 		}
 
 	}
