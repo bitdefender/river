@@ -3,7 +3,7 @@
 
 
 void *InprocMapper::CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect) {
-	return VirtualAlloc(lpAddress, dwSize, MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN, flProtect);
+	return VirtualAlloc(lpAddress, dwSize, MEM_RESERVE | MEM_COMMIT, flProtect);
 }
 
 bool InprocMapper::ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect) {

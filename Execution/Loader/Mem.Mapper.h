@@ -1,21 +1,10 @@
-#ifndef _EXTERN_MAPPER_H_
-#define _EXTERN_MAPPER_H_
-
-#include <Windows.h>
+#ifndef _MEM_MAPPER_H_
+#define _MEM_MAPPER_H_
 
 #include "Abstract.Mapper.h"
 
-class ExternMapper : public AbstractPEMapper {
-private :
-	HANDLE hProc;
-	bool ownProcess;
-
-	HMODULE RemoteFindModule(const char *module);
-public:
-	ExternMapper(unsigned int pid);
-	ExternMapper(HANDLE process);
-	virtual ~ExternMapper();
-
+class MemMapper : public AbstractPEMapper {
+public :
 	virtual void *CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect);
 	virtual bool ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect);
 	virtual bool WriteBytes(void *lpAddress, void *lpBuffer, size_t nSize);

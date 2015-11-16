@@ -1,9 +1,10 @@
 #include <stdio.h>
-
 #include <vector>
 using namespace std;
 
-//#define DONOTPRINT
+//#include "..\extern.h"
+
+#define DONOTPRINT
 
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
@@ -12,7 +13,7 @@ using namespace std;
 #include "PE.ldr.h"
 
 //#include "common/debug-log.h"
-#define dbg_log(fmt, ...)
+//#define dbg_log DbgPrint
 
 #define IMAGE_DIRECTORY_ENTRY_EXPORT          0   // Export Directory
 #define IMAGE_DIRECTORY_ENTRY_IMPORT          1   // Import Directory
@@ -118,7 +119,7 @@ void *FloatingPE::RVA(DWORD rva) const {
     return (void *)0;
 }
 
-bool FloatingPE::Relocate(ADDR_TYPE newAddr) {
+bool FloatingPE::Relocate(DWORD newAddr) {
 	long long offset = 0;
 	IMAGE_BASE_RELOCATION *reloc;
     IMAGE_BASE_RELOCATION *term;
@@ -180,7 +181,7 @@ bool FloatingPE::Relocate(ADDR_TYPE newAddr) {
     return true;
 }
 
-bool FloatingPE::GetExport(const char *funcName, DWORD &funcRVA) {
+bool FloatingPE::GetExport(const char *funcName, DWORD &funcRVA) const {
 	DWORD exportRVA = 0;
 	
 	switch (peHdr.Machine) {
@@ -219,13 +220,38 @@ bool FloatingPE::GetExport(const char *funcName, DWORD &funcRVA) {
 	}
 
 	WORD *ordinals = (WORD *)RVA(exprt->AddressOfNameOrdinals);
-	WORD ordinal = ordinals[found];
+	WORD ordinal = ordinals[found] - (WORD)exprt->Base + 1;
 
 	DWORD *exportTable = (DWORD *)RVA(exprt->AddressOfFunctions);
 	funcRVA = exportTable[ordinal];
 
 	return true;
 }
+
+DWORD FloatingPE::GetRequiredSize() const {
+	DWORD maxAddr = 0;
+	for (DWORD i = 0; i < sections.size(); ++i) {
+		if (sections[i].header.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) {
+			continue;
+		}
+
+		DWORD maxSec = ((sections[i].header.VirtualAddress + sections[i].header.VirtualSize) + 0xFFF) & (~0xFFF);
+		if (maxSec > maxAddr) {
+			maxAddr = maxSec;
+		}
+	}
+
+	return maxAddr;
+}
+
+DWORD FloatingPE::GetSectionCount() const {
+	return sections.size();
+}
+
+const PESection *FloatingPE::GetSection(DWORD dwIdx) const {
+	return &sections[dwIdx];
+}
+
 
 bool FloatingPE::FixImports(AbstractPEMapper &mapper) {
 	DWORD importRVA = 0;
@@ -343,7 +369,7 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 				return false;
 			}
 
-			dbg_log("AddressOfEntryPoint: %d\n", optHdr.c.AddressOfEntryPoint);
+			dbg_log("AddressOfEntryPoint: %x\n", optHdr.c.AddressOfEntryPoint);
 			dbg_log("ImageBase: %08x\n", optHdr.w32.ImageBase);
 			dbg_log("SectionAlignment: %d\n", optHdr.w32.SectionAlignment);
 			dbg_log("FileAlignment: %d\n", optHdr.w32.FileAlignment);
@@ -365,7 +391,7 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 				return false;
 			}
 
-			dbg_log("AddressOfEntryPoint: %d\n", optHdr.c.AddressOfEntryPoint);
+			dbg_log("AddressOfEntryPoint: %x\n", optHdr.c.AddressOfEntryPoint);
 			dbg_log("ImageBase: %016x\n", optHdr.w64.ImageBase);
 			dbg_log("SectionAlignment: %d\n", optHdr.w64.SectionAlignment);
 			dbg_log("FileAlignment: %d\n", optHdr.w64.FileAlignment);
@@ -396,7 +422,7 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 			return false;
 		}
 
-		dbg_log("%s\t %08x %08x %08x %08x %08x\n",
+		dbg_log("%.8s\t %08x %08x %08x %08x %08x\n",
 			sections[i].header.Name,
 			sections[i].header.VirtualSize,
 			sections[i].header.VirtualAddress,
@@ -415,15 +441,25 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 }
 
 FloatingPE::FloatingPE(const wchar_t *moduleName) {
-	FILE *fModule = NULL;
-	_wfopen_s(&fModule, moduleName, L"rb");
+	FILE *fModule; // = _wfopen_s(moduleName, L"rb");
+
+	if (0 != _wfopen_s(&fModule, moduleName, L"rb")) {
+		isValid = false;
+		return;
+	}
+
 	isValid = LoadPE(fModule);
 	fclose(fModule);
 }
 
 FloatingPE::FloatingPE(const char *moduleName) {
-	FILE *fModule = NULL;
-	fopen_s(&fModule, moduleName, "rb");
+	FILE *fModule; // = fopen(moduleName, "rb");
+
+	if (0 != fopen_s(&fModule, moduleName, "rb")) {
+		isValid = false;
+		return;
+	}
+
 	isValid = LoadPE(fModule);
 	fclose(fModule);
 }
@@ -436,7 +472,7 @@ FloatingPE::~FloatingPE() {
 	}
 }
 
-bool FloatingPE::MapPE(AbstractPEMapper &mapr, ADDR_TYPE &baseAddr) {
+bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
 	
 	
 	FixImports(mapr);
@@ -455,7 +491,7 @@ bool FloatingPE::MapPE(AbstractPEMapper &mapr, ADDR_TYPE &baseAddr) {
 	}
 	
 
-	baseAddr = (ADDR_TYPE)mapr.CreateSection((void *)(baseAddr), maxAddr, PAGE_READWRITE);
+	baseAddr = (DWORD)mapr.CreateSection((void *)(baseAddr), maxAddr, PAGE_READWRITE);
 	if (0 == baseAddr) {
 		return false;
 	}

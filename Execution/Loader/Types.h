@@ -9,10 +9,4 @@ typedef unsigned short WORD;
 typedef unsigned long DWORD;
 typedef unsigned long long QWORD;
 
-#ifdef _M_X64
-typedef QWORD ADDR_TYPE;
-#else
-typedef DWORD ADDR_TYPE;
-#endif
-
 #endif

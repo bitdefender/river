@@ -154,11 +154,15 @@ public :
 	FloatingPE(const wchar_t *moduleName);
 	~FloatingPE();
 
-	bool Relocate(ADDR_TYPE newAddr);
+	bool Relocate(DWORD newAddr);
 	bool FixImports(AbstractPEMapper &mapper);
-	bool GetExport(const char *funcName, DWORD &funcRVA);
 
-	bool MapPE(AbstractPEMapper &mapr, ADDR_TYPE &baseAddr);
+	bool GetExport(const char *funcName, DWORD &funcRVA) const;
+	DWORD GetRequiredSize() const;
+	DWORD GetSectionCount() const;
+	const PESection *GetSection(DWORD dwIdx) const;
+
+	bool MapPE(AbstractPEMapper &mapr, DWORD &baseAddr);
 	
 	bool IsValid() const {
 		return isValid;

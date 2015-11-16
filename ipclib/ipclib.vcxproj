@@ -54,6 +54,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>Entry</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)Demo\bin\$(ConfigurationName)\
+copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)Demo\bin\$(ConfigurationName)\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -73,6 +77,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>Entry</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)Demo\bin\$(ConfigurationName)\
+copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)Demo\bin\$(ConfigurationName)\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ipclib.cpp" />
