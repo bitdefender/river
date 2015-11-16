@@ -366,11 +366,22 @@ namespace rev {
 		revtracerConfig.entryPoint = ep;
 	}
 
+	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
+		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)orig);
+		pBlock->address = (DWORD)det;
+		pEnv->codeGen.Translate(pBlock, 0);
+		pBlock->address = (DWORD)orig;
+	}
+
 	void Initialize() {
 		revtracerAPI.ipcLibInitialize();
 
 		pEnv = new _exec_env(0x1000000, 0x10000, 0x2000000, 16, 0x10000);
 		pEnv->userContext = AllocUserContext(pEnv, revtracerConfig.contextSize);
+
+		for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
+			CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
+		}
 	}
 
 	void Execute(int argc, char *argv[]) {

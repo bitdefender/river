@@ -487,6 +487,8 @@ int main() {
 	revCfg->entryPoint = (rev::ADDR_TYPE)ctx.Eip;
 	InitSegments(pInfo.hThread, revCfg->segmentOffsets);
 
+	revCfg->hookCount = 0;
+
 	DWORD ldrPerform;
 	if (!fLoader->GetExport("LoaderPerform", ldrPerform)) {
 		TerminateProcess(pInfo.hProcess, 0);
@@ -631,6 +633,14 @@ int main() {
 		}
 
 		ipcToken->Release(REMOTE_TOKEN_USER);
+	}
+
+	while (!debugLog->IsEmpty()) {
+		int read;
+		DWORD written;
+		debugLog->Read(debugBuffer, sizeof(debugBuffer)-1, read);
+
+		WriteFile(hDbg, debugBuffer, read, &written, NULL);
 	}
 
 

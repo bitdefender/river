@@ -110,10 +110,18 @@ namespace rev {
 		LowLevelRevtracerAPI lowLevel;
 	};
 
+	struct CodeHooks {
+		ADDR_TYPE originalAddr;
+		ADDR_TYPE detourAddr;
+	};
+
 	struct RevtracerConfig {
 		ADDR_TYPE entryPoint;
 		DWORD contextSize;
 		DWORD segmentOffsets[0x100];
+
+		DWORD hookCount;
+		CodeHooks hooks[0x10];
 	};
 
 	struct ExecutionRegs {

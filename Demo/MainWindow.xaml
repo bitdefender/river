@@ -1,0 +1,147 @@
+﻿<Window x:Class="WpfRbTest2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ad="http://schemas.xceed.com/wpf/xaml/avalondock"
+        xmlns:local="clr-namespace:WpfRbTest2"
+        xmlns:pp="clr-namespace:WpfRbTest2.PanelParts"
+        Title="MainWindow" Height="350" Width="525">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Selen.Wpf.SystemStyles;component/Styles.xaml"/>
+                <!--<ResourceDictionary Source="/Selen.Wpf.SystemStyles;component/Styles.xaml" />-->
+            </ResourceDictionary.MergedDictionaries>
+
+            <ad:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <DockPanel Grid.Row="0">
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_New" />
+                    <MenuItem Header="_Open" />
+                    <MenuItem Header="_Save" />
+                    <Separator />
+                    <MenuItem Header="_Exit" />
+                </MenuItem>
+                <MenuItem Header="Tools">
+                    <MenuItem Header="Modules" IsChecked="{Binding Modules.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+                    <MenuItem Header="Memory map" IsChecked="{Binding MemoryMap.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+                    <MenuItem Header="Registers" IsChecked="{Binding Registers.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+                    <Separator />
+                    <MenuItem Header="Memory">
+                        <MenuItem Header="Memory" IsChecked="{Binding Memory.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Execution history" IsChecked="{Binding ExecutionHistory.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+                    <MenuItem Header="Waypoints" IsChecked="{Binding Waypoints.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+                    <Separator />
+                    <MenuItem Header="Internal debugging">
+                        <MenuItem Header="River stack" IsChecked="{Binding RiverStack.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+                        <MenuItem Header="Track stack" IsChecked="{Binding TrackStack.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+                    </MenuItem>
+                </MenuItem>
+            </Menu>
+
+            <ToolBarTray DockPanel.Dock="Top">
+                <ToolBar>
+                    <TextBox Width="130" Text="{Binding SelectedFile, Mode=TwoWay}" LostFocus="TextBox_LostFocus"></TextBox>
+                    <Button Command="{Binding BrowseCommand}" Content="Browse" />
+                    <Button Command="Open" Content="More..." />
+                </ToolBar>
+                <ToolBar>
+                    <Button Command="{Binding ExecuteCommand}" Content="Execute" />
+                    <Button Command="{Binding TerminateCommand}" Content="Terminate" />
+                </ToolBar>
+                <ToolBar>
+                    <!--<Button Command="Run" Content="Run" />
+                    <Button Command="StepBackwards" Content="Step backwards" />
+                    <Button Command="StepForwards" Content="Step forwards" />-->
+                </ToolBar>
+            </ToolBarTray>
+        </DockPanel>
+
+        <!--ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"-->
+                                   
+        <ad:DockingManager x:Name="dockManager" 
+                                   AnchorablesSource="{Binding Tools}" 
+                                   DocumentsSource="{Binding Files}"
+                                   Grid.Row="1">
+            <ad:DockingManager.Theme>
+                <ad:Vs2013DarkTheme/>
+            </ad:DockingManager.Theme>
+
+            <ad:DockingManager.LayoutItemTemplateSelector>
+                <local:PanesTemplateSelector>
+                    <local:PanesTemplateSelector.ExecutionHistoryViewTemplate>
+                        <DataTemplate>
+                            <pp:ExecutionHistory></pp:ExecutionHistory>
+                        </DataTemplate>
+                    </local:PanesTemplateSelector.ExecutionHistoryViewTemplate>
+                    <local:PanesTemplateSelector.MemoryViewTemplate>
+                        <DataTemplate>
+                            <pp:Memory></pp:Memory>
+                        </DataTemplate>
+                    </local:PanesTemplateSelector.MemoryViewTemplate>
+                    <local:PanesTemplateSelector.MemoryMapViewTemplate>
+                        <DataTemplate>
+                            <pp:MemoryMap></pp:MemoryMap>
+                        </DataTemplate>
+                    </local:PanesTemplateSelector.MemoryMapViewTemplate>
+                    <local:PanesTemplateSelector.ModulesViewTemplate>
+                        <DataTemplate>
+                            <pp:Modules></pp:Modules>
+                        </DataTemplate>
+                    </local:PanesTemplateSelector.ModulesViewTemplate>
+                    <local:PanesTemplateSelector.RegistersViewTemplate>
+                        <DataTemplate>
+                            <pp:Registers></pp:Registers>
+                        </DataTemplate>
+                    </local:PanesTemplateSelector.RegistersViewTemplate>
+                    <local:PanesTemplateSelector.RiverStackViewTemplate>
+                        <DataTemplate>
+                            <pp:RiverStack></pp:RiverStack>
+                        </DataTemplate>
+                    </local:PanesTemplateSelector.RiverStackViewTemplate>
+                    <local:PanesTemplateSelector.TrackStackViewTemplate>
+                        <DataTemplate>
+                            <pp:TrackStack></pp:TrackStack>
+                        </DataTemplate>
+                    </local:PanesTemplateSelector.TrackStackViewTemplate>
+                    <local:PanesTemplateSelector.WaypointsViewTemplate>
+                        <DataTemplate>
+                            <pp:Waypoints></pp:Waypoints>
+                        </DataTemplate>
+                    </local:PanesTemplateSelector.WaypointsViewTemplate>
+                </local:PanesTemplateSelector>
+            </ad:DockingManager.LayoutItemTemplateSelector>
+            
+            <ad:DockingManager.LayoutItemContainerStyleSelector>
+                <local:PanesStyleSelector>
+                    <local:PanesStyleSelector.ToolStyle>
+                        <Style TargetType="{x:Type ad:LayoutAnchorableItem}">
+                            <Setter Property="Title" Value="{Binding Model.Title}"/>
+                            <Setter Property="IconSource" Value="{Binding Model.IconSource}"/>
+                            <Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Hidden}}"/>
+                            <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
+                            <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
+                            <Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>
+                        </Style>
+                    </local:PanesStyleSelector.ToolStyle>
+                </local:PanesStyleSelector>
+            </ad:DockingManager.LayoutItemContainerStyleSelector>
+
+            <ad:DockingManager.LayoutUpdateStrategy>
+                <local:LayoutInitializer/>
+            </ad:DockingManager.LayoutUpdateStrategy>
+        </ad:DockingManager>
+    </Grid>
+</Window>

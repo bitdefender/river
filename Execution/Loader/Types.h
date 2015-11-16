@@ -1,0 +1,18 @@
+#ifndef _TYPES_H_
+#define _TYPES_H_
+
+typedef unsigned short USHORT;
+typedef long LONG;
+
+typedef unsigned char BYTE;
+typedef unsigned short WORD;
+typedef unsigned long DWORD;
+typedef unsigned long long QWORD;
+
+#ifdef _M_X64
+typedef QWORD ADDR_TYPE;
+#else
+typedef DWORD ADDR_TYPE;
+#endif
+
+#endif
