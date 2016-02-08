@@ -3,22 +3,27 @@
 #include "execenv.h"
 #include "callgates.h"
 
+#include <intrin.h>
 
 namespace rev {
 
 	/* Kernel32.dll replacements *********************************************************/
 
-	typedef void *LPVOID;
+	typedef void *LPVOID, *PVOID;
 	typedef long NTSTATUS;
 	typedef void *HANDLE;
 	typedef int BOOL;
+	typedef const void *LPCVOID;
+	typedef DWORD *LPDWORD;
 
-	#define TRUE  1
-	#define FALSE 0
+	typedef unsigned long ULONG;
 
-	#ifndef NT_SUCCESS
-	#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
-	#endif
+#define TRUE  1
+#define FALSE 0
+
+#ifndef NT_SUCCESS
+#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
+#endif
 
 	DLL_LINKAGE DWORD revtracerLastError;
 
@@ -29,13 +34,13 @@ namespace rev {
 		return revtracerLastError;
 	}
 
-	#define PAGE_EXECUTE           0x10     
-	#define PAGE_EXECUTE_READ      0x20     
-	#define PAGE_EXECUTE_READWRITE 0x40     
-	#define PAGE_EXECUTE_WRITECOPY 0x80     
+#define PAGE_EXECUTE           0x10     
+#define PAGE_EXECUTE_READ      0x20     
+#define PAGE_EXECUTE_READWRITE 0x40     
+#define PAGE_EXECUTE_WRITECOPY 0x80     
 
-	#define MEM_COMMIT                  0x1000      
-	#define MEM_RESERVE                 0x2000      
+#define MEM_COMMIT                  0x1000      
+#define MEM_RESERVE                 0x2000      
 
 	typedef NTSTATUS(__stdcall *NtAllocateVirtualMemoryFunc)(
 		HANDLE               ProcessHandle,
@@ -110,7 +115,7 @@ namespace rev {
 		void *ThreadInformation,
 		DWORD ThreadInformationLength,
 		DWORD *ReturnLength
-	);
+		);
 
 	BOOL Kernel32GetThreadSelectorEntry(HANDLE hThread, DWORD dwSeg, LPLDT_ENTRY entry) {
 		NTSTATUS ret;
@@ -144,6 +149,131 @@ namespace rev {
 
 	BOOL Kernel32TerminateProcess(HANDLE hProcess, DWORD uExitCode) {
 		return ((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(hProcess, uExitCode);
+	}
+
+	void *GetTEB() {
+		DWORD r;
+		__asm mov eax, dword ptr fs : [0x18];
+		__asm mov r, eax
+		return (void *)r;
+	}
+
+	void *GetPEB(void *teb) {
+		return (void *)*((DWORD *)teb + 0x0C);
+	}
+
+	typedef struct _RTL_USER_PROCESS_PARAMETERS
+	{
+		ULONG MaximumLength;
+		ULONG Length;
+		ULONG Flags;
+		ULONG DebugFlags;
+		PVOID ConsoleHandle;
+		ULONG ConsoleFlags;
+		PVOID StandardInput;
+		PVOID StandardOutput;
+		PVOID StandardError;
+	} RTL_USER_PROCESS_PARAMETERS, *PRTL_USER_PROCESS_PARAMETERS;
+
+	typedef struct _IO_STATUS_BLOCK {
+		union {
+			NTSTATUS Status;
+			PVOID    Pointer;
+		};
+		ULONG_PTR Information;
+	} IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
+
+	PRTL_USER_PROCESS_PARAMETERS GetUserProcessParameters(void *peb) {
+		return (PRTL_USER_PROCESS_PARAMETERS)(*((DWORD *)peb + 0x10));
+	}
+
+	typedef NTSTATUS(__stdcall *NtWriteFileFunc)(
+		HANDLE FileHandle,
+		HANDLE Event,
+		PVOID ApcRoutine,
+		PVOID ApcContext,
+		PIO_STATUS_BLOCK IoStatusBlock,
+		PVOID Buffer,
+		ULONG Length,
+		PVOID ByteOffset,
+		PVOID Key
+	);
+
+	typedef NTSTATUS(__stdcall *NtWaitForSingleObjectFunc)(
+		HANDLE Handle,
+		BOOL Alertable,
+		PVOID Timeout
+	);
+
+#define STATUS_PENDING 0x103
+
+	BOOL Kernel32WriteFile(
+		HANDLE hFile,
+		PVOID lpBuffer,
+		DWORD nNumberOfBytesToWrite,
+		LPDWORD lpNumberOfBytesWritten
+	) {
+		IO_STATUS_BLOCK ioStatus;
+
+		ioStatus.Status = 0;
+		ioStatus.Information = 0;
+		
+		if (lpNumberOfBytesWritten) {
+			*lpNumberOfBytesWritten = 0;
+		}
+
+		PRTL_USER_PROCESS_PARAMETERS upp = GetUserProcessParameters(GetPEB(GetTEB()));
+		HANDLE hIntFile = hFile;
+		switch ((DWORD)hFile) {
+			case 0xFFFFFFF4: 
+				hIntFile = upp->StandardError;
+				break;
+			case 0xFFFFFFF5:
+				hIntFile = upp->StandardOutput;
+				break;
+			case 0xFFFFFFF6:
+				hIntFile = upp->StandardInput;
+				break;
+		};
+
+		NTSTATUS ret = ((NtWriteFileFunc)revtracerAPI.lowLevel.ntWriteFile)(
+			hIntFile, 
+			NULL, 
+			NULL, 
+			NULL, 
+			&ioStatus, 
+			lpBuffer, 
+			nNumberOfBytesToWrite, 
+			NULL, 
+			NULL
+		);
+
+		if (ret == STATUS_PENDING) {
+			ret = ((NtWaitForSingleObjectFunc)revtracerAPI.lowLevel.ntWaitForSingleObject)(
+				hIntFile, 
+				FALSE, 
+				NULL
+			);
+			if (ret < 0) {
+				if ((ret & 0xC0000000) == 0x80000000) {
+					*lpNumberOfBytesWritten = ioStatus.Information;
+				}
+				Kernel32BaseSetLastNTError(ret);
+				return FALSE;
+			}
+			ret = ioStatus.Status;
+		}
+
+		if (ret >= 0) {
+			*lpNumberOfBytesWritten = ioStatus.Information;
+			return TRUE;
+		}
+		if ((ret & 0xC0000000) == 0x80000000) {
+			*lpNumberOfBytesWritten = ioStatus.Information;
+		}
+		Kernel32BaseSetLastNTError(ret);
+		return FALSE;
+
 	}
 
 	/* Default API functions ************************************************************/
@@ -210,6 +340,7 @@ namespace rev {
 	void GetCurrentRegisters(void *ctx, ExecutionRegs *regs) {
 		struct _exec_env *pCtx = (struct _exec_env *)ctx;
 		memcpy(regs, (struct _exec_env *)pCtx->runtimeContext.registers, sizeof(*regs));
+		regs->esp = pCtx->runtimeContext.virtualStack;
 	}
 
 
@@ -258,17 +389,41 @@ namespace rev {
 		Kernel32TerminateProcess((HANDLE)0xFFFFFFFF, 0);
 	}
 
-	void TracerInitialization() {
+	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
+		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)orig);
+		pBlock->address = (DWORD)det;
+		pEnv->codeGen.Translate(pBlock, 0);
+		pBlock->address = (DWORD)orig;
+		pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
+
+		revtracerAPI.dbgPrintFunc("Added detour from 0x%08x to 0x%08x\n", orig, det);
+	}
+
+	void TracerInitialization() { // parameter is not initialized (only used to get the 
+		UINT_PTR rgs = (UINT_PTR)_AddressOfReturnAddress() + sizeof(void *);
+		
 		Initialize();
+
+		pEnv->runtimeContext.registers = rgs;
 
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)revtracerConfig.entryPoint);
 		pBlock->address = (DWORD)revtracerConfig.entryPoint;
+		revtracerConfig.pRuntime = &pEnv->runtimeContext;
 		pEnv->codeGen.Translate(pBlock, 0);
-		pEnv->bForward = 1;
-		pBlock->MarkForward();
+		
+		/*pEnv->runtimeContext.execBuff -= 4;
+		*((DWORD *)pEnv->runtimeContext.execBuff) = (DWORD)revtracerConfig.entryPoint;*/
 		
 		switch (revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
 		case EXECUTION_ADVANCE :
+			revtracerAPI.dbgPrintFunc("%d detours needed.\n", revtracerConfig.hookCount);
+			for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
+				CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
+			}
+			pEnv->lastFwBlock = (UINT_PTR)revtracerConfig.entryPoint;
+			pEnv->bForward = 1;
+			pBlock->MarkForward();
+
 			revtracerConfig.entryPoint = pBlock->pFwCode;
 			break;
 		case EXECUTION_TERMINATE :
@@ -290,6 +445,7 @@ namespace rev {
 			popfd;
 			popad;
 			xchg esp, shadowStack;
+
 			jmp dword ptr[revtracerConfig.entryPoint];
 		}
 	}
@@ -366,22 +522,11 @@ namespace rev {
 		revtracerConfig.entryPoint = ep;
 	}
 
-	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
-		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)orig);
-		pBlock->address = (DWORD)det;
-		pEnv->codeGen.Translate(pBlock, 0);
-		pBlock->address = (DWORD)orig;
-	}
-
 	void Initialize() {
 		revtracerAPI.ipcLibInitialize();
 
-		pEnv = new _exec_env(0x1000000, 0x10000, 0x2000000, 16, 0x10000);
+		pEnv = new _exec_env(0x1000000, 0x10000, 0x4000000, 16, 0x10000);
 		pEnv->userContext = AllocUserContext(pEnv, revtracerConfig.contextSize);
-
-		for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
-			CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
-		}
 	}
 
 	void Execute(int argc, char *argv[]) {

@@ -56,6 +56,8 @@ namespace ipc {
 	typedef void *ADDR_TYPE;
 	typedef void *HANDLE;
 
+	typedef int BOOL;
+
 	struct IpcAPI {
 		/*ADDR_TYPE ntWaitForSingleObject;
 		ADDR_TYPE ntSetEvent;
@@ -149,6 +151,8 @@ namespace ipc {
 		DLL_LINKAGE extern void SyscallControlFunc(void *context);
 
 		DLL_LINKAGE extern void Initialize();
+
+		DLL_LINKAGE BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature);
 	}
 };
 

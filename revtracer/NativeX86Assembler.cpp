@@ -611,12 +611,12 @@ NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assemble0xFFOp[8] =
 };
 
 NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assemble0x0FC7Instr[8] = {
-	/*0x00*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
+	/*0x00*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 	/*0x04*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr
 };
 
 NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assemble0x0FC7Op[8] = {
-	/*0x00*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
+	/*0x00*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleSubOpModRMOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 	/*0x04*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 };
 

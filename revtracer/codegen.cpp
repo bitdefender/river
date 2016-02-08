@@ -213,6 +213,71 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
 	return pTmp - px86;
 }
 
+void GetSerializableInstruction(const RiverInstruction &rI, RiverInstruction &rO) {
+	memcpy(&rO, &rI, sizeof(rI));
+
+	for (int i = 0; i < 4; ++i) {
+		if (RIVER_OPTYPE(rO.opTypes[i]) == RIVER_OPTYPE_MEM) {
+			rO.operands[i].asAddress = NULL;
+		}
+	}
+}
+
+namespace rev {
+	BOOL Kernel32WriteFile(
+		HANDLE hFile,
+		void *lpBuffer,
+		DWORD nNumberOfBytesToWrite,
+		DWORD *lpNumberOfBytesWritten
+		);
+};
+
+bool SerializeInstructions(const RiverInstruction *code, int count) {
+	RiverInstruction tmp;
+	DWORD dwWr;
+	for (int i = 0; i < count; ++i) {
+		GetSerializableInstruction(code[i], tmp);
+		if (0 == rev::Kernel32WriteFile(revtracerConfig.hBlocks, &tmp, sizeof(tmp), &dwWr)) {
+			//debug print something
+			return false;
+		}
+
+		for (int j = 0; j < 4; ++j) {
+			if (RIVER_OPTYPE(code[i].opTypes[j]) == RIVER_OPTYPE_MEM) {
+				if (0 == rev::Kernel32WriteFile(revtracerConfig.hBlocks, &code[i].operands[j].asAddress->type, sizeof(*code[i].operands[j].asAddress) - sizeof(void *), &dwWr)) {
+					//debug print something
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool SaveToStream(
+	const RiverInstruction *forwardCode, DWORD dwFwOpCount, 
+	const RiverInstruction *backwardCode, DWORD dwBkOpCount,
+	const RiverInstruction *trackCode, DWORD dwTrOpCount
+) {
+	DWORD header[4] = { 'BBVR', dwFwOpCount, dwBkOpCount, dwTrOpCount };
+	DWORD dwWr;
+
+	if (0 == Kernel32WriteFile(revtracerConfig.hBlocks, header, sizeof(header), &dwWr)) {
+		//debug print something
+		return false;
+	}
+
+	if (
+		!SerializeInstructions(forwardCode, dwFwOpCount) ||
+		!SerializeInstructions(backwardCode, dwBkOpCount) ||
+		!SerializeInstructions(trackCode, dwTrOpCount)
+		) {
+		return false;
+	}
+
+	return true;
+}
+
 bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 	if (dwTranslationFlags & 0x80000000) {
 		pCB->dwSize = 0;
@@ -245,6 +310,10 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		revtracerAPI.dbgPrintFunc("===============================================================================\n");
 
 		bkInstCount = fwInstCount + 1;
+
+		if (revtracerConfig.dumpBlocks) {
+			SaveToStream(fwRiverInst, fwInstCount, bkRiverInst, bkInstCount, symbopInst, symbopInstCount);
+		}
 
 		//outBufferSize = rivertox86(this, rt, trRiverInst, trInstCount, outBuffer, 0x00);
 		//assembler.Assemble(trRiverInst, trInstCount, outBuffer, 0x00, pCB->, outBufferSize);

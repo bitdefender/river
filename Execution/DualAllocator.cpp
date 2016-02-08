@@ -19,7 +19,27 @@ DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const wchar_t *sh
 }
 
 DualAllocator::~DualAllocator() {
+	for (std::vector<FileView>::iterator it = mappedViews.begin(); it < mappedViews.end(); ++it) {
+		UnmapViewOfFile(*it);
+	}
+
 	CloseHandle(hMapping);
+}
+
+HANDLE DualAllocator::CloneTo(HANDLE process) {
+	HANDLE ret;
+	if (TRUE == DuplicateHandle(
+		GetCurrentProcess(),
+		hMapping,
+		process,
+		&ret,
+		0,
+		FALSE,
+		DUPLICATE_SAME_ACCESS
+	)) {
+		return ret;
+	}
+	return INVALID_HANDLE_VALUE;
 }
 
 #include <stdio.h>
@@ -39,10 +59,10 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 
 	// now look for a suitable address;
 
-	DWORD dwOffset = dwGran;
+	DWORD dwOffset = 0x01000000; // dwGran;
 	DWORD dwCandidate = 0, dwCandidateSize = 0xFFFFFFFF;
 
-	while (dwOffset < 0x7FFF0000) {
+	while (dwOffset < 0x2FFF0000) {
 		MEMORY_BASIC_INFORMATION32 mbi;
 		DWORD regionSize = 0xFFFFFFFF;
 		bool regionFree = true;
@@ -56,6 +76,8 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 			if (regionSize > dwSize) {
 				regionSize = dwSize;
 			}
+
+			//printf("        Proc %d offset: 0x%08x, size 0x%08x\n", i, dwOffset, dwSize);
 
 			regionFree &= (MEM_FREE == mbi.State);
 		}
@@ -92,6 +114,7 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 		__asm int 3;
 	}
 
+	mappedViews.push_back(ptr);
 	return ptr;
 }
 

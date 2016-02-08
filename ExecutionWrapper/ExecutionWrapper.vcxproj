@@ -56,7 +56,6 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies />
     </Link>
     <PostBuildEvent>
       <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)Demo\bin\$(ConfigurationName)\

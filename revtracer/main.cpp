@@ -337,7 +337,7 @@ int overlap(unsigned int a1, unsigned int a2, unsigned int b1, unsigned int b2);
 bool MapPE(DWORD &baseAddr);
 
 int main(unsigned int argc, char *argv[]) {
-	DWORD baseAddr = 0xf000000;
+	/*DWORD baseAddr = 0xf000000;
 	if (!MapPE(baseAddr)) {
 		return false;
 	}
@@ -351,7 +351,7 @@ int main(unsigned int argc, char *argv[]) {
 
 	pEnv->userContext = AllocUserContext(pEnv, sizeof(struct UserCtx));
 	ctx = (struct UserCtx *)pEnv->userContext;
-	ctx->callCount = 0;
+	ctx->callCount = 0;*/
 
 	//unsigned char *pOverlap = (unsigned char *)*(unsigned int *)((unsigned char *)overlap + 1);
 	//pOverlap += (UINT_PTR)overlap + 5;
@@ -360,20 +360,20 @@ int main(unsigned int argc, char *argv[]) {
 	rivertox86(pEnv, ris, dwCount, tBuff);*/
 
 	//DWORD ret = call_cdecl_4(pEnv, (_fn_cdecl_4)&overlap, (void *)3, (void *)7, (void *)2, (void *)10);
-	unsigned char *pMain = (unsigned char *)baseAddr + 0x96CE;
+	//unsigned char *pMain = (unsigned char *)baseAddr + 0x96CE;
 	//unsigned char *pMain = (unsigned char *)baseAddr + 0x1347;
-	DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)pMain, (void *)argc, (void *)argv);
+	/*DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)pMain, (void *)argc, (void *)argv);
 	DbgPrint("Done. ret = %d\n\n", ret);
 
 	PrintStats(pEnv);
 
 	DbgPrint(" +++ Tainted addresses +++ \n");
 	ac.PrintAddreses();
-	DbgPrint(" +++++++++++++++++++++++++ \n");
+	DbgPrint(" +++++++++++++++++++++++++ \n");*/
 
 	/*DbgPrint("Test %d\n", overlap(3, 7, 2, 10));*/
 
-	fclose(fBlocks);
+	//fclose(fBlocks);
 
 	return 0;
 }

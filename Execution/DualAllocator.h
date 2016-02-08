@@ -2,6 +2,9 @@
 #define _DUAL_ALLOCATOR_H_
 
 #include <Windows.h>
+#include <vector>
+
+typedef void *FileView;
 
 class DualAllocator {
 private:
@@ -10,10 +13,13 @@ private:
 	DWORD dwUsed;
 	DWORD dwGran;
 
+	std::vector<FileView> mappedViews;
 	HANDLE hProcess[2];
 public:
 	DualAllocator(DWORD size, HANDLE remoteProcess, const wchar_t *shmName, DWORD granularity);
 	~DualAllocator();
+
+	HANDLE CloneTo(HANDLE process);
 
 	void *Allocate(DWORD size, DWORD &offset);
 	void Free(void *ptr);

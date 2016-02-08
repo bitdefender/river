@@ -49,10 +49,11 @@ namespace ldr {
 	typedef unsigned long DWORD;
 	typedef unsigned short WORD;
 	typedef unsigned char BYTE;
-	typedef int BOOL;
 
 	typedef size_t SIZE_T, *PSIZE_T;
 	typedef void *ADDR_TYPE;
+
+	typedef void *HANDLE;
 
 	struct PESections {
 		ADDR_TYPE mappingAddress;
@@ -62,23 +63,27 @@ namespace ldr {
 	};
 
 	struct LoaderConfig {
-		wchar_t sharedMemoryName[512];
+		HANDLE sharedMemory;
+		ADDR_TYPE shmBase;
 		PESections sections[32];
 		DWORD sectionCount;
 		ADDR_TYPE entryPoint;
 	};
 
 	struct LoaderAPI {
-		ADDR_TYPE ntOpenSection;
+		//ADDR_TYPE ntOpenSection;
 		ADDR_TYPE ntMapViewOfSection;
 
-		ADDR_TYPE ntOpenDirectoryObject;
-		ADDR_TYPE ntClose;
+		//ADDR_TYPE ntOpenDirectoryObject;
+		//ADDR_TYPE ntClose;
 
 		ADDR_TYPE ntFlushInstructionCache;
 
-		ADDR_TYPE rtlInitUnicodeStringEx;
-		ADDR_TYPE rtlFreeUnicodeString;
+		ADDR_TYPE ntFreeVirtualMemory;
+		ADDR_TYPE rtlFlushSecureMemoryCache;
+
+		//ADDR_TYPE rtlInitUnicodeStringEx;
+		//ADDR_TYPE rtlFreeUnicodeString;
 	};
 
 
@@ -86,7 +91,6 @@ namespace ldr {
 		DLL_LINKAGE extern LoaderConfig loaderConfig;
 		DLL_LINKAGE extern LoaderAPI loaderAPI;
 
-		DLL_LINKAGE BOOL MyIsProcessorFeaturePresent(DWORD ProcessorFeature);
 		DLL_LINKAGE void *MapMemory(DWORD desiredAccess, DWORD offset, SIZE_T size, void *address);
 		DLL_LINKAGE void LoaderPerform();
 	}

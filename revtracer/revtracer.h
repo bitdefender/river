@@ -51,6 +51,9 @@ namespace rev {
 	typedef unsigned short WORD;
 	typedef unsigned char BYTE;
 
+	typedef int BOOL;
+	typedef void *HANDLE;
+
 	typedef void *ADDR_TYPE;
 
 	typedef void(*DbgPrintFunc)(const char *fmt, ...);
@@ -78,6 +81,9 @@ namespace rev {
 		ADDR_TYPE ntFreeVirtualMemory;
 		ADDR_TYPE ntQueryInformationThread;
 		ADDR_TYPE ntTerminateProcess;
+
+		ADDR_TYPE ntWriteFile;
+		ADDR_TYPE ntWaitForSingleObject;
 
 		ADDR_TYPE rtlNtStatusToDosError;
 
@@ -117,8 +123,14 @@ namespace rev {
 
 	struct RevtracerConfig {
 		ADDR_TYPE entryPoint;
+		ADDR_TYPE mainModule;
 		DWORD contextSize;
 		DWORD segmentOffsets[0x100];
+
+		BOOL dumpBlocks;
+		HANDLE hBlocks;
+
+		void *pRuntime;
 
 		DWORD hookCount;
 		CodeHooks hooks[0x10];

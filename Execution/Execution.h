@@ -9,11 +9,18 @@
 #define EXECUTION_LINKAGE __declspec(dllimport)
 #endif
 
-#define EXECUTION_NEW					0x00
-#define EXECUTION_INITIALIZED			0x01
-#define EXECUTION_RUNNING				0x02
-#define EXECUTION_TERMINATED			0x03
-#define EXECUTION_ERR					0x04
+#define EXECUTION_ADVANCE					0x00000000
+#define EXECUTION_BACKTRACK					0x00000001
+#define EXECUTION_TERMINATE					0x00000002
+
+#define EXECUTION_NEW							0x00
+#define EXECUTION_INITIALIZED					0x01
+#define EXECUTION_SUSPENDED_AT_START			0x02
+#define EXECUTION_RUNNING						0x03
+#define EXECUTION_SUSPENDED						0x04
+#define EXECUTION_SUSPENDED_AT_TERMINATION		0x05
+#define EXECUTION_TERMINATED					0x06
+#define EXECUTION_ERR							0xFF
 
 using namespace std;
 
@@ -41,6 +48,32 @@ struct VirtualMemorySection {
 	uint32_t Type; // image, mapped, private
 };
 
+struct ModuleInfo {
+	wchar_t Name[260];
+	uint32_t ModuleBase;
+	uint32_t Size;
+};
+
+struct Registers {
+	uint32_t edi;
+	uint32_t esi;
+	uint32_t ebp;
+	uint32_t esp;
+
+	uint32_t ebx;
+	uint32_t edx;
+	uint32_t ecx;
+	uint32_t eax;
+	uint32_t eflags;
+};
+
+class ExecutionController;
+
+typedef void(__stdcall *TerminationNotifyFunc)(void *ctx);
+typedef unsigned int(__stdcall *ExecutionBeginFunc)(void *ctx, unsigned int address);
+typedef unsigned int(__stdcall *ExecutionControlFunc)(void *ctx, unsigned int address);
+typedef unsigned int(__stdcall *ExecutionEndFunc)(void *ctx);
+
 class ExecutionController {
 public:
 	virtual int GetState() const = 0;
@@ -50,6 +83,17 @@ public:
 	virtual bool Terminate() = 0;
 
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) = 0;
+	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount) = 0;
+	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) = 0;
+
+	virtual void SetNotificationContext(void *ctx) = 0;
+
+	virtual void SetTerminationNotification(TerminationNotifyFunc func) = 0;
+	virtual void SetExecutionBeginNotification(ExecutionBeginFunc func) = 0;
+	virtual void SetExecutionControlNotification(ExecutionControlFunc func) = 0;
+	virtual void SetExecutionEndNotification(ExecutionEndFunc func) = 0;
+
+	virtual void GetCurrentRegisters(Registers &registers) = 0;
 };
 
 EXECUTION_LINKAGE ExecutionController *NewExecutionController();

@@ -188,6 +188,10 @@ void RiverSaveTranslator::TranslateSaveCPUID(RiverInstruction *rOut, const River
 	MakeSaveReg(rOut, tmpReg, 0);
 	instrCount++;
 	rOut++;
+
+	CopyInstruction(*rOut, rIn);
+	instrCount++;
+	rOut++;
 }
 
 void RiverSaveTranslator::TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
@@ -212,6 +216,10 @@ void RiverSaveTranslator::TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const R
 	rOut++;
 
 	MakeSaveMemOffset(rOut, *(rIn.operands[0].asAddress), 0x04, 0, rIn);
+	instrCount++;
+	rOut++;
+
+	CopyInstruction(*rOut, rIn);
 	instrCount++;
 	rOut++;
 }

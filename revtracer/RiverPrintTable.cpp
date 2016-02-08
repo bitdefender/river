@@ -45,10 +45,10 @@ void PrintPrefixes(struct RiverInstruction *ri) {
 		case RIVER_FAMILY_PRETRACK :
 			revtracerAPI.dbgPrintFunc("pretrack");
 			break;
-		case RIVER_FAMILY_PREMETAOP :
+		case RIVER_FAMILY_PREMETA :
 			revtracerAPI.dbgPrintFunc("premeta");
 			break;
-		case RIVER_FAMILY_POSTMETAOP:
+		case RIVER_FAMILY_POSTMETA:
 			revtracerAPI.dbgPrintFunc("postmeta");
 			break;
 	}

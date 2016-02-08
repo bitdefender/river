@@ -7,12 +7,15 @@
 
 using namespace rev;
 
+#define RIVER_BASIC_BLOCK_DETOUR				0x80000000
+
 class RiverBasicBlock {
 public :
 	/* informations about the real block */
 	UINT_PTR			address; // original address
 	DWORD				dwSize;  // block size
 	DWORD				dwCRC;   // block crc
+	DWORD				dwFlags; // block flags
 
 	/* statistical translation information */
 	DWORD				dwOrigOpCount; // number of instructions in the original block

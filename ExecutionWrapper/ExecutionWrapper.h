@@ -5,8 +5,11 @@
 using namespace System;
 //using namespace System::Collections::Generic;
 using namespace System::Collections::ObjectModel;
+using namespace System::Runtime::InteropServices;
+using namespace System::Threading;
 
 #include "../Execution/Execution.h"
+#include "../revtracer/revtracer.h"
 
 namespace ExecutionWrapper {
 
@@ -14,9 +17,19 @@ namespace ExecutionWrapper {
 	{
 		NEW = EXECUTION_NEW,
 		INITIALIZED = EXECUTION_INITIALIZED,
+		SUSPENDED_AT_START = EXECUTION_SUSPENDED_AT_START,
 		RUNNING = EXECUTION_RUNNING,
+		SUSPENDED = EXECUTION_SUSPENDED,
+		SUSPENDED_AT_TERMINATION = EXECUTION_SUSPENDED_AT_TERMINATION,
 		TERMINATED = EXECUTION_TERMINATED,
 		ERR = EXECUTION_ERR
+	};
+
+	public enum class ExecutionControl
+	{
+		ADVANCE = EXECUTION_ADVANCE,
+		BACKTRACK = EXECUTION_BACKTRACK,
+		TERMINATE = EXECUTION_TERMINATE
 	};
 
 	public value struct VirtualMemorySection {
@@ -51,7 +64,16 @@ namespace ExecutionWrapper {
 	{
 	private :
 		ExecutionController *impl;
-		
+
+		GCHandle termDelHnd, execBeginDelHnd, execControlDelHnd, execEndDelHnd;
+
+		void TerminateNotifyWrapper();
+		ExecutionControl ExecutionBeginWrapper(unsigned int address);
+		ExecutionControl ExecutionControlWrapper(unsigned int address);
+		ExecutionControl ExecutionEndWrapper();
+
+		ExecutionControl lastControlMessage;
+		AutoResetEvent controlEvent;
 	public:
 
 		Execution();
@@ -64,6 +86,19 @@ namespace ExecutionWrapper {
 		bool Execute();
 		bool Terminate();
 
+		void Control(ExecutionControl control);
+
 		bool GetProcessVirtualMemory(ObservableCollection<VirtualMemorySection> ^list);
+		bool ReadProcessMemory(unsigned int address, unsigned int size, unsigned char data[]);
+
+		delegate void OnTerminateDelegate();
+		delegate void OnExecutionBeginDelegate(unsigned int address);
+		delegate void OnExecutionControlDelegate(unsigned int address);
+		delegate void OnExecutionEndDelegate();
+
+		OnTerminateDelegate ^onTerminate;
+		OnExecutionBeginDelegate ^onExecutionBegin;
+		OnExecutionControlDelegate ^onExecutionControl;
+		OnExecutionEndDelegate ^onExecutionEnd;
 	};
 }

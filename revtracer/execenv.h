@@ -29,7 +29,7 @@ struct _exec_env {
 	//UINT_PTR *history;
 	//unsigned long posHist, totHist; // = 0;
 
-	UINT_PTR *executionBuffer;
+	UINT_PTR *executionBuffer, executionBase;
 
 	//unsigned char *saveBuffer;
 

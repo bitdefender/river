@@ -22,21 +22,25 @@ namespace ipc {
 
 	void NtDllNtYieldExecution();
 
-	void ShmTokenRing::Wait(long userId) const {
+	bool ShmTokenRing::Wait(long userId, bool blocking) const {
 		long loop = 1 << 8;
 
 		do {
 			long localCurrentOwner = currentOwner;
 			if (localCurrentOwner == userId) {
-				return;
+				return true;
 			}
 
-			for (long i = 0; i < 1; ++i);
+			for (long i = 0; i < loop; ++i);
 
 			localCurrentOwner = currentOwner;
 			if (localCurrentOwner != userId) {
 				if (loop < (1 << 16)) {
 					loop <<= 1;
+				} else {
+					if (!blocking) {
+						return false;
+					}
 				}
 				//((NtYieldExecutionFunc)ipcAPI.ntYieldExecution)();
 				NtDllNtYieldExecution();

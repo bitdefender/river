@@ -13,7 +13,7 @@ namespace ipc {
 
 		long Use();
 
-		void Wait(long userId) const;
+		bool Wait(long userId, bool blocking = true) const;
 		void Release(long userId);
 	};
 

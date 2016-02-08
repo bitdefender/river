@@ -44,14 +44,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_EXECUTION_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_EXECUTION_EXPORTS;DUMP_BLOCKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)Demo\bin\$(ConfigurationName)\
-copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)Demo\bin\$(ConfigurationName)\</Command>
+      <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)jsdemo\
+copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -71,11 +71,12 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)Demo\bin\$(ConfigurationName)\
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)Demo\bin\$(ConfigurationName)\
-copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)Demo\bin\$(ConfigurationName)\</Command>
+      <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)jsdemo\
+copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\ipclib\ShmTokenRing.cpp" />
     <ClCompile Include="DualAllocator.cpp" />
     <ClCompile Include="InternalExecutionController.cpp" />
     <ClCompile Include="Loader\Extern.Mapper.cpp" />
@@ -87,6 +88,7 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)Demo\bin\$(ConfigurationName)\
   <ItemGroup>
     <ClInclude Include="DualAllocator.h" />
     <ClInclude Include="Execution.h" />
+    <ClInclude Include="RiverStructs.h" />
     <ClInclude Include="InternalExecutionController.h" />
     <ClInclude Include="Loader\Abstract.Mapper.h" />
     <ClInclude Include="Loader\Extern.Mapper.h" />

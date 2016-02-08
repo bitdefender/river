@@ -17,20 +17,32 @@ using namespace std;
 
 class InternalExecutionController : public ExecutionController {
 private:
+	ExecutionBeginFunc eBegin;
+	ExecutionControlFunc eControl;
+	ExecutionEndFunc eEnd;
+	TerminationNotifyFunc term;
+
 	wstring path;
 	wstring cmdLine;
 
-	HANDLE hProcess, hMainThread;
+	HANDLE hProcess, hMainThread, hControlThread;
 	DWORD pid, mainTid;
+
+	void *context;
 
 	DualAllocator *shmAlloc;
 
 	vector<VirtualMemorySection> sec;
+	vector<ModuleInfo> mod;
+	bool updated;
 
 	enum {
 		NEW = EXECUTION_NEW,
 		INITIALIZED = EXECUTION_INITIALIZED,
+		SUSPENDED_AT_START = EXECUTION_SUSPENDED_AT_START,
 		RUNNING = EXECUTION_RUNNING,
+		SUSPENDED = EXECUTION_SUSPENDED,
+		SUSPENDED_AT_TERMINATION = EXECUTION_SUSPENDED_AT_TERMINATION,
 		TERMINATED = EXECUTION_TERMINATED,
 		ERR = EXECUTION_ERR
 	} execState;
@@ -49,10 +61,13 @@ private:
 	ipc::RingBuffer<(1 << 20)> *debugLog;
 	ipc::ShmTokenRing *ipcToken;
 	ipc::IpcData *ipcData;
+	BYTE *pIPFPFunc;
 	
 	rev::RevtracerAPI tmpRevApi;
 	rev::RevtracerConfig *revCfg;
 	BYTE *revtracerPerform;
+
+	char debugBuffer[4096];
 
 	bool InitializeAllocator();
 	bool MapLoader();
@@ -63,6 +78,9 @@ private:
 	bool InitializeRevtracer(FloatingPE *fRevTracer);
 
 	bool SwitchEntryPoint();
+	bool PatchProcess();
+
+	bool UpdateLayout();
 public:
 	InternalExecutionController();
 
@@ -74,7 +92,20 @@ public:
 	virtual bool Execute();
 	virtual bool Terminate();
 
+	DWORD ControlThread();
+
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
+	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);
+	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
+
+	virtual void SetNotificationContext(void *ctx);
+
+	virtual void SetTerminationNotification(TerminationNotifyFunc func);
+	virtual void SetExecutionBeginNotification(ExecutionBeginFunc func);
+	virtual void SetExecutionControlNotification(ExecutionControlFunc func);
+	virtual void SetExecutionEndNotification(ExecutionEndFunc func);
+
+	virtual void GetCurrentRegisters(Registers &registers);
 };
 
 

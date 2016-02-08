@@ -212,7 +212,7 @@ int main() {
 
 	GetSystemInfo(&si);
 
-	shmAlloc = new DualAllocator(1 << 30, pInfo.hProcess, L"Global\\MumuMem", si.dwAllocationGranularity);
+	shmAlloc = new DualAllocator(1 << 30, pInfo.hProcess, L"Local\\MumuMem", si.dwAllocationGranularity);
 
 
 	fLoader = new FloatingPE("loader.dll");
@@ -249,16 +249,16 @@ int main() {
 	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
 	ldr::LoaderAPI ldrAPI;
 
-	ldrAPI.ntOpenSection = GetProcAddress(hNtDll, "NtOpenSection");
+//	ldrAPI.ntOpenSection = GetProcAddress(hNtDll, "NtOpenSection");
 	ldrAPI.ntMapViewOfSection = GetProcAddress(hNtDll, "NtMapViewOfSection");
 
-	ldrAPI.ntOpenDirectoryObject = GetProcAddress(hNtDll, "NtOpenDirectoryObject");
-	ldrAPI.ntClose = GetProcAddress(hNtDll, "NtClose");
+//	ldrAPI.ntOpenDirectoryObject = GetProcAddress(hNtDll, "NtOpenDirectoryObject");
+//	ldrAPI.ntClose = GetProcAddress(hNtDll, "NtClose");
 
 	ldrAPI.ntFlushInstructionCache = GetProcAddress(hNtDll, "NtFlushInstructionCache");
 
-	ldrAPI.rtlInitUnicodeStringEx = GetProcAddress(hNtDll, "RtlInitUnicodeStringEx");
-	ldrAPI.rtlFreeUnicodeString = GetProcAddress(hNtDll, "RtlFreeUnicodeString");
+//	ldrAPI.rtlInitUnicodeStringEx = GetProcAddress(hNtDll, "RtlInitUnicodeStringEx");
+//	ldrAPI.rtlFreeUnicodeString = GetProcAddress(hNtDll, "RtlFreeUnicodeString");
 
 	DWORD ldrAPIOffset;
 	if (!fLoader->GetExport("loaderAPI", ldrAPIOffset)) {
@@ -315,7 +315,8 @@ int main() {
 	}
 	
 	ldrCfg.sectionCount = sCount;
-	wcscpy_s(ldrCfg.sharedMemoryName, L"Global\\MumuMem");
+	//wcscpy_s(ldrCfg.sharedMemoryName, L"Local\\MumuMem");
+	ldrCfg.sharedMemory = NULL;
 
 	DWORD ldrCfgOffset;
 	if (!fLoader->GetExport("loaderConfig", ldrCfgOffset)) {
@@ -599,7 +600,7 @@ int main() {
 				DWORD dwSz = GetMappedFileNameA(GetCurrentProcess(), next, mf, sizeof(mf)-1);
 
 				char *module = defMf;
-				for (int i = 1; i < dwSz; ++i) {
+				for (unsigned int i = 1; i < dwSz; ++i) {
 					if (mf[i - 1] == '\\') {
 						module = &mf[i];
 					}

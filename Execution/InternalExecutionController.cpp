@@ -1,9 +1,52 @@
 #include "InternalExecutionController.h"
 
-
-
 #include "Loader/Extern.Mapper.h"
 #include "Loader/Mem.Mapper.h"
+
+#include "RiverStructs.h"
+
+#include <Psapi.h>
+#include <io.h>
+#include <fcntl.h>
+#include <tlhelp32.h>
+
+//#define DUMP_BLOCKS
+
+
+typedef long NTSTATUS;
+typedef NTSTATUS(*NtYieldExecutionFunc)();
+
+NtYieldExecutionFunc ntdllYieldExecution;
+
+namespace ipc {
+	void NtDllNtYieldExecution() {
+		::ntdllYieldExecution();
+	}
+};
+
+template <typename T> bool LoadExportedName(FloatingPE *fpe, BYTE *base, char *name, T *&ptr) {
+	DWORD rva;
+	if (!fpe->GetExport(name, rva)) {
+		return false;
+	}
+
+	ptr = (T *)(base + rva);
+	return true;
+}
+
+void __stdcall DefaultTerminationNotify(void *ctx) { }
+
+unsigned int __stdcall DefaultExecutionBegin(void *ctx, unsigned int address) {
+	return EXECUTION_ADVANCE;
+}
+
+unsigned int __stdcall DefaultExecutionControl(void *ctx, unsigned int address) {
+	return EXECUTION_ADVANCE;
+}
+
+unsigned int __stdcall DefaultExecutionEnd(void *ctx) {
+	return EXECUTION_TERMINATE;
+}
 
 InternalExecutionController::InternalExecutionController() {
 	execState = NEW;
@@ -11,7 +54,16 @@ InternalExecutionController::InternalExecutionController() {
 	path = L"";
 	cmdLine = L"";
 
+	context = NULL;
+
 	shmAlloc = NULL;
+
+	term = DefaultTerminationNotify;
+	eBegin = DefaultExecutionBegin;
+	eControl = DefaultExecutionControl;
+	eEnd = DefaultExecutionEnd;
+
+	updated = false;
 }
 
 int InternalExecutionController::GetState() const {
@@ -43,7 +95,7 @@ bool InternalExecutionController::InitializeAllocator() {
 
 	GetSystemInfo(&si);
 
-	shmAlloc = new DualAllocator(1 << 30, hProcess, L"Global\\MumuMem", si.dwAllocationGranularity);
+	shmAlloc = new DualAllocator(1 << 30, hProcess, L"Local\\MumuMem", si.dwAllocationGranularity);
 	return NULL != shmAlloc;
 }
 
@@ -68,41 +120,37 @@ bool InternalExecutionController::MapLoader() {
 		HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
 		ldr::LoaderAPI ldrAPI;
 
-		ldrAPI.ntOpenSection = GetProcAddress(hNtDll, "NtOpenSection");
+		//ldrAPI.ntOpenSection = GetProcAddress(hNtDll, "NtOpenSection");
 		ldrAPI.ntMapViewOfSection = GetProcAddress(hNtDll, "NtMapViewOfSection");
 
-		ldrAPI.ntOpenDirectoryObject = GetProcAddress(hNtDll, "NtOpenDirectoryObject");
-		ldrAPI.ntClose = GetProcAddress(hNtDll, "NtClose");
+		//ldrAPI.ntOpenDirectoryObject = GetProcAddress(hNtDll, "NtOpenDirectoryObject");
+		//ldrAPI.ntClose = GetProcAddress(hNtDll, "NtClose");
 
 		ldrAPI.ntFlushInstructionCache = GetProcAddress(hNtDll, "NtFlushInstructionCache");
+		ldrAPI.ntFreeVirtualMemory = GetProcAddress(hNtDll, "NtFreeVirtualMemory");
 
-		ldrAPI.rtlInitUnicodeStringEx = GetProcAddress(hNtDll, "RtlInitUnicodeStringEx");
-		ldrAPI.rtlFreeUnicodeString = GetProcAddress(hNtDll, "RtlFreeUnicodeString");
+		ldrAPI.rtlFlushSecureMemoryCache = GetProcAddress(hNtDll, "RtlFlushSecureMemoryCache");
 
-		DWORD ldrAPIOffset;
-		if (!fLoader->GetExport("loaderAPI", ldrAPIOffset)) {
+		//ldrAPI.rtlInitUnicodeStringEx = GetProcAddress(hNtDll, "RtlInitUnicodeStringEx");
+		//ldrAPI.rtlFreeUnicodeString = GetProcAddress(hNtDll, "RtlFreeUnicodeString");
+
+
+		BYTE *ldrAPIPtr;
+		if (!LoadExportedName(fLoader, pLoaderBase, "loaderAPI", ldrAPIPtr) || 
+			!LoadExportedName(fLoader, pLoaderBase, "loaderConfig", pLoaderConfig) ||
+			!LoadExportedName(fLoader, pLoaderBase, "MapMemory", pLdrMapMemory) ||
+			!LoadExportedName(fLoader, pLoaderBase, "LoaderPerform", pLoaderPerform)
+		) {
 			break;
 		}
 
-		if (FALSE == WriteProcessMemory(hProcess, pLoaderBase + ldrAPIOffset, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
+		if (FALSE == WriteProcessMemory(hProcess, ldrAPIPtr, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
 			break;
 		}
-
-		DWORD ldrCfgOffset;
-		if (!fLoader->GetExport("loaderConfig", ldrCfgOffset)) {
-			break;
-		}
-		pLoaderConfig = pLoaderBase + ldrCfgOffset;
-
-		DWORD ldrMapMemoryOffset;
-		if (!fLoader->GetExport("MapMemory", ldrMapMemoryOffset)) {
-			break;
-		}
-		pLdrMapMemory = pLoaderBase + ldrMapMemoryOffset;
 
 
 		memset(&loaderConfig, 0, sizeof(loaderConfig));
-		wcscpy_s(loaderConfig.sharedMemoryName, L"Global\\MumuMem");
+		loaderConfig.sharedMemory = shmAlloc->CloneTo(hProcess);
 
 		bRet = true;
 	} while (false);
@@ -119,16 +167,6 @@ DWORD CharacteristicsToDesiredAccess(DWORD c) {
 	return r;
 }
 
-template <typename T> bool LoadExportedName(FloatingPE *fpe, BYTE *base, char *name, T *&ptr) {
-	DWORD rva;
-	if (!fpe->GetExport(name, rva)) {
-		return false;
-	}
-
-	ptr = (T *)(base + rva);
-	return true;
-}
-
 bool InternalExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 	/* Imports */
 	ipc::IpcAPI *ipcAPI;
@@ -138,6 +176,7 @@ bool InternalExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 
 	HMODULE hNtDll = GetModuleHandle("ntdll.dll");
 	ipcAPI->ntYieldExecution = GetProcAddress(hNtDll, "NtYieldExecution");
+	ntdllYieldExecution = (NtYieldExecutionFunc)ipcAPI->ntYieldExecution;
 	ipcAPI->vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
 	ipcAPI->ldrMapMemory = pLdrMapMemory;
 
@@ -157,7 +196,8 @@ bool InternalExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 		!LoadExportedName(fIpcLib, pIpcBase, "ExecutionBeginFunc", tmpRevApi.executionBegin) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "ExecutionControlFunc", tmpRevApi.executionControl) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "ExecutionEndFunc", tmpRevApi.executionEnd) ||
-		!LoadExportedName(fIpcLib, pIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl)
+		!LoadExportedName(fIpcLib, pIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl) ||
+		!LoadExportedName(fIpcLib, pIpcBase, "IsProcessorFeaturePresent", pIPFPFunc)
 	) {
 		return false;
 	}
@@ -201,6 +241,11 @@ bool InternalExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	tmpRevApi.lowLevel.ntQueryInformationThread = GetProcAddress(hNtDll, "NtQueryInformationThread");
 	tmpRevApi.lowLevel.ntTerminateProcess = GetProcAddress(hNtDll, "NtTerminateProcess");
 
+#ifdef DUMP_BLOCKS
+	tmpRevApi.lowLevel.ntWriteFile = GetProcAddress(hNtDll, "NtWriteFile");
+	tmpRevApi.lowLevel.ntWaitForSingleObject = GetProcAddress(hNtDll, "NtWaitForSingleObject");
+#endif
+
 	tmpRevApi.lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
 	tmpRevApi.lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
 
@@ -215,6 +260,36 @@ bool InternalExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	revCfg->contextSize = 0;
 	InitSegments(hMainThread, revCfg->segmentOffsets);
 	revCfg->hookCount = 0;
+
+#ifdef DUMP_BLOCKS
+	revCfg->dumpBlocks = TRUE;
+
+	HANDLE hBlocks = CreateFile(
+		"blocks.bin",
+		GENERIC_WRITE,
+		FILE_SHARE_READ,
+		NULL,
+		CREATE_ALWAYS,
+		0,
+		NULL
+	);
+
+	if (FALSE == DuplicateHandle(
+		GetCurrentProcess(),
+		hBlocks,
+		hProcess,
+		&revCfg->hBlocks,
+		0,
+		FALSE,
+		DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS
+	)) {
+		CloseHandle(hBlocks);
+		return false;
+	}
+#else
+	revCfg->dumpBlocks = FALSE;
+	revCfg->hBlocks = INVALID_HANDLE_VALUE;
+#endif
 
 	/* Exports */
 	if (!LoadExportedName(fRevTracer, pRevtracerBase, "RevtracerPerform", revtracerPerform)) {
@@ -248,6 +323,7 @@ bool InternalExecutionController::MapTracer() {
 			break;
 		}
 
+		printf("ipclib@0x%08x\nrevtracer@0x%08x\n", pIpcBase, pRevtracerBase);
 		FlushInstructionCache(hProcess, libs, dwTotalSize);
 
 
@@ -282,6 +358,17 @@ bool InternalExecutionController::MapTracer() {
 			sCount++;
 		}
 		loaderConfig.sectionCount = sCount;
+		loaderConfig.shmBase = libs;
+
+		if (NULL == VirtualAllocEx(
+			hProcess,
+			libs,
+			dwTotalSize,
+			MEM_RESERVE,
+			PAGE_READONLY
+		)) {
+			break;
+		}
 
 		if (!InitializeIpcLib(fIpcLib)) {
 			break;
@@ -328,16 +415,101 @@ bool InternalExecutionController::SwitchEntryPoint() {
 	return true;
 }
 
+BYTE *RemoteGetModuleHandle(HANDLE hProcess, const wchar_t *module) {
+	BYTE *pOffset = (BYTE *)0x10000;
+	while ((BYTE *)0x7FFE0000 >= pOffset) {
+		MEMORY_BASIC_INFORMATION mbi;
+		wchar_t moduleName[MAX_PATH];
+
+		VirtualQueryEx(hProcess, pOffset, (PMEMORY_BASIC_INFORMATION)&mbi, sizeof(mbi));
+
+		if ((MEM_COMMIT == mbi.State) && (SEC_IMAGE == mbi.Type) && (PAGE_READONLY == mbi.Protect)) {
+			if (0 != GetMappedFileNameW(
+				hProcess,
+				pOffset,
+				moduleName,
+				sizeof(moduleName)-1
+			)) {
+				wchar_t *mName = moduleName;
+				for (int t = wcslen(moduleName) - 1; t >= 0; --t) {
+					if (L'\\' == moduleName[t]) {
+						mName = &moduleName[t + 1];
+						break;
+					}
+				}
+
+				if (0 == _wcsicmp(mName, module)) {
+					return pOffset;
+				}
+			}
+		}
+
+		pOffset += mbi.RegionSize;
+	}
+
+	return NULL;
+}
+
+bool InternalExecutionController::PatchProcess() {
+	// hook IsProcessorFeaturePresent
+	HMODULE hKernel32 = GetModuleHandle("kernel32.dll");
+	BYTE *ipfpFunc = (BYTE *)GetProcAddress(hKernel32, "IsProcessorFeaturePresent");
+	BYTE *remoteKernel = RemoteGetModuleHandle(hProcess, L"kernel32.dll");
+
+	if (NULL == remoteKernel) {
+		return false;
+	}
+
+	revCfg->hooks[revCfg->hookCount].originalAddr = &remoteKernel[ipfpFunc - (BYTE *)hKernel32];
+	revCfg->hooks[revCfg->hookCount].detourAddr = pIPFPFunc;
+	revCfg->hookCount++;
+
+
+	const wchar_t *pth = path.c_str();
+
+	for (int t = path.length() - 1; t > 0; --t) {
+		if (L'\\' == pth[t]) {
+			pth = &pth[t + 1];
+			break;
+		}
+	}
+
+	BYTE *mAddr = RemoteGetModuleHandle(hProcess, pth);
+
+	unsigned short tmp = '  ';
+	DWORD dwWr, oldPr;
+
+	if (FALSE == VirtualProtectEx(hProcess, mAddr, sizeof(tmp), PAGE_READWRITE, &oldPr)) {
+		return false;
+	}
+
+	if (FALSE == WriteProcessMemory(hProcess, mAddr, &tmp, sizeof(tmp), &dwWr)) {
+		return false;
+	}
+
+	revCfg->mainModule = mAddr;
+
+	/*if (FALSE == VirtualProtectEx(hProcess, mAddr, sizeof(tmp), oldPr, &oldPr)) {
+		return false;
+	}*/
+	return true;
+}
+
+DWORD WINAPI ControlThreadFunc(void *ptr) {
+	InternalExecutionController *ctr = (InternalExecutionController *)ptr;
+	return ctr->ControlThread();
+}
+
 bool InternalExecutionController::Execute() {
 	STARTUPINFOW startupInfo;
 	PROCESS_INFORMATION processInfo;
 
 	memset(&startupInfo, 0, sizeof(startupInfo));
 	startupInfo.cb = sizeof(startupInfo);
-
+	
 	memset(&processInfo, 0, sizeof(processInfo));
 
-	if (execState != INITIALIZED) {
+	if ((execState != INITIALIZED) && (execState != TERMINATED) && (execState != ERR)) {
 		return false;
 	}
 
@@ -347,7 +519,7 @@ bool InternalExecutionController::Execute() {
 		NULL,
 		NULL,
 		FALSE,
-		CREATE_SUSPENDED,
+		CREATE_SUSPENDED | CREATE_NEW_CONSOLE,
 		NULL,
 		NULL,
 		&startupInfo,
@@ -387,7 +559,18 @@ bool InternalExecutionController::Execute() {
 		return false;
 	}
 
-	return false;
+	hControlThread = CreateThread(
+		NULL,
+		0,
+		ControlThreadFunc,
+		this,
+		0,
+		NULL
+	);
+
+	execState = RUNNING;
+	ResumeThread(hMainThread);
+	return true;
 }
 
 bool InternalExecutionController::Terminate() {
@@ -401,8 +584,198 @@ bool InternalExecutionController::Terminate() {
 	return true;
 }
 
-bool InternalExecutionController::GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) {
+DWORD InternalExecutionController::ControlThread() {
+	bool bRunning = true;
+	DWORD exitCode;
+
+	HANDLE hDbg = 0, hOffs = 0;
+
+	do {
+
+		hDbg = CreateFileA(
+			"debug.log",
+			GENERIC_WRITE,
+			FILE_SHARE_READ,
+			NULL,
+			CREATE_ALWAYS,
+			0,
+			NULL
+		);
+
+		if (INVALID_HANDLE_VALUE == hDbg) {
+			//TerminateProcess(hProcess, 0);
+			break;
+		}
+
+		hOffs = CreateFileA(
+			"bbs1.txt",
+			GENERIC_WRITE,
+			FILE_SHARE_READ,
+			NULL,
+			CREATE_ALWAYS,
+			0,
+			NULL
+		);
+
+		if (INVALID_HANDLE_VALUE == hOffs) {
+			break;
+		}
+
+		int cFile = _open_osfhandle((intptr_t)hOffs, _O_TEXT);
+		FILE *fOffs = _fdopen(cFile, "wt");
+
+
+		while (bRunning) {
+			do {
+				GetExitCodeProcess(hProcess, &exitCode);
+
+				if (STILL_ACTIVE != exitCode) {
+					break;
+				}
+
+			} while (!ipcToken->Wait(REMOTE_TOKEN_USER, false));
+			updated = false;
+
+			while (!debugLog->IsEmpty()) {
+				int read;
+				DWORD written;
+				debugLog->Read(debugBuffer, sizeof(debugBuffer)-1, read);
+
+				WriteFile(hDbg, debugBuffer, read, &written, NULL);
+			}
+
+			if (STILL_ACTIVE != exitCode) {
+				break;
+			}
+
+			switch (ipcData->type) {
+			case REPLY_MEMORY_ALLOC:
+			case REPLY_MEMORY_FREE:
+			case REPLY_TAKE_SNAPSHOT:
+			case REPLY_RESTORE_SNAPSHOT:
+			case REPLY_INITIALIZE_CONTEXT:
+			case REPLY_CLEANUP_CONTEXT:
+			case REPLY_EXECUTION_CONTORL:
+			case REPLY_SYSCALL_CONTROL:
+				__asm int 3;
+				break;
+
+			case REQUEST_MEMORY_ALLOC: {
+				DWORD offset;
+				ipcData->type = REPLY_MEMORY_ALLOC;
+				ipcData->data.asMemoryAllocReply.pointer = shmAlloc->Allocate(ipcData->data.asMemoryAllocRequest, offset);
+				ipcData->data.asMemoryAllocReply.offset = offset;
+				break;
+			}
+
+			case REQUEST_EXECUTION_BEGIN: {
+				ipc::ADDR_TYPE next = ipcData->data.asExecutionBeginRequest.nextInstruction;
+
+				ipcData->type = REPLY_EXECUTION_BEGIN;
+				if (!PatchProcess()) {
+					ipcData->data.asExecutionBeginReply = EXECUTION_TERMINATE;
+					bRunning = false;
+					execState = ERR;
+				}
+				else {
+					execState = SUSPENDED_AT_START;
+					if (EXECUTION_TERMINATE == (ipcData->data.asExecutionBeginReply = eBegin(context, (unsigned int)next))) {
+						bRunning = false;
+					}
+				}
+				break;
+			}
+
+			case REQUEST_EXECUTION_CONTORL: {
+				ipc::ADDR_TYPE next = ipcData->data.asExecutionControlRequest.nextInstruction;
+
+				char mf[MAX_PATH];
+				char defMf[8] = "??";
+
+				/*if (((DWORD)next & 0xFFFD0000) == baseAddr) {
+				strcpy(defMf, "a.exe");
+				}*/
+
+				DWORD dwSz = GetMappedFileNameA(hProcess, next, mf, sizeof(mf)-1);
+
+				char *module = defMf;
+				for (DWORD i = 1; i < dwSz; ++i) {
+					if (mf[i - 1] == '\\') {
+						module = &mf[i];
+					}
+				}
+
+				for (char *t = module; *t != '\0'; ++t) {
+					*t = toupper(*t);
+				}
+
+				fprintf(fOffs, "%s + 0x%04X\n", module, (DWORD)next & 0xFFFF);
+				/*fprintf(
+					fOffs,
+					"%-15s+%04X EAX:%08x ECX:%08x EDX:%08x EBX:%08x ESP:%08x EBP:%08x ESI:%08x EDI:%08x\r\n",
+					module,
+					(DWORD)next & 0xFFFF,
+
+					);*/
+
+				fflush(fOffs);
+
+				ipcData->type = REPLY_EXECUTION_CONTORL;
+				execState = SUSPENDED;
+				if (EXECUTION_TERMINATE == (ipcData->data.asExecutionControlReply = eControl(context, (unsigned int)next))) {
+					bRunning = false;
+
+				}
+				break;
+			}
+
+			case REQUEST_EXECUTION_END:
+				ipcData->type = REPLY_EXECUTION_END;
+				execState = SUSPENDED_AT_TERMINATION;
+				if (EXECUTION_TERMINATE == (ipcData->data.asExecutionEndReply = eEnd(context))) {
+					bRunning = false;
+				}
+				break;
+
+			case REQUEST_SYSCALL_CONTROL:
+				ipcData->type = REPLY_SYSCALL_CONTROL;
+				break;
+
+			default:
+				__asm int 3;
+				break;
+			}
+
+			ipcToken->Release(REMOTE_TOKEN_USER);
+		}
+
+	} while (false);
+
+	CloseHandle(hDbg);
+	CloseHandle(hOffs);
+
+	WaitForSingleObject(hProcess, INFINITE);
+
+	CloseHandle(hMainThread);
+	CloseHandle(hProcess);
+
+	execState = TERMINATED;
+	term(context);
+
+	delete shmAlloc;
+
+	return 0;
+}
+
+bool InternalExecutionController::UpdateLayout() {
+	if (updated) {
+		return true;
+	}
+
 	sec.clear();
+	mod.clear();
+
+	wchar_t mf[MAX_PATH];
 
 	for (DWORD dwAddr = 0; dwAddr < 0x7FFF0000;) {
 		MEMORY_BASIC_INFORMATION32 mbi;
@@ -417,13 +790,97 @@ bool InternalExecutionController::GetProcessVirtualMemory(VirtualMemorySection *
 		vms.RegionSize = mbi.RegionSize;
 		vms.State = mbi.State;
 		vms.Type = mbi.Type;
+		sec.push_back(vms);
+
+		DWORD dwSz = GetMappedFileNameW(hProcess, (LPVOID)dwAddr, mf, (sizeof(mf) / sizeof(mf[0]))-1);
+		if (0 != dwSz) {
+			wchar_t *module = mf;
+			for (DWORD i = 1; i < dwSz; ++i) {
+				if (mf[i - 1] == '\\') {
+					module = &mf[i];
+				}
+			}
+
+			for (wchar_t *t = module; *t != L'\0'; ++t) {
+				*t = tolower(*t);
+			}
+
+			if ((0 == mod.size()) || (0 != wcscmp(module, mod[mod.size() - 1].Name))) {
+				ModuleInfo mi;
+				wcscpy_s(mi.Name, module);
+				mi.ModuleBase = dwAddr;
+				mi.Size = mbi.RegionSize;
+
+				mod.push_back(mi);
+			}
+			else {
+				ModuleInfo &mi = mod[mod.size() - 1];
+
+				mi.Size = dwAddr - mi.ModuleBase + mbi.RegionSize;
+			}
+		}
+
 
 		dwAddr = mbi.BaseAddress + mbi.RegionSize;
-		sec.push_back(vms);
+	}
+
+	updated = true;
+	return true;
+}
+
+bool InternalExecutionController::GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) {
+	if (!UpdateLayout()) {
+		return false;
 	}
 
 	sectionCount = sec.size();
 	sections = &sec[0];
 
 	return true;
+}
+
+bool InternalExecutionController::GetModules(ModuleInfo *&modules, int &moduleCount) {
+	if (!UpdateLayout()) {
+		return false;
+	}
+
+	moduleCount = mod.size();
+	modules = &mod[0];
+	return true;
+}
+
+bool InternalExecutionController::ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) {
+	DWORD dwRd;
+	return TRUE == ::ReadProcessMemory(hProcess, (LPCVOID)base, buff, size, &dwRd);
+}
+
+void InternalExecutionController::SetNotificationContext(void *ctx) {
+	context = ctx;
+}
+
+void InternalExecutionController::SetTerminationNotification(TerminationNotifyFunc func) {
+	term = func;
+}
+
+void InternalExecutionController::SetExecutionBeginNotification(ExecutionBeginFunc func) {
+	eBegin = func;
+}
+
+void InternalExecutionController::SetExecutionControlNotification(ExecutionControlFunc func) {
+	eControl = func;
+}
+
+void InternalExecutionController::SetExecutionEndNotification(ExecutionEndFunc func) {
+	eEnd = func;
+}
+
+void InternalExecutionController::GetCurrentRegisters(Registers &registers) {
+	RemoteRuntime *ree = (RemoteRuntime *)revCfg->pRuntime;
+
+	memcpy(&registers, (Registers *)ree->registers, sizeof(registers));
+	registers.esp = ree->virtualStack;
+
+	//struct _exec_env *pCtx = (struct _exec_env *)ctx;
+	//memcpy(regs, (struct _exec_env *)pCtx->runtimeContext.registers, sizeof(*regs));
+	//regs->esp = pCtx->runtimeContext.virtualStack;
 }

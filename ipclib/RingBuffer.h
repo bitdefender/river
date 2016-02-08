@@ -5,7 +5,7 @@ namespace ipc {
 	template <int SZ> class RingBuffer {
 	private:
 		char buffer[SZ];
-		int head, tail;
+		volatile int head, tail;
 
 	public:
 		void Init() {

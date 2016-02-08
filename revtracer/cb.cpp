@@ -71,6 +71,11 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(UINT_PTR a) {
 
 	while (pWalk) {
 		if (pWalk->address == a) {
+			if (RIVER_BASIC_BLOCK_DETOUR & pWalk->dwFlags) { // do not crc check this block as it is a detour
+				cbLock.Unlock();
+				return pWalk;
+			}
+
 			if (pWalk->dwCRC == (unsigned long) crc32 (0xEDB88320, (BYTE *) a, pWalk->dwSize)) {
 				cbLock.Unlock();
 				return pWalk;

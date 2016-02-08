@@ -110,7 +110,7 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 	}*/
 
 	// when generating fwcode skip meta instructions
-	if ((RIVER_FAMILY(ri.family) == RIVER_FAMILY_PREMETAOP) || (RIVER_FAMILY(ri.family) == RIVER_FAMILY_POSTMETAOP)) {
+	if ((RIVER_FAMILY(ri.family) == RIVER_FAMILY_PREMETA) || (RIVER_FAMILY(ri.family) == RIVER_FAMILY_POSTMETA)) {
 		if (pFlags & FLAG_SKIP_METAOP) {
 			return true;
 		}

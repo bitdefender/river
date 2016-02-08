@@ -42,7 +42,7 @@ __declspec(dllimport) int vsnprintf_s(
 );
 
 #pragma warning(disable:4996)
-HANDLE fBlocks = CreateFileA("tmp.blk", GENERIC_WRITE, FILE_SHARE_READ, NULL, TRUNCATE_EXISTING, 0, NULL);
+HANDLE fBlocks = CreateFileA("tmp.blk", GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
 #pragma warning(default:4996)
 
 void TmpPrint(const char *fmt, ...) {
@@ -164,12 +164,26 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 		*t = toupper(*t);
 	}
 
-	TmpPrint("%s + 0x%04x\r\n", module, (DWORD)addr & 0xFFFF);
-	return EXECUTION_ADVANCE;
-
 	rev::GetCurrentRegisters(cbCtx, &cReg);
 
-	switch (c->execCount % 3) {
+	TmpPrint("%-15s+%08X EAX:%08x ECX:%08x EDX:%08x EBX:%08x ESP:%08x EBP:%08x ESI:%08x EDI:%08x\r\n", 
+		module, 
+		(DWORD)addr,
+		cReg.eax,
+		cReg.ecx,
+		cReg.edx,
+		cReg.ebx,
+		cReg.esp,
+		cReg.ebp,
+		cReg.esi,
+		cReg.edi
+	);
+
+	/*if (0xE39A == ((DWORD)addr & 0xFFFF)) {
+		__asm int 3;
+	}*/
+
+	/*switch (c->execCount % 3) {
 		case 0:
 			RegCheck(rgs[0], cReg);
 			break;
@@ -178,7 +192,7 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 			break;
 		case 2:
 			break;
-	}
+	}*/
 
 	
 	if (NULL == hKernel32Dll) {
@@ -187,18 +201,18 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 		}
 	}
 
-	if (NULL != IPFPFunc) {
+	/*if (NULL != IPFPFunc) {
 		if (addr == IPFPFunc) {
 			__asm int 3;
 		}
-	}
+	}*/
 
 
 	/* some very simple control structure going three times forwards and two times back */
 	DWORD ret = EXECUTION_ADVANCE;
-	if (c->execCount % 3 == 2) {
+	/*if (c->execCount % 3 == 2) {
 		ret = EXECUTION_BACKTRACK;
-	}
+	}*/
 
 	return ret;
 }
@@ -228,17 +242,31 @@ void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	rev::Initialize();
 }
 
+const unsigned char tmp[] = {
+	0xf0, 0x0f, 0xc7, 0x0f,
+	/*0x8b, 0x45, 0xfc,
+	0xf6, 0x40, 0x07, 0x80,
+	0x0f, 0x84, 0x4a, 0x4b, 0x00, 0x00,*/
+	0xc3
+};
+
+
+
 int main(unsigned int argc, char *argv[]) {
 	if (!MapPE(baseAddr)) {
 		return false;
 	}
 
-	fDbg = CreateFileA("dbg.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, TRUNCATE_EXISTING, 0, NULL);
+	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
+	TmpPrint("ntdll.dll @ 0x%08x\n", (DWORD)hNtDll);
+
+	fDbg = CreateFileA("dbg.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
 	//fopen_s(&fDbg, "dbg.log", "wt");
 	InitializeRevtracer((rev::ADDR_TYPE)(baseAddr + 0x96CE));
+	//InitializeRevtracer((rev::ADDR_TYPE)tmp);
 
 	rev::Execute(argc, argv);
-
+	
 	CloseHandle(fDbg);
 
 	/*struct _exec_env *pEnv;
