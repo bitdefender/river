@@ -1,0 +1,84 @@
+/*
+ * Ribbon
+ * Custom "styles" tool
+ * @version 4.3.0
+ * @namespace r.AcidJs
+ * @class Ribbon
+ * @requires jQuery
+ * @developer Martin Ivanov
+ * @url component page: http://ribbonjs.com/
+ * @url developer website: http://wemakesites.net/
+ * @url developer twitter: https://twitter.com/wemakesitesnet
+ * @url developer blog: http://martinivanov.net/
+ **/
+
+.acidjs-ui-ribbon .my-custom-styles-tool a:hover,
+.acidjs-ui-ribbon .my-custom-styles-tool .acidjs-ui-tool-active
+{
+    border-color: #c28a30;
+    box-shadow: 0 0 0 4px #ffe373 inset;
+    background: #fff;
+}
+
+.acidjs-ui-ribbon .my-custom-styles-tool a,
+.acidjs-ui-ribbon .my-custom-styles-tool > ul
+{
+    width: 100%;
+}
+
+.acidjs-ui-ribbon .my-custom-styles-tool > ul
+{
+    display: table;
+    border-collapse: separate;
+    border: solid 1px #c6cacd;
+}
+
+.acidjs-ui-ribbon .my-custom-styles-tool li
+{
+    display: table-cell;
+    vertical-align: top;
+    width: 20%;
+    text-align: center;
+}
+
+.acidjs-ui-ribbon .my-custom-styles-tool a
+{
+    border: solid 1px transparent;
+    padding: 16px 0 16px;
+    color: #000;
+    border-radius: 3px;
+}
+
+.acidjs-ui-ribbon .my-custom-styles-tool li *
+{
+    display: block;
+}
+
+.acidjs-ui-ribbon .my-custom-styles-tool strong
+{
+    font-size: 1.1em;
+    color: #444;
+}
+
+.acidjs-ui-ribbon .my-custom-styles-tool span
+{
+    padding: .25em 0 0;
+    font-size: .75em;
+    color: #365f91;
+}
+
+/*
+ * flat ribbon styles (if config.flat is true)
+ **/
+.acidjs-ui-ribbon.acidjs-ui-ribbon-flat .my-custom-styles-tool a
+{
+    border-radius: 0;
+}
+
+.acidjs-ui-ribbon.acidjs-ui-ribbon-flat .my-custom-styles-tool a:hover,
+.acidjs-ui-ribbon.acidjs-ui-ribbon-flat .my-custom-styles-tool .acidjs-ui-tool-active
+{
+    border-color: #2b579a;
+    box-shadow: 0 0 0 4px #c2d5f2 inset;;
+    background: #fff;
+}

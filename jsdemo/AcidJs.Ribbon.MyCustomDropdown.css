@@ -1,0 +1,32 @@
+/*
+ * Ribbon
+ * Custom dropdown tool
+ * @version 4.3.0
+ * @namespace r.AcidJs
+ * @class Ribbon
+ * @requires jQuery
+ * @developer Martin Ivanov
+ * @url component page: http://ribbonjs.com/
+ * @url developer website: http://wemakesites.net/
+ * @url developer twitter: https://twitter.com/wemakesitesnet
+ * @url developer blog: http://martinivanov.net/
+ **/
+
+.acidjs-ui-ribbon [data-tool-name="my-custom-dropdown-with-guitars"] .acidjs-ui-ribbon-dropdown p,
+.acidjs-ui-ribbon [data-tool-name="my-custom-dropdown-with-guitars"] .acidjs-ui-ribbon-dropdown h5
+{
+    text-align: center;
+    padding: .25em 0;
+}
+
+.acidjs-ui-ribbon [data-tool-name="my-custom-dropdown-with-guitars"] .acidjs-ui-ribbon-dropdown p
+{
+    color: #f29536;
+}
+
+.acidjs-ui-ribbon [data-tool-name="my-custom-dropdown-with-guitars"] .acidjs-ui-ribbon-dropdown .my-custom-dropdown-tool a
+{
+    line-height: 22px;
+    font-size: .7em;
+    color: #3b3b3b;
+}
