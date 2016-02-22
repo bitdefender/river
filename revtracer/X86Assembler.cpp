@@ -142,7 +142,11 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_TRACK) {
 		casm = &tAsm; 
 	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_PRETRACK) {
-		casm = &ptAsm; 
+		casm = &ptAsm;
+	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_RIVER_TRACK) {
+		casm = &rtAsm;
+	} else {
+		__asm int 3;
 	}
 
 	casm->Translate(*rOut, px86, pFlags, currentFamily, repReg, instrCounter);
@@ -332,18 +336,22 @@ bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, RelocableCode
 
 	if (cf != tf) {
 		switch (tf) {
-			case RIVER_FAMILY_NATIVE:
+			case RIVER_FAMILY_NATIVE :
 				break;
-			case RIVER_FAMILY_RIVER:
+			case RIVER_FAMILY_RIVER :
 				SwitchToStack(px86, instrCounter, (DWORD)&runtime->execBuff);
 				currentFamily = RIVER_FAMILY_RIVER;
 				currentStack = (DWORD)&runtime->execBuff;
 				break;
-			case RIVER_FAMILY_PRETRACK:
+			case RIVER_FAMILY_PRETRACK :
 				SwitchToStack(px86, instrCounter, (DWORD)&runtime->trackBuff);
 				currentFamily = RIVER_FAMILY_PRETRACK;
 				currentStack = (DWORD)&runtime->trackBuff;
 				break;
+			case RIVER_FAMILY_RIVER_TRACK :
+				SwitchToStack(px86, instrCounter, (DWORD)&runtime->trackStack);
+				currentFamily = RIVER_FAMILY_RIVER_TRACK;
+				currentStack = (DWORD)&runtime->trackStack;
 			default:
 				__asm int 3;
 				break;
@@ -379,6 +387,7 @@ bool X86Assembler::Init(RiverRuntime *runtime) {
 	rAsm.Init(runtime);
 	ptAsm.Init(runtime);
 	tAsm.Init(runtime);
+	rtAsm.Init(runtime);
 
 	return true;
 }

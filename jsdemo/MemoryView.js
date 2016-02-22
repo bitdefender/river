@@ -32,7 +32,17 @@
 		tmp.value = "Memory @" + this.stringAddress;
 		this.container.setAttributeNode(tmp);
 
-		this.content = document.createElement('div');
+		var _this = this;
+		this.container.onresize = function() {
+			_this.memoryGrid.fnAdjustColumnSizing(true);
+            var st = _this.memoryGrid.fnSettings();
+
+            st.oScroll.sY = (_this.container.clientHeight - 24) + "px";
+            _this.memoryGrid.fnDraw();
+		};
+
+		this.content = document.createElement('table');
+		this.content.className = "display compact";
 		this.content.style.cssText = "width:100%; height:100%";
 		//this.content.id = "memory_view_" + this.stringAddress + "_content";
 
@@ -41,43 +51,37 @@
 
 		this.data = [];
 		
-		this.columns = [
-            {
-                id: "address", 
-                name: "Address", 
-                field: "address", 
-                sortable: true,
-                width: 80,
-                minWidth: 80
-            }, {
-                id: "hex", 
-                name: "Hexadecimal", 
-                field: "hexString", 
-                sortable: true,
-                width: 374,
-                minWidth: 374
-            }, {
-                id: "ascii", 
-                name: "ASCII", 
-                field: "ascii", 
-                sortable: true,
-                width: 136,
-                minWidth: 136
-            }
-        ];
+		var tbl = $(this.content);
+        tbl.DataTable({
+            "paging" : false,
+            "scrollY" : "calc(100% - 24px)",
+            //"dom" : '<"fixed_height"t>',
+            "dom" : "t",
+            /*"responsive" : {
+                "details" : false
+            },*/
+            "deferRender" : true,
+            "data" : [],
+            "language": {
+                "emptyTable": "",
+                "infoEmpty": "",
+                "zeroRecords": ""
+            },
+            "columns" : [
+                { 
+                    "title" : "Address", 
+                    "data" : "address"
+                }, { 
+                    "title" : "Hexadecimal", 
+                    "data" : "hexString"
+                }, { 
+                    "title" : "ASCII", 
+                    "data" : "ascii"
+                }
+            ]
+        });
 
-        this.options = {
-            enableCellNavigation: true,
-            enableColumnReorder: true,
-            fullWidthRows: true,
-            forceFitColumns: true,
-            headerRowHeight: 22,
-            rowHeight: 22,
-            syncColumnCellResize: false
-        };
-
-        this.memoryGrid = new Slick.Grid(this.content, this.data, this.columns, this.options);
-        this.memoryGrid.setSelectionModel(new Slick.RowSelectionModel());
+		this.memoryGrid = tbl.dataTable();
 	};
 
 	/*ns.MemoryView.prototype.SetData = function (newData) {
@@ -125,8 +129,10 @@
 
 		this.data = newTable;
 
-		this.memoryGrid.setData(this.data, false);
-        this.memoryGrid.render();	
+        this.memoryGrid.fnClearTable();
+        if (0 < this.data.length) {
+            this.memoryGrid.fnAddData(this.data);
+        } 	
 	};
 
 })(window);

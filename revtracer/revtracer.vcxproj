@@ -18,6 +18,8 @@
     <ClInclude Include="AddressContainer.h" />
     <ClInclude Include="PreTrackingX86Assembler.h" />
     <ClInclude Include="revtracer.h" />
+    <ClInclude Include="RiverTrackingX86Assembler.h" />
+    <ClInclude Include="SymbopSaveTranslator.h" />
     <ClInclude Include="TrackingX86Assembler.h" />
     <ClInclude Include="X86AssemblerFuncs.h" />
     <ClInclude Include="RelocableCodeBuffer.h" />
@@ -80,6 +82,7 @@
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseTranslator.cpp" />
     <ClCompile Include="RiverSaveTranslator.cpp" />
+    <ClCompile Include="RiverTrackingX86Assembler.cpp" />
     <ClCompile Include="RiverX86Assembler.cpp" />
     <ClCompile Include="RiverX86Disassembler.cpp" />
     <ClCompile Include="NativeX86Assembler.cpp" />
@@ -103,6 +106,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="SymbopTranslator.cpp" />
+    <ClCompile Include="SymbopSaveTranslator.cpp" />
     <ClCompile Include="sync.cpp" />
     <ClCompile Include="TrackingX86Assembler.cpp" />
     <ClCompile Include="X86Assembler.cpp" />

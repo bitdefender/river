@@ -8,6 +8,7 @@
 #include "RiverX86Assembler.h"
 #include "PreTrackingX86Assembler.h"
 #include "TrackingX86Assembler.h"
+#include "RiverTrackingX86Assembler.h"
 
 
 class X86Assembler : public GenericX86Assembler {
@@ -16,6 +17,7 @@ private :
 	RiverX86Assembler rAsm;
 	PreTrackingAssembler ptAsm;
 	TrackingX86Assembler tAsm;
+	RiverTrackingX86Assembler rtAsm;
 	// SymbopX86Assembler sAsm;
 
 	void SwitchToRiver(BYTE *&px86, DWORD &instrCounter);

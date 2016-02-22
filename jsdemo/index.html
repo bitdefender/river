@@ -472,6 +472,45 @@ function MinimizeWindow() {
                     ]
                 });
 
+                $('#memoryGrid tbody').on( 'dblclick', 'tr', function () {
+                    var rowId = memoryGrid.fnGetPosition(this);
+                    var row = memoryGrid.fnGetData(rowId);
+
+                    if (row.state == 0x1000) { // commited
+                        if (row.protection & 0xF0) { //code view
+                            var mdl = demoModel.CreateCodeView(row.baseAddress, row.regionSize);
+
+                            if (null != mdl) {
+                                var cnt = new dockspawn.PanelContainer(mdl.container, dockManager);
+                                var tmp = dockManager.dockFill(dockManager.context.model.documentManagerNode, cnt);
+
+                                /*mdl.memoryGrid.resizeCanvas();
+
+                                var rsz = new ResizeSensor(mdl.container, function() {
+                                    mdl.memoryGrid.resizeCanvas();
+                                });*/
+
+                                //demoModel.UpdateMemoryModel();
+                            }
+                        } else {
+                            var mdl = demoModel.CreateMemoryView(row.baseAddress, row.regionSize);
+
+                            if (null != mdl) {
+                                var cnt = new dockspawn.PanelContainer(mdl.container, dockManager);
+                                var tmp = dockManager.dockFill(dockManager.context.model.documentManagerNode, cnt);
+
+                                /*mdl.memoryGrid.resizeCanvas();
+
+                                var rsz = new ResizeSensor(mdl.container, function() {
+                                    mdl.memoryGrid.resizeCanvas();
+                                });*/
+
+                                //demoModel.UpdateMemoryModel();
+                            }
+                        }
+                    }                    
+                });
+
                 return memoryGrid.dataTable();
              })();
             /*var memoryGrid = (function () {

@@ -43,8 +43,18 @@
 		tmp.value = "Code @" + this.stringAddress;
 		this.container.setAttributeNode(tmp);
 
-		this.content = document.createElement('div');
-		this.content.style.cssText = "width:100%; height:100%";
+        var _this = this;
+        this.container.onresize = function() {
+            _this.memoryGrid.fnAdjustColumnSizing(true);
+            var st = _this.memoryGrid.fnSettings();
+
+            st.oScroll.sY = (_this.container.clientHeight - 24) + "px";
+            _this.memoryGrid.fnDraw();
+        };
+
+		this.content = document.createElement('table');
+		this.content.className = "display compact";
+        this.content.style.cssText = "width:100%; height:100%";
 		//this.content.id = "memory_view_" + this.stringAddress + "_content";
 
 		this.container.appendChild(this.content);
@@ -53,7 +63,37 @@
 		this.data = [];
 		this.memory = [];
 
-		this.columns = [
+        var tbl = $(this.content);
+        tbl.DataTable({
+            "paging" : false,
+            "scrollY" : "calc(100% - 24px)",
+            //"dom" : '<"fixed_height"t>',
+            "dom" : "t",
+            /*"responsive" : {
+                "details" : false
+            },*/
+            "deferRender" : true,
+            "data" : [],
+            "language": {
+                "emptyTable": "",
+                "infoEmpty": "",
+                "zeroRecords": ""
+            },
+            "columns" : [
+                { 
+                    "title" : "Address", 
+                    "data" : "address"
+                }, { 
+                    "title" : "Code", 
+                    "data" : "code"
+                }, { 
+                    "title" : "Hexadecimal", 
+                    "data" : "hexString"
+                }
+            ]
+        });
+
+		/*this.columns = [
             {
                 id: "address", 
                 name: "Address", 
@@ -86,10 +126,10 @@
             headerRowHeight: 22,
             rowHeight: 22,
             syncColumnCellResize: false
-        };
+        };*/
 
-        this.memoryGrid = new Slick.Grid(this.content, this.data, this.columns, this.options);
-        this.memoryGrid.setSelectionModel(new Slick.RowSelectionModel());
+        this.memoryGrid = tbl.dataTable(); //new Slick.Grid(this.content, this.data, this.columns, this.options);
+        //this.memoryGrid.setSelectionModel(new Slick.RowSelectionModel());
 	};
 
 	/*ns.CodeView.prototype.SetData = function (newData) {
@@ -142,8 +182,10 @@
             console.log(ex);
         }
 
-        this.memoryGrid.setData(this.data, false);
-        this.memoryGrid.render();   
+        this.memoryGrid.fnClearTable();
+        if (0 < this.data.length) {
+            this.memoryGrid.fnAddData(this.data);
+        } 
     };
 
 })(window);

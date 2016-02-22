@@ -35,7 +35,7 @@ void TrackingX86Assembler::AssembleMarkFlag(DWORD modFlags, RelocableCodeBuffer 
 }
 
 void TrackingX86Assembler::AssembleTrackRegister(const RiverRegister &reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	// or edx, [offset] 0x0B, 0x15, 0x00, 0x00, 0x00, 0x00
+	// or edi, [offset] 0x0B, 0x15, 0x00, 0x00, 0x00, 0x00
 	// TODO: implement register renaming, and overlapping registers
 	const BYTE trackRegInstr[] = { 0x0B, 0x3D, 0x00, 0x00, 0x00, 0x00 };
 
