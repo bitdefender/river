@@ -178,6 +178,8 @@ namespace rev {
 		DLL_LINKAGE void Initialize();
 		DLL_LINKAGE void Execute(int argc, char *argv[]);
 
+		DLL_LINKAGE void MarkMemory(ADDR_TYPE addr, DWORD value);
+
 	};
 
 };

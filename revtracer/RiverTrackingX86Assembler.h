@@ -15,7 +15,7 @@ private:
 
 	void AssembleUnmark(RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 public:
-	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter);
+	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType);
 };
 
 #endif

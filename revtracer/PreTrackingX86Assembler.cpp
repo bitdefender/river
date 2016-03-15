@@ -107,7 +107,7 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, BYTE riverFam
 	instrCounter++;
 }
 
-bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
+bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
 	switch (ri.opCode) {
 		case 0x9C :
 			::AssembleDefaultInstr(ri, px86, pFlags, instrCounter);

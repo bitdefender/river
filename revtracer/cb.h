@@ -21,7 +21,8 @@ public :
 	DWORD				dwOrigOpCount; // number of instructions in the original block
 	DWORD				dwFwOpCount; // number of instructions in the translated block
 	DWORD				dwBkOpCount; // number of instructions in the reverse block
-	DWORD				dwTrOpCount; // number of instruction in the tracking code
+	DWORD				dwTrOpCount; // number of instructions in the tracking code
+	DWORD				dwRtOpCount; // number of instructions in the reverse trakcing code
 
 	/* statistical runtime information */
 	DWORD				dwFwPasses; // number of block executions
@@ -32,9 +33,13 @@ public :
 	unsigned char       *pFwCode; // forward bb
 	unsigned char       *pBkCode; // reverse bb
 	unsigned char		*pTrackCode; // tracking code
+	unsigned char		*pRevTrackCode; // reverse tracking code
 
 	/* block linkage (for hash table) */
 	RiverBasicBlock		*pNext;
+
+	/* branching cache, in order to speed up lookup */
+	RiverBasicBlock		*pBranchCache[2];
 
 	void MarkForward();
 	void MarkBackward();

@@ -85,13 +85,13 @@ void RiverReverseTranslator::Translate0x83(RiverInstruction &rOut, const RiverIn
 	CopyInstruction(rOut, rIn);
 	
 	switch (rOut.subOpCode) {
-	case 0:
-	case 5:
-		rOut.subOpCode ^= 5;
-		rOut.operands[0].asRegister.versioned -= 0x100; // previous register version
-		break;
-	default:
-		__asm int 3;
+		case 0:
+		case 5:
+			rOut.subOpCode ^= 5;
+			rOut.operands[0].asRegister.versioned -= 0x100; // previous register version
+			break;
+		default:
+			__asm int 3;
 	}
 }
 

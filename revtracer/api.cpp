@@ -12,17 +12,15 @@
 }
 
 namespace rev {
-	AddressContainer ac;
-
 	DWORD __stdcall TrackAddr(struct ::_exec_env *pEnv, DWORD dwAddr, DWORD segSel) {
-		DWORD ret = ac.Get(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF]);
+		DWORD ret = pEnv->ac.Get(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF]);
 		revtracerAPI.dbgPrintFunc("TrackAddr 0x%08x => %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
 		return ret;
 	}
 
 	DWORD __stdcall MarkAddr(struct ::_exec_env *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
 		revtracerAPI.dbgPrintFunc("MarkAddr 0x%08x <= %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
-		return ac.Set(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
+		return pEnv->ac.Set(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
 	}
 };
 
@@ -71,94 +69,13 @@ extern "C" {
 		RiverBasicBlock *pCB;
 		pEnv->runtimeContext.trackBuff = pEnv->runtimeContext.trackBase;
 
-		/*if ((0x79EA == (pEnv->lastFwBlock & 0xFFFF)) ||
-			(0x79ED == (pEnv->lastFwBlock & 0xFFFF))) {
-			revtracerAPI.dbgPrintFunc("LFH: [0x%08X] <= 0x%08X\n",
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->ecx,
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->ebx
-			);
-
-			lfhTrack[lfhCount].addr = ((ExecutionRegs *)pEnv->runtimeContext.registers)->ecx;
-			lfhTrack[lfhCount].value = ((ExecutionRegs *)pEnv->runtimeContext.registers)->ebx;
-			lfhTrack[lfhCount].keep = 1;
-			lfhTrack[lfhCount].ovr = 0;
-			lfhCount++;
+		if (pEnv->bForward) {
+			DWORD dwLastBlock = pEnv->lastFwBlock; //TopFromExecutionBuffer(pEnv);
+			RiverBasicBlock *pLast = pEnv->blockCache.FindBlock(dwLastBlock);
+			if (NULL != pLast) {
+				((TrackFunc)pLast->pTrackCode)(pEnv->runtimeContext.trackBase - 4);
+			}
 		}
-
-		if (0xE271 == ((DWORD)a & 0xFFFF)) {
-			revtracerAPI.dbgPrintFunc("LFH: alloc size %08x, ecx %08x\n",
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->edx,
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->ecx
-			);
-		}
-
-		if (0xE0E2 == ((DWORD)a & 0xFFFF)) {
-			revtracerAPI.dbgPrintFunc("LFH: allocated at %08x\n",
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->eax
-			);
-		}
-
-		if (0xE39A == ((DWORD)a & 0xFFFF)) {
-			revtracerAPI.dbgPrintFunc("LFH: free ecx %08x edx %08x\n",
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->ecx,
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->edx
-			);
-		}
-
-		if (0xE036 == ((DWORD)a & 0xFFFF)) {
-			DWORD *stack = (DWORD *)(pEnv->runtimeContext.virtualStack);
-			revtracerAPI.dbgPrintFunc("LFH: HeapAlloc(%08x, %08x, %08x)\n",
-				stack[1], stack[2], stack[3]
-			);
-		}
-
-		if (0x2FEF == ((DWORD)a & 0xFFFF)) {
-			DWORD *stack = (DWORD *)(pEnv->runtimeContext.virtualStack);
-			revtracerAPI.dbgPrintFunc("LFH: HeapAlloc(%08x, %08x, %08x,%08x, %08x, %08x)\n",
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->ecx,
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->edx,
-				stack[1], stack[2], stack[3], stack[4]
-			);
-		}
-
-		if (0x7C50 == ((DWORD)a & 0xFFFF)) {
-			revtracerAPI.dbgPrintFunc("LFH: HeapAllocFromZone(%08x, %08x)\n",
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->ecx,
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->edx
-			);
-		}
-
-		if ((0x7C99 == ((DWORD)a & 0xFFFF)) || (0x7C97 == ((DWORD)a & 0xFFFF))) {
-			revtracerAPI.dbgPrintFunc("LFH: HeapAllocFromZone returns %08x\n",
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->eax
-			);
-		}
-
-		if (0xDF95 == ((DWORD)a & 0xFFFF)) {
-			DWORD *stack = (DWORD *)(pEnv->runtimeContext.virtualStack);
-			revtracerAPI.dbgPrintFunc("LFH: HeapFree(%08x, %08x, %08x)\n",
-				stack[1], stack[2], stack[3]
-			);
-		}
-
-		if (0xE116 == ((DWORD)a & 0xFFFF)) {
-			revtracerAPI.dbgPrintFunc("LFH: HeapAlloc returns %08x\n",
-				((ExecutionRegs *)pEnv->runtimeContext.registers)->edi
-			);
-		}*/
-
-		/* Do not execute tracking code for now! */
-		/*DWORD dwLastBlock = pEnv->lastFwBlock; //TopFromExecutionBuffer(pEnv);
-		RiverBasicBlock *pLast = pEnv->blockCache.FindBlock(dwLastBlock);
-		if (NULL != pLast) {
-			((TrackFunc)pLast->pTrackCode)(pEnv->runtimeContext.trackBase - 4);
-		}*/
-
-		/*cnt++;
-		if (cnt > 18230) {
-			pEnv->runtimeContext.jumpBuff = (rev::UINT_PTR)a;
-			return;
-		}*/
 
 		DWORD dwDirection = EXECUTION_ADVANCE;  
 		if (a == revtracerAPI.lowLevel.ntTerminateProcess) {
@@ -213,24 +130,7 @@ extern "C" {
 		revtracerAPI.dbgPrintFunc("Flags: 0x%08x\n", 
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->eflags);
 
-		/*for (DWORD i = 0; i < lfhCount; ++i) {
-			if (1 == lfhTrack[i].keep) {
-				if (*(DWORD *)lfhTrack[i].addr != lfhTrack[i].value) {
-					//__asm int 3;
-					lfhTrack[i].ovr = pEnv->lastFwBlock;
-					lfhTrack[i].value = *(DWORD *)lfhTrack[i].addr;
-					//lfhTrack[i].keep = 0;
-
-					revtracerAPI.dbgPrintFunc("LFH: overwrite [0x%08X] <= 0x%08X (from %08X)\n",
-						lfhTrack[i].addr,
-						lfhTrack[i].value,
-						pEnv->lastFwBlock
-					);
-				}
-			}
-		}*/
-
-		/*revtracerAPI.dbgPrintFunc("Tainted registers :\n");
+		revtracerAPI.dbgPrintFunc("Tainted registers :\n");
 		revtracerAPI.dbgPrintFunc("EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[0], pEnv->runtimeContext.taintedRegisters[1], pEnv->runtimeContext.taintedRegisters[2], pEnv->runtimeContext.taintedRegisters[3]);
 		revtracerAPI.dbgPrintFunc("ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[4], pEnv->runtimeContext.taintedRegisters[5], pEnv->runtimeContext.taintedRegisters[6], pEnv->runtimeContext.taintedRegisters[7]);
 		revtracerAPI.dbgPrintFunc("CF: 0x%08x  PF: 0x%08x  AF: 0x%08x  ZF: 0x%08x  SF: 0x%08x  OF: 0x%08x  DF: 0x%08x\n",
@@ -241,7 +141,7 @@ extern "C" {
 			pEnv->runtimeContext.taintedFlags[4],
 			pEnv->runtimeContext.taintedFlags[5],
 			pEnv->runtimeContext.taintedFlags[6]
-		);*/
+		);
 
 		if (EXECUTION_BACKTRACK == dwDirection) {
 			// go backwards
@@ -254,6 +154,9 @@ extern "C" {
 				revtracerAPI.dbgPrintFunc("Block found\n");
 				pCB->MarkBackward();
 				//pEnv->posHist -= 1;
+
+				((TrackFunc)pCB->pRevTrackCode)(pEnv->runtimeContext.trackBase - 4);
+		
 				pEnv->bForward = 0;
 				pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pBkCode;
 			}
@@ -332,7 +235,7 @@ extern "C" {
 			//}
 		} else if (EXECUTION_TERMINATE == dwDirection) {
 			revtracerAPI.dbgPrintFunc(" +++ Tainted addresses +++ \n");
-			ac.PrintAddreses();
+			pEnv->ac.PrintAddreses();
 			revtracerAPI.dbgPrintFunc(" +++++++++++++++++++++++++ \n");
 			((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
 		}

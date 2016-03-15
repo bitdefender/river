@@ -24,7 +24,8 @@ public :
 
 bool MapPE(DWORD &baseAddr) {
 	HookedMapper mapper;
-	FloatingPE pe("..\\lzo\\a.exe");
+	//FloatingPE pe("..\\lzo\\a.exe");
+	FloatingPE pe("..\\fibonacci\\fib.exe");
 	//FloatingPE pe("..\\lzo\\hw.exe");
 
 	if (!pe.MapPE(mapper, baseAddr)) {

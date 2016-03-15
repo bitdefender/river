@@ -19,6 +19,7 @@
     <ClInclude Include="PreTrackingX86Assembler.h" />
     <ClInclude Include="revtracer.h" />
     <ClInclude Include="RiverTrackingX86Assembler.h" />
+    <ClInclude Include="SymbopReverseTranslator.h" />
     <ClInclude Include="SymbopSaveTranslator.h" />
     <ClInclude Include="TrackingX86Assembler.h" />
     <ClInclude Include="X86AssemblerFuncs.h" />
@@ -105,6 +106,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="SymbopReverseTranslator.cpp" />
     <ClCompile Include="SymbopTranslator.cpp" />
     <ClCompile Include="SymbopSaveTranslator.cpp" />
     <ClCompile Include="sync.cpp" />

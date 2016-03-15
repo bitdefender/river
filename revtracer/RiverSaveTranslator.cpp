@@ -100,7 +100,7 @@ void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverA
 		}
 
 		tMem.disp.d32 += offset;
-		MakeSaveMem(rOut, mem, auxFlags, rIn);
+		MakeSaveMem(rOut, tMem, auxFlags, rIn);
 	}
 }
 

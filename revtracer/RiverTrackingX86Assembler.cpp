@@ -46,6 +46,7 @@ void RiverTrackingX86Assembler::AssemblePushMem(const RiverAddress *addr, BYTE o
 	}
 	else {
 		memcpy(px86.cursor, trackImmInstr, sizeof(trackImmInstr));
+		px86.cursor[0x02] = ~((offset - 1) << 2) + 1;
 		px86.cursor += sizeof(trackImmInstr);
 	}
 
@@ -67,7 +68,7 @@ void RiverTrackingX86Assembler::AssemblePushMem(const RiverAddress *addr, BYTE o
 void RiverTrackingX86Assembler::AssemblePopFlg(DWORD testFlags, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
 	const BYTE unmarkFlagInstr[] = { 0x8F, 0x05, 0x00, 0x00, 0x00, 0x00 };
 
-	for (BYTE c = 7, m = RIVER_SPEC_FLAG_EXT >> 1; m < 0; --c, m >>= 1) {
+	for (BYTE c = 7, m = RIVER_SPEC_FLAG_EXT; m > 0; --c, m >>= 1) {
 		if (m & testFlags) {
 			memcpy(px86.cursor, unmarkFlagInstr, sizeof(unmarkFlagInstr));
 			*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
@@ -98,23 +99,7 @@ void RiverTrackingX86Assembler::AssemblePopMem(const RiverAddress *addr, BYTE of
 	instrCounter += 3;
 }
 
-void RiverTrackingX86Assembler::AssembleUnmark(RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const BYTE unmarkMem[] = {
-		0x56,											// 0x00 - push esi
-		0x50,											// 0x01 - push eax
-		0x57,											// 0x02 - push edi
-		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00,				// 0x03 - push [address_hash]
-		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x09 - call [dwAddressTrackHandler]
-	};
-
-	memcpy(px86.cursor, unmarkMem, sizeof(unmarkMem));
-	*(DWORD *)(&px86.cursor[0x05]) = (DWORD)&runtime->taintedAddresses;
-	*(DWORD *)(&px86.cursor[0x0B]) = (DWORD)&dwAddressMarkHandler;
-	px86.cursor += sizeof(unmarkMem);
-	instrCounter += 3;
-}
-
-bool RiverTrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
+bool RiverTrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
 	switch (ri.opCode) {
 		case 0x9C : // push flags
 			AssemblePushFlg(ri.operands[0].asImm8, px86, pFlags, instrCounter);

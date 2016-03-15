@@ -9,6 +9,7 @@
 #include "cb.h"
 #include "CodeGen.h"
 #include "Runtime.h"
+#include "AddressContainer.h"
 
 struct _exec_env {
 	RiverRuntime runtimeContext;
@@ -42,11 +43,12 @@ struct _exec_env {
 	bool bValid;
 	void *userContext;
 
+	AddressContainer ac;
 public :
 	void* operator new(size_t);
 	void operator delete(void*);
 
-	_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize);
+	_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize);
 	~_exec_env();
 };
 

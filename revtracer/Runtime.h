@@ -17,8 +17,10 @@ struct RiverRuntime {
 	UINT_PTR taintedAddresses;			// + 0x18
 	UINT_PTR registers;					// + 0x1C
 
-	DWORD taintedFlags[8];			// + 0x20
-	DWORD taintedRegisters[8];		// + 0x40
+	DWORD taintedFlags[8];				// + 0x20
+	DWORD taintedRegisters[8];			// + 0x40
+
+	UINT_PTR trackStack;				// + 0x60
 };
 
 #endif

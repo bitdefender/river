@@ -95,7 +95,7 @@ void X86Assembler::EndRiverConversion(RelocableCodeBuffer &px86, DWORD &pFlags, 
 	}
 }
 
-bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
+bool X86Assembler::TranslateNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
 	// skip ignored instructions
 	if (ri.family & RIVER_FAMILY_FLAG_IGNORE) {
 		return true;
@@ -116,7 +116,7 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 		}
 	}
 
-	GenerateTransitions(ri, px86, pFlags, currentFamily, repReg, instrCounter);
+	GenerateTransitionsNative(ri, px86, pFlags, currentFamily, repReg, instrCounter);
 	GeneratePrefixes(ri, px86.cursor);
 
 	RiverInstruction rInstr;
@@ -145,48 +145,36 @@ bool X86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px
 		casm = &ptAsm;
 	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_RIVER_TRACK) {
 		casm = &rtAsm;
-	} else {
+	} else if (RIVER_FAMILY(rOut->family) != RIVER_FAMILY_NATIVE) {
 		__asm int 3;
 	}
 
-	casm->Translate(*rOut, px86, pFlags, currentFamily, repReg, instrCounter);
+	casm->Translate(*rOut, px86, pFlags, currentFamily, repReg, instrCounter, outputType);
 
 
 	return true;
 }
 
-
-bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) {
-	BYTE *pTmp = px86.cursor, *pAux = px86.cursor;
-	DWORD pFlags = flg;
-	BYTE currentFamily = RIVER_FAMILY_NATIVE;
-	BYTE repReg = 0;
-
-	revtracerAPI.dbgPrintFunc("= river to x86 ================================================================\n");
-
-	for (DWORD i = 0; i < dwInstrCount; ++i) {
-		pTmp = px86.cursor;
-
-		//pFlags = flg;
-		if (!Translate(pRiver[i], px86, pFlags, currentFamily, repReg, instrCounter)) {
-			return false;
-		}
-		//ConvertRiverInstruction(cg, rt, &pRiver[i], &pTmp, &pFlags);
-
-		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
-		}
-		revtracerAPI.dbgPrintFunc("\n");
+bool X86Assembler::TranslateTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
+	if (RIVER_FAMILY_FLAG_IGNORE & ri.family) {
+		return true;
 	}
 
-	EndRiverConversion(px86, pFlags, currentFamily, repReg, instrCounter);
-	for (; pTmp < px86.cursor; ++pTmp) {
-		revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
-	}
-	revtracerAPI.dbgPrintFunc("\n");
+	GenerateTransitionsTracking(ri, px86, pFlags, currentFamily, repReg, instrCounter);
+	GeneratePrefixes(ri, px86.cursor);
+	
+	GenericX86Assembler *casm = &tAsm;
 
-	revtracerAPI.dbgPrintFunc("===============================================================================\n");
-	byteCounter = px86.cursor - pAux;
+	if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) {
+		casm = &tAsm;
+	} else if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_RIVER_TRACK) {
+		casm = &rtAsm;
+	} else {
+		__asm int 3;
+	}
+	
+	casm->Translate(ri, px86, pFlags, currentFamily, repReg, instrCounter, outputType);
+
 	return true;
 }
 
@@ -220,7 +208,72 @@ void X86Assembler::AssembleTrackingLeave(RelocableCodeBuffer &px86, DWORD &instr
 	instrCounter += 5;
 }
 
-bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) {
+bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter, BYTE outputType) {
+	BYTE *pTmp = px86.cursor, *pAux = px86.cursor;
+	DWORD pFlags = flg;
+	BYTE currentFamily = (outputType & ASSEMBLER_CODE_TRACKING) ? RIVER_FAMILY_TRACK : RIVER_FAMILY_NATIVE;
+	BYTE repReg = 0;
+
+	static const char headers[][35] = {
+		" river to x86 (native forward) ===",
+		" river to x86 (native backward) ==",
+		" river to x86 (tracking forward) =",
+		" river to x86 (tracking backward) "
+	};
+
+	revtracerAPI.dbgPrintFunc("=%s============================================\n", headers[outputType]);
+
+	if (ASSEMBLER_CODE_TRACKING & outputType) {
+		AssembleTrackingEnter(px86, instrCounter);
+		for (; pTmp < px86.cursor; ++pTmp) {
+			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
+		}
+		revtracerAPI.dbgPrintFunc("\n");
+	}
+
+	for (DWORD i = 0; i < dwInstrCount; ++i) {
+		pTmp = px86.cursor;
+
+		if (ASSEMBLER_CODE_TRACKING & outputType) {
+			if (!TranslateTracking(pRiver[i], px86, pFlags, currentFamily, repReg, instrCounter, outputType)) {
+				return false;
+			}
+		} else {
+			if (!TranslateNative(pRiver[i], px86, pFlags, currentFamily, repReg, instrCounter, outputType)) {
+				return false;
+			}
+		}
+		
+		for (; pTmp < px86.cursor; ++pTmp) {
+			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
+		}
+		revtracerAPI.dbgPrintFunc("\n");
+	}
+
+	if (ASSEMBLER_CODE_TRACKING & outputType) {
+		if (RIVER_FAMILY(currentFamily) == RIVER_FAMILY_RIVER_TRACK) {
+			SwitchToStack(px86, instrCounter, (DWORD)&runtime->trackStack);
+			currentFamily = RIVER_FAMILY_TRACK;
+		}
+		AssembleTrackingLeave(px86, instrCounter);
+		for (; pTmp < px86.cursor; ++pTmp) {
+			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
+		}
+		revtracerAPI.dbgPrintFunc("\n");
+	} else {
+		EndRiverConversion(px86, pFlags, currentFamily, repReg, instrCounter);
+		for (; pTmp < px86.cursor; ++pTmp) {
+			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
+		}
+		revtracerAPI.dbgPrintFunc("\n");
+	}
+
+	revtracerAPI.dbgPrintFunc("===============================================================================\n");
+	byteCounter = px86.cursor - pAux;
+	return true;
+}
+
+/*bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) {
 	BYTE *pTmp = px86.cursor, *pAux = px86.cursor;
 	DWORD pFlags = flg;
 	BYTE currentFamily = RIVER_FAMILY_TRACK;
@@ -237,15 +290,8 @@ bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount
 	for (DWORD i = 0; i < dwInstrCount; ++i) {
 		pTmp = px86.cursor;
 
-		//pFlags = flg;
-		/*if (!Translate(pRiver[i], px86, pFlags, currentFamily, repReg, instrCounter)) {
-			return false;
-		}*/
-
 		GeneratePrefixes(pRiver[i], px86.cursor);
-		tAsm.Translate(pRiver[i], px86, flg, currentFamily, repReg, instrCounter);
-
-		//ConvertRiverInstruction(cg, rt, &pRiver[i], &pTmp, &pFlags);
+		tAsm.Translate(pRiver[i], px86, flg, currentFamily, repReg, instrCounter, ASSEMBLER_DIR_FORWARD | ASSEMBLER_CODE_TRACKING);
 
 		for (; pTmp < px86.cursor; ++pTmp) {
 			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
@@ -262,7 +308,7 @@ bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount
 	revtracerAPI.dbgPrintFunc("===============================================================================\n");
 	byteCounter = px86.cursor - pAux;
 	return true;
-}
+}*/
 
 void X86Assembler::SwitchEspWithReg(RelocableCodeBuffer &px86, DWORD &instrCounter, BYTE repReg, DWORD dwStack) {
 	static const BYTE code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}
@@ -309,7 +355,7 @@ bool X86Assembler::SwitchToNative(RelocableCodeBuffer &px86, BYTE &currentFamily
 	return true;
 }
 
-bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
+bool X86Assembler::GenerateTransitionsNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
 	BYTE cf = RIVER_FAMILY(currentFamily);
 	BYTE tf = RIVER_FAMILY(ri.family);
 
@@ -375,6 +421,22 @@ bool X86Assembler::GenerateTransitions(const RiverInstruction &ri, RelocableCode
 			SwitchEspWithReg(px86, instrCounter, repReg, currentStack);
 			currentFamily |= RIVER_FAMILY_FLAG_ORIG_xSP;
 		}
+	}
+
+	return true;
+}
+
+bool X86Assembler::GenerateTransitionsTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
+	BYTE cf = RIVER_FAMILY(currentFamily);
+	BYTE tf = RIVER_FAMILY(ri.family);
+
+	if ((tf != RIVER_FAMILY_RIVER_TRACK) && (tf != RIVER_FAMILY_TRACK)) {
+		__asm int 3;
+	}
+
+	if (cf != tf) {
+		SwitchToStack(px86, instrCounter, (DWORD)&runtime->trackStack);
+		currentFamily = ri.family;
 	}
 
 	return true;

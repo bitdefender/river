@@ -56,7 +56,7 @@ void RiverX86Assembler::SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE 
 	instrCounter++;
 }
 
-bool RiverX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter) {
+bool RiverX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
 	DWORD dwTable = 0;
 
 	if (ri.modifiers & RIVER_MODIFIER_EXT) {

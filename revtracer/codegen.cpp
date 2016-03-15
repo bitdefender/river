@@ -51,6 +51,8 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 	saveTranslator.Init(this);
 
 	symbopTranslator.Init(this);
+	symbopSaveTranslator.Init(this);
+	symbopReverseTranslator.Init(this);
 
 	return assembler.Init(rt);
 }
@@ -302,14 +304,29 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 			revTranslator.Translate(fwRiverInst[fwInstCount - 1 - i], bkRiverInst[i]);
 		}
 		MakeJMP(&bkRiverInst[fwInstCount], pCB->address);
+		bkInstCount = fwInstCount + 1;
 
 		revtracerAPI.dbgPrintFunc("= SymbopTrack =================================================================\n");
+		sfInstCount = 0;
 		for (unsigned int i = 0; i < symbopInstCount; ++i) {
+			symbopSaveTranslator.Translate(symbopInst[i], &symbopFwRiverInst[sfInstCount], sfInstCount);
 			RiverPrintInstruction(&symbopInst[i]);
 		}
 		revtracerAPI.dbgPrintFunc("===============================================================================\n");
+		
+		revtracerAPI.dbgPrintFunc("= SymbopFwRiverTrack ============================================================\n");
+		for (DWORD i = 0; i < sfInstCount; ++i) {
+			symbopReverseTranslator.Translate(symbopFwRiverInst[sfInstCount - 1 - i], symbopBkRiverInst[i]);
+			RiverPrintInstruction(&symbopFwRiverInst[i]);
+		}
+		sbInstCount = sfInstCount;
+		revtracerAPI.dbgPrintFunc("===============================================================================\n");
 
-		bkInstCount = fwInstCount + 1;
+		revtracerAPI.dbgPrintFunc("= SymbopBkRiverTrack ============================================================\n");
+		for (DWORD i = 0; i < sbInstCount; ++i) {
+			RiverPrintInstruction(&symbopBkRiverInst[i]);
+		}
+		revtracerAPI.dbgPrintFunc("===============================================================================\n");
 
 		if (revtracerConfig.dumpBlocks) {
 			SaveToStream(fwRiverInst, fwInstCount, bkRiverInst, bkInstCount, symbopInst, symbopInstCount);
@@ -321,22 +338,27 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 
 		//outBufferSize = rivertox86(this, rt, fwRiverInst, fwInstCount, outBuffer, 0x01);
 		codeBuffer.Reset();
-		assembler.Assemble(fwRiverInst, fwInstCount, codeBuffer, 0x10, pCB->dwFwOpCount, outBufferSize);
+		assembler.Assemble(fwRiverInst, fwInstCount, codeBuffer, 0x10, pCB->dwFwOpCount, outBufferSize, ASSEMBLER_CODE_NATIVE | ASSEMBLER_DIR_FORWARD);
 		pCB->pFwCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 		//assembler.CopyFix(pCB->pFwCode, outBuffer);
 		codeBuffer.CopyToFixed(pCB->pFwCode);
 		
 		//outBufferSize = rivertox86(this, rt, bkRiverInst, bkInstCount, outBuffer, 0x00);
 		codeBuffer.Reset();
-		assembler.Assemble(bkRiverInst, bkInstCount, codeBuffer, 0x00, pCB->dwBkOpCount, outBufferSize);
+		assembler.Assemble(bkRiverInst, bkInstCount, codeBuffer, 0x00, pCB->dwBkOpCount, outBufferSize, ASSEMBLER_CODE_NATIVE | ASSEMBLER_DIR_BACKWARD);
 		pCB->pBkCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 		//assembler.CopyFix(pCB->pBkCode, outBuffer);
 		codeBuffer.CopyToFixed(pCB->pBkCode);
 
 		codeBuffer.Reset();
-		assembler.AssembleTracking(symbopInst, symbopInstCount, codeBuffer, 0x10, pCB->dwTrOpCount, outBufferSize);
+		assembler.Assemble(symbopFwRiverInst, sfInstCount, codeBuffer, 0x10, pCB->dwTrOpCount, outBufferSize, ASSEMBLER_CODE_TRACKING | ASSEMBLER_DIR_FORWARD);
 		pCB->pTrackCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 		codeBuffer.CopyToFixed(pCB->pTrackCode);
+
+		codeBuffer.Reset();
+		assembler.Assemble(symbopBkRiverInst, sbInstCount, codeBuffer, 0x00, pCB->dwRtOpCount, outBufferSize, ASSEMBLER_CODE_TRACKING | ASSEMBLER_DIR_BACKWARD);
+		pCB->pRevTrackCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
+		codeBuffer.CopyToFixed(pCB->pRevTrackCode);
 
 		return true;
 	}

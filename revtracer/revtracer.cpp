@@ -525,13 +525,18 @@ namespace rev {
 	void Initialize() {
 		revtracerAPI.ipcLibInitialize();
 
-		pEnv = new _exec_env(0x1000000, 0x10000, 0x4000000, 16, 0x10000);
+		pEnv = new _exec_env(0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
 		pEnv->userContext = AllocUserContext(pEnv, revtracerConfig.contextSize);
 	}
 
 	void Execute(int argc, char *argv[]) {
 		DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
 		revtracerAPI.dbgPrintFunc("Done. ret = %d\n\n", ret);
+	}
+
+	DWORD __stdcall MarkAddr(struct ::_exec_env *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);
+	void MarkMemory(ADDR_TYPE addr, DWORD value) {
+		MarkAddr(pEnv, (DWORD)addr, value, 0x2B);
 	}
 
 };

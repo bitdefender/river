@@ -15,12 +15,16 @@
 #include "RiverSaveTranslator.h"
 
 #include "SymbopTranslator.h"
+#include "SymbopSaveTranslator.h"
+#include "SymbopReverseTranslator.h"
 
 #define RIVER_TRANSLATE_INSTRUCTIONS				128
 #define RIVER_FORWARD_INSTRUCTIONS					512
 #define RIVER_BACKWARD_INSTRUCTIONS					512
 
 #define SYMBOP_TRACK_INSTRUCTIONS					512
+#define SYMBOP_TRACK_FORWARD_INSTRUCTIONS			512
+#define SYMBOP_TRACK_BACKWARD_INSTRUCTIONS			512
 
 /* A resettable river code translator */
 class RiverCodeGen {
@@ -36,6 +40,8 @@ private :
 	RiverSaveTranslator saveTranslator;
 
 	SymbopTranslator symbopTranslator;
+	SymbopSaveTranslator symbopSaveTranslator;
+	SymbopReverseTranslator symbopReverseTranslator;
 
 	DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst);
 public :
@@ -43,10 +49,12 @@ public :
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];
 	struct RiverInstruction symbopInst[SYMBOP_TRACK_INSTRUCTIONS];
+	struct RiverInstruction symbopFwRiverInst[SYMBOP_TRACK_FORWARD_INSTRUCTIONS];
+	struct RiverInstruction symbopBkRiverInst[SYMBOP_TRACK_BACKWARD_INSTRUCTIONS];
 
-	struct RiverAddress32 trRiverAddr[512];
+	struct RiverAddress32 trRiverAddr[1024];
 	
-	DWORD trInstCount, fwInstCount, bkInstCount, addrCount, outBufferSize;
+	DWORD trInstCount, fwInstCount, bkInstCount, /*srInstCount,*/ sfInstCount, sbInstCount, addrCount, outBufferSize;
 	DWORD symbopInstCount;
 
 	unsigned char *outBuffer;

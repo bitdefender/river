@@ -11,7 +11,8 @@
 
 //using namespace rev;
 
-DWORD baseAddr = 0xf000000;
+DWORD baseAddr = 0x0f000000;
+bool isInside = false;
 DWORD a = FILE_MAP_EXECUTE;
 
 HANDLE fDbg = INVALID_HANDLE_VALUE;
@@ -42,7 +43,7 @@ __declspec(dllimport) int vsnprintf_s(
 );
 
 #pragma warning(disable:4996)
-HANDLE fBlocks = CreateFileA("tmp.blk", GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
+HANDLE fBlocks = CreateFileA("tmp.blk", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
 #pragma warning(default:4996)
 
 void TmpPrint(const char *fmt, ...) {
@@ -121,6 +122,10 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 
 	char mf[MAX_PATH];
 	char defMf[8] = "??";
+
+	if (baseAddr + 0x101F == (DWORD)addr) {
+		isInside = true;
+	}
 
 	if (((DWORD)addr & 0xFFFD0000) == baseAddr) {
 		strcpy(defMf, "a.exe");
@@ -208,11 +213,17 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 	}*/
 
 
+	/*if (baseAddr + 0x4463 == (DWORD)addr) {
+		rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x30540), 0x0F);
+	}*/
+
 	/* some very simple control structure going three times forwards and two times back */
 	DWORD ret = EXECUTION_ADVANCE;
-	/*if (c->execCount % 3 == 2) {
-		ret = EXECUTION_BACKTRACK;
-	}*/
+	if (isInside) {
+		if (c->execCount % 3 == 1) {
+			ret = EXECUTION_BACKTRACK;
+		}
+	}
 
 	return ret;
 }
@@ -260,11 +271,13 @@ int main(unsigned int argc, char *argv[]) {
 	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
 	TmpPrint("ntdll.dll @ 0x%08x\n", (DWORD)hNtDll);
 
-	fDbg = CreateFileA("dbg.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
+	fDbg = CreateFileA("dbg.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
 	//fopen_s(&fDbg, "dbg.log", "wt");
-	InitializeRevtracer((rev::ADDR_TYPE)(baseAddr + 0x96CE));
+	//InitializeRevtracer((rev::ADDR_TYPE)(baseAddr + 0x96CE));
+	InitializeRevtracer((rev::ADDR_TYPE)(baseAddr + 0x13A6));
 	//InitializeRevtracer((rev::ADDR_TYPE)tmp);
 
+	rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x2B004), 0x0F);
 	rev::Execute(argc, argv);
 	
 	CloseHandle(fDbg);

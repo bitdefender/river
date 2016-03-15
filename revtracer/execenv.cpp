@@ -17,7 +17,7 @@ void _exec_env::operator delete(void *ptr) {
 	revtracerAPI.memoryFreeFunc((BYTE *)ptr);
 }
 
-_exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int logHashSize, unsigned int outBufferSize) {
+_exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize) {
 	bValid = false;
 	exitAddr = 0xFFFFCAFE;
 	if (0 == heap.Init(heapSize)) {
@@ -30,7 +30,7 @@ _exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned i
 		return;
 	}
 
-	if (0 == (executionBuffer = (UINT_PTR *)revtracerAPI.memoryAllocFunc(executionSize))) {
+	if (0 == (executionBuffer = (UINT_PTR *)revtracerAPI.memoryAllocFunc(executionSize + trackSize + 4096))) {
 		blockCache.Destroy();
 		heap.Destroy();
 		return;
@@ -51,12 +51,21 @@ _exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned i
 		return;
 	}
 
+
 	memset(pStack, 0, 0x100000);
 
-	runtimeContext.execBuff = (DWORD)executionBuffer + executionSize - 4096; //TODO: make independant track buffer 
+	runtimeContext.execBuff = (DWORD)executionBuffer + executionSize - 4; //TODO: make independant track buffer 
 	executionBase = runtimeContext.execBuff;
-	runtimeContext.trackBuff = runtimeContext.trackBase = (DWORD)executionBuffer + executionSize;
+
+	runtimeContext.trackStack = (DWORD)executionBuffer + executionSize + trackSize - 4;
+	runtimeContext.trackBuff = runtimeContext.trackBase = (DWORD)executionBuffer + executionSize + trackSize + 4096;
 	runtimeContext.virtualStack = (DWORD)pStack + 0xFFFF0;
+
+	ac.Init();
+	//this is a major hack...
+	// remove after addres tracking is completely decoupled from the reversible tracking
+	runtimeContext.taintedAddresses = (UINT_PTR)this;
+
 	bValid = true;
 }
 
