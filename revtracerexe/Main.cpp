@@ -22,16 +22,64 @@ struct UserContext {
 	DWORD execCount;
 };
 
-void DebugPrint(const char *fmt, ...) {
+void DebugPrint(DWORD printMask, const char *fmt, ...) {
 	va_list va;
 	char tmpBuff[512];
+
+	static char lastChar = '\n';
+
+	char pfxBuff[] = "[___|_____|___|_] ";
+	
+	const char messageTypes[][4] = {
+		"___",
+		"ERR",
+		"INF",
+		"DBG"
+	};
+
+	const char executionStages[][6] = {
+		"_____",
+		"BRHND",
+		"DIASM",
+		"TRANS",
+		"REASM",
+		"RUNTM",
+		"INSPT",
+		"CNTNR"
+	};
+
+	const char codeTypes[][4] = {
+		"___",
+		"NAT",
+		"RIV",
+		"TRK",
+		"SYM"
+	};
+
+	const char codeDirections[] = {
+		'_', 'F', 'B'
+	};
+
+	_snprintf_s(
+		pfxBuff,
+		sizeof(pfxBuff) - 1,
+		"[%3s|%5s|%3s|%c] ",
+		messageTypes[(printMask & PRINT_MESSAGE_MASK) >> PRINT_MESSAGE_SHIFT],
+		executionStages[(printMask & PRINT_EXECUTION_MASK) >> PRINT_EXECUTION_SHIFT],
+		codeTypes[(printMask & PRINT_CODE_TYPE_MASK) >> PRINT_CODE_TYPE_SHIFT],
+		codeDirections[(printMask & PRINT_CODE_DIRECTION_MASK) >> PRINT_CODE_DIRECTION_SHIFT]
+	);
 
 	va_start(va, fmt);
 	int sz = _vsnprintf_s(tmpBuff, sizeof(tmpBuff)-1, fmt, va);
 	va_end(va);
 
 	unsigned long wr;
+	if ('\n' == lastChar) {
+		WriteFile(fDbg, pfxBuff, sizeof(pfxBuff), &wr, NULL);
+	}
 	WriteFile(fDbg, tmpBuff, sz * sizeof(tmpBuff[0]), &wr, NULL);
+	lastChar = tmpBuff[sz - 1];
 }
 
 __declspec(dllimport) int vsnprintf_s(
@@ -64,47 +112,47 @@ rev::ExecutionRegs rgs[2];
 
 bool RegCheck(const rev::ExecutionRegs &r1, const rev::ExecutionRegs &r2) {
 	if (r1.eax != r2.eax) {
-		DebugPrint("EAX inconsistent!\n");
+		DebugPrint(0, "EAX inconsistent!\n");
 		return false;
 	}
 
 	if (r1.ecx != r2.ecx) {
-		DebugPrint("ECX inconsistent!\n");
+		DebugPrint(0, "ECX inconsistent!\n");
 		return false;
 	}
 
 	if (r1.edx != r2.edx) {
-		DebugPrint("EDX inconsistent!\n");
+		DebugPrint(0, "EDX inconsistent!\n");
 		return false;
 	}
 
 	if (r1.ebx != r2.ebx) {
-		DebugPrint("EBX inconsistent!\n");
+		DebugPrint(0, "EBX inconsistent!\n");
 		return false;
 	}
 
 	if (r1.esp != r2.esp) {
-		DebugPrint("ESP inconsistent!\n");
+		DebugPrint(0, "ESP inconsistent!\n");
 		return false;
 	}
 
 	if (r1.ebp != r2.ebp) {
-		DebugPrint("EBP inconsistent!\n");
+		DebugPrint(0, "EBP inconsistent!\n");
 		return false;
 	}
 
 	if (r1.esi != r2.esi) {
-		DebugPrint("ESI inconsistent!\n");
+		DebugPrint(0, "ESI inconsistent!\n");
 		return false;
 	}
 
 	if (r1.edi != r2.edi) {
-		DebugPrint("ESI inconsistent!\n");
+		DebugPrint(0, "ESI inconsistent!\n");
 		return false;
 	}
 
 	if (r1.eflags != r2.eflags) {
-		DebugPrint("EFLAGS inconsistent!\n");
+		DebugPrint(0, "EFLAGS inconsistent!\n");
 		return false;
 	}
 	return true;
@@ -249,6 +297,7 @@ void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	rev::RevtracerConfig *config = &rev::revtracerConfig;
 	config->contextSize = 4;
 	config->entryPoint = entryPoint;
+	config->featureFlags = TRACER_FEATURE_REVERSIBLE | TRACER_FEATURE_TRACKING;
 
 	rev::Initialize();
 }
@@ -273,11 +322,15 @@ int main(unsigned int argc, char *argv[]) {
 
 	fDbg = CreateFileA("dbg.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
 	//fopen_s(&fDbg, "dbg.log", "wt");
-	//InitializeRevtracer((rev::ADDR_TYPE)(baseAddr + 0x96CE));
-	InitializeRevtracer((rev::ADDR_TYPE)(baseAddr + 0x13A6));
+	InitializeRevtracer((rev::ADDR_TYPE)(baseAddr + 0x96CE));
+	//InitializeRevtracer((rev::ADDR_TYPE)(baseAddr + 0x13A6));
 	//InitializeRevtracer((rev::ADDR_TYPE)tmp);
 
-	rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x2B004), 0x0F);
+	//rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x2B000), 0x01);
+	//rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x2B004), 0x02);
+	rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x60540), 0x01);
+	rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x60544), 0x02);
+	rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x60548), 0x04);
 	rev::Execute(argc, argv);
 	
 	CloseHandle(fDbg);

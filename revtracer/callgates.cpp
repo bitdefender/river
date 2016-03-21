@@ -18,7 +18,7 @@ int Translate(struct _exec_env *pEnv, struct _cb_info *pCB, DWORD dwTranslationF
 void Stopper(struct _exec_env *pEnv, BYTE *s) {
 	RiverBasicBlock *pStop;
 
-	revtracerAPI.dbgPrintFunc("STOPPER: %p.\n", s);
+	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "STOPPER: %p.\n", s);
 	pStop = pEnv->blockCache.NewBlock((UINT_PTR)s);
 	pEnv->codeGen.Translate(pStop, 0x80000000); // this will fix pStop->CRC and pStop->Size
 	pEnv->exitAddr = (DWORD)s;
@@ -33,7 +33,7 @@ DWORD __declspec(noinline) call_cdecl_0(struct _exec_env *env, _fn_cdecl_0 f) {
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	//pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -50,7 +50,7 @@ DWORD __declspec(noinline) call_cdecl_1(struct _exec_env *env, _fn_cdecl_1 f, vo
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -68,7 +68,7 @@ DWORD __declspec(noinline) call_cdecl_2(struct _exec_env *env, _fn_cdecl_2 f, vo
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -86,7 +86,7 @@ DWORD __declspec(noinline) call_cdecl_3(struct _exec_env *env, _fn_cdecl_3 f, vo
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -104,7 +104,7 @@ DWORD __declspec(noinline) call_cdecl_4(struct _exec_env *env, _fn_cdecl_4 f, vo
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -121,7 +121,7 @@ DWORD __declspec(noinline) call_stdcall_0(struct _exec_env *env, _fn_stdcall_0 f
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -138,7 +138,7 @@ DWORD __declspec(noinline) call_stdcall_1(struct _exec_env *env, _fn_stdcall_1 f
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -155,7 +155,7 @@ DWORD __declspec(noinline) call_stdcall_2(struct _exec_env *env, _fn_stdcall_2 f
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -172,7 +172,7 @@ DWORD __declspec(noinline) call_stdcall_3(struct _exec_env *env, _fn_stdcall_3 f
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
@@ -189,7 +189,7 @@ DWORD __declspec(noinline) call_stdcall_4(struct _exec_env *env, _fn_stdcall_4 f
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
-	env->codeGen.Translate(pBlock, 0);
+	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);

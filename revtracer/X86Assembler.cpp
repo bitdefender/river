@@ -221,14 +221,23 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		" river to x86 (tracking backward) "
 	};
 
-	revtracerAPI.dbgPrintFunc("=%s============================================\n", headers[outputType]);
+	static const DWORD masks[] = {
+		PRINT_NATIVE | PRINT_FORWARD,
+		PRINT_NATIVE | PRINT_BACKWARD,
+		PRINT_TRACKING | PRINT_FORWARD,
+		PRINT_TRACKING | PRINT_BACKWARD
+	};
+
+	DWORD printMask = PRINT_INFO | PRINT_ASSEMBLY | masks[outputType];
+
+	revtracerAPI.dbgPrintFunc(printMask, "=%s============================================\n", headers[outputType]);
 
 	if (ASSEMBLER_CODE_TRACKING & outputType) {
 		AssembleTrackingEnter(px86, instrCounter);
 		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
+			revtracerAPI.dbgPrintFunc(printMask, "%02x ", *pTmp);
 		}
-		revtracerAPI.dbgPrintFunc("\n");
+		revtracerAPI.dbgPrintFunc(printMask, "\n");
 	}
 
 	for (DWORD i = 0; i < dwInstrCount; ++i) {
@@ -245,9 +254,9 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		}
 		
 		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
+			revtracerAPI.dbgPrintFunc(printMask, "%02x ", *pTmp);
 		}
-		revtracerAPI.dbgPrintFunc("\n");
+		revtracerAPI.dbgPrintFunc(printMask, "\n");
 	}
 
 	if (ASSEMBLER_CODE_TRACKING & outputType) {
@@ -257,18 +266,18 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		}
 		AssembleTrackingLeave(px86, instrCounter);
 		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
+			revtracerAPI.dbgPrintFunc(printMask, "%02x ", *pTmp);
 		}
-		revtracerAPI.dbgPrintFunc("\n");
+		revtracerAPI.dbgPrintFunc(printMask, "\n");
 	} else {
 		EndRiverConversion(px86, pFlags, currentFamily, repReg, instrCounter);
 		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
+			revtracerAPI.dbgPrintFunc(printMask, "%02x ", *pTmp);
 		}
-		revtracerAPI.dbgPrintFunc("\n");
+		revtracerAPI.dbgPrintFunc(printMask, "\n");
 	}
 
-	revtracerAPI.dbgPrintFunc("===============================================================================\n");
+	revtracerAPI.dbgPrintFunc(printMask, "===============================================================================\n");
 	byteCounter = px86.cursor - pAux;
 	return true;
 }

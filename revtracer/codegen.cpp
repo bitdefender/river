@@ -156,62 +156,86 @@ void MakeJMP(struct RiverInstruction *ri, DWORD jmpAddr) {
 	ri->operands[1].asImm32 = 0;
 }
 
-void RiverPrintInstruction(RiverInstruction *ri);
+void RiverPrintInstruction(DWORD printMask, RiverInstruction *ri);
 
-DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst) {
+DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTranslationFlags) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
 
-	revtracerAPI.dbgPrintFunc("= x86 to river ================================================================\n");
+	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "= x86 to river ================================================================\n");
 
-	RiverInstruction dis, disMeta[16];
-	RiverInstruction symbopMain[16]; // , symbopTrack[16];
-	DWORD svCount, metaCount; // , trackCount;
+	RiverInstruction dis;
+	//RiverInstruction symbopMain[16]; // , symbopTrack[16];
+
+	RiverInstruction instrBuffers[3][16];
+	DWORD instrCounts[3], currentBuffer;
+
+	//DWORD svCount, metaCount; // , trackCount;
 
 	do {
 		BYTE *pAux = pTmp;
-		DWORD iSize, mSize = 0;
+		DWORD iSize;
 		disassembler.Translate(pTmp, dis, pFlags);
-		metaTranslator.Translate(dis, disMeta, mSize);
+		
+		currentBuffer = 0;
+		
 
-		svCount = 0;
-		//saveTranslator.Translate(dis, &fwRiverInst[fwInstCount], fwInstCount);
-		//saveTranslator.Translate(dis, disSave, svCount);
+		instrCounts[currentBuffer] = 0;
+		metaTranslator.Translate(dis, instrBuffers[currentBuffer], instrCounts[currentBuffer]);
+		currentBuffer++;
 
-		metaCount = 0;
-		//trackCount = 0;
-		//symbopInstCount = 0;
-		for (DWORD i = 0; i < mSize; ++i) {
-			//saveTranslator.Translate(disMeta[i], &fwRiverInst[fwInstCount], fwInstCount);
-			saveTranslator.Translate(disMeta[i], &symbopMain[svCount], svCount);
-		}
+		for (DWORD i = 0; i < instrCounts[0]; ++i) {
+			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(instrBuffers[0][i].family)) {
 
-		for (DWORD i = 0; i < svCount; ++i) {
-			symbopTranslator.Translate(symbopMain[i], &fwRiverInst[fwInstCount], fwInstCount, &symbopInst[symbopInstCount], symbopInstCount);
-		}
-
-		for (DWORD i = 0; i < mSize; ++i) {
-			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(disMeta[i].family)) {
-
-				revtracerAPI.dbgPrintFunc(".%08x    ", pAux);
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, ".%08x    ", pAux);
 				iSize = pTmp - pAux;
 				for (DWORD i = 0; i < iSize; ++i) {
-					revtracerAPI.dbgPrintFunc("%02x ", pAux[i]);
+					revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "%02x ", pAux[i]);
 				}
 
 				for (DWORD i = iSize; i < 8; ++i) {
-					revtracerAPI.dbgPrintFunc("   ");
+					revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "   ");
 				}
-			} else {
-				revtracerAPI.dbgPrintFunc(".                                    ");
 			}
-			RiverPrintInstruction(&disMeta[i]);
+			else {
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, ".                                    ");
+			}
+			RiverPrintInstruction(PRINT_INFO | PRINT_DISASSEMBLY, &instrBuffers[0][i]);
 		}
+
+		if (TRACER_FEATURE_REVERSIBLE & dwTranslationFlags) {
+			instrCounts[currentBuffer] = 0;
+			for (DWORD i = 0; i < instrCounts[currentBuffer - 1]; ++i) {
+				saveTranslator.Translate(
+					instrBuffers[currentBuffer - 1][i], 
+					&instrBuffers[currentBuffer][instrCounts[currentBuffer]], 
+					instrCounts[currentBuffer]
+				);
+			}
+			currentBuffer++;
+		}
+
+		if (TRACER_FEATURE_TRACKING & dwTranslationFlags) {
+			instrCounts[currentBuffer] = 0;
+			for (DWORD i = 0; i < instrCounts[currentBuffer - 1]; ++i) {
+				symbopTranslator.Translate(
+					instrBuffers[currentBuffer - 1][i], 
+					&instrBuffers[currentBuffer][instrCounts[currentBuffer]], 
+					instrCounts[currentBuffer], 
+					&symbopInst[symbopInstCount], 
+					symbopInstCount
+				);
+			}
+			currentBuffer++;
+		}
+
+		memcpy(&fwRiverInst[fwInstCount], instrBuffers[currentBuffer - 1], sizeof(fwRiverInst[0]) * instrCounts[currentBuffer - 1]);
+		fwInstCount += instrCounts[currentBuffer - 1];
 
 		dwInst++;
 	} while (!(pFlags & RIVER_FLAG_BRANCH));
 
-	revtracerAPI.dbgPrintFunc("===============================================================================\n");
+	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "===============================================================================\n");
 	return pTmp - px86;
 }
 
@@ -295,38 +319,52 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		Reset();
 
 		pCB->dwOrigOpCount = 0;
-		pCB->dwSize = TranslateBasicBlock((BYTE *)pCB->address, pCB->dwOrigOpCount); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
+		pCB->dwSize = TranslateBasicBlock((BYTE *)pCB->address, pCB->dwOrigOpCount, dwTranslationFlags); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
 		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 
-		for (DWORD i = 0; i < fwInstCount; ++i) {
-			//TranslateReverse(this, &fwRiverInst[fwInstCount - 1 - i], &bkRiverInst[i], &tmp);
-			revTranslator.Translate(fwRiverInst[fwInstCount - 1 - i], bkRiverInst[i]);
+		if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
+			// generate the reverse basic blcok representations
+			for (DWORD i = 0; i < fwInstCount; ++i) {
+				//TranslateReverse(this, &fwRiverInst[fwInstCount - 1 - i], &bkRiverInst[i], &tmp);
+				revTranslator.Translate(fwRiverInst[fwInstCount - 1 - i], bkRiverInst[i]);
+			}
+			MakeJMP(&bkRiverInst[fwInstCount], pCB->address);
+			bkInstCount = fwInstCount + 1;
 		}
-		MakeJMP(&bkRiverInst[fwInstCount], pCB->address);
-		bkInstCount = fwInstCount + 1;
 
-		revtracerAPI.dbgPrintFunc("= SymbopTrack =================================================================\n");
-		sfInstCount = 0;
-		for (unsigned int i = 0; i < symbopInstCount; ++i) {
-			symbopSaveTranslator.Translate(symbopInst[i], &symbopFwRiverInst[sfInstCount], sfInstCount);
-			RiverPrintInstruction(&symbopInst[i]);
-		}
-		revtracerAPI.dbgPrintFunc("===============================================================================\n");
-		
-		revtracerAPI.dbgPrintFunc("= SymbopFwRiverTrack ============================================================\n");
-		for (DWORD i = 0; i < sfInstCount; ++i) {
-			symbopReverseTranslator.Translate(symbopFwRiverInst[sfInstCount - 1 - i], symbopBkRiverInst[i]);
-			RiverPrintInstruction(&symbopFwRiverInst[i]);
-		}
-		sbInstCount = sfInstCount;
-		revtracerAPI.dbgPrintFunc("===============================================================================\n");
+		if (dwTranslationFlags & TRACER_FEATURE_TRACKING) {
+			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, "= SymbopTrack =================================================================\n");
+			for (unsigned int i = 0; i < symbopInstCount; ++i) {
+				RiverPrintInstruction(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, &symbopInst[i]);
+			}
+			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, "===============================================================================\n");
 
-		revtracerAPI.dbgPrintFunc("= SymbopBkRiverTrack ============================================================\n");
-		for (DWORD i = 0; i < sbInstCount; ++i) {
-			RiverPrintInstruction(&symbopBkRiverInst[i]);
+			if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
+				sfInstCount = 0;
+				for (unsigned int i = 0; i < symbopInstCount; ++i) {
+					symbopSaveTranslator.Translate(symbopInst[i], &symbopFwRiverInst[sfInstCount], sfInstCount);
+				}
+
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, "= SymbopFwRiverTrack ==========================================================\n");
+				for (DWORD i = 0; i < sfInstCount; ++i) {
+					RiverPrintInstruction(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, &symbopFwRiverInst[i]);
+				}
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, "===============================================================================\n");
+
+				for (DWORD i = 0; i < sfInstCount; ++i) {
+					symbopReverseTranslator.Translate(symbopFwRiverInst[sfInstCount - 1 - i], symbopBkRiverInst[i]);
+				}
+				sbInstCount = sfInstCount;
+
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, "= SymbopBkRiverTrack ==========================================================\n");
+				for (DWORD i = 0; i < sbInstCount; ++i) {
+					RiverPrintInstruction(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, &symbopBkRiverInst[i]);
+				}
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, "===============================================================================\n");
+			}
 		}
-		revtracerAPI.dbgPrintFunc("===============================================================================\n");
+
 
 		if (revtracerConfig.dumpBlocks) {
 			SaveToStream(fwRiverInst, fwInstCount, bkRiverInst, bkInstCount, symbopInst, symbopInstCount);
@@ -344,21 +382,36 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		codeBuffer.CopyToFixed(pCB->pFwCode);
 		
 		//outBufferSize = rivertox86(this, rt, bkRiverInst, bkInstCount, outBuffer, 0x00);
-		codeBuffer.Reset();
-		assembler.Assemble(bkRiverInst, bkInstCount, codeBuffer, 0x00, pCB->dwBkOpCount, outBufferSize, ASSEMBLER_CODE_NATIVE | ASSEMBLER_DIR_BACKWARD);
-		pCB->pBkCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
-		//assembler.CopyFix(pCB->pBkCode, outBuffer);
-		codeBuffer.CopyToFixed(pCB->pBkCode);
 
-		codeBuffer.Reset();
-		assembler.Assemble(symbopFwRiverInst, sfInstCount, codeBuffer, 0x10, pCB->dwTrOpCount, outBufferSize, ASSEMBLER_CODE_TRACKING | ASSEMBLER_DIR_FORWARD);
-		pCB->pTrackCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
-		codeBuffer.CopyToFixed(pCB->pTrackCode);
+		if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
+			codeBuffer.Reset();
+			assembler.Assemble(bkRiverInst, bkInstCount, codeBuffer, 0x00, pCB->dwBkOpCount, outBufferSize, ASSEMBLER_CODE_NATIVE | ASSEMBLER_DIR_BACKWARD);
+			pCB->pBkCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
+			//assembler.CopyFix(pCB->pBkCode, outBuffer);
+			codeBuffer.CopyToFixed(pCB->pBkCode);
+		}
 
-		codeBuffer.Reset();
-		assembler.Assemble(symbopBkRiverInst, sbInstCount, codeBuffer, 0x00, pCB->dwRtOpCount, outBufferSize, ASSEMBLER_CODE_TRACKING | ASSEMBLER_DIR_BACKWARD);
-		pCB->pRevTrackCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
-		codeBuffer.CopyToFixed(pCB->pRevTrackCode);
+		if (dwTranslationFlags & TRACER_FEATURE_TRACKING) {
+			RiverInstruction *fwTrace = symbopInst;
+			DWORD fwTraceCount = symbopInstCount;
+
+			if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
+				fwTrace = symbopFwRiverInst;
+				fwTraceCount = sfInstCount;
+			}
+
+			codeBuffer.Reset();
+			assembler.Assemble(fwTrace, fwTraceCount, codeBuffer, 0x10, pCB->dwTrOpCount, outBufferSize, ASSEMBLER_CODE_TRACKING | ASSEMBLER_DIR_FORWARD);
+			pCB->pTrackCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
+			codeBuffer.CopyToFixed(pCB->pTrackCode);
+
+			if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
+				codeBuffer.Reset();
+				assembler.Assemble(symbopBkRiverInst, sbInstCount, codeBuffer, 0x00, pCB->dwRtOpCount, outBufferSize, ASSEMBLER_CODE_TRACKING | ASSEMBLER_DIR_BACKWARD);
+				pCB->pRevTrackCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
+				codeBuffer.CopyToFixed(pCB->pRevTrackCode);
+			}
+		}
 
 		return true;
 	}

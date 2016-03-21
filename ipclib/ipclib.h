@@ -135,7 +135,7 @@ namespace ipc {
 		DLL_LINKAGE extern IpcAPI ipcAPI;
 		DLL_LINKAGE extern IpcData ipcData;
 
-		DLL_LINKAGE extern void DebugPrint(const char *fmt, ...);
+		DLL_LINKAGE void DebugPrint(DWORD printMask, const char *fmt, ...);
 
 		DLL_LINKAGE extern void *MemoryAllocFunc(DWORD dwSize);
 		DLL_LINKAGE extern void MemoryFreeFunc(void *ptr);

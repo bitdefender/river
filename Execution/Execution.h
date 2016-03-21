@@ -9,6 +9,9 @@
 #define EXECUTION_LINKAGE __declspec(dllimport)
 #endif
 
+#define EXECUTION_FEATURE_REVERSIBLE		0x00000001
+#define EXECUTION_FEATURE_TRACKING			0x00000004
+
 #define EXECUTION_ADVANCE					0x00000000
 #define EXECUTION_BACKTRACK					0x00000001
 #define EXECUTION_TERMINATE					0x00000002
@@ -79,6 +82,7 @@ public:
 	virtual int GetState() const = 0;
 	virtual bool SetPath(const wstring &) = 0;
 	virtual bool SetCmdLine(const wstring &) = 0;
+	virtual bool SetExecutionFeatures(unsigned int feat) = 0;
 	virtual bool Execute() = 0;
 	virtual bool Terminate() = 0;
 

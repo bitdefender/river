@@ -1,6 +1,11 @@
 #ifndef _REVTRACER_H
 #define _REVTRACER_H
 
+#include "DebugPrintFlags.h"
+
+#define TRACER_FEATURE_REVERSIBLE				0x00000001
+#define TRACER_FEATURE_TRACKING					0x00000004
+
 namespace rev {
 
 #ifdef _BUILDING_REVTRACER_DLL
@@ -56,7 +61,7 @@ namespace rev {
 
 	typedef void *ADDR_TYPE;
 
-	typedef void(*DbgPrintFunc)(const char *fmt, ...);
+	typedef void(*DbgPrintFunc)(DWORD dwMask, const char *fmt, ...);
 	typedef void *(*MemoryAllocFunc)(DWORD dwSize);
 	typedef void(*MemoryFreeFunc)(void *ptr);
 
@@ -126,6 +131,8 @@ namespace rev {
 		ADDR_TYPE mainModule;
 		DWORD contextSize;
 		DWORD segmentOffsets[0x100];
+
+		DWORD featureFlags;
 
 		BOOL dumpBlocks;
 		HANDLE hBlocks;

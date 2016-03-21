@@ -278,7 +278,7 @@ namespace rev {
 
 	/* Default API functions ************************************************************/
 
-	void NoDbgPrint(const char *fmt, ...) { }
+	void NoDbgPrint(DWORD printMask, const char *fmt, ...) { }
 
 	void DefaultIpcInitialize() {
 	}
@@ -396,7 +396,7 @@ namespace rev {
 		pBlock->address = (DWORD)orig;
 		pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
 
-		revtracerAPI.dbgPrintFunc("Added detour from 0x%08x to 0x%08x\n", orig, det);
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Added detour from 0x%08x to 0x%08x\n", orig, det);
 	}
 
 	void TracerInitialization() { // parameter is not initialized (only used to get the 
@@ -416,7 +416,7 @@ namespace rev {
 		
 		switch (revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
 		case EXECUTION_ADVANCE :
-			revtracerAPI.dbgPrintFunc("%d detours needed.\n", revtracerConfig.hookCount);
+			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
 			for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
 				CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
 			}
@@ -430,7 +430,7 @@ namespace rev {
 			revtracerConfig.entryPoint = TerminateCurrentProcess;
 			break;
 		case EXECUTION_BACKTRACK :
-			revtracerAPI.dbgPrintFunc("EXECUTION_BACKTRACK @executionBegin");
+			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "EXECUTION_BACKTRACK @executionBegin");
 			revtracerConfig.entryPoint = TerminateCurrentProcess;
 			break;
 		}
@@ -525,13 +525,15 @@ namespace rev {
 	void Initialize() {
 		revtracerAPI.ipcLibInitialize();
 
-		pEnv = new _exec_env(0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Feature flags %08x\n", revtracerConfig.featureFlags);
+
+		pEnv = new _exec_env(revtracerConfig.featureFlags, 0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
 		pEnv->userContext = AllocUserContext(pEnv, revtracerConfig.contextSize);
 	}
 
 	void Execute(int argc, char *argv[]) {
 		DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
-		revtracerAPI.dbgPrintFunc("Done. ret = %d\n\n", ret);
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
 	}
 
 	DWORD __stdcall MarkAddr(struct ::_exec_env *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);

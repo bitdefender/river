@@ -17,8 +17,9 @@ void _exec_env::operator delete(void *ptr) {
 	revtracerAPI.memoryFreeFunc((BYTE *)ptr);
 }
 
-_exec_env::_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize) {
+_exec_env::_exec_env(DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize) {
 	bValid = false;
+	generationFlags = flags;
 	exitAddr = 0xFFFFCAFE;
 	if (0 == heap.Init(heapSize)) {
 		return;

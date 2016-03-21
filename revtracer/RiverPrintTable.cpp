@@ -13,51 +13,51 @@ extern const char PrintMnemonicExt[][8][10];
 extern const char RegNames[][4];
 extern const char MemSizes[][6];
 
-void PrintPrefixes(struct RiverInstruction *ri) {
+void PrintPrefixes(DWORD printMask, struct RiverInstruction *ri) {
 	if (ri->modifiers & RIVER_MODIFIER_REP) {
-		revtracerAPI.dbgPrintFunc("rep ");
+		revtracerAPI.dbgPrintFunc(printMask, "rep ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REPZ) {
-		revtracerAPI.dbgPrintFunc("repz ");
+		revtracerAPI.dbgPrintFunc(printMask, "repz ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REPNZ) {
-		revtracerAPI.dbgPrintFunc("repnz ");
+		revtracerAPI.dbgPrintFunc(printMask, "repnz ");
 	}
 
 
 	if (ri->family & RIVER_FAMILY_FLAG_IGNORE) {
-		revtracerAPI.dbgPrintFunc("ignore");
+		revtracerAPI.dbgPrintFunc(printMask, "ignore");
 	}
 
 	if (ri->family & RIVER_FAMILY_FLAG_ORIG_xSP) {
-		revtracerAPI.dbgPrintFunc("esp");
+		revtracerAPI.dbgPrintFunc(printMask, "esp");
 	}
 
 	switch (RIVER_FAMILY(ri->family)) {
 		case RIVER_FAMILY_RIVER:
-			revtracerAPI.dbgPrintFunc("river");
+			revtracerAPI.dbgPrintFunc(printMask, "river");
 			break;
 		case RIVER_FAMILY_TRACK :
-			revtracerAPI.dbgPrintFunc("track");
+			revtracerAPI.dbgPrintFunc(printMask, "track");
 			break;
 		case RIVER_FAMILY_PRETRACK :
-			revtracerAPI.dbgPrintFunc("pretrack");
+			revtracerAPI.dbgPrintFunc(printMask, "pretrack");
 			break;
 		case RIVER_FAMILY_PREMETA :
-			revtracerAPI.dbgPrintFunc("premeta");
+			revtracerAPI.dbgPrintFunc(printMask, "premeta");
 			break;
 		case RIVER_FAMILY_POSTMETA:
-			revtracerAPI.dbgPrintFunc("postmeta");
+			revtracerAPI.dbgPrintFunc(printMask, "postmeta");
 			break;
 		case RIVER_FAMILY_RIVER_TRACK:
-			revtracerAPI.dbgPrintFunc("rivertrack");
+			revtracerAPI.dbgPrintFunc(printMask, "rivertrack");
 			break;
 	}
 }
 
-void PrintMnemonic(struct RiverInstruction *ri) {
+void PrintMnemonic(DWORD printMask, struct RiverInstruction *ri) {
 	const char (*mTable)[10] = PrintMnemonicTable00;
 
 	if (RIVER_MODIFIER_EXT & ri->modifiers) {
@@ -65,120 +65,120 @@ void PrintMnemonic(struct RiverInstruction *ri) {
 	}
 
 	if ('a' <= mTable[ri->opCode][0]) {
-		revtracerAPI.dbgPrintFunc("%s ", mTable[ri->opCode]);
+		revtracerAPI.dbgPrintFunc(printMask, "%s ", mTable[ri->opCode]);
 	} else {
-		revtracerAPI.dbgPrintFunc("%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
+		revtracerAPI.dbgPrintFunc(printMask, "%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
 	}
 }
 
-void PrintRegister(struct RiverInstruction *ri, union RiverRegister *reg) {
-	revtracerAPI.dbgPrintFunc("%s$%d", RegNames[reg->name], reg->versioned >> 8);
+void PrintRegister(DWORD printMask, struct RiverInstruction *ri, union RiverRegister *reg) {
+	revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[reg->name], reg->versioned >> 8);
 }
 
-void PrintOperand(struct RiverInstruction *ri, DWORD idx) {
+void PrintOperand(DWORD printMask, struct RiverInstruction *ri, DWORD idx) {
 	bool bWr = false;
 
 	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
-		revtracerAPI.dbgPrintFunc("{");
+		revtracerAPI.dbgPrintFunc(printMask, "{");
 	}
 
 	switch (RIVER_OPTYPE(ri->opTypes[idx])) {
 		case RIVER_OPTYPE_IMM :
 			switch (ri->opTypes[idx] & 0x03) {
 				case RIVER_OPSIZE_8 :
-					revtracerAPI.dbgPrintFunc("0x%02x", ri->operands[idx].asImm8);
+					revtracerAPI.dbgPrintFunc(printMask, "0x%02x", ri->operands[idx].asImm8);
 					break;
 				case RIVER_OPSIZE_16:
-					revtracerAPI.dbgPrintFunc("0x%04x", ri->operands[idx].asImm16);
+					revtracerAPI.dbgPrintFunc(printMask, "0x%04x", ri->operands[idx].asImm16);
 					break;
 				case RIVER_OPSIZE_32:
-					revtracerAPI.dbgPrintFunc("0x%08x", ri->operands[idx].asImm32);
+					revtracerAPI.dbgPrintFunc(printMask, "0x%08x", ri->operands[idx].asImm32);
 					break;
 			};
 			break;
 
 		case RIVER_OPTYPE_REG :
-			revtracerAPI.dbgPrintFunc("%s$%d", RegNames[ri->operands[idx].asRegister.name], ri->operands[idx].asRegister.versioned >> 8);
+			revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asRegister.name], ri->operands[idx].asRegister.versioned >> 8);
 			break;
 
 		case RIVER_OPTYPE_MEM :
 			if (0 == ri->operands[idx].asAddress->type) {
-				revtracerAPI.dbgPrintFunc("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
 				break;
 			}
 
-			revtracerAPI.dbgPrintFunc("%s ptr ", MemSizes[ri->opTypes[idx] & 0x03]);
+			revtracerAPI.dbgPrintFunc(printMask, "%s ptr ", MemSizes[ri->opTypes[idx] & 0x03]);
 
 			if (ri->operands[idx].asAddress->HasSegment()) {
-				revtracerAPI.dbgPrintFunc("%s:", RegNames[RIVER_REG_SEGMENT | (ri->operands[idx].asAddress->GetSegment() - 1)]);
+				revtracerAPI.dbgPrintFunc(printMask, "%s:", RegNames[RIVER_REG_SEGMENT | (ri->operands[idx].asAddress->GetSegment() - 1)]);
 			}
 
-			revtracerAPI.dbgPrintFunc("[");
+			revtracerAPI.dbgPrintFunc(printMask, "[");
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_BASE) {
-				revtracerAPI.dbgPrintFunc("%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
 				bWr = true;
 			}
 
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_INDEX) {
 				if (bWr) {
-					revtracerAPI.dbgPrintFunc("+");
+					revtracerAPI.dbgPrintFunc(printMask, "+");
 				}
 
 				if (ri->operands[idx].asAddress->type & RIVER_ADDR_SCALE) {
-					revtracerAPI.dbgPrintFunc("%d*", ri->operands[idx].asAddress->GetScale());
+					revtracerAPI.dbgPrintFunc(printMask, "%d*", ri->operands[idx].asAddress->GetScale());
 				}
 
-				revtracerAPI.dbgPrintFunc("%s$%d", RegNames[ri->operands[idx].asAddress->index.name], ri->operands[idx].asAddress->index.versioned >> 8);
+				revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->index.name], ri->operands[idx].asAddress->index.versioned >> 8);
 				bWr = true;
 			}
 
 			if (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 				if (bWr) {
-					revtracerAPI.dbgPrintFunc("+");
+					revtracerAPI.dbgPrintFunc(printMask, "+");
 				}
 
 				switch (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 					case RIVER_ADDR_DISP8 :
-						revtracerAPI.dbgPrintFunc("0x%02x", ri->operands[idx].asAddress->disp.d8);
+						revtracerAPI.dbgPrintFunc(printMask, "0x%02x", ri->operands[idx].asAddress->disp.d8);
 						break;
 					/*case RIVER_ADDR_DISP16:
 						DbgPrint("0x%04x", ri->operands[idx].asAddress->disp.d16);
 						break;*/
 					case RIVER_ADDR_DISP:
-						revtracerAPI.dbgPrintFunc("0x%08x", ri->operands[idx].asAddress->disp.d32);
+						revtracerAPI.dbgPrintFunc(printMask, "0x%08x", ri->operands[idx].asAddress->disp.d32);
 						break;
 				}
 			}
 				 
 
-			revtracerAPI.dbgPrintFunc("]");
+			revtracerAPI.dbgPrintFunc(printMask, "]");
 			break;
 	}
 
 	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
-		revtracerAPI.dbgPrintFunc("}");
+		revtracerAPI.dbgPrintFunc(printMask, "}");
 	}
 }
 
-void PrintOperands(struct RiverInstruction *ri) {
-	PrintOperand(ri, 0);
+void PrintOperands(DWORD printMask, struct RiverInstruction *ri) {
+	PrintOperand(printMask, ri, 0);
 
 	for (int i = 1; i < 4; ++i) {
 		if (ri->opTypes[i] != RIVER_OPTYPE_NONE) {
-			revtracerAPI.dbgPrintFunc(", ");
-			PrintOperand(ri, i);
+			revtracerAPI.dbgPrintFunc(printMask, ", ");
+			PrintOperand(printMask, ri, i);
 		}
 	}
 }
 
-void RiverPrintInstruction(struct RiverInstruction *ri) {
+void RiverPrintInstruction(DWORD printMask, struct RiverInstruction *ri) {
 	if (ri->family & RIVER_FAMILY_FLAG_IGNORE) {
 		return;
 	}
-	PrintPrefixes(ri);
-	PrintMnemonic(ri);
-	PrintOperands(ri);
-	revtracerAPI.dbgPrintFunc("\n");
+	PrintPrefixes(printMask, ri);
+	PrintMnemonic(printMask, ri);
+	PrintOperands(printMask, ri);
+	revtracerAPI.dbgPrintFunc(printMask, "\n");
 	//printf("%s", )
 }
 

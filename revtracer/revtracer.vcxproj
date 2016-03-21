@@ -14,6 +14,7 @@
     <ClInclude Include="callgates.h" />
     <ClInclude Include="cb.h" />
     <ClInclude Include="CodeGen.h" />
+    <ClInclude Include="DebugPrintFlags.h" />
     <ClInclude Include="GenericX86Assembler.h" />
     <ClInclude Include="AddressContainer.h" />
     <ClInclude Include="PreTrackingX86Assembler.h" />
@@ -30,9 +31,6 @@
     <ClInclude Include="RiverAddress.h" />
     <ClInclude Include="riverinternl.h" />
     <ClInclude Include="RiverMetaTranslator.h" />
-    <ClInclude Include="RiverOptimizer.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="RiverReverseTranslator.h" />
     <ClInclude Include="RiverSaveTranslator.h" />
     <ClInclude Include="RiverX86Assembler.h" />
@@ -76,10 +74,6 @@
     <ClCompile Include="revtracer.cpp" />
     <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverMetaTranslator.cpp" />
-    <ClCompile Include="RiverOptimizer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="RiverPrintTable.cpp" />
     <ClCompile Include="RiverReverseTranslator.cpp" />
     <ClCompile Include="RiverSaveTranslator.cpp" />

@@ -1,6 +1,8 @@
 #include "revtracer.h"
 #include "AddressContainer.h"
 
+static const rev::DWORD printMask = PRINT_INFO | PRINT_INSPECTION;
+
 using namespace rev;
 
 void AddressContainer::InitPageAllocator() {
@@ -101,7 +103,7 @@ void AddressContainer::RecursivePrintAddreses(ContainerPage *page, DWORD prefix,
 	if (0 == shift) {
 		for (DWORD i = 0; i < 1024; ++i) {
 			if (0 != page->mem[i]) {
-				revtracerAPI.dbgPrintFunc(" @ 0x%08x - %d\n", (prefix | i) << 2, page->mem[i]);
+				revtracerAPI.dbgPrintFunc(printMask, " @ 0x%08x - %d\n", (prefix | i) << 2, page->mem[i]);
 			}
 		}
 	} else {

@@ -1,5 +1,7 @@
 #include "ipclib.h"
 
+#include "../revtracer/DebugPrintFlags.h"
+
 namespace ipc {
 	typedef long NTSTATUS;
 	typedef NTSTATUS(*NtYieldExecutionFunc)();
@@ -30,15 +32,79 @@ namespace ipc {
 		va_list argptr
 	);
 
-	DLL_LINKAGE void DebugPrint(const char *fmt, ...) {
+	int GeneratePrefix(char *buff, int size, ...) {
+		va_list va;
+
+		va_start(va, size);
+		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_s)(
+			buff, 
+			size, 
+			size - 1, 
+			"[%3s|%5s|%3s|%c] ",
+			va
+		);
+		va_end(va);
+
+		return sz;
+	}
+
+	DLL_LINKAGE void DebugPrint(DWORD printMask, const char *fmt, ...) {
 		va_list va;
 		char tmpBuff[512];
+
+		char pfxBuff[] = "[___|_____|___|_]      ";
+		static char lastChar = '\n';
+
+		const char messageTypes[][4] = {
+			"___",
+			"ERR",
+			"INF",
+			"DBG"
+		};
+
+		const char executionStages[][6] = {
+			"_____",
+			"BRHND",
+			"DIASM",
+			"TRANS",
+			"REASM",
+			"RUNTM",
+			"INSPT",
+			"CNTNR"
+		};
+
+		const char codeTypes[][4] = {
+			"___",
+			"NAT",
+			"RIV",
+			"TRK",
+			"SYM"
+		};
+
+		const char codeDirections[] = {
+			'_', 'F', 'B'
+		};
+
+		if ('\n' == lastChar) {
+			int sz = GeneratePrefix(
+				pfxBuff,
+				sizeof(pfxBuff),
+				messageTypes[(printMask & PRINT_MESSAGE_MASK) >> PRINT_MESSAGE_SHIFT],
+				executionStages[(printMask & PRINT_EXECUTION_MASK) >> PRINT_EXECUTION_SHIFT],
+				codeTypes[(printMask & PRINT_CODE_TYPE_MASK) >> PRINT_CODE_TYPE_SHIFT],
+				codeDirections[(printMask & PRINT_CODE_DIRECTION_MASK) >> PRINT_CODE_DIRECTION_SHIFT]
+			);
+			debugLog.Write(pfxBuff, sz);
+		}
 
 		va_start(va, fmt);
 		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_s)(tmpBuff, sizeof(tmpBuff)-1, sizeof(tmpBuff)-1, fmt, va);
 		va_end(va);
 
-		debugLog.Write(tmpBuff, sz);
+		if (sz) {
+			debugLog.Write(tmpBuff, sz);
+			lastChar = tmpBuff[sz - 1];
+		}
 	}
 
 

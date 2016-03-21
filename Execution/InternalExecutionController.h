@@ -56,6 +56,8 @@ private:
 
 	BYTE *pLdrMapMemory;
 
+	DWORD featureFlags;
+
 	ldr::LoaderConfig loaderConfig;
 
 	ipc::RingBuffer<(1 << 20)> *debugLog;
@@ -88,6 +90,7 @@ public:
 
 	virtual bool SetPath(const wstring &p);
 	virtual bool SetCmdLine(const wstring &c);
+	virtual bool SetExecutionFeatures(unsigned int feat);
 
 	virtual bool Execute();
 	virtual bool Terminate();

@@ -44,11 +44,13 @@ struct _exec_env {
 	void *userContext;
 
 	AddressContainer ac;
+
+	DWORD generationFlags;
 public :
 	void* operator new(size_t);
 	void operator delete(void*);
 
-	_exec_env(unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize);
+	_exec_env(DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize);
 	~_exec_env();
 };
 

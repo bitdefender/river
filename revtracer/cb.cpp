@@ -64,7 +64,7 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(UINT_PTR a) {
 	int arr = 0;
 	unsigned long hash = HashFunc(logHashSize, a);
 
-	revtracerAPI.dbgPrintFunc("HASH %08x\n", hash);
+	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_BRANCH_HANDLER, "HASH %08x\n", hash);
 	cbLock.Lock();
 
 	pWalk = hashTable[hash];

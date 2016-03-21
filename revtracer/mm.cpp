@@ -75,13 +75,13 @@ bool RiverHeap::Destroy() {
 
 
 void RiverHeap::PrintInfo(HeapZone *fz) {
-	revtracerAPI.dbgPrintFunc("FirstFree: %08X.\n", (DWORD)pFirstFree);
-	revtracerAPI.dbgPrintFunc("fz  Addr : %08X.\n", (DWORD)fz);
-	revtracerAPI.dbgPrintFunc("fz->Next : %08X.\n", (DWORD)fz->Next);
-	revtracerAPI.dbgPrintFunc("fz->Prev : %08X.\n", (DWORD)fz->Prev);
-	revtracerAPI.dbgPrintFunc("fz->Type : %08X.\n", (DWORD)fz->Type);
-	revtracerAPI.dbgPrintFunc("fz->Size : %08X.\n", (DWORD)fz->Size);
-	revtracerAPI.dbgPrintFunc("\n");
+	revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "FirstFree: %08X.\n", (DWORD)pFirstFree);
+	revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz  Addr : %08X.\n", (DWORD)fz);
+	revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Next : %08X.\n", (DWORD)fz->Next);
+	revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Prev : %08X.\n", (DWORD)fz->Prev);
+	revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Type : %08X.\n", (DWORD)fz->Type);
+	revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Size : %08X.\n", (DWORD)fz->Size);
+	revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "\n");
 }
 
 

@@ -53,6 +53,7 @@ InternalExecutionController::InternalExecutionController() {
 
 	path = L"";
 	cmdLine = L"";
+	featureFlags = EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING;
 
 	context = NULL;
 
@@ -86,6 +87,11 @@ bool InternalExecutionController::SetCmdLine(const wstring &c) {
 	}
 
 	cmdLine = c;
+	return true;
+}
+
+bool InternalExecutionController::SetExecutionFeatures(unsigned int feat) {
+	featureFlags = feat;
 	return true;
 }
 
@@ -260,6 +266,7 @@ bool InternalExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	revCfg->contextSize = 0;
 	InitSegments(hMainThread, revCfg->segmentOffsets);
 	revCfg->hookCount = 0;
+	revCfg->featureFlags = featureFlags;
 
 #ifdef DUMP_BLOCKS
 	revCfg->dumpBlocks = TRUE;
