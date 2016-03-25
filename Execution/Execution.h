@@ -86,6 +86,8 @@ public:
 	virtual bool Execute() = 0;
 	virtual bool Terminate() = 0;
 
+	virtual void *GetProcessHandle() = 0;
+
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) = 0;
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount) = 0;
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) = 0;

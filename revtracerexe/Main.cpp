@@ -267,10 +267,17 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 
 	/* some very simple control structure going three times forwards and two times back */
 	DWORD ret = EXECUTION_ADVANCE;
-	if (isInside) {
+	/*if (isInside) {
 		if (c->execCount % 3 == 1) {
 			ret = EXECUTION_BACKTRACK;
 		}
+	}*/
+
+	static int blockCount = 100000;
+
+	blockCount--;
+	if (0 == blockCount) {
+		return EXECUTION_TERMINATE;
 	}
 
 	return ret;
@@ -297,7 +304,7 @@ void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	rev::RevtracerConfig *config = &rev::revtracerConfig;
 	config->contextSize = 4;
 	config->entryPoint = entryPoint;
-	config->featureFlags = TRACER_FEATURE_REVERSIBLE | TRACER_FEATURE_TRACKING;
+	config->featureFlags = TRACER_FEATURE_TRACKING;
 
 	rev::Initialize();
 }

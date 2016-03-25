@@ -84,6 +84,35 @@ extern "C" {
 			}
 		}
 
+
+		if (pEnv->bForward) {
+			PushToExecutionBuffer(pEnv, pEnv->lastFwBlock);
+		}
+		else {
+			/*switch (ctx->callCount % 5) {
+			case 3:
+			//copy the registers to validate them later
+			if (!RegCheck(pEnv, *currentRegs, regClone[1])) {
+			__asm int 3;
+			}
+
+			if (execStack[1] != pEnv->runtimeContext.virtualStack) {
+			//__asm int 3
+			}
+			break;
+			case 4:
+			//copy the registers to validate them later
+			if (!RegCheck(pEnv, *currentRegs, regClone[0])) {
+			__asm int 3;
+			}
+
+			if (execStack[0] != pEnv->runtimeContext.virtualStack) {
+			//__asm int 3
+			}
+			break;
+			}*/
+		}
+
 		DWORD dwDirection = EXECUTION_ADVANCE;  
 		if (a == revtracerAPI.lowLevel.ntTerminateProcess) {
 			// TODO: verify parameters
@@ -92,33 +121,6 @@ extern "C" {
 			dwDirection = revtracerAPI.executionBegin(pEnv->userContext, a, pEnv);
 		} else {
 			dwDirection = revtracerAPI.executionControl(pEnv->userContext, a, pEnv);
-		}
-
-		if (pEnv->bForward) {
-			PushToExecutionBuffer(pEnv, pEnv->lastFwBlock);
-		} else {
-			/*switch (ctx->callCount % 5) {
-			case 3:
-				//copy the registers to validate them later
-				if (!RegCheck(pEnv, *currentRegs, regClone[1])) {
-					__asm int 3;
-				}
-
-				if (execStack[1] != pEnv->runtimeContext.virtualStack) {
-					//__asm int 3
-				}
-				break;
-			case 4:
-				//copy the registers to validate them later
-				if (!RegCheck(pEnv, *currentRegs, regClone[0])) {
-					__asm int 3;
-				}
-
-				if (execStack[0] != pEnv->runtimeContext.virtualStack) {
-					//__asm int 3
-				}
-				break;
-			}*/
 		}
 
 		DWORD *stk = (DWORD *)pEnv->runtimeContext.virtualStack;
@@ -137,18 +139,20 @@ extern "C" {
 		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_DEBUG, "Flags: 0x%08x\n",
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->eflags);
 
-		revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "Tainted registers :\n");
-		revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[0], pEnv->runtimeContext.taintedRegisters[1], pEnv->runtimeContext.taintedRegisters[2], pEnv->runtimeContext.taintedRegisters[3]);
-		revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[4], pEnv->runtimeContext.taintedRegisters[5], pEnv->runtimeContext.taintedRegisters[6], pEnv->runtimeContext.taintedRegisters[7]);
-		revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "CF: 0x%08x  PF: 0x%08x  AF: 0x%08x  ZF: 0x%08x  SF: 0x%08x  OF: 0x%08x  DF: 0x%08x\n",
-			pEnv->runtimeContext.taintedFlags[0],
-			pEnv->runtimeContext.taintedFlags[1],
-			pEnv->runtimeContext.taintedFlags[2],
-			pEnv->runtimeContext.taintedFlags[3],
-			pEnv->runtimeContext.taintedFlags[4],
-			pEnv->runtimeContext.taintedFlags[5],
-			pEnv->runtimeContext.taintedFlags[6]
-		);
+		if (TRACER_FEATURE_TRACKING & pEnv->generationFlags) {
+			revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "Tainted registers :\n");
+			revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[0], pEnv->runtimeContext.taintedRegisters[1], pEnv->runtimeContext.taintedRegisters[2], pEnv->runtimeContext.taintedRegisters[3]);
+			revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[4], pEnv->runtimeContext.taintedRegisters[5], pEnv->runtimeContext.taintedRegisters[6], pEnv->runtimeContext.taintedRegisters[7]);
+			revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "CF: 0x%08x  PF: 0x%08x  AF: 0x%08x  ZF: 0x%08x  SF: 0x%08x  OF: 0x%08x  DF: 0x%08x\n",
+				pEnv->runtimeContext.taintedFlags[0],
+				pEnv->runtimeContext.taintedFlags[1],
+				pEnv->runtimeContext.taintedFlags[2],
+				pEnv->runtimeContext.taintedFlags[3],
+				pEnv->runtimeContext.taintedFlags[4],
+				pEnv->runtimeContext.taintedFlags[5],
+				pEnv->runtimeContext.taintedFlags[6]
+			);
+		}
 
 		if ((EXECUTION_BACKTRACK == dwDirection) && (0 == (pEnv->generationFlags & TRACER_FEATURE_REVERSIBLE))) {
 			dwDirection = EXECUTION_ADVANCE;

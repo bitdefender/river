@@ -9,6 +9,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <tlhelp32.h>
+#include <Winternl.h>
 
 //#define DUMP_BLOCKS
 
@@ -50,6 +51,8 @@ unsigned int __stdcall DefaultExecutionEnd(void *ctx) {
 
 InternalExecutionController::InternalExecutionController() {
 	execState = NEW;
+
+	virtualSize = commitedSize = 0;
 
 	path = L"";
 	cmdLine = L"";
@@ -483,7 +486,7 @@ bool InternalExecutionController::PatchProcess() {
 
 	BYTE *mAddr = RemoteGetModuleHandle(hProcess, pth);
 
-	unsigned short tmp = '  ';
+	unsigned short tmp = '\1\1';
 	DWORD dwWr, oldPr;
 
 	if (FALSE == VirtualProtectEx(hProcess, mAddr, sizeof(tmp), PAGE_READWRITE, &oldPr)) {
@@ -496,15 +499,19 @@ bool InternalExecutionController::PatchProcess() {
 
 	revCfg->mainModule = mAddr;
 
-	/*if (FALSE == VirtualProtectEx(hProcess, mAddr, sizeof(tmp), oldPr, &oldPr)) {
+	if (FALSE == VirtualProtectEx(hProcess, mAddr, sizeof(tmp), oldPr, &oldPr)) {
 		return false;
-	}*/
+	}
 	return true;
 }
 
 DWORD WINAPI ControlThreadFunc(void *ptr) {
 	InternalExecutionController *ctr = (InternalExecutionController *)ptr;
 	return ctr->ControlThread();
+}
+
+void *InternalExecutionController::GetProcessHandle() {
+	return hProcess;
 }
 
 bool InternalExecutionController::Execute() {
@@ -774,10 +781,50 @@ DWORD InternalExecutionController::ControlThread() {
 	return 0;
 }
 
+struct _VM_COUNTERS_ {
+	ULONG PeakVirtualSize;
+	ULONG VirtualSize; // << VM use 
+	ULONG PageFaultCount;
+	ULONG PeakWorkingSetSize;
+	ULONG WorkingSetSize;
+	ULONG QuotaPeakPagedPoolUsage;
+	ULONG QuotaPagedPoolUsage;
+	ULONG QuotaPeakNonPagedPoolUsage;
+	ULONG QuotaNonPagedPoolUsage;
+	ULONG PagefileUsage; // << Commited use
+	ULONG PeakPagefileUsage;
+};
+
+/*_declspec(dllimport) extern "C" NTSTATUS WINAPI NtQueryInformationProcess(
+	_In_      HANDLE             ProcessHandle,
+	_In_      MYPROCESSINFOCLASS ProcessInformationClass,
+	_Out_     PVOID              ProcessInformation,
+	_In_      ULONG              ProcessInformationLength,
+	_Out_opt_ PULONG             ReturnLength
+);*/
+
 bool InternalExecutionController::UpdateLayout() {
 	if (updated) {
 		return true;
 	}
+
+	ULONG retLen;
+	_VM_COUNTERS_ ctrs;
+
+	NtQueryInformationProcess(
+		hProcess,
+		(PROCESSINFOCLASS) 3,
+		&ctrs,
+		sizeof(ctrs),
+		&retLen
+	);
+
+	if ((ctrs.VirtualSize == virtualSize) && (ctrs.PagefileUsage == commitedSize)) {
+		return true;
+	}
+
+	virtualSize = ctrs.VirtualSize;
+	commitedSize = ctrs.PagefileUsage;
 
 	sec.clear();
 	mod.clear();
@@ -886,8 +933,4 @@ void InternalExecutionController::GetCurrentRegisters(Registers &registers) {
 
 	memcpy(&registers, (Registers *)ree->registers, sizeof(registers));
 	registers.esp = ree->virtualStack;
-
-	//struct _exec_env *pCtx = (struct _exec_env *)ctx;
-	//memcpy(regs, (struct _exec_env *)pCtx->runtimeContext.registers, sizeof(*regs));
-	//regs->esp = pCtx->runtimeContext.virtualStack;
 }

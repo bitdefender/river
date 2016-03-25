@@ -415,24 +415,24 @@ namespace rev {
 		*((DWORD *)pEnv->runtimeContext.execBuff) = (DWORD)revtracerConfig.entryPoint;*/
 		
 		switch (revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
-		case EXECUTION_ADVANCE :
-			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
-			for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
-				CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
-			}
-			pEnv->lastFwBlock = (UINT_PTR)revtracerConfig.entryPoint;
-			pEnv->bForward = 1;
-			pBlock->MarkForward();
+			case EXECUTION_ADVANCE :
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
+				for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
+					CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
+				}
+				pEnv->lastFwBlock = (UINT_PTR)revtracerConfig.entryPoint;
+				pEnv->bForward = 1;
+				pBlock->MarkForward();
 
-			revtracerConfig.entryPoint = pBlock->pFwCode;
-			break;
-		case EXECUTION_TERMINATE :
-			revtracerConfig.entryPoint = TerminateCurrentProcess;
-			break;
-		case EXECUTION_BACKTRACK :
-			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "EXECUTION_BACKTRACK @executionBegin");
-			revtracerConfig.entryPoint = TerminateCurrentProcess;
-			break;
+				revtracerConfig.entryPoint = pBlock->pFwCode;
+				break;
+			case EXECUTION_TERMINATE :
+				revtracerConfig.entryPoint = TerminateCurrentProcess;
+				break;
+			case EXECUTION_BACKTRACK :
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "EXECUTION_BACKTRACK @executionBegin");
+				revtracerConfig.entryPoint = TerminateCurrentProcess;
+				break;
 		}
 	}
 

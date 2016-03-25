@@ -160,7 +160,6 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalDependencies>ntdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>DllEntry</EntryPointSymbol>
-      <SectionAlignment>65536</SectionAlignment>
     </Link>
     <PostBuildEvent>
       <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)jsdemo\

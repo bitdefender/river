@@ -27,6 +27,7 @@ private:
 
 	HANDLE hProcess, hMainThread, hControlThread;
 	DWORD pid, mainTid;
+	ULONG virtualSize, commitedSize;
 
 	void *context;
 
@@ -96,6 +97,8 @@ public:
 	virtual bool Terminate();
 
 	DWORD ControlThread();
+
+	virtual void *GetProcessHandle();
 
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);
