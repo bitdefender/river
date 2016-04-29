@@ -88,6 +88,8 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 	rOut.family = 0;
 	rOut.subOpCode = 0;
 	rOut.opTypes[0] = rOut.opTypes[1] = rOut.opTypes[2] = rOut.opTypes[3] = RIVER_OPTYPE_NONE;
+	rOut.instructionAddress = (DWORD)px86;
+	rOut.instructionIndex = 0;
 
 	flags = 0;
 	do {
@@ -771,7 +773,7 @@ const WORD specTbl[2][0x100] = {
 			/*0xA8*/ 0xFF,
 			/*0xA9*/ 0xFF,
 			/*0xAA*/ 0xFF,
-			/*0xAB*/ 0xFF,
+			/*0xAB*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG,
 			/*0xAC*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG,
 			/*0xAD*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG,
 			/*0xAE*/ 0xFF,

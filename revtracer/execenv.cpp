@@ -5,7 +5,7 @@
 //#include "lup.h" //for now
 #include "revtracer.h"
 
-void *_exec_env::operator new(size_t sz){
+void *ExecutionEnvironment::operator new(size_t sz){
 	void *storage = revtracerAPI.memoryAllocFunc(sz);
 	if (NULL == storage) {
 		return NULL;
@@ -13,11 +13,11 @@ void *_exec_env::operator new(size_t sz){
 	return storage;
 }
 
-void _exec_env::operator delete(void *ptr) {
+void ExecutionEnvironment::operator delete(void *ptr) {
 	revtracerAPI.memoryFreeFunc((BYTE *)ptr);
 }
 
-_exec_env::_exec_env(DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize) {
+ExecutionEnvironment::ExecutionEnvironment(DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize) {
 	bValid = false;
 	generationFlags = flags;
 	exitAddr = 0xFFFFCAFE;
@@ -37,7 +37,7 @@ _exec_env::_exec_env(DWORD flags, unsigned int heapSize, unsigned int historySiz
 		return;
 	}
 
-	if (!codeGen.Init(&heap, &runtimeContext, outBufferSize)) {
+	if (!codeGen.Init(&heap, &runtimeContext, outBufferSize, generationFlags)) {
 		revtracerAPI.memoryFreeFunc(executionBuffer);
 		blockCache.Destroy();
 		heap.Destroy();
@@ -87,7 +87,7 @@ _exec_env::_exec_env(DWORD flags, unsigned int heapSize, unsigned int historySiz
 	return pEnv;
 }*/
 
-_exec_env::~_exec_env() {
+ExecutionEnvironment::~ExecutionEnvironment() {
 	DeleteUserContext(this);
 
 	blockCache.Destroy(); 
@@ -99,7 +99,7 @@ _exec_env::~_exec_env() {
 	pStack = NULL;
 }
 
-void *AllocUserContext(struct _exec_env *pEnv, unsigned int size) {
+void *AllocUserContext(struct ExecutionEnvironment *pEnv, unsigned int size) {
 	if (NULL != pEnv->userContext) {
 		return NULL;
 	}
@@ -109,7 +109,7 @@ void *AllocUserContext(struct _exec_env *pEnv, unsigned int size) {
 	return pEnv->userContext;
 }
 
-void DeleteUserContext(struct _exec_env *pEnv) {
+void DeleteUserContext(struct ExecutionEnvironment *pEnv) {
 	if (NULL == pEnv->userContext) {
 		return;
 	}

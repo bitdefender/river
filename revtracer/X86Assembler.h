@@ -39,7 +39,7 @@ private :
 	bool TranslateNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType);
 	bool TranslateTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType);
 public :
-	virtual bool Init(RiverRuntime *rt);
+	virtual bool Init(RiverRuntime *rt, DWORD dwTranslationFlags);
 
 	virtual bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter, BYTE outputType);
 	//bool AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter);

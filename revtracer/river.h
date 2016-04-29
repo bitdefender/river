@@ -86,7 +86,7 @@
 #define RIVER_REG_DR6				0x46
 #define RIVER_REG_DR7				0x47
 
-BYTE GetFundamentalRegister(BYTE reg);
+rev::BYTE GetFundamentalRegister(rev::BYTE reg);
 
 /* TODO: add MM0-7 and XMM0-7 */
 
@@ -99,8 +99,8 @@ BYTE GetFundamentalRegister(BYTE reg);
 #define RIVER_REG_CL				(RIVER_REG_xCX | RIVER_REG_SZ8_L)
 
 union RiverRegister {
-	DWORD versioned;
-	BYTE name;
+	rev::DWORD versioned;
+	rev::BYTE name;
 };
 
 /* River address components, to be used in RiverAddress::type */
@@ -185,26 +185,29 @@ union RiverRegister {
 #define RIVER_UNUSED_ALL			0x0F
 
 union RiverOperand {
-	BYTE asImm8;
-	WORD asImm16;
-	DWORD asImm32;
+	rev::BYTE asImm8;
+	rev::WORD asImm16;
+	rev::DWORD asImm32;
 	RiverRegister asRegister;
 	RiverAddress *asAddress;
 };
 
 struct RiverInstruction {
-	WORD modifiers; // modifiers introduced by prefixes or opcode
-	WORD specifiers; // instruction specific flags
+	rev::WORD modifiers; // modifiers introduced by prefixes or opcode
+	rev::WORD specifiers; // instruction specific flags
 
-	BYTE family; // instruction family (allows for multiple instruction streams to be interleaved
-	BYTE unusedRegisters;
-	BYTE opCode;
-	BYTE subOpCode;
+	rev::BYTE family; // instruction family (allows for multiple instruction streams to be interleaved
+	rev::BYTE unusedRegisters;
+	rev::BYTE opCode;
+	rev::BYTE subOpCode;
 
-	BYTE modFlags, testFlags;
+	rev::BYTE modFlags, testFlags;
 
-	BYTE opTypes[4];
+	rev::BYTE opTypes[4];
 	union RiverOperand operands[4];
+
+	rev::DWORD instructionAddress; // relevant only for native and meta instructions
+	rev::DWORD instructionIndex; // can be reduced to a single byte
 
 	inline void PromoteModifiers() {
 		for (int i = 0; i < 4; ++i) {
@@ -225,7 +228,7 @@ struct RiverInstruction {
 		}
 	}
 
-	inline BYTE GetUnusedRegister() const {
+	inline rev::BYTE GetUnusedRegister() const {
 		if (unusedRegisters & 0x03) {
 			if (unusedRegisters & 0x01) {
 				return RIVER_REG_xAX;
@@ -241,8 +244,8 @@ struct RiverInstruction {
 		}
 	}
 
-	void TrackUnusedRegistersOperand(BYTE optype, const RiverOperand &op) {
-		BYTE reg;
+	void TrackUnusedRegistersOperand(rev::BYTE optype, const RiverOperand &op) {
+		rev::BYTE reg;
 		switch (RIVER_OPTYPE(optype)) {
 			case RIVER_OPTYPE_IMM:
 				break;
@@ -269,8 +272,8 @@ struct RiverInstruction {
 		}
 	}
 
-	void TrackEspOperand(BYTE optype, const RiverOperand &op) {
-		BYTE reg; 
+	void TrackEspOperand(rev::BYTE optype, const RiverOperand &op) {
+		rev::BYTE reg;
 		switch (RIVER_OPTYPE(optype)) {
 			case RIVER_OPTYPE_IMM:
 				break;

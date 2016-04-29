@@ -4,7 +4,7 @@
 #include "execenv.h"
 
 typedef unsigned int (__stdcall *OpCopy)(
-	struct _exec_env *pEnv, 
+	struct ExecutionEnvironment *pEnv,
 	struct _cb_info *pCB, 
 	unsigned int *dwFlags, 
 	char *pI, 
@@ -15,6 +15,6 @@ typedef unsigned int (__stdcall *OpCopy)(
 extern OpCopy TranslateTable00[], TranslateTable0F[];
 extern OpCopy SaveTable00[],      SaveTable0F[];
 
-//unsigned int AddSysEndPrefix(struct _exec_env *pEnv, char *p);
+//unsigned int AddSysEndPrefix(struct ExecutionEnvironment *pEnv, char *p);
 
 #endif

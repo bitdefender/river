@@ -9,13 +9,29 @@ using namespace rev;
 //void EnvMemoryFree (void *b);
 
 extern "C" {
-	void __stdcall BranchHandler(struct _exec_env *, ADDR_TYPE);
-	void __stdcall SysHandler(struct _exec_env *);
-	void __cdecl   SysEndHandler(struct _exec_env *, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD);
+	void __stdcall BranchHandler(
+		struct ExecutionEnvironment *, 
+		rev::ADDR_TYPE
+	);
+	void __stdcall SysHandler(
+		struct ExecutionEnvironment *
+	);
+	void __cdecl   SysEndHandler(
+		struct ExecutionEnvironment *, 
+		rev::DWORD, 
+		rev::DWORD, 
+		rev::DWORD, 
+		rev::DWORD, 
+		rev::DWORD, 
+		rev::DWORD, 
+		rev::DWORD, 
+		rev::DWORD, 
+		rev::DWORD
+	);
 };
 
 int dbg0(char *pFormat);
-int dbg1(char *pFormat, DWORD p1);
-int dbg2(char *pFormat, DWORD p1, DWORD p2);
+int dbg1(char *pFormat, rev::DWORD p1);
+int dbg2(char *pFormat, rev::DWORD p1, rev::DWORD p2);
 
 #endif

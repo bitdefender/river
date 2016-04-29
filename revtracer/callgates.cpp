@@ -13,9 +13,9 @@
 using namespace rev;
 
 //void DbgPrint(const char *fmt, ...);
-int Translate(struct _exec_env *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags);
+int Translate(struct ExecutionEnvironment *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags);
 
-void Stopper(struct _exec_env *pEnv, BYTE *s) {
+void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 	RiverBasicBlock *pStop;
 
 	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "STOPPER: %p.\n", s);
@@ -25,7 +25,7 @@ void Stopper(struct _exec_env *pEnv, BYTE *s) {
 }
 
 
-DWORD __declspec(noinline) call_cdecl_0(struct _exec_env *env, _fn_cdecl_0 f) {
+DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
 	RiverBasicBlock *pBlock;
 	DWORD ret;
 
@@ -42,7 +42,7 @@ DWORD __declspec(noinline) call_cdecl_0(struct _exec_env *env, _fn_cdecl_0 f) {
 	return ret;
 }
 
-DWORD __declspec(noinline) call_cdecl_1(struct _exec_env *env, _fn_cdecl_1 f, void *p1) {
+DWORD __declspec(noinline) call_cdecl_1(struct ExecutionEnvironment *env, _fn_cdecl_1 f, void *p1) {
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
@@ -60,7 +60,7 @@ DWORD __declspec(noinline) call_cdecl_1(struct _exec_env *env, _fn_cdecl_1 f, vo
 	return ret;
 }
 
-DWORD __declspec(noinline) call_cdecl_2(struct _exec_env *env, _fn_cdecl_2 f, void *p1, void *p2) {
+DWORD __declspec(noinline) call_cdecl_2(struct ExecutionEnvironment *env, _fn_cdecl_2 f, void *p1, void *p2) {
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
@@ -78,7 +78,7 @@ DWORD __declspec(noinline) call_cdecl_2(struct _exec_env *env, _fn_cdecl_2 f, vo
 	return ret;
 }
 
-DWORD __declspec(noinline) call_cdecl_3(struct _exec_env *env, _fn_cdecl_3 f, void *p1, void *p2, void *p3) {
+DWORD __declspec(noinline) call_cdecl_3(struct ExecutionEnvironment *env, _fn_cdecl_3 f, void *p1, void *p2, void *p3) {
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
@@ -96,7 +96,7 @@ DWORD __declspec(noinline) call_cdecl_3(struct _exec_env *env, _fn_cdecl_3 f, vo
 	return ret;
 }
 
-DWORD __declspec(noinline) call_cdecl_4(struct _exec_env *env, _fn_cdecl_4 f, void *p1, void *p2, void *p3, void *p4) {
+DWORD __declspec(noinline) call_cdecl_4(struct ExecutionEnvironment *env, _fn_cdecl_4 f, void *p1, void *p2, void *p3, void *p4) {
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
@@ -113,7 +113,7 @@ DWORD __declspec(noinline) call_cdecl_4(struct _exec_env *env, _fn_cdecl_4 f, vo
 	return ret;
 }
 
-DWORD __declspec(noinline) call_stdcall_0(struct _exec_env *env, _fn_stdcall_0 f) {
+DWORD __declspec(noinline) call_stdcall_0(struct ExecutionEnvironment *env, _fn_stdcall_0 f) {
 	RiverBasicBlock *pBlock;
 	DWORD ret;
 
@@ -130,7 +130,7 @@ DWORD __declspec(noinline) call_stdcall_0(struct _exec_env *env, _fn_stdcall_0 f
 	return ret;
 }
 
-DWORD __declspec(noinline) call_stdcall_1(struct _exec_env *env, _fn_stdcall_1 f, void *p1) {
+DWORD __declspec(noinline) call_stdcall_1(struct ExecutionEnvironment *env, _fn_stdcall_1 f, void *p1) {
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
@@ -147,7 +147,7 @@ DWORD __declspec(noinline) call_stdcall_1(struct _exec_env *env, _fn_stdcall_1 f
 	return ret;
 }
 
-DWORD __declspec(noinline) call_stdcall_2(struct _exec_env *env, _fn_stdcall_2 f, void *p1, void *p2) {
+DWORD __declspec(noinline) call_stdcall_2(struct ExecutionEnvironment *env, _fn_stdcall_2 f, void *p1, void *p2) {
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
@@ -164,7 +164,7 @@ DWORD __declspec(noinline) call_stdcall_2(struct _exec_env *env, _fn_stdcall_2 f
 	return ret;
 }
 
-DWORD __declspec(noinline) call_stdcall_3(struct _exec_env *env, _fn_stdcall_3 f, void *p1, void *p2, void *p3) {
+DWORD __declspec(noinline) call_stdcall_3(struct ExecutionEnvironment *env, _fn_stdcall_3 f, void *p1, void *p2, void *p3) {
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
@@ -181,7 +181,7 @@ DWORD __declspec(noinline) call_stdcall_3(struct _exec_env *env, _fn_stdcall_3 f
 	return ret;
 }
 
-DWORD __declspec(noinline) call_stdcall_4(struct _exec_env *env, _fn_stdcall_4 f, void *p1, void *p2, void *p3, void *p4) {
+DWORD __declspec(noinline) call_stdcall_4(struct ExecutionEnvironment *env, _fn_stdcall_4 f, void *p1, void *p2, void *p3, void *p4) {
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 

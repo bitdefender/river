@@ -5,6 +5,7 @@
 
 extern DWORD dwAddressTrackHandler;
 extern DWORD dwAddressMarkHandler;
+extern DWORD dwSymbolicHandler;
 
 void TrackingX86Assembler::AssembleTrackFlag(DWORD testFlags, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
 	const BYTE trackFlagInstr[] = { 0x0B, 0x3D, 0x00, 0x00, 0x00, 0x00 };
@@ -185,6 +186,29 @@ void TrackingX86Assembler::AssembleUnmark(RelocableCodeBuffer &px86, DWORD &pFla
 	instrCounter += 3;
 }
 
+void TrackingX86Assembler::AssembleSymbolicCall(DWORD address, BYTE index, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+	const BYTE symCall[] = {
+		0x74, 0x13,										// 0x00 - jz <over_this_block>
+		0x6A, 0x00,										// 0x02 - push instructionIndex
+		0x68, 0x00, 0x00, 0x00, 0x00,					// 0x04 - push instructionAddress
+		0x56,											// 0x09 - push esi - data offset
+		0x68, 0x00, 0x00, 0x00, 0x00,					// 0x0A	- push runtimeContext (or env)
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x0F - call [dwSymbolicHandler]
+	};
+
+	memcpy(px86.cursor, symCall, sizeof(symCall));
+	px86.cursor[0x03] = index;
+	*(DWORD *)(&px86.cursor[0x05]) = address;
+	*(DWORD *)(&px86.cursor[0x0B]) = (DWORD)runtime;
+	*(DWORD *)(&px86.cursor[0x11]) = (DWORD)&dwSymbolicHandler;
+	px86.cursor += sizeof(symCall);
+	instrCounter += 5;
+}
+
+void TrackingX86Assembler::SetTranslationFlags(DWORD dwFlags) {
+	dwTranslationFlags = dwFlags;
+}
+
 bool TrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
 	if (0 == (RIVER_SPEC_FLAG_EXT & ri.modifiers)) {
 		switch (ri.opCode) {
@@ -193,7 +217,9 @@ bool TrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 				break;
 
 			case 0x58 :
-				AssembleMarkRegister(ri.operands[0].asRegister, px86, pFlags, instrCounter);
+				if (0 == (TRACER_FEATURE_ADVANCED_TRACKING & dwTranslationFlags)) {
+					AssembleMarkRegister(ri.operands[0].asRegister, px86, pFlags, instrCounter);
+				}
 				break;
 
 			case 0x8D :
@@ -205,7 +231,9 @@ bool TrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 					AssembleUnmark(px86, pFlags, instrCounter);
 				}
 				else {
-					AssembleMarkMemory(ri.operands[0].asAddress, ri.operands[1].asImm8, px86, pFlags, instrCounter);
+					if (0 == (TRACER_FEATURE_ADVANCED_TRACKING & dwTranslationFlags)) {
+						AssembleMarkMemory(ri.operands[0].asAddress, ri.operands[1].asImm8, px86, pFlags, instrCounter);
+					}
 				}
 				break;
 
@@ -214,7 +242,9 @@ bool TrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 				break;
 
 			case 0x9D :
-				AssembleMarkFlag(ri.operands[0].asImm8, px86, pFlags, instrCounter);
+				if (0 == (TRACER_FEATURE_ADVANCED_TRACKING & dwTranslationFlags)) {
+					AssembleMarkFlag(ri.operands[0].asImm8, px86, pFlags, instrCounter);
+				}
 				break;
 
 			case 0xB8 : // used as tracking initialization (mov eax, 0)
@@ -238,6 +268,9 @@ bool TrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 				}
 				break;
 
+			case 0xE8 :
+				AssembleSymbolicCall(ri.operands[0].asImm32, ri.operands[1].asImm8, px86, pFlags, instrCounter);
+				break;
 			default :
 				__asm int 3;
 		}

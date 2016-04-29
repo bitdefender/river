@@ -21,7 +21,7 @@ bool SymbopTranslator::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-bool SymbopTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount) {
+bool SymbopTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags) {
 	if ((RIVER_FAMILY(rIn.family) == RIVER_FAMILY_RIVER) || (RIVER_FAMILY_FLAG_METAPROCESSED & rIn.family)) {
 		/* do not track river operations */
 		CopyInstruction(*rMainOut, rIn);
@@ -31,7 +31,7 @@ bool SymbopTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *
 	}
 
 	DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
-	(this->*translateOpcodes[dwTable][rIn.opCode])(rIn, rMainOut, instrCount, rTrackOut, trackCount);
+	(this->*translateOpcodes[dwTable][rIn.opCode])(rIn, rMainOut, instrCount, rTrackOut, trackCount, dwTranslationFlags);
 
 	return true;
 }
@@ -312,11 +312,28 @@ void SymbopTranslator::MakeMarkOp(const BYTE type, WORD specifiers, DWORD addrOf
 	}
 }
 
-void SymbopTranslator::TranslateUnk(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount) {
+void SymbopTranslator::MakeCallSymbolic(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount) {
+	rTrackOut->opCode = 0xE8;
+	rTrackOut->subOpCode = 0x00;
+	rTrackOut->modifiers = 0;
+	rTrackOut->family = RIVER_FAMILY_TRACK;
+	rTrackOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
+	rTrackOut->operands[0].asImm32 = rIn.instructionAddress;
+	rTrackOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
+	rTrackOut->operands[1].asImm8 = (BYTE)rIn.instructionIndex;
+	rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
+	rTrackOut->TrackEspAsParameter();
+	rTrackOut->TrackUnusedRegisters();
+
+	rTrackOut++;
+	trackCount++;
+}
+
+void SymbopTranslator::TranslateUnk(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags) {
 	__asm int 3;
 }
 
-void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount) {
+void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags) {
 	DWORD addressOffsets[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
 	DWORD valueOffsets[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
 	DWORD flagOffset = 0xFFFFFFFF;
@@ -341,7 +358,6 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 	CopyInstruction(*rMainOut, rIn);
 	rMainOut++;
 	instrCount++;
-	
 
 	if (RIVER_SPEC_MODIFIES_FLG & rIn.specifiers) {
 		MakeMarkFlg(rIn.modFlags, flagOffset, rMainOut, instrCount, rTrackOut, trackCount);
@@ -351,6 +367,10 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 		if ((RIVER_OPTYPE_NONE != rIn.opTypes[i]) && (RIVER_SPEC_MODIFIES_OP(i) & rIn.specifiers)) {
 			MakeMarkOp(rIn.opTypes[i], rIn.specifiers, addressOffsets[i], valueOffsets[i], rIn.operands[i], rMainOut, instrCount, rTrackOut, trackCount);
 		}
+	}
+
+	if (dwTranslationFlags & TRACER_FEATURE_ADVANCED_TRACKING) {
+		MakeCallSymbolic(rIn, rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
 	MakeCleanTrack(rTrackOut, trackCount);
@@ -496,7 +516,7 @@ SymbopTranslator::TranslateOpcodeFunc SymbopTranslator::translateOpcodes[2][0x10
 
 		/* 0xA0 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk,
 		/* 0xA4 */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
-		/* 0xA8 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
+		/* 0xA8 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 		/* 0xAC */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 
 		/* 0xB0 */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,

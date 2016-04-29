@@ -20,8 +20,14 @@ private :
 	void AssembleAdjustESI(BYTE count, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 	void AssembleSetZero(BYTE reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 
+	void AssembleSymbolicCall(DWORD address, BYTE index, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+
 	DWORD GetOperandTrackSize(const RiverInstruction &ri, BYTE idx);
+
+	DWORD dwTranslationFlags;
 public :
+	void SetTranslationFlags(DWORD dwFlags);
+
 	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType);
 };
 

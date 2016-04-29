@@ -23,15 +23,15 @@ public:
 	void Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount);
 
 private:
-	void MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, BYTE family);
-	void MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, BYTE family);
+	void MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, BYTE family, DWORD addr, DWORD index);
+	void MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, BYTE family, DWORD addr, DWORD index);
 
-	void MakeMovRegMem32(RiverInstruction *rOut, const RiverRegister &reg, const RiverAddress &mem, BYTE family);
-	void MakeMovMemReg32(RiverInstruction *rOut, const RiverAddress &mem, const RiverRegister &reg, BYTE family);
-	void MakeMovMemMem32(RiverInstruction *rOut, const RiverAddress &memd, const RiverAddress &mems, BYTE family);
+	void MakeMovRegMem32(RiverInstruction *rOut, const RiverRegister &reg, const RiverAddress &mem, BYTE family, DWORD addr, DWORD index);
+	void MakeMovMemReg32(RiverInstruction *rOut, const RiverAddress &mem, const RiverRegister &reg, BYTE family, DWORD addr, DWORD index);
+	void MakeMovMemMem32(RiverInstruction *rOut, const RiverAddress &memd, const RiverAddress &mems, BYTE family, DWORD addr, DWORD index);
 
 
-	void MakeMovMemImm32(RiverInstruction *rOut, const RiverAddress &mem, DWORD imm, BYTE family);
+	void MakeMovMemImm32(RiverInstruction *rOut, const RiverAddress &mem, DWORD imm, BYTE family, DWORD addr, DWORD index);
 
 	void TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
 	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);

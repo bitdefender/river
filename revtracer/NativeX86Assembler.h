@@ -42,6 +42,9 @@ private :
 	void AssembleRetnInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 	void AssembleRetnImmInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 
+	void AssembleFarJumpInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleFarJump2(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	
 	void AssembleSyscall(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 	void AssembleSyscall2(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
 

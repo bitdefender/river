@@ -451,13 +451,14 @@ bool X86Assembler::GenerateTransitionsTracking(const RiverInstruction &ri, Reloc
 	return true;
 }
 
-bool X86Assembler::Init(RiverRuntime *runtime) {
+bool X86Assembler::Init(RiverRuntime *runtime, DWORD dwTranslationFlags) {
 	this->runtime = runtime;
 
 	nAsm.Init(runtime);
 	rAsm.Init(runtime);
 	ptAsm.Init(runtime);
 	tAsm.Init(runtime);
+	tAsm.SetTranslationFlags(dwTranslationFlags);
 	rtAsm.Init(runtime);
 
 	return true;

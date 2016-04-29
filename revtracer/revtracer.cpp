@@ -5,6 +5,10 @@
 
 #include <intrin.h>
 
+
+void InitSymbolicHandler(ExecutionEnvironment *pEnv);
+void *CreateSymbolicVariable(const char *name);
+
 namespace rev {
 
 	/* Kernel32.dll replacements *********************************************************/
@@ -338,8 +342,8 @@ namespace rev {
 
 	/* Execution context callbacks ********************************************************/
 	void GetCurrentRegisters(void *ctx, ExecutionRegs *regs) {
-		struct _exec_env *pCtx = (struct _exec_env *)ctx;
-		memcpy(regs, (struct _exec_env *)pCtx->runtimeContext.registers, sizeof(*regs));
+		struct ExecutionEnvironment *pCtx = (struct ExecutionEnvironment *)ctx;
+		memcpy(regs, (struct ExecutionEnvironment *)pCtx->runtimeContext.registers, sizeof(*regs));
 		regs->esp = pCtx->runtimeContext.virtualStack;
 	}
 
@@ -383,7 +387,7 @@ namespace rev {
 	DWORD miniStack[4096];
 	DWORD shadowStack = (DWORD)&(miniStack[4090]);
 
-	struct _exec_env *pEnv = NULL;
+	struct ExecutionEnvironment *pEnv = NULL;
 
 	void TerminateCurrentProcess() {
 		Kernel32TerminateProcess((HANDLE)0xFFFFFFFF, 0);
@@ -527,8 +531,13 @@ namespace rev {
 
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Feature flags %08x\n", revtracerConfig.featureFlags);
 
-		pEnv = new _exec_env(revtracerConfig.featureFlags, 0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
+		pEnv = new ExecutionEnvironment(revtracerConfig.featureFlags, 0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
 		pEnv->userContext = AllocUserContext(pEnv, revtracerConfig.contextSize);
+
+		if (TRACER_FEATURE_SYMBOLIC & revtracerConfig.featureFlags) {
+			SetSymbolicExecutor(revtracerConfig.sCons);
+			::InitSymbolicHandler(pEnv);
+		}
 	}
 
 	void Execute(int argc, char *argv[]) {
@@ -536,9 +545,17 @@ namespace rev {
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
 	}
 
-	DWORD __stdcall MarkAddr(struct ::_exec_env *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);
-	void MarkMemory(ADDR_TYPE addr, DWORD value) {
+	DWORD __stdcall MarkAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);
+	void MarkMemoryValue(ADDR_TYPE addr, DWORD value) {
 		MarkAddr(pEnv, (DWORD)addr, value, 0x2B);
+	}
+
+		
+
+	void MarkMemoryName(ADDR_TYPE addr, const char *name) {
+		if (TRACER_FEATURE_SYMBOLIC & revtracerConfig.featureFlags) {
+			MarkMemoryValue(addr, (DWORD)CreateSymbolicVariable(name));
+		}
 	}
 
 };

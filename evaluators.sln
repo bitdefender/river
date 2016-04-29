@@ -53,12 +53,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tracer.test", "tracer.test\
 		{668C607E-2E3B-435D-9390-56BDB152C363} = {668C607E-2E3B-435D-9390-56BDB152C363}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD85677B-9BCB-401B-A9B6-51E0FEBF6FF2}"
-	ProjectSection(SolutionItems) = preProject
-		Performance1.psess = Performance1.psess
-		Performance2.psess = Performance2.psess
-		Performance3.psess = Performance3.psess
-		Performance4.psess = Performance4.psess
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SymbolicDemo", "SymbolicDemo\SymbolicDemo.vcxproj", "{46888B68-5EAD-4787-B44B-1C20E8F13852}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F348D3BE-A0A6-42C5-ACBE-806AC106ACC3} = {F348D3BE-A0A6-42C5-ACBE-806AC106ACC3}
 	EndProjectSection
 EndProject
 Global
@@ -181,6 +178,16 @@ Global
 		{BC87AB86-7BAC-459C-8D27-3646241C1D9C}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{BC87AB86-7BAC-459C-8D27-3646241C1D9C}.Release|Win32.ActiveCfg = Release|Win32
 		{BC87AB86-7BAC-459C-8D27-3646241C1D9C}.Release|Win32.Build.0 = Release|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Debug|Win32.ActiveCfg = Debug|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Debug|Win32.Build.0 = Debug|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Release|Any CPU.ActiveCfg = Release|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Release|Win32.ActiveCfg = Release|Win32
+		{46888B68-5EAD-4787-B44B-1C20E8F13852}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -194,8 +201,5 @@ Global
 		{668C607E-2E3B-435D-9390-56BDB152C363} = {CBA07A98-2DF0-454F-BE31-64BEE468F2A1}
 		{DDD88C03-CD71-44D9-A245-8FBDFE4E38D2} = {CBA07A98-2DF0-454F-BE31-64BEE468F2A1}
 		{BC87AB86-7BAC-459C-8D27-3646241C1D9C} = {CBA07A98-2DF0-454F-BE31-64BEE468F2A1}
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

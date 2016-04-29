@@ -65,7 +65,7 @@ public :
 	RiverCodeGen();
 	~RiverCodeGen();
 
-	bool Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz);
+	bool Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz, DWORD dwTranslationFlags);
 	bool Destroy();
 	void Reset();
 
@@ -78,6 +78,7 @@ public :
 	unsigned int NextReg(unsigned char regName);
 
 	bool Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags);
+	bool DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD &count, DWORD &dwFlags);
 };
 
 #endif

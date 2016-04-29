@@ -71,8 +71,8 @@ public :
 
 //void AddBlock(struct _exec_env *pEnv, RiverBasicBlock*);
 
-void PrintHistory (struct _exec_env *pEnv);
-DWORD DumpHistory(struct _exec_env *pEnv, unsigned char *o, unsigned long s, unsigned long *sz);
+void PrintHistory(struct ExecutionEnvironment *pEnv);
+DWORD DumpHistory(struct ExecutionEnvironment *pEnv, unsigned char *o, unsigned long s, unsigned long *sz);
 
 #endif
 

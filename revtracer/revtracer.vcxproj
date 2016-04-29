@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BasicTypes.h" />
     <ClInclude Include="callgates.h" />
     <ClInclude Include="cb.h" />
     <ClInclude Include="CodeGen.h" />
@@ -20,8 +21,12 @@
     <ClInclude Include="PreTrackingX86Assembler.h" />
     <ClInclude Include="revtracer.h" />
     <ClInclude Include="RiverTrackingX86Assembler.h" />
+    <ClInclude Include="SymbolicEnvironment.h" />
+    <ClInclude Include="SymbolicEnvironmentImpl.h" />
     <ClInclude Include="SymbopReverseTranslator.h" />
     <ClInclude Include="SymbopSaveTranslator.h" />
+    <ClInclude Include="TrackedValues.h" />
+    <ClInclude Include="TrackingItem.h" />
     <ClInclude Include="TrackingX86Assembler.h" />
     <ClInclude Include="X86AssemblerFuncs.h" />
     <ClInclude Include="RelocableCodeBuffer.h" />
@@ -64,9 +69,6 @@
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="MapPE.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="mm.cpp" />
     <ClCompile Include="modrm32.cpp" />
     <ClCompile Include="PreTrackingX86Assembler.cpp" />
@@ -81,6 +83,7 @@
     <ClCompile Include="RiverX86Assembler.cpp" />
     <ClCompile Include="RiverX86Disassembler.cpp" />
     <ClCompile Include="NativeX86Assembler.cpp" />
+    <ClCompile Include="SymbolicEnvironmentImpl.cpp" />
     <ClCompile Include="src.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
@@ -91,19 +94,12 @@
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">None</DebugInformationFormat>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
     </ClCompile>
-    <ClCompile Include="SymbolicPages.cpp">
-      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">All</AssemblerOutput>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MaxSpeed</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
-      <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
-      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="SymbolicHandler.cpp" />
     <ClCompile Include="SymbopReverseTranslator.cpp" />
     <ClCompile Include="SymbopTranslator.cpp" />
     <ClCompile Include="SymbopSaveTranslator.cpp" />
     <ClCompile Include="sync.cpp" />
+    <ClCompile Include="TrackedValues.cpp" />
     <ClCompile Include="TrackingX86Assembler.cpp" />
     <ClCompile Include="X86Assembler.cpp" />
     <ClCompile Include="X86AssemblerFuncs.cpp" />
@@ -160,6 +156,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalDependencies>ntdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>DllEntry</EntryPointSymbol>
+      <SectionAlignment>65536</SectionAlignment>
     </Link>
     <PostBuildEvent>
       <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)jsdemo\

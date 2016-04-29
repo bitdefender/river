@@ -486,7 +486,7 @@ bool InternalExecutionController::PatchProcess() {
 
 	BYTE *mAddr = RemoteGetModuleHandle(hProcess, pth);
 
-	unsigned short tmp = '\1\1';
+	unsigned short tmp = 'ZM';
 	DWORD dwWr, oldPr;
 
 	if (FALSE == VirtualProtectEx(hProcess, mAddr, sizeof(tmp), PAGE_READWRITE, &oldPr)) {
@@ -766,7 +766,9 @@ DWORD InternalExecutionController::ControlThread() {
 	} while (false);
 
 	CloseHandle(hDbg);
+	hDbg = INVALID_HANDLE_VALUE;
 	CloseHandle(hOffs);
+	hOffs = INVALID_HANDLE_VALUE;
 
 	WaitForSingleObject(hProcess, INFINITE);
 
@@ -774,10 +776,9 @@ DWORD InternalExecutionController::ControlThread() {
 	CloseHandle(hProcess);
 
 	execState = TERMINATED;
-	term(context);
-
 	delete shmAlloc;
 
+	term(context); // this needs to be the last thing called!
 	return 0;
 }
 

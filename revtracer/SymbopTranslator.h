@@ -38,12 +38,12 @@ private :
 
 	DWORD GetMemRepr(const RiverAddress &mem);
 
-	typedef void(SymbopTranslator::*TranslateOpcodeFunc)(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	typedef void(SymbopTranslator::*TranslateOpcodeFunc)(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags);
 	static TranslateOpcodeFunc translateOpcodes[2][0x100];
 public :
 	bool Init(RiverCodeGen *cg);
 
-	bool Translate(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount);
+	bool Translate(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags);
 
 private :
 	/* Translation helpers */
@@ -64,10 +64,11 @@ private :
 	DWORD MakeTrackOp(const BYTE type, const RiverOperand &op, WORD specifiers, DWORD addrOffset, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 	void MakeMarkOp(const BYTE type, WORD specifiers, DWORD addrOffset, DWORD valueOffset, const RiverOperand &op, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 
+	void MakeCallSymbolic(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
 
 	/* Translators */
-	void TranslateUnk(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
-	void TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void TranslateUnk(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags);
+	void TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags);
 };
 
 

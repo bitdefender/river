@@ -1,11 +1,14 @@
 #include "../Execution/Execution.h"
 #include <vector>
 #include <memory>
+#include <cstring>
 
+#include <time.h>
 #include <Windows.h>
 
 ExecutionController *ctrl = NULL;
 HANDLE hEvent;
+FILE *fVars;
 
 struct ProcessAddress {
 	wchar_t moduleName[MAX_PATH];
@@ -44,15 +47,17 @@ struct ProcessAddress {
 };
 
 struct FuzzTestItem {
+	char varName[16];
 	ProcessAddress trigger;
 	ProcessAddress bufferStart;
 	DWORD bufferSize;
 	bool used;
 
-	FuzzTestItem(wchar_t *triggerModule, DWORD triggerOffset, wchar_t *bufferModule, DWORD bufferOffset, DWORD bufferSz) :
+	FuzzTestItem(char *var, wchar_t *triggerModule, DWORD triggerOffset, wchar_t *bufferModule, DWORD bufferOffset, DWORD bufferSz) :
 		trigger(triggerModule, triggerOffset),
 		bufferStart(bufferModule, bufferOffset)
 	{
+		strncpy(varName, var, sizeof(varName) - 1);
 		bufferSize = bufferSz;
 		used = false;
 	}
@@ -74,8 +79,9 @@ struct FuzzConfig {
 		allResolved = true;
 	}
 
-	void AddItem(wchar_t *triggerModule, DWORD triggerOffset, wchar_t *bufferModule, DWORD bufferOffset, DWORD bufferSize) {
+	void AddItem(char *name, wchar_t *triggerModule, DWORD triggerOffset, wchar_t *bufferModule, DWORD bufferOffset, DWORD bufferSize) {
 		testItems.emplace_back(
+			name,
 			triggerModule,
 			triggerOffset,
 			bufferModule,
@@ -115,16 +121,22 @@ struct FuzzConfig {
 };
 
 
-
 FuzzConfig fConfig;
 
 void FuzzTest(const FuzzTestItem &itm) {
 	std::unique_ptr<unsigned char []> buffer(new unsigned char[itm.bufferSize]);
 	SIZE_T wr;
+	char alphabet[] = "0123456789+-*/% ";
 
-	for (DWORD i = 0; i < itm.bufferSize; ++i) {
-		buffer[i] = i & 0xFF;
+	int rSize = rand() % (itm.bufferSize - 1);
+
+	for (DWORD i = 0; i < rSize; ++i) {
+		buffer[i] = alphabet[rand() % sizeof(alphabet)];
 	}
+
+	buffer[rSize] = '\0';
+
+	fprintf(fVars, "%s = %s\n", itm.varName, buffer);
 
 	WriteProcessMemory(
 		ctrl->GetProcessHandle(),
@@ -140,8 +152,10 @@ void __stdcall Term(void *ctx) {
 	SetEvent(hEvent);
 }
 
+unsigned int seed = 0;
 unsigned int __stdcall ExecBegin(void *ctx, unsigned int address) {
 	printf("Process starting\n");
+	srand(seed);
 	return EXECUTION_ADVANCE;
 }
 
@@ -156,9 +170,6 @@ unsigned int __stdcall ExecControl(void *ctx, unsigned int address) {
 	fConfig.Resolve(mds, mCount);
 	fConfig.Trigger(address, FuzzTest);
 	
-	Registers rgs;
-	//ctrl->
-
 	const wchar_t unkmod[MAX_PATH] = L"???";
 	unsigned int offset = address;
 	int foundModule = -1;
@@ -174,14 +185,6 @@ unsigned int __stdcall ExecControl(void *ctx, unsigned int address) {
 	fprintf(fBlocks, "%-15ws+%08X\n",
 		(-1 == foundModule) ? unkmod : mds[foundModule].Name,
 		(DWORD)offset
-		/*rgs.eax,
-		rgs.ecx,
-		rgs.edx,
-		rgs.ebx,
-		rgs.esp,
-		rgs.ebp,
-		rgs.esi,
-		rgs.edi*/
 	);
 
 	static int blockCount = 100000;
@@ -201,17 +204,33 @@ unsigned int __stdcall ExecEnd(void *ctx) {
 
 int main() {
 
-	fConfig.AddItem(
+	/*fConfig.AddItem(
+		"a",
 		L"a.exe", 0x4463,
 		L"a.exe", 0x30540,
 		0x20000
+	);*/
+
+	fConfig.AddItem(
+		"a",
+		L"expr.exe",  0x1070,
+		L"expr.exe", 0x2B000,
+		0x100
 	);
 
+	seed = (unsigned int)time(NULL);
+	srand(seed);
 
-	fBlocks = fopen("e.t.txt", "wt");
+	char fbname[] = "fuzzout\\e.________.blocks.txt";
+	sprintf(fbname, "fuzzout\\e.%08x.blocks.txt", seed);
+	fBlocks = fopen(fbname, "wt");
+
+	char fvname[] = "fuzzout\\e.________.vars.txt";
+	sprintf(fvname, "fuzzout\\e.%08x.vars.txt", seed);
+	fVars = fopen(fvname, "wt");
 
 	ctrl = NewExecutionController();
-	ctrl->SetPath(L"D:\\wrk\\evaluators\\lzo\\a.exe");
+	ctrl->SetPath(L"D:\\wrk\\evaluators\\expression\\expr.exe");
 	
 	ctrl->SetExecutionFeatures(0);
 
@@ -231,7 +250,6 @@ int main() {
 	ctrl = NULL;
 
 	fclose(fBlocks);
-	//system("pause");
 
 	return 0;
 }

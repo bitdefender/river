@@ -56,7 +56,7 @@ int main() {
 	ctrl = NewExecutionController();
 	ctrl->SetPath(L"D:\\wrk\\evaluators\\lzo\\a.exe");
 	
-	ctrl->SetExecutionFeatures(0);
+	//ctrl->SetExecutionFeatures(FEATURE_);
 
 	ctrl->SetExecutionBeginNotification(ExecBegin);
 	ctrl->SetExecutionControlNotification(ExecControl);

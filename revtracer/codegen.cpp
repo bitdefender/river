@@ -35,7 +35,7 @@ RiverCodeGen::~RiverCodeGen() {
 	}
 }
 
-bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
+bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz, DWORD dwTranslationFlags) {
 	heap = hp;
 	if (NULL == (outBuffer = (unsigned char *)revtracerAPI.memoryAllocFunc(buffSz))) {
 		return false;
@@ -54,7 +54,7 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz) {
 	symbopSaveTranslator.Init(this);
 	symbopReverseTranslator.Init(this);
 
-	return assembler.Init(rt);
+	return assembler.Init(rt, dwTranslationFlags);
 }
 
 bool RiverCodeGen::Destroy() {
@@ -110,8 +110,8 @@ unsigned int RiverCodeGen::NextReg(unsigned char regName) {
 DWORD dwTransLock = 0;
 
 extern "C" {
-	void __stdcall BranchHandler(struct _exec_env *pEnv, ADDR_TYPE a);
-	void __stdcall SysHandler(struct _exec_env *pEnv);
+	void __stdcall BranchHandler(struct ExecutionEnvironment *pEnv, ADDR_TYPE a);
+	void __stdcall SysHandler(struct ExecutionEnvironment *pEnv);
 };
 
 DWORD dwSysHandler    = (DWORD) ::SysHandler;
@@ -158,6 +158,15 @@ void MakeJMP(struct RiverInstruction *ri, DWORD jmpAddr) {
 
 void RiverPrintInstruction(DWORD printMask, RiverInstruction *ri);
 
+bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD &count, DWORD &dwFlags) {
+	RiverInstruction dis;
+
+	disassembler.Translate(px86, dis, dwFlags);
+	metaTranslator.Translate(dis, rOut, count);
+
+	return true;
+}
+
 DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTranslationFlags) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
@@ -175,13 +184,15 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 	do {
 		BYTE *pAux = pTmp;
 		DWORD iSize;
-		disassembler.Translate(pTmp, dis, pFlags);
-		
-		currentBuffer = 0;
-		
 
+		currentBuffer = 0;
 		instrCounts[currentBuffer] = 0;
-		metaTranslator.Translate(dis, instrBuffers[currentBuffer], instrCounts[currentBuffer]);
+
+		//disassembler.Translate(pTmp, dis, pFlags);
+		//metaTranslator.Translate(dis, instrBuffers[currentBuffer], instrCounts[currentBuffer]);
+
+		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags);
+
 		currentBuffer++;
 
 		for (DWORD i = 0; i < instrCounts[0]; ++i) {
@@ -223,7 +234,8 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 					&instrBuffers[currentBuffer][instrCounts[currentBuffer]], 
 					instrCounts[currentBuffer], 
 					&symbopInst[symbopInstCount], 
-					symbopInstCount
+					symbopInstCount,
+					dwTranslationFlags
 				);
 			}
 			currentBuffer++;

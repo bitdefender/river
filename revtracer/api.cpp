@@ -4,6 +4,8 @@
 #include "river.h"
 
 #include "AddressContainer.h"
+#include "TrackedValues.h"
+#include "TrackingItem.h"
 
 #define PRINT_RUNTIME_TRACKING	PRINT_INFO | PRINT_RUNTIME | PRINT_TRACKING
 #define PRINT_BRANCHING_ERROR	PRINT_ERROR | PRINT_BRANCH_HANDLER
@@ -17,13 +19,18 @@
 }
 
 namespace rev {
-	DWORD __stdcall TrackAddr(struct ::_exec_env *pEnv, DWORD dwAddr, DWORD segSel) {
+	TrackingTable<Temp, 128> trItem;
+
+	DWORD __stdcall TrackAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD segSel) {
 		DWORD ret = pEnv->ac.Get(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF]);
+
+		//trItem[trItem.AllocRef()]->a = 2;
+
 		revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "TrackAddr 0x%08x => %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
 		return ret;
 	}
 
-	DWORD __stdcall MarkAddr(struct ::_exec_env *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
+	DWORD __stdcall MarkAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
 		revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "MarkAddr 0x%08x <= %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
 		return pEnv->ac.Set(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
 	}
@@ -35,18 +42,18 @@ DWORD dwAddressMarkHandler = (DWORD)&rev::MarkAddr;
 void RiverPrintInstruction(DWORD printMask, struct RiverInstruction *ri);
 
 extern "C" {
-	void PushToExecutionBuffer(struct _exec_env *pEnv, DWORD value) {
+	void PushToExecutionBuffer(struct ExecutionEnvironment *pEnv, DWORD value) {
 		pEnv->runtimeContext.execBuff -= 4;
 		*((DWORD *)pEnv->runtimeContext.execBuff) = value;
 	}
 
-	DWORD PopFromExecutionBuffer(struct _exec_env *pEnv) {
+	DWORD PopFromExecutionBuffer(struct ExecutionEnvironment *pEnv) {
 		DWORD ret = *((DWORD *)pEnv->runtimeContext.execBuff);
 		pEnv->runtimeContext.execBuff += 4;
 		return ret;
 	}
 
-	bool ExecutionBufferEmpty(struct _exec_env *pEnv) {
+	bool ExecutionBufferEmpty(struct ExecutionEnvironment *pEnv) {
 		return (DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
 	}
 
@@ -68,7 +75,7 @@ extern "C" {
 	} lfhTrack[1600];
 	DWORD lfhCount = 0;
 
-	void __stdcall BranchHandler(struct _exec_env *pEnv, ADDR_TYPE a) {
+	void __stdcall BranchHandler(struct ExecutionEnvironment *pEnv, ADDR_TYPE a) {
 		//ExecutionRegs *currentRegs = (ExecutionRegs *)((&a) + 1);
 		pEnv->runtimeContext.registers = (UINT_PTR)((&a) + 1);
 		RiverBasicBlock *pCB;
@@ -217,36 +224,6 @@ extern "C" {
 				pEnv->lastFwBlock = pCB->address;
 				pEnv->bForward = 1;
 
-				/*switch (ctx->callCount % 5) {
-				case 1:
-					//copy the registers to validate them later
-					memcpy(&regClone[0], currentRegs, sizeof(regClone[0]));
-					execStack[0] = pEnv->runtimeContext.virtualStack;
-					break;
-				case 2:
-					//copy the registers to validate them later
-					memcpy(&regClone[1], currentRegs, sizeof(regClone[1]));
-					execStack[1] = pEnv->runtimeContext.virtualStack;
-					break;
-				}*/
-
-
-				/*static bool trigger = false;
-
-				if (0xDFAD == (0xFFFF & (DWORD)a)) {
-					if (trigger) {
-						__asm int 3;
-					} else {
-						trigger = true;
-					}
-				}
-
-				if (0xe0b5 == (0xFFFF & (DWORD)a)) {
-					if (trigger) {
-						__asm int 3;
-					}
-				}*/
-
 				pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
 			//}
 			//__except (1) { //EXCEPTION_EXECUTE_HANDLER
@@ -261,7 +238,7 @@ extern "C" {
 
 	}
 
-	void __stdcall SysHandler(struct _exec_env *pEnv) {
+	void __stdcall SysHandler(struct ExecutionEnvironment *pEnv) {
 		//__asm int 3;
 
 		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "SysHandler!!!\n");

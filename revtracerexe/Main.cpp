@@ -76,7 +76,7 @@ void DebugPrint(DWORD printMask, const char *fmt, ...) {
 
 	unsigned long wr;
 	if ('\n' == lastChar) {
-		WriteFile(fDbg, pfxBuff, sizeof(pfxBuff), &wr, NULL);
+		WriteFile(fDbg, pfxBuff, sizeof(pfxBuff) - 1, &wr, NULL);
 	}
 	WriteFile(fDbg, tmpBuff, sz * sizeof(tmpBuff[0]), &wr, NULL);
 	lastChar = tmpBuff[sz - 1];
@@ -232,22 +232,6 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 		cReg.edi
 	);
 
-	/*if (0xE39A == ((DWORD)addr & 0xFFFF)) {
-		__asm int 3;
-	}*/
-
-	/*switch (c->execCount % 3) {
-		case 0:
-			RegCheck(rgs[0], cReg);
-			break;
-		case 1:
-			memcpy(&rgs[0], &cReg, sizeof(cReg));
-			break;
-		case 2:
-			break;
-	}*/
-
-	
 	if (NULL == hKernel32Dll) {
 		if (NULL != (hKernel32Dll = GetModuleHandle("kernel32.dll"))) {
 			IPFPFunc = GetProcAddress(hKernel32Dll, "IsProcessorFeaturePresent");
@@ -309,16 +293,6 @@ void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	rev::Initialize();
 }
 
-const unsigned char tmp[] = {
-	0xf0, 0x0f, 0xc7, 0x0f,
-	/*0x8b, 0x45, 0xfc,
-	0xf6, 0x40, 0x07, 0x80,
-	0x0f, 0x84, 0x4a, 0x4b, 0x00, 0x00,*/
-	0xc3
-};
-
-
-
 int main(unsigned int argc, char *argv[]) {
 	if (!MapPE(baseAddr)) {
 		return false;
@@ -335,32 +309,16 @@ int main(unsigned int argc, char *argv[]) {
 
 	//rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x2B000), 0x01);
 	//rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x2B004), 0x02);
-	rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x60540), 0x01);
-	rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x60544), 0x02);
-	rev::MarkMemory((rev::ADDR_TYPE)(baseAddr + 0x60548), 0x04);
+	
+	rev::MarkMemoryValue((rev::ADDR_TYPE)(baseAddr + 0x60540), 0x01);
+	rev::MarkMemoryValue((rev::ADDR_TYPE)(baseAddr + 0x60544), 0x02);
+	rev::MarkMemoryValue((rev::ADDR_TYPE)(baseAddr + 0x60548), 0x04);
+
+	//rev::MarkMemoryName((rev::ADDR_TYPE)(baseAddr + 0x60540), "a");
+	//rev::MarkMemoryName((rev::ADDR_TYPE)(baseAddr + 0x60544), "b");
+	//rev::MarkMemoryName((rev::ADDR_TYPE)(baseAddr + 0x60548), "c");
 	rev::Execute(argc, argv);
 	
 	CloseHandle(fDbg);
-
-	/*struct _exec_env *pEnv;
-	struct UserCtx *ctx;
-	DWORD dwCount = 0;
-	pEnv = new _exec_env(0x1000000, 0x10000, 0x2000000, 16, 0x10000);
-
-	pEnv->userContext = AllocUserContext(pEnv, sizeof(struct UserCtx));
-	ctx = (struct UserCtx *)pEnv->userContext;
-	ctx->callCount = 0;
-
-	unsigned char *pMain = (unsigned char *)baseAddr + 0x96CE;
-	DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)pMain, (void *)argc, (void *)argv);
-	DbgPrint("Done. ret = %d\n\n", ret);
-
-	PrintStats(pEnv);
-
-	DbgPrint(" +++ Tainted addresses +++ \n");
-	ac.PrintAddreses();
-	DbgPrint(" +++++++++++++++++++++++++ \n");*/
-
-	
 	return 0;
 }
