@@ -1,14 +1,29 @@
-extern "C" unsigned int fibo0 = 1, fibo1 = 1;
+unsigned int serial[] = { 0x31, 0x3e, 0x3d, 0x26, 0x31 };
 
+int Check(unsigned int *ptr) {
+	int i, j = 0;
+	int hash = 0xABCD;
 
-int Payload() {
-	unsigned int fib0 = fibo0, fib1 = fibo1;
-	for (int i = 0; i < 1000 - 2; ++i) {
-		unsigned int t = fib0 + fib1;
-		fib0 = fib1;
-		fib1 = t;
+	for (i = 0; ptr[i]; i++) {
+		hash += ptr[i] ^ serial[j];
+
+		j = (j == 2) ? 0 : j + 1;
 	}
 
-	return fib1;
+	return hash;
 }
 
+extern "C" unsigned int buffer[] = {
+	'a', 'b', 'c', 'd', 'e', 0, 0, 0, 0
+};
+
+int Payload() {
+	int ret;
+
+	ret = Check(buffer);
+	if (ret == 0xad6d) {
+		return 1;
+	}
+
+	return 0;
+}

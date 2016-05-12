@@ -13,7 +13,7 @@ void SymbolicEnvironmentImpl::GetOperandLayout(const RiverInstruction &rIn) {
 
 	flagOffset = 0xFFFFFFFF;
 
-	if (0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) {
+	if ((0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) || (rIn.modFlags)) {
 		flagOffset = trackIndex;
 		trackIndex++;
 	}
@@ -140,12 +140,30 @@ DWORD BinLog2(DWORD v) {
 	return r;
 }
 
+BYTE flagShifts[] = {
+	0, //RIVER_SPEC_FLAG_CF
+	2, //RIVER_SPEC_FLAG_PF
+	4, //RIVER_SPEC_FLAG_AF
+	6, //RIVER_SPEC_FLAG_ZF
+	7, //RIVER_SPEC_FLAG_SF
+	11, //RIVER_SPEC_FLAG_OF
+	10 //RIVER_SPEC_FLAG_DF
+};
+
 bool GetFlgValue(void *ctx, rev::BYTE flg, rev::BOOL &isTracked, rev::BYTE &concreteValue, void *&symbolicValue) {
 	SymbolicEnvironmentImpl *_this = (SymbolicEnvironmentImpl *)ctx;
 	DWORD flgIdx = BinLog2(flg);
 	//void *expr = pEnv->runtimeContext.taintedFlags[flgIdx];
 
-	return false;
+	DWORD val = _this->pEnv->runtimeContext.taintedFlags[flgIdx];
+
+	isTracked = (0 != val);
+	concreteValue = (_this->opBase[_this->flagOffset] >> flagShifts[flgIdx]) & 1;
+	if (isTracked) {
+		symbolicValue = (void *)val;
+	}
+
+	return true;
 }
 
 bool SetOperand(void *ctx, rev::BYTE opIdx, void *symbolicValue) {
@@ -174,22 +192,22 @@ bool SetOperand(void *ctx, rev::BYTE opIdx, void *symbolicValue) {
 }
 
 bool UnsetOperand(void *ctx, rev::BYTE opIdx) {
-	SymbolicEnvironmentImpl *_this = (SymbolicEnvironmentImpl *)ctx;
-	return false;
+	return SetOperand(ctx, opIdx, nullptr);
 }
 
 void SetFlgValue(void *ctx, rev::BYTE flg, void *symbolicValue) {
 	SymbolicEnvironmentImpl *_this = (SymbolicEnvironmentImpl *)ctx;
+	DWORD flgIdx = BinLog2(flg);
 
+	_this->pEnv->runtimeContext.taintedFlags[flgIdx] = (DWORD)symbolicValue;
 }
 
 void UnsetFlgValue(void *ctx, rev::BYTE flg) {
-	SymbolicEnvironmentImpl *_this = (SymbolicEnvironmentImpl *)ctx;
+	SetFlgValue(ctx, flg, nullptr);
 }
 
 void SetRegValue(void *ctx, RiverRegister reg, void *symbolicValue) {
 	SymbolicEnvironmentImpl *_this = (SymbolicEnvironmentImpl *)ctx;
-
 }
 
 void UnsetRegValue(void *ctx, RiverRegister reg) {
