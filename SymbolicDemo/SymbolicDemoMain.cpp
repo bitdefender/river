@@ -4,6 +4,8 @@
 #include "../revtracer/revtracer.h"
 #include "../revtracer/SymbolicEnvironment.h"
 
+#include "VariableTracker.h"
+
 #include "z3.h"
 
 ::HANDLE fDbg = ((::HANDLE)(::LONG_PTR)-1);
@@ -147,14 +149,7 @@ public:
 			(Z3_ast)symValue
 		);
 
-		//printf("; (assert %s)\n\n", Z3_ast_to_string(context, cond));
-		
-		//Z3_ast sCond = Z3_simplify(context, cond);
 		lastCondition = Z3_simplify(context, cond);
-
-		//printf("(assert %s)\n\n", Z3_ast_to_string(context, sCond));
-
-		//Z3_solver_assert(context, solver, sCond);
 	}
 
 	void SymbolicExecuteJnz(RiverInstruction *instruction) {
@@ -170,14 +165,7 @@ public:
 			(Z3_ast)symValue
 		);
 
-		//printf("; (assert %s)\n\n", Z3_ast_to_string(context, cond));
-
-		//Z3_ast sCond = Z3_simplify(context, cond);
 		lastCondition = Z3_simplify(context, cond);
-
-		//printf("(assert %s)\n\n", Z3_ast_to_string(context, sCond));
-
-		//Z3_solver_assert(context, solver, sCond);
 	}
 
 	void SymbolicExecuteXor(RiverInstruction *instruction) {
@@ -309,7 +297,6 @@ public:
 		env->GetOperand(1, isTracked, concreteValue, symValue);
 
 		if (isTracked) {
-			//Z3_ast src; // we don't need it tho
 			env->SetOperand(0, symValue);
 		} else {
 			env->UnsetOperand(0);
@@ -331,7 +318,6 @@ public:
 
 		if (isTracked) {
 			Z3_ast dst = Z3_mk_sign_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)symValue));
-			//symValue = (void *)symValue;
 			env->SetOperand(0, symValue);
 		}
 		else {
@@ -529,69 +515,60 @@ void *CreateVariable(void *ctx, const char *name) {
 	Z3_symbol s = Z3_mk_string_symbol(_this->context, name);
 	Z3_ast ret = Z3_mk_const(_this->context, s, _this->dwordSort);
 
-	Z3_ast cond1 = Z3_mk_bvule(
+	/*VariableTracker<Z3_ast> *ret = new VariableTracker<Z3_ast>(
+		Z3_mk_const(_this->context, s, _this->dwordSort)
+	);*/
+
+	Z3_ast l1[2] = {
+		Z3_mk_bvule(
+			_this->context,
+			Z3_mk_int(_this->context, 'a', _this->dwordSort),
+			ret
+		),
+		Z3_mk_bvuge(
+			_this->context,
+			Z3_mk_int(_this->context, 'z', _this->dwordSort),
+			ret
+		)
+	};
+
+	Z3_ast l2[2] = {
+		Z3_mk_eq(
+			_this->context,
+			_this->zero32,
+			ret
+		),
+		Z3_mk_and(
+			_this->context,
+			2,
+			l1
+		)
+	};
+
+	Z3_ast cond = Z3_mk_or(
 		_this->context,
-		Z3_mk_int(_this->context, 0x61, _this->dwordSort),
-		ret
+		2,
+		l2
 	);
 
-	Z3_solver_assert(_this->context, _this->solver, cond1);
-	printf("(assert %s)\n\n", Z3_ast_to_string(_this->context, cond1));
-
-	Z3_ast cond2 = Z3_mk_bvuge(
-		_this->context,
-		Z3_mk_int(_this->context, 0x7a, _this->dwordSort),
-		ret
-	);
-
-	Z3_solver_assert(_this->context, _this->solver, cond2);
-	printf("(assert %s)\n\n", Z3_ast_to_string(_this->context, cond2));
+	Z3_solver_assert(_this->context, _this->solver, cond);
+	printf("(assert %s)\n\n", Z3_ast_to_string(_this->context, cond));
 
 	_this->symIndex++;
-	return ret; //(void *)(_this->symIndex - 1);
+	return ret;
 }
 
 void Execute(void *ctx, RiverInstruction *instruction) {
 	MySymbolicExecutor *_this = (MySymbolicExecutor *)ctx;
-	/*rev::BOOL isTrackedOp[4], isTrackedFlg[7];
-	rev::DWORD concreteValuesOp[4];
-	rev::BYTE concreteValuesFlg[7];
-	void *symbolicValuesOp[4], *symbolicValuesFlg[7];*/
-
-	/*for (rev::DWORD i = 0; i < 7; i++) {
-		if ((1 << i) & instruction->testFlags) {
-			_this->env->GetFlgValue((1 << i), isTrackedFlg[i], concreteValuesFlg[i], symbolicValuesFlg[i]);
-		}
-	}
-
-
-	for (int i = 0; i < 4; ++i) {
-		_this->env->GetOperand(i, isTrackedOp[i], concreteValuesOp[i], symbolicValuesOp[i]);
-	}*/
-
 	_this->SymbolicExecuteDispatch(instruction);
-
-	/*for (int i = 0; i < 4; ++i) {
-		if (RIVER_SPEC_MODIFIES_OP(i) & instruction->specifiers) {
-			void *tmp = (void *)_this->symIndex;
-			_this->env->SetOperand(i, tmp);
-			_this->symIndex++;
-		}
-	}
-
-	for (rev::BYTE i = 0; i < 7; i++) {
-		if ((1 << i) & instruction->modFlags) {
-			void *tmp = (void *)_this->symIndex;
-			_this->env->SetFlgValue(i, tmp);
-			_this->symIndex++;
-		}
-	}*/
 }
 
 MySymbolicExecutor *executor = NULL;
 
 rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 	rev::DWORD ret = EXECUTION_ADVANCE;
+
+	Z3_solver_push(executor->context, executor->solver);
 
 	if (nullptr != executor->lastCondition) {
 
@@ -724,6 +701,5 @@ int main(int argc, char *argv[]) {
 	Z3_close_log();
 
 	CloseHandle(fDbg);
-	system("pause");
 	return 0;
 }
