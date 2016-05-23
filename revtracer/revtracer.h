@@ -38,6 +38,9 @@ namespace rev {
 	typedef void(*SyscallControlFunc)(void *context);
 	typedef void(*IpcLibInitFunc)();
 
+	typedef void(*TrackCallbackFunc)(DWORD value, DWORD address, DWORD segment);
+	typedef void(*MarkCallbackFunc)(DWORD oldValue, DWORD newValue, DWORD address, DWORD segment);
+
 	struct LowLevelRevtracerAPI {
 		/* Low level ntdll.dll functions */
 		ADDR_TYPE ntAllocateVirtualMemory;
@@ -75,6 +78,10 @@ namespace rev {
 
 		/* IpcLib initialization */
 		IpcLibInitFunc ipcLibInitialize;
+
+		/* Variable tracking callbacks */
+		TrackCallbackFunc trackCallback;
+		MarkCallbackFunc markCallback;
 
 		LowLevelRevtracerAPI lowLevel;
 	};

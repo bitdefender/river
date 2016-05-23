@@ -320,6 +320,10 @@ namespace rev {
 
 	void DefaultSyscallControlFunc(void *context) { }
 
+
+	void DefaultTrackCallback(DWORD value, DWORD address, DWORD segSel) { }
+	void DefaultMarkCallback(DWORD oldValue, DWORD newValue, DWORD address, DWORD segSel) { }
+
 	void DefaultNtAllocateVirtualMemory() {
 		__asm int 3;
 	}
@@ -367,6 +371,9 @@ namespace rev {
 		DefaultSyscallControlFunc,
 
 		DefaultIpcInitialize,
+
+		DefaultTrackCallback,
+		DefaultMarkCallback,
 
 		{
 			(ADDR_TYPE)DefaultNtAllocateVirtualMemory,

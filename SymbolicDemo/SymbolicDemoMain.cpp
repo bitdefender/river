@@ -508,12 +508,56 @@ MySymbolicExecutor::SymbolicExecute MySymbolicExecutor::executeFuncs[2][0x100] =
 	}
 };
 
+struct TrackedVariableData {
+public :
+	bool isLocked;
+
+	TrackedVariableData() {
+		isLocked = false;
+	}
+};
+
+void DeleteTrackedVariableData(void *ptr) {
+	//TrackedVariableData *tvd = (TrackedVariableData *)ptr;
+	//delete ptr;
+}
+
+bool IsLocked(void *ctx, const Z3_ast *ast) {
+	MySymbolicExecutor *_this = (MySymbolicExecutor *)ctx;
+	TrackedVariableData *tvd = (TrackedVariableData *)Z3_get_user_ptr(_this->context, *ast);
+
+	return tvd->isLocked;
+}
+
+void Lock(void *ctx, Z3_ast *ast) {
+	MySymbolicExecutor *_this = (MySymbolicExecutor *)ctx;
+	TrackedVariableData *tvd = (TrackedVariableData *)Z3_get_user_ptr(_this->context, *ast);
+
+	tvd->isLocked = true;
+}
+
+void Unlock(void *ctx, Z3_ast *ast) {
+	MySymbolicExecutor *_this = (MySymbolicExecutor *)ctx;
+	TrackedVariableData *tvd = (TrackedVariableData *)Z3_get_user_ptr(_this->context, *ast);
+
+	tvd->isLocked = false;
+}
+
+MySymbolicExecutor *executor = NULL;
+VariableTracker<Z3_ast> *variableTracker = NULL;
+::DWORD lastDirection = EXECUTION_ADVANCE;
+
+TrackedVariableData tvs[5];
+rev::DWORD tvCount = 0;
 
 void *CreateVariable(void *ctx, const char *name) {
 	MySymbolicExecutor *_this = (MySymbolicExecutor *)ctx;
 
 	Z3_symbol s = Z3_mk_string_symbol(_this->context, name);
 	Z3_ast ret = Z3_mk_const(_this->context, s, _this->dwordSort);
+		
+	Z3_set_user_ptr(_this->context, ret, &tvs[tvCount], (void *)DeleteTrackedVariableData);
+	tvCount++;
 
 	/*VariableTracker<Z3_ast> *ret = new VariableTracker<Z3_ast>(
 		Z3_mk_const(_this->context, s, _this->dwordSort)
@@ -563,12 +607,22 @@ void Execute(void *ctx, RiverInstruction *instruction) {
 	_this->SymbolicExecuteDispatch(instruction);
 }
 
-MySymbolicExecutor *executor = NULL;
-
 rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
+	static rev::DWORD tmp = 0;
 	rev::DWORD ret = EXECUTION_ADVANCE;
 
-	Z3_solver_push(executor->context, executor->solver);
+	if (2 == (tmp % 3)) {
+		ret = EXECUTION_BACKTRACK;
+	}
+	tmp++;
+
+	printf("-=-=-=-=-=-=-=-=-=-=-\n");
+	for (int i = 0; i < 5; ++i) {
+		printf("a[%d] is %s\n", i, tvs[i].isLocked ? "locked" : "unlocked");
+	}
+	printf("=-=-=-=-=-=-=-=-=-=-=\n");
+
+	/*Z3_solver_push(executor->context, executor->solver); */
 
 	if (nullptr != executor->lastCondition) {
 
@@ -587,12 +641,39 @@ rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx
 		executor->lastCondition = nullptr;
 	}
 
+	lastDirection = ret;
+	switch (ret) {
+		case EXECUTION_ADVANCE :
+			variableTracker->Forward();
+			Z3_solver_push(executor->context, executor->solver);
+			break;
+		case EXECUTION_BACKTRACK :
+			printf("Backtrack!\n");
+			Z3_solver_pop(executor->context, executor->solver, 1); 
+			variableTracker->Backward();
+			break;
+	}
 	return ret;
 }
 
 SymbolicExecutor *SymExeConstructor(SymbolicEnvironment *env) {
 	executor = new MySymbolicExecutor(env);
+	variableTracker = new VariableTracker<Z3_ast>(executor, IsLocked, Lock, Unlock);
 	return executor;
+}
+
+void TrackCallback(rev::DWORD value, rev::DWORD address, rev::DWORD segSel) {
+	if (EXECUTION_ADVANCE == lastDirection) {
+		Z3_ast t = (Z3_ast)value;
+
+		if (nullptr != Z3_get_user_ptr(executor->context, t)) {
+			variableTracker->Lock(&t);
+		}
+	}
+}
+
+void MarkCallback(rev::DWORD oldValue, rev::DWORD newValue, rev::DWORD address, rev::DWORD segSel) {
+	//__asm int 3;
 }
 
 void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
@@ -611,6 +692,9 @@ void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	api->lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
 
 	api->executionControl = CustomExecutionController;
+
+	api->trackCallback = TrackCallback;
+	api->markCallback = MarkCallback;
 
 
 	rev::RevtracerConfig *config = &rev::revtracerConfig;
