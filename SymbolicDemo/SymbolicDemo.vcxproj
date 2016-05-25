@@ -88,9 +88,13 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
     </ClCompile>
     <ClCompile Include="SymbolicDemoMain.cpp" />
+    <ClCompile Include="TrackingCookie.cpp" />
+    <ClCompile Include="Z3SymbolicExecutor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="TrackingCookie.h" />
     <ClInclude Include="VariableTracker.h" />
+    <ClInclude Include="Z3SymbolicExecutor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
