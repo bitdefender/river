@@ -14,7 +14,7 @@ int Check(unsigned int *ptr) {
 }
 
 extern "C" unsigned int buffer[] = {
-	'a', 'b', 'c', 'd', 'e', 0, 0, 0, 0
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
 };
 
 int Payload() {

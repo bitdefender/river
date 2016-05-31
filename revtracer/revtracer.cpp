@@ -351,6 +351,12 @@ namespace rev {
 		regs->esp = pCtx->runtimeContext.virtualStack;
 	}
 
+	void *GetMemoryInfo(void *ctx, ADDR_TYPE addr) {
+		struct ExecutionEnvironment *pEnv = (struct ExecutionEnvironment *)ctx;
+		DWORD ret = pEnv->ac.Get((DWORD)addr/* + revtracerConfig.segmentOffsets[segSel & 0xFFFF]*/);
+		return (void *)ret;
+	}
+
 
 	/* Inproc API *************************************************************************/
 
@@ -548,8 +554,11 @@ namespace rev {
 	}
 
 	void Execute(int argc, char *argv[]) {
-		DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
+		DWORD ret;
+		if (EXECUTION_ADVANCE == revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+			ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
+			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
+		}
 	}
 
 	DWORD __stdcall MarkAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);

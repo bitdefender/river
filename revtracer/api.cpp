@@ -130,7 +130,7 @@ extern "C" {
 		}
 
 		DWORD dwDirection = EXECUTION_ADVANCE;  
-		if (a == revtracerAPI.lowLevel.ntTerminateProcess) {
+		if ((a == revtracerAPI.lowLevel.ntTerminateProcess) || (a == (ADDR_TYPE)pEnv->exitAddr)) {
 			// TODO: verify parameters
 			dwDirection = revtracerAPI.executionEnd(pEnv->userContext, pEnv);
 		} else if (ExecutionBufferEmpty(pEnv)) {

@@ -131,6 +131,7 @@ namespace rev {
 
 		/* Execution context callbacks ********************/
 		DLL_LINKAGE void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
+		DLL_LINKAGE void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
 
 		/* In process API *********************************/
 

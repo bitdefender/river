@@ -173,7 +173,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 
 	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "= x86 to river ================================================================\n");
 
-	RiverInstruction dis;
+	//RiverInstruction dis;
 	//RiverInstruction symbopMain[16]; // , symbopTrack[16];
 
 	RiverInstruction instrBuffers[3][16];

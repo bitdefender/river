@@ -35,6 +35,7 @@ DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cd
 	//pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 	ret = ((_fn_cdecl_0)(pBlock->pFwCode))(); //JUMP in TVM
@@ -52,6 +53,7 @@ DWORD __declspec(noinline) call_cdecl_1(struct ExecutionEnvironment *env, _fn_cd
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
@@ -70,6 +72,7 @@ DWORD __declspec(noinline) call_cdecl_2(struct ExecutionEnvironment *env, _fn_cd
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
@@ -88,6 +91,7 @@ DWORD __declspec(noinline) call_cdecl_3(struct ExecutionEnvironment *env, _fn_cd
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
@@ -106,6 +110,7 @@ DWORD __declspec(noinline) call_cdecl_4(struct ExecutionEnvironment *env, _fn_cd
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
@@ -123,6 +128,7 @@ DWORD __declspec(noinline) call_stdcall_0(struct ExecutionEnvironment *env, _fn_
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
@@ -140,6 +146,7 @@ DWORD __declspec(noinline) call_stdcall_1(struct ExecutionEnvironment *env, _fn_
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
@@ -157,6 +164,7 @@ DWORD __declspec(noinline) call_stdcall_2(struct ExecutionEnvironment *env, _fn_
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
@@ -174,6 +182,7 @@ DWORD __declspec(noinline) call_stdcall_3(struct ExecutionEnvironment *env, _fn_
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
@@ -191,6 +200,7 @@ DWORD __declspec(noinline) call_stdcall_4(struct ExecutionEnvironment *env, _fn_
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags);
 	env->bForward = 1;
+	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 

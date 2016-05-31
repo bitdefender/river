@@ -1,6 +1,6 @@
 #include "TrackingCookie.h"
 
-TrackedVariableData tvs[5];
+TrackedVariableData tvs[8];
 unsigned int tvCount = 0;
 
 void *AllocTrackedVariableData() {
