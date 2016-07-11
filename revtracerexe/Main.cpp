@@ -82,13 +82,13 @@ void DebugPrint(DWORD printMask, const char *fmt, ...) {
 	lastChar = tmpBuff[sz - 1];
 }
 
-__declspec(dllimport) int vsnprintf_s(
+/*__declspec(dllimport) int vsnprintf_s(
 	char *buffer,
 	size_t sizeOfBuffer,
 	size_t count,
 	const char *format,
 	va_list argptr
-);
+);*/
 
 #pragma warning(disable:4996)
 HANDLE fBlocks = CreateFileA("tmp.blk", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
@@ -181,7 +181,7 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 
 	char *module = defMf;
 
-	do {
+	/*do {
 		MODULEENTRY32 me32;
 
 		// Take a snapshot of all modules in the specified process.
@@ -230,7 +230,7 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 		cReg.ebp,
 		cReg.esi,
 		cReg.edi
-	);
+	);*/
 
 	if (NULL == hKernel32Dll) {
 		if (NULL != (hKernel32Dll = GetModuleHandle("kernel32.dll"))) {
@@ -257,7 +257,7 @@ DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 		}
 	}*/
 
-	static int blockCount = 100000;
+	static int blockCount = 1000000;
 
 	blockCount--;
 	if (0 == blockCount) {

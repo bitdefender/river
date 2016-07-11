@@ -7,7 +7,7 @@ int Check(unsigned int *ptr) {
 	for (i = 0; ptr[i]; i++) {
 		hash += ptr[i] ^ serial[j];
 
-		j = (j == 2) ? 0 : j + 1;
+		j = (j == 5) ? 0 : j + 1;
 	}
 
 	return hash;

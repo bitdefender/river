@@ -462,11 +462,11 @@ rev::DWORD CustomExecutionEnd(void *ctx, void *cbCtx) {
 			actualPass[r[2] - '0'] = ret;
 		}
 
-		printf("Check(\"");
+		fprintf(stderr, "Check(\"");
 		for (int i = 0; actualPass[i]; ++i) {
-			printf("%c", actualPass[i]);
+			fprintf(stderr, "%c", actualPass[i]);
 		}
-		printf("\") = %04x\n", Check(actualPass));
+		fprintf(stderr, "\") = %04x\n", Check(actualPass));
 	}
 	else if (Z3_L_FALSE == ret) {
 		printf("unsat\n");

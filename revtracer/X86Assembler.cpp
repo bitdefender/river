@@ -1,4 +1,5 @@
 #include "revtracer.h"
+#include "common.h"
 
 #include "X86Assembler.h"
 
@@ -230,14 +231,14 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 
 	DWORD printMask = PRINT_INFO | PRINT_ASSEMBLY | masks[outputType];
 
-	revtracerAPI.dbgPrintFunc(printMask, "=%s============================================\n", headers[outputType]);
+	TRANSLATE_PRINT(printMask, "=%s============================================\n", headers[outputType]);
 
 	if (ASSEMBLER_CODE_TRACKING & outputType) {
 		AssembleTrackingEnter(px86, instrCounter);
 		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc(printMask, "%02x ", *pTmp);
+			TRANSLATE_PRINT(printMask, "%02x ", *pTmp);
 		}
-		revtracerAPI.dbgPrintFunc(printMask, "\n");
+		TRANSLATE_PRINT(printMask, "\n");
 	}
 
 	for (DWORD i = 0; i < dwInstrCount; ++i) {
@@ -254,9 +255,9 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		}
 		
 		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc(printMask, "%02x ", *pTmp);
+			TRANSLATE_PRINT(printMask, "%02x ", *pTmp);
 		}
-		revtracerAPI.dbgPrintFunc(printMask, "\n");
+		TRANSLATE_PRINT(printMask, "\n");
 	}
 
 	if (ASSEMBLER_CODE_TRACKING & outputType) {
@@ -266,58 +267,21 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		}
 		AssembleTrackingLeave(px86, instrCounter);
 		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc(printMask, "%02x ", *pTmp);
+			TRANSLATE_PRINT(printMask, "%02x ", *pTmp);
 		}
-		revtracerAPI.dbgPrintFunc(printMask, "\n");
+		TRANSLATE_PRINT(printMask, "\n");
 	} else {
 		EndRiverConversion(px86, pFlags, currentFamily, repReg, instrCounter);
 		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc(printMask, "%02x ", *pTmp);
+			TRANSLATE_PRINT(printMask, "%02x ", *pTmp);
 		}
-		revtracerAPI.dbgPrintFunc(printMask, "\n");
+		TRANSLATE_PRINT(printMask, "\n");
 	}
 
-	revtracerAPI.dbgPrintFunc(printMask, "===============================================================================\n");
+	TRANSLATE_PRINT(printMask, "===============================================================================\n");
 	byteCounter = px86.cursor - pAux;
 	return true;
 }
-
-/*bool X86Assembler::AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter) {
-	BYTE *pTmp = px86.cursor, *pAux = px86.cursor;
-	DWORD pFlags = flg;
-	BYTE currentFamily = RIVER_FAMILY_TRACK;
-	BYTE repReg = 0;
-
-	revtracerAPI.dbgPrintFunc("= tracking x86 ================================================================\n");
-
-	AssembleTrackingEnter(px86, instrCounter);
-	for (; pTmp < px86.cursor; ++pTmp) {
-		revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
-	}
-	revtracerAPI.dbgPrintFunc("\n");
-
-	for (DWORD i = 0; i < dwInstrCount; ++i) {
-		pTmp = px86.cursor;
-
-		GeneratePrefixes(pRiver[i], px86.cursor);
-		tAsm.Translate(pRiver[i], px86, flg, currentFamily, repReg, instrCounter, ASSEMBLER_DIR_FORWARD | ASSEMBLER_CODE_TRACKING);
-
-		for (; pTmp < px86.cursor; ++pTmp) {
-			revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
-		}
-		revtracerAPI.dbgPrintFunc("\n");
-	}
-
-	AssembleTrackingLeave(px86, instrCounter);
-	for (; pTmp < px86.cursor; ++pTmp) {
-		revtracerAPI.dbgPrintFunc("%02x ", *pTmp);
-	}
-	revtracerAPI.dbgPrintFunc("\n");
-
-	revtracerAPI.dbgPrintFunc("===============================================================================\n");
-	byteCounter = px86.cursor - pAux;
-	return true;
-}*/
 
 void X86Assembler::SwitchEspWithReg(RelocableCodeBuffer &px86, DWORD &instrCounter, BYTE repReg, DWORD dwStack) {
 	static const BYTE code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}

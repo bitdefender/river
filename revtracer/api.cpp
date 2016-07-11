@@ -1,5 +1,6 @@
 #include "revtracer.h"
 
+#include "common.h"
 #include "execenv.h"
 #include "river.h"
 
@@ -24,7 +25,7 @@ namespace rev {
 	DWORD __stdcall TrackAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD segSel) {
 		DWORD ret = pEnv->ac.Get(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF]);
 
-		revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "TrackAddr 0x%08x => %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
+		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "TrackAddr 0x%08x => %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
 
 		if (0 != ret) {
 			revtracerAPI.trackCallback(ret, dwAddr, segSel);
@@ -34,7 +35,7 @@ namespace rev {
 	}
 
 	DWORD __stdcall MarkAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
-		revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "MarkAddr 0x%08x <= %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
+		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "MarkAddr 0x%08x <= %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
 		DWORD ret = pEnv->ac.Set(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
 
 		if (0 != ret) {
@@ -72,17 +73,6 @@ extern "C" {
 		DWORD ProcessHandle,
 		DWORD ExitStatus
 	);
-
-
-	DWORD cnt = 0;
-
-	struct {
-		DWORD addr;
-		DWORD value;
-		DWORD keep;
-		DWORD ovr;
-	} lfhTrack[1600];
-	DWORD lfhCount = 0;
 
 	void __stdcall BranchHandler(struct ExecutionEnvironment *pEnv, ADDR_TYPE a) {
 		//ExecutionRegs *currentRegs = (ExecutionRegs *)((&a) + 1);
@@ -201,43 +191,35 @@ extern "C" {
 		} else if (EXECUTION_ADVANCE == dwDirection) {
 			// go forwards
 			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Going Forwards from %08X!!!\n", a);
-			//__try {
-				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Looking for block\n");
-				pCB = pEnv->blockCache.FindBlock((rev::UINT_PTR)a);
-				if (pCB) {
-					revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Block found\n");
+			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Looking for block\n");
+			pCB = pEnv->blockCache.FindBlock((rev::UINT_PTR)a);
+			if (pCB) {
+				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Block found\n");
+			} else {
+				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Not Found\n");
+				pCB = pEnv->blockCache.NewBlock((rev::UINT_PTR)a);
+
+				pEnv->codeGen.Translate(pCB, pEnv->generationFlags);
+
+				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river saving code ===========================================================\n");
+				for (DWORD i = 0; i < pEnv->codeGen.fwInstCount; ++i) {
+					TRANSLATE_PRINT_INSTRUCTION(PRINT_BRANCHING_INFO, &pEnv->codeGen.fwRiverInst[i]);
 				}
-				else {
-					revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Not Found\n");
-					pCB = pEnv->blockCache.NewBlock((rev::UINT_PTR)a);
+				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "===============================================================================\n");
 
-					pEnv->codeGen.Translate(pCB, pEnv->generationFlags);
-
-					revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "= river saving code ===========================================================\n");
-					for (DWORD i = 0; i < pEnv->codeGen.fwInstCount; ++i) {
-						RiverPrintInstruction(PRINT_BRANCHING_INFO, &pEnv->codeGen.fwRiverInst[i]);
+				if (TRACER_FEATURE_REVERSIBLE & pEnv->generationFlags) {
+					TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river reversing code ========================================================\n");
+					for (DWORD i = 0; i < pEnv->codeGen.bkInstCount; ++i) {
+						TRANSLATE_PRINT_INSTRUCTION(PRINT_BRANCHING_INFO, &pEnv->codeGen.bkRiverInst[i]);
 					}
-					revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "===============================================================================\n");
-
-					if (TRACER_FEATURE_REVERSIBLE & pEnv->generationFlags) {
-						revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "= river reversing code ========================================================\n");
-						for (DWORD i = 0; i < pEnv->codeGen.bkInstCount; ++i) {
-							RiverPrintInstruction(PRINT_BRANCHING_INFO, &pEnv->codeGen.bkRiverInst[i]);
-						}
-						revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "===============================================================================\n");
-					}
+					TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "===============================================================================\n");
 				}
-				pCB->MarkForward();
-				//pEnv->jumpBuff = (DWORD)pCB->pCode;
-				//TouchBlock(pEnv, pCB);
-				pEnv->lastFwBlock = pCB->address;
-				pEnv->bForward = 1;
+			}
+			pCB->MarkForward();
+			pEnv->lastFwBlock = pCB->address;
+			pEnv->bForward = 1;
 
-				pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
-			//}
-			//__except (1) { //EXCEPTION_EXECUTE_HANDLER
-			//	pEnv->runtimeContext.jumpBuff = (rev::UINT_PTR)a;
-			//}
+			pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
 		} else if (EXECUTION_TERMINATE == dwDirection) {
 			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++ Tainted addresses +++ \n");
 			pEnv->ac.PrintAddreses();
@@ -248,8 +230,6 @@ extern "C" {
 	}
 
 	void __stdcall SysHandler(struct ExecutionEnvironment *pEnv) {
-		//__asm int 3;
-
 		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "SysHandler!!!\n");
 	}
 };

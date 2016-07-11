@@ -171,7 +171,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
 
-	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "= x86 to river ================================================================\n");
+	TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "= x86 to river ================================================================\n");
 
 	//RiverInstruction dis;
 	//RiverInstruction symbopMain[16]; // , symbopTrack[16];
@@ -198,20 +198,21 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 		for (DWORD i = 0; i < instrCounts[0]; ++i) {
 			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(instrBuffers[0][i].family)) {
 
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, ".%08x    ", pAux);
+				TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, ".%08x    ", pAux);
 				iSize = pTmp - pAux;
 				for (DWORD i = 0; i < iSize; ++i) {
-					revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "%02x ", pAux[i]);
+					TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "%02x ", pAux[i]);
 				}
 
 				for (DWORD i = iSize; i < 8; ++i) {
-					revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "   ");
+					TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "   ");
 				}
 			}
 			else {
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, ".                                    ");
+				TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, ".                                    ");
 			}
-			RiverPrintInstruction(PRINT_INFO | PRINT_DISASSEMBLY, &instrBuffers[0][i]);
+
+			TRANSLATE_PRINT_INSTRUCTION(PRINT_INFO | PRINT_DISASSEMBLY, &instrBuffers[0][i]);
 		}
 
 		if (TRACER_FEATURE_REVERSIBLE & dwTranslationFlags) {
@@ -247,7 +248,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 		dwInst++;
 	} while (!(pFlags & RIVER_FLAG_BRANCH));
 
-	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_DISASSEMBLY, "===============================================================================\n");
+	TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "===============================================================================\n");
 	return pTmp - px86;
 }
 
@@ -346,11 +347,11 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		}
 
 		if (dwTranslationFlags & TRACER_FEATURE_TRACKING) {
-			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, "= SymbopTrack =================================================================\n");
+			TRANSLATE_PRINT(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, "= SymbopTrack =================================================================\n");
 			for (unsigned int i = 0; i < symbopInstCount; ++i) {
-				RiverPrintInstruction(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, &symbopInst[i]);
+				TRANSLATE_PRINT_INSTRUCTION(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, &symbopInst[i]);
 			}
-			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, "===============================================================================\n");
+			TRANSLATE_PRINT(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING, "===============================================================================\n");
 
 			if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
 				sfInstCount = 0;
@@ -358,22 +359,22 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 					symbopSaveTranslator.Translate(symbopInst[i], &symbopFwRiverInst[sfInstCount], sfInstCount);
 				}
 
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, "= SymbopFwRiverTrack ==========================================================\n");
+				TRANSLATE_PRINT(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, "= SymbopFwRiverTrack ==========================================================\n");
 				for (DWORD i = 0; i < sfInstCount; ++i) {
-					RiverPrintInstruction(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, &symbopFwRiverInst[i]);
+					TRANSLATE_PRINT_INSTRUCTION(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, &symbopFwRiverInst[i]);
 				}
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, "===============================================================================\n");
+				TRANSLATE_PRINT(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, "===============================================================================\n");
 
 				for (DWORD i = 0; i < sfInstCount; ++i) {
 					symbopReverseTranslator.Translate(symbopFwRiverInst[sfInstCount - 1 - i], symbopBkRiverInst[i]);
 				}
 				sbInstCount = sfInstCount;
 
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, "= SymbopBkRiverTrack ==========================================================\n");
+				TRANSLATE_PRINT(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, "= SymbopBkRiverTrack ==========================================================\n");
 				for (DWORD i = 0; i < sbInstCount; ++i) {
-					RiverPrintInstruction(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, &symbopBkRiverInst[i]);
+					TRANSLATE_PRINT_INSTRUCTION(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, &symbopBkRiverInst[i]);
 				}
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, "===============================================================================\n");
+				TRANSLATE_PRINT(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_BACKWARD, "===============================================================================\n");
 			}
 		}
 
