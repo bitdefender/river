@@ -7,8 +7,8 @@ using namespace rev;
 
 #define HEAP_SIZE 0x100000
 
-void memcpy(void *dest, const void *src, unsigned int size);
-void memset(void *dest, int val, unsigned int size);
+extern "C" void rev_memcpy(void *dest, const void *src, unsigned int size);
+extern "C" void rev_memset(void *dest, int val, unsigned int size);
 
 struct HeapZone;
 

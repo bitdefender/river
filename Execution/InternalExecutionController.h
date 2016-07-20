@@ -17,15 +17,15 @@ using namespace std;
 
 class InternalExecutionController : public ExecutionController {
 private:
-	ExecutionBeginFunc eBegin;
-	ExecutionControlFunc eControl;
-	ExecutionEndFunc eEnd;
+	::ExecutionBeginFunc eBegin;
+	::ExecutionControlFunc eControl;
+	::ExecutionEndFunc eEnd;
 	TerminationNotifyFunc term;
 
 	wstring path;
 	wstring cmdLine;
 
-	HANDLE hProcess, hMainThread, hControlThread;
+	HANDLE hProcess, hMainThread, hControlThread, hDbg;
 	DWORD pid, mainTid;
 	ULONG virtualSize, commitedSize;
 
@@ -107,11 +107,17 @@ public:
 	virtual void SetNotificationContext(void *ctx);
 
 	virtual void SetTerminationNotification(TerminationNotifyFunc func);
-	virtual void SetExecutionBeginNotification(ExecutionBeginFunc func);
-	virtual void SetExecutionControlNotification(ExecutionControlFunc func);
-	virtual void SetExecutionEndNotification(ExecutionEndFunc func);
+	virtual void SetExecutionBeginNotification(::ExecutionBeginFunc func);
+	virtual void SetExecutionControlNotification(::ExecutionControlFunc func);
+	virtual void SetExecutionEndNotification(::ExecutionEndFunc func);
+
+	virtual unsigned int ExecutionBegin(void *address, void *cbCtx);
+	virtual unsigned int ExecutionControl(void *address, void *cbCtx);
+	virtual unsigned int ExecutionEnd(void *cbCtx);
 
 	virtual void GetCurrentRegisters(Registers &registers);
+
+	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...);
 };
 
 

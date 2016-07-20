@@ -318,8 +318,11 @@ namespace rev {
 		return EXECUTION_TERMINATE;
 	}
 
-	void DefaultSyscallControlFunc(void *context) { }
+	DWORD DefaultBranchHandlerFunc(void *context, ADDR_TYPE nextInstruction) {
+		return EXECUTION_ADVANCE;
+	}
 
+	void DefaultSyscallControlFunc(void *context) { }
 
 	void DefaultTrackCallback(DWORD value, DWORD address, DWORD segSel) { }
 	void DefaultMarkCallback(DWORD oldValue, DWORD newValue, DWORD address, DWORD segSel) { }
@@ -344,10 +347,14 @@ namespace rev {
 		__asm int 3;
 	}
 
+	void DefaultSymbolicSyncFunc(SymbolicPayloadFunc pFunc, DWORD trackBuffer) {
+		pFunc(trackBuffer);
+	}
+
 	/* Execution context callbacks ********************************************************/
 	void GetCurrentRegisters(void *ctx, ExecutionRegs *regs) {
 		struct ExecutionEnvironment *pCtx = (struct ExecutionEnvironment *)ctx;
-		memcpy(regs, (struct ExecutionEnvironment *)pCtx->runtimeContext.registers, sizeof(*regs));
+		rev_memcpy(regs, (struct ExecutionEnvironment *)pCtx->runtimeContext.registers, sizeof(*regs));
 		regs->esp = pCtx->runtimeContext.virtualStack;
 	}
 
@@ -371,15 +378,16 @@ namespace rev {
 
 		DefaultInitializeContextFunc,
 		DefaultCleanupContextFunc,
-		DefaultExecutionBeginFunc,
-		DefaultExecutionControlFunc,
-		DefaultExecutionEndFunc,
+		
+		DefaultBranchHandlerFunc,
 		DefaultSyscallControlFunc,
 
 		DefaultIpcInitialize,
 
 		DefaultTrackCallback,
 		DefaultMarkCallback,
+
+		DefaultSymbolicSyncFunc,
 
 		{
 			(ADDR_TYPE)DefaultNtAllocateVirtualMemory,
@@ -423,15 +431,19 @@ namespace rev {
 
 		pEnv->runtimeContext.registers = rgs;
 
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", revtracerConfig.entryPoint);
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)revtracerConfig.entryPoint);
 		pBlock->address = (DWORD)revtracerConfig.entryPoint;
 		revtracerConfig.pRuntime = &pEnv->runtimeContext;
 		pEnv->codeGen.Translate(pBlock, 0);
 		
+		pEnv->exitAddr = (DWORD)revtracerAPI.lowLevel.ntTerminateProcess;
+
 		/*pEnv->runtimeContext.execBuff -= 4;
 		*((DWORD *)pEnv->runtimeContext.execBuff) = (DWORD)revtracerConfig.entryPoint;*/
 		
-		switch (revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+		//switch (revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+		switch (revtracerAPI.branchHandler(pEnv, revtracerConfig.entryPoint)) {
 			case EXECUTION_ADVANCE :
 				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
 				for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
@@ -441,6 +453,7 @@ namespace rev {
 				pEnv->bForward = 1;
 				pBlock->MarkForward();
 
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Translated entry point %08x.\n", pBlock->pFwCode);
 				revtracerConfig.entryPoint = pBlock->pFwCode;
 				break;
 			case EXECUTION_TERMINATE :
@@ -526,8 +539,9 @@ namespace rev {
 		revtracerAPI.cleanupContext = cleanCtx;
 	}
 
-	void SetControlMgmt(ExecutionControlFunc execCtl, SyscallControlFunc syscallCtl) {
-		revtracerAPI.executionControl = execCtl;
+	//void SetControlMgmt(ExecutionControlFunc execCtl, SyscallControlFunc syscallCtl) {
+	void SetControlMgmt(BranchHandlerFunc branchCtl, SyscallControlFunc syscallCtl) {
+		revtracerAPI.branchHandler = branchCtl;
 		revtracerAPI.syscallControl = syscallCtl;
 	}
 
@@ -555,7 +569,8 @@ namespace rev {
 
 	void Execute(int argc, char *argv[]) {
 		DWORD ret;
-		if (EXECUTION_ADVANCE == revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+		//if (EXECUTION_ADVANCE == revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+		if (EXECUTION_ADVANCE == revtracerAPI.branchHandler(pEnv, revtracerConfig.entryPoint)) {
 			ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
 			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
 		}

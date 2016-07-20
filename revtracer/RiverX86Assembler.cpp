@@ -38,7 +38,7 @@ extern DWORD dwBranchHandler; // = 0; // &BranchHandler
 void RiverX86Assembler::SwitchToRiver(BYTE *&px86, DWORD &instrCounter) {
 	static const unsigned char code[] = { 0x87, 0x25, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg esp, large ds:<dwVirtualStack>}
 
-	memcpy(px86, code, sizeof(code));
+	rev_memcpy(px86, code, sizeof(code));
 	*(unsigned int *)(&(px86[0x02])) = (unsigned int)&runtime->execBuff;
 
 	px86 += sizeof(code);
@@ -48,7 +48,7 @@ void RiverX86Assembler::SwitchToRiver(BYTE *&px86, DWORD &instrCounter) {
 void RiverX86Assembler::SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE repReg) {
 	static const unsigned char code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}
 
-	memcpy(px86, code, sizeof(code));
+	rev_memcpy(px86, code, sizeof(code));
 	px86[0x01] |= (repReg & 0x03); // choose the acording replacement register
 	*(unsigned int *)(&(px86[0x02])) = (unsigned int)&runtime->execBuff;
 

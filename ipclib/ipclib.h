@@ -74,10 +74,11 @@ namespace ipc {
 #define REQUEST_RESTORE_SNAPSHOT			0x89
 #define REQUEST_INITIALIZE_CONTEXT			0x90
 #define REQUEST_CLEANUP_CONTEXT				0x91
-#define REQUEST_EXECUTION_BEGIN				0x92
-#define REQUEST_EXECUTION_CONTORL			0x93
-#define REQUEST_EXECUTION_END				0x94
+//#define REQUEST_EXECUTION_BEGIN				0x92
+//#define REQUEST_EXECUTION_CONTORL			0x93
+//#define REQUEST_EXECUTION_END				0x94
 #define REQUEST_SYSCALL_CONTROL				0x95
+#define REQUEST_BRANCH_HANDLER				0xA0
 
 #define REPLY_MEMORY_ALLOC					0xC0
 #define REPLY_MEMORY_FREE					0xC1
@@ -85,10 +86,11 @@ namespace ipc {
 #define REPLY_RESTORE_SNAPSHOT				0xC9
 #define REPLY_INITIALIZE_CONTEXT			0xD0
 #define REPLY_CLEANUP_CONTEXT				0xD1
-#define REPLY_EXECUTION_BEGIN				0xD2
-#define REPLY_EXECUTION_CONTORL				0xD3
-#define REPLY_EXECUTION_END				0xD4
+//#define REPLY_EXECUTION_BEGIN				0xD2
+//#define REPLY_EXECUTION_CONTORL				0xD3
+//#define REPLY_EXECUTION_END					0xD4
 #define REPLY_SYSCALL_CONTROL				0xD5
+#define REPLY_BRANCH_HANDLER				0xE0
 
 	struct IpcData {
 		DWORD type;
@@ -103,6 +105,7 @@ namespace ipc {
 			DWORD asExecutionBeginReply;
 			DWORD asExecutionControlReply;
 			DWORD asExecutionEndReply;
+			DWORD asBranchHandlerReply;
 
 			DWORD asMemoryAllocRequest;
 			void *asMemoryFreeRequest;
@@ -122,6 +125,11 @@ namespace ipc {
 			struct {
 				void *context;
 			} asSyscallControlRequest;
+
+			struct {
+				void *executionEnv;
+				ADDR_TYPE nextInstruction;
+			} asBranchHandlerRequest;
 		} data;
 	};
 
@@ -148,6 +156,8 @@ namespace ipc {
 		DLL_LINKAGE extern DWORD ExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
 		DLL_LINKAGE extern DWORD ExecutionControlFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
 		DLL_LINKAGE extern DWORD ExecutionEndFunc(void *context, void *cbCtx);
+
+		DLL_LINKAGE extern DWORD BranchHandlerFunc(void *context, ADDR_TYPE nextInstruction);
 		DLL_LINKAGE extern void SyscallControlFunc(void *context);
 
 		DLL_LINKAGE extern void Initialize();

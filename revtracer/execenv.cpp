@@ -53,7 +53,7 @@ ExecutionEnvironment::ExecutionEnvironment(DWORD flags, unsigned int heapSize, u
 	}
 
 
-	memset(pStack, 0, 0x100000);
+	rev_memset(pStack, 0, 0x100000);
 
 	runtimeContext.execBuff = (DWORD)executionBuffer + executionSize - 4; //TODO: make independant track buffer 
 	executionBase = runtimeContext.execBuff;
@@ -105,7 +105,7 @@ void *AllocUserContext(struct ExecutionEnvironment *pEnv, unsigned int size) {
 	}
 
 	pEnv->userContext = pEnv->heap.Alloc(size);
-	memset(pEnv->userContext, 0, size);
+	rev_memset(pEnv->userContext, 0, size);
 	return pEnv->userContext;
 }
 

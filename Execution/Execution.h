@@ -73,8 +73,8 @@ struct Registers {
 class ExecutionController;
 
 typedef void(__stdcall *TerminationNotifyFunc)(void *ctx);
-typedef unsigned int(__stdcall *ExecutionBeginFunc)(void *ctx, unsigned int address);
-typedef unsigned int(__stdcall *ExecutionControlFunc)(void *ctx, unsigned int address);
+typedef unsigned int(__stdcall *ExecutionBeginFunc)(void *ctx, void *address);
+typedef unsigned int(__stdcall *ExecutionControlFunc)(void *ctx, void *address);
 typedef unsigned int(__stdcall *ExecutionEndFunc)(void *ctx);
 
 class ExecutionController {
@@ -95,11 +95,17 @@ public:
 	virtual void SetNotificationContext(void *ctx) = 0;
 
 	virtual void SetTerminationNotification(TerminationNotifyFunc func) = 0;
-	virtual void SetExecutionBeginNotification(ExecutionBeginFunc func) = 0;
-	virtual void SetExecutionControlNotification(ExecutionControlFunc func) = 0;
-	virtual void SetExecutionEndNotification(ExecutionEndFunc func) = 0;
+	virtual void SetExecutionBeginNotification(::ExecutionBeginFunc func) = 0;
+	virtual void SetExecutionControlNotification(::ExecutionControlFunc func) = 0;
+	virtual void SetExecutionEndNotification(::ExecutionEndFunc func) = 0;
+
+	virtual unsigned int ExecutionBegin(void *address, void *cbCtx) = 0;
+	virtual unsigned int ExecutionControl(void *address, void *cbCtx) = 0;
+	virtual unsigned int ExecutionEnd(void *cbCtx) = 0;
 
 	virtual void GetCurrentRegisters(Registers &registers) = 0;
+
+	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
 };
 
 EXECUTION_LINKAGE ExecutionController *NewExecutionController();

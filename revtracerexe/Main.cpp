@@ -282,7 +282,7 @@ void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	api->lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
 	api->lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
 
-	api->executionControl = CustomExecutionController;
+	//api->executionControl = CustomExecutionController;
 
 
 	rev::RevtracerConfig *config = &rev::revtracerConfig;

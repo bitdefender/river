@@ -10,7 +10,7 @@ BYTE GetFundamentalRegister(BYTE reg) {
 
 void RiverAddress::DecodeFlags(WORD flags) {
 	if (flags & 0x0007) {
-		SetSegment(flags);
+		SetSegment((BYTE)flags);
 	}
 }
 
@@ -237,7 +237,7 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 bool RiverAddress32::EncodeTox86(unsigned char *&px86, BYTE extra, BYTE family, WORD modifiers) {
 	if (family & RIVER_FAMILY_FLAG_ORIG_xSP) {
 		RiverAddress32 rAddr;
-		memcpy(&rAddr, this, sizeof(rAddr));
+		rev_memcpy(&rAddr, this, sizeof(rAddr));
 
 		rAddr.FixEsp();
 		return rAddr.EncodeTox86(px86, extra, family & (~RIVER_FAMILY_FLAG_ORIG_xSP), modifiers);

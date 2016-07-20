@@ -69,7 +69,7 @@ void NativeX86Assembler::AssembleRelJMPInstr(const RiverInstruction &ri, Relocab
 		break;
 	}
 
-	memcpy(px86.cursor, pBranchJMP, sizeof(pBranchJMP));
+	rev_memcpy(px86.cursor, pBranchJMP, sizeof(pBranchJMP));
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86.cursor[0x0F])) = addrJump;
 	*(unsigned int *)(&(px86.cursor[0x14])) = (unsigned int)runtime;
@@ -100,7 +100,7 @@ void NativeX86Assembler::AssembleJMPInstr(const RiverInstruction &ri, RelocableC
 
 	int addrJump = (int)(ri.operands[0].asImm32);
 
-	memcpy(px86.cursor, pBranchJMP, sizeof(pBranchJMP));
+	rev_memcpy(px86.cursor, pBranchJMP, sizeof(pBranchJMP));
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86.cursor[0x0F])) = addrJump;
 	*(unsigned int *)(&(px86.cursor[0x14])) = (unsigned int)runtime;
@@ -134,7 +134,7 @@ void NativeX86Assembler::AssembleLeaveForSyscall(
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x1B - xchg esp, large ds:<dwVirtualStack>
 	};
 
-	memcpy(px86.cursor, pBranchSyscall, sizeof(pBranchSyscall));
+	rev_memcpy(px86.cursor, pBranchSyscall, sizeof(pBranchSyscall));
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86.cursor[0x0F])) = (unsigned int)runtime;
 	*(unsigned int *)(&(px86.cursor[0x15])) = (unsigned int)&dwSysHandler;
@@ -166,7 +166,7 @@ void NativeX86Assembler::AssembleLeaveForSyscall(
 
 	int addrJump = (int)(ri.operands[1].asImm32);
 
-	memcpy(px86.cursor, pBranchSysret, sizeof(pBranchSysret));
+	rev_memcpy(px86.cursor, pBranchSysret, sizeof(pBranchSysret));
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86.cursor[0x0F])) = addrJump;
 	*(unsigned int *)(&(px86.cursor[0x14])) = (unsigned int)runtime;
@@ -180,7 +180,7 @@ void NativeX86Assembler::AssembleLeaveForSyscall(
 }
 
 void NativeX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const BYTE pBranchJCC[] = {
+	static const BYTE pBranchJCC[] = {
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x00 - xchg esp, large ds:<dwVirtualStack>
 		0x9C, 										// 0x06 - pushf
 		0x60,										// 0x07 - pusha
@@ -230,7 +230,7 @@ void NativeX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, Rel
 	}
 
 
-	memcpy(px86.cursor, pBranchJCC, sizeof(pBranchJCC));
+	rev_memcpy(px86.cursor, pBranchJCC, sizeof(pBranchJCC));
 
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86.cursor[0x0F])) = addrFallThrough;
@@ -241,7 +241,7 @@ void NativeX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, Rel
 	px86.cursor += sizeof(pBranchJCC);
 
 
-	memcpy(px86.cursor, pBranchJCC, sizeof(pBranchJCC));
+	rev_memcpy(px86.cursor, pBranchJCC, sizeof(pBranchJCC));
 
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86.cursor[0x0F])) = addrJump;
@@ -256,7 +256,7 @@ void NativeX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, Rel
 }
 
 void NativeX86Assembler::AssembleCallInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const char pBranchCall[] = {
+	static const BYTE pBranchCall[] = {
 		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x00 - push <retAddr>
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x05 - xchg esp, large ds:<dwVirtualStack>
 		0x9C, 										// 0x0B - pushf
@@ -288,7 +288,7 @@ void NativeX86Assembler::AssembleCallInstr(const RiverInstruction &ri, Relocable
 		break;
 	}
 
-	memcpy(px86.cursor, pBranchCall, sizeof(pBranchCall));
+	rev_memcpy(px86.cursor, pBranchCall, sizeof(pBranchCall));
 	*(unsigned int *)(&(px86.cursor[0x01])) = retAddr;
 	*(unsigned int *)(&(px86.cursor[0x07])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86.cursor[0x14])) = addrJump;
@@ -326,12 +326,12 @@ void NativeX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, Relocab
 	};
 
 
-	memcpy(px86.cursor, pGetAddrCode, sizeof(pGetAddrCode));
+	rev_memcpy(px86.cursor, pGetAddrCode, sizeof(pGetAddrCode));
 	*(unsigned int *)(&(px86.cursor[1])) = (unsigned int)&runtime->returnRegister;
 	px86.cursor += sizeof(pGetAddrCode);
 	ri.operands[0].asAddress->EncodeTox86(px86.cursor, RIVER_REG_xAX, 0, 0); // use flags?
 
-	memcpy(px86.cursor, pBranchFFCall, sizeof(pBranchFFCall));
+	rev_memcpy(px86.cursor, pBranchFFCall, sizeof(pBranchFFCall));
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
 	*(unsigned int *)(&(px86.cursor[0x10])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86.cursor[0x19])) = (unsigned int)runtime;
@@ -355,7 +355,7 @@ void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableC
 		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00				// 0x19 - push [<espSave>]
 	};
 
-	memcpy(px86.cursor, pSaveEdxCode, sizeof(pSaveEdxCode));
+	rev_memcpy(px86.cursor, pSaveEdxCode, sizeof(pSaveEdxCode));
 	*(unsigned int *)(&(px86.cursor[0x01])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86.cursor[0x08])) = (unsigned int)&runtime->jumpBuff;
 	*(unsigned int *)(&(px86.cursor[0x0D])) = (unsigned int)&runtime->returnRegister;
@@ -398,7 +398,7 @@ void NativeX86Assembler::AssembleFarJump2(const RiverInstruction &ri, RelocableC
 		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x3B - jmp large dword ptr ds:<jumpbuff>	
 	};
 
-	memcpy(px86.cursor, pBranchFarJmp, sizeof(pBranchFarJmp));
+	rev_memcpy(px86.cursor, pBranchFarJmp, sizeof(pBranchFarJmp));
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86.cursor[0x09])) = (unsigned int)ri.operands[0].asImm32;
 	*(unsigned short *)(&(px86.cursor[0x0D])) = (unsigned short)ri.operands[1].asImm16;
@@ -465,7 +465,7 @@ void NativeX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, Relocab
 	++px86.cursor;
 	ri.operands[0].asAddress->EncodeTox86(px86.cursor, RIVER_REG_xAX, 0, 0); // use flags?
 
-	memcpy(px86.cursor, pBranchFFCall, sizeof(pBranchFFCall));
+	rev_memcpy(px86.cursor, pBranchFFCall, sizeof(pBranchFFCall));
 
 	*(unsigned int *)(&(px86.cursor[0x01])) = retAddr;
 	*(unsigned int *)(&(px86.cursor[0x07])) = (unsigned int)&runtime->virtualStack;
@@ -484,7 +484,7 @@ void NativeX86Assembler::AssembleRetnInstr(const RiverInstruction &ri, Relocable
 	//RetImm - copy the value
 	//Retn - 0
 	//RetFar - 4
-	const BYTE pBranchRet[] = {
+	static const BYTE pBranchRet[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - mov [<dwEaxSave>], eax
 		0x58,										// 0x05 - pop eax
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x06 - xchg esp, large ds:<dwVirtualStack>
@@ -506,7 +506,7 @@ void NativeX86Assembler::AssembleRetnInstr(const RiverInstruction &ri, Relocable
 	};
 
 	unsigned short stackSpace = 0;
-	memcpy(px86.cursor, pBranchRet, sizeof(pBranchRet));
+	rev_memcpy(px86.cursor, pBranchRet, sizeof(pBranchRet));
 
 	*(unsigned int *)(&(px86.cursor[0x01])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86.cursor[0x08])) = (unsigned int)&runtime->virtualStack;
@@ -526,7 +526,7 @@ void NativeX86Assembler::AssembleRetnImmInstr(const RiverInstruction &ri, Reloca
 	//RetImm - copy the value
 	//Retn - 0
 	//RetFar - 4
-	const BYTE pBranchRet[] = {
+	static const BYTE pBranchRet[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - mov [<dwEaxSave>], eax
 		0x58,										// 0x05 - pop eax
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x06 - xchg esp, large ds:<dwVirtualStack>
@@ -548,7 +548,7 @@ void NativeX86Assembler::AssembleRetnImmInstr(const RiverInstruction &ri, Reloca
 	};
 
 	unsigned short stackSpace = ri.operands[0].asImm16;
-	memcpy(px86.cursor, pBranchRet, sizeof(pBranchRet));
+	rev_memcpy(px86.cursor, pBranchRet, sizeof(pBranchRet));
 
 	*(unsigned int *)(&(px86.cursor[0x01])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86.cursor[0x08])) = (unsigned int)&runtime->virtualStack;
@@ -804,7 +804,7 @@ NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assembleOpcodes[2][0x
 		/*0xA8*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr,
 		/*0xAC*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr,
 
-		/*0xB0*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
+		/*0xB0*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr,
 		/*0xB4*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr,
 		/*0xB8*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr,
 		/*0xBC*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr,
@@ -968,7 +968,7 @@ NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assembleOperands[2]
 		/*0xA8*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleModRMRegOp,
 		/*0xAC*/ &NativeX86Assembler::AssembleModRMRegImm8Op, &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleRegModRMOp,
 
-		/*0xB0*/ &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
+		/*0xB0*/ &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleModRMRegOp,
 		/*0xB4*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp,
 		/*0xB8*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleSubOpModRMImm8Op, &NativeX86Assembler::AssembleUnknownOp,
 		/*0xBC*/ &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp,

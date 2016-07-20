@@ -2,7 +2,7 @@
 #include "CodeGen.h"
 
 void RiverSaveTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	memcpy(&rOut, &rIn, sizeof(rOut));
+	rev_memcpy(&rOut, &rIn, sizeof(rOut));
 
 	for (int i = 0; i < 4; ++i) {
 		if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[i])) {
@@ -86,7 +86,7 @@ void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverA
 	}
 	else {
 		RiverAddress32 tMem;
-		memcpy(&tMem, &mem, sizeof(tMem));
+		rev_memcpy(&tMem, &mem, sizeof(tMem));
 
 		if (tMem.type & RIVER_ADDR_DISP8) {
 			tMem.disp.d32 = tMem.disp.d8;
@@ -362,10 +362,10 @@ RiverSaveTranslator::TranslateOpcodeFunc RiverSaveTranslator::translateOpcodes[2
 
 		/*0xA0*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateSaveCPUID, &RiverSaveTranslator::TranslateUnk,
 		/*0xA4*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
-		/*0xA8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+		/*0xA8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault,
 		/*0xAC*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault,
 
-		/*0xB0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk,
+		/*0xB0*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault,
 		/*0xB4*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,
 		/*0xB8*/&RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateUnk, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateUnk,
 		/*0xBC*/&RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault, &RiverSaveTranslator::TranslateDefault,

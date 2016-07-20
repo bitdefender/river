@@ -143,7 +143,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 			/*0xA8*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 			/*0xAC*/ &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 
-			/*0xB0*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+			/*0xB0*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 			/*0xB4*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
 			/*0xB8*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleExtInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0xBC*/ &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr,
@@ -684,7 +684,7 @@ RiverX86Disassembler::DisassembleOperandsFunc RiverX86Disassembler::disassembleO
 		/*0xB0*/ &RiverX86Disassembler::DisassembleConstRegOperand<2, 0, RIVER_REG_AL, &RiverX86Disassembler::DisassembleModRMReg>,
 		/*0xB1*/ &RiverX86Disassembler::DisassembleConstRegOperand<2, 0, RIVER_REG_xAX, &RiverX86Disassembler::DisassembleModRMReg>,
 		/*0xB2*/ &RiverX86Disassembler::DisassembleUnkOp,
-		/*0xB3*/ &RiverX86Disassembler::DisassembleUnkOp,
+		/*0xB3*/ &RiverX86Disassembler::DisassembleModRMReg,
 		/*0xB4*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0xB5*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0xB6*/ &RiverX86Disassembler::DisassembleRegSzModRM<RIVER_OPSIZE_8>,

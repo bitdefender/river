@@ -37,11 +37,11 @@ template <typename T> bool LoadExportedName(FloatingPE *fpe, BYTE *base, char *n
 
 void __stdcall DefaultTerminationNotify(void *ctx) { }
 
-unsigned int __stdcall DefaultExecutionBegin(void *ctx, unsigned int address) {
+unsigned int __stdcall DefaultExecutionBegin(void *ctx, void *address) {
 	return EXECUTION_ADVANCE;
 }
 
-unsigned int __stdcall DefaultExecutionControl(void *ctx, unsigned int address) {
+unsigned int __stdcall DefaultExecutionControl(void *ctx, void *address) {
 	return EXECUTION_ADVANCE;
 }
 
@@ -202,9 +202,10 @@ bool InternalExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 		!LoadExportedName(fIpcLib, pIpcBase, "RestoreSnapshot", tmpRevApi.restoreSnapshot) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "InitializeContextFunc", tmpRevApi.initializeContext) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "CleanupContextFunc", tmpRevApi.cleanupContext) ||
-		!LoadExportedName(fIpcLib, pIpcBase, "ExecutionBeginFunc", tmpRevApi.executionBegin) ||
-		!LoadExportedName(fIpcLib, pIpcBase, "ExecutionControlFunc", tmpRevApi.executionControl) ||
-		!LoadExportedName(fIpcLib, pIpcBase, "ExecutionEndFunc", tmpRevApi.executionEnd) ||
+		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionBeginFunc", tmpRevApi.executionBegin) ||
+		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionControlFunc", tmpRevApi.executionControl) ||
+		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionEndFunc", tmpRevApi.executionEnd) ||
+		!LoadExportedName(fIpcLib, pIpcBase, "BranchHandlerFunc", tmpRevApi.branchHandler) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "IsProcessorFeaturePresent", pIPFPFunc)
 	) {
@@ -261,9 +262,10 @@ bool InternalExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	rev::RevtracerAPI *revAPI;
 	if (!LoadExportedName(fRevTracer, pRevtracerBase, "revtracerAPI", revAPI) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "revtracerConfig", revCfg)
-	) {
+		) {
 		return false;
 	}
+
 	memcpy(revAPI, &tmpRevApi, sizeof(tmpRevApi));
 
 	revCfg->contextSize = 0;
@@ -333,7 +335,7 @@ bool InternalExecutionController::MapTracer() {
 			break;
 		}
 
-		printf("ipclib@0x%08x\nrevtracer@0x%08x\n", pIpcBase, pRevtracerBase);
+		printf("ipclib@0x%08x\nrevtracer@0x%08x\n", (DWORD)pIpcBase, (DWORD)pRevtracerBase);
 		FlushInstructionCache(hProcess, libs, dwTotalSize);
 
 
@@ -383,7 +385,7 @@ bool InternalExecutionController::MapTracer() {
 		if (!InitializeIpcLib(fIpcLib)) {
 			break;
 		}
-
+		
 		if (!InitializeRevtracer(fRevTracer)) {
 			break;
 		}
@@ -486,7 +488,7 @@ bool InternalExecutionController::PatchProcess() {
 
 	BYTE *mAddr = RemoteGetModuleHandle(hProcess, pth);
 
-	unsigned short tmp = 'ZM';
+	unsigned short tmp = '  ';
 	DWORD dwWr, oldPr;
 
 	if (FALSE == VirtualProtectEx(hProcess, mAddr, sizeof(tmp), PAGE_READWRITE, &oldPr)) {
@@ -598,11 +600,14 @@ bool InternalExecutionController::Terminate() {
 	return true;
 }
 
+DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller);
+
 DWORD InternalExecutionController::ControlThread() {
 	bool bRunning = true;
 	DWORD exitCode;
 
-	HANDLE hDbg = 0, hOffs = 0;
+	//HANDLE hDbg = 0;
+	HANDLE hOffs = 0;
 
 	do {
 
@@ -669,8 +674,9 @@ DWORD InternalExecutionController::ControlThread() {
 			case REPLY_RESTORE_SNAPSHOT:
 			case REPLY_INITIALIZE_CONTEXT:
 			case REPLY_CLEANUP_CONTEXT:
-			case REPLY_EXECUTION_CONTORL:
+			//case REPLY_EXECUTION_CONTORL:
 			case REPLY_SYSCALL_CONTROL:
+			case REPLY_BRANCH_HANDLER:
 				__asm int 3;
 				break;
 
@@ -682,7 +688,7 @@ DWORD InternalExecutionController::ControlThread() {
 				break;
 			}
 
-			case REQUEST_EXECUTION_BEGIN: {
+			/*case REQUEST_EXECUTION_BEGIN: {
 				ipc::ADDR_TYPE next = ipcData->data.asExecutionBeginRequest.nextInstruction;
 
 				ipcData->type = REPLY_EXECUTION_BEGIN;
@@ -693,7 +699,7 @@ DWORD InternalExecutionController::ControlThread() {
 				}
 				else {
 					execState = SUSPENDED_AT_START;
-					if (EXECUTION_TERMINATE == (ipcData->data.asExecutionBeginReply = eBegin(context, (unsigned int)next))) {
+					if (EXECUTION_TERMINATE == (ipcData->data.asExecutionBeginReply = eBegin(context, next))) {
 						bRunning = false;
 					}
 				}
@@ -705,10 +711,6 @@ DWORD InternalExecutionController::ControlThread() {
 
 				char mf[MAX_PATH];
 				char defMf[8] = "??";
-
-				/*if (((DWORD)next & 0xFFFD0000) == baseAddr) {
-				strcpy(defMf, "a.exe");
-				}*/
 
 				DWORD dwSz = GetMappedFileNameA(hProcess, next, mf, sizeof(mf)-1);
 
@@ -724,19 +726,12 @@ DWORD InternalExecutionController::ControlThread() {
 				}
 
 				fprintf(fOffs, "%s + 0x%04X\n", module, (DWORD)next & 0xFFFF);
-				/*fprintf(
-					fOffs,
-					"%-15s+%04X EAX:%08x ECX:%08x EDX:%08x EBX:%08x ESP:%08x EBP:%08x ESI:%08x EDI:%08x\r\n",
-					module,
-					(DWORD)next & 0xFFFF,
-
-					);*/
-
+				
 				fflush(fOffs);
 
 				ipcData->type = REPLY_EXECUTION_CONTORL;
 				execState = SUSPENDED;
-				if (EXECUTION_TERMINATE == (ipcData->data.asExecutionControlReply = eControl(context, (unsigned int)next))) {
+				if (EXECUTION_TERMINATE == (ipcData->data.asExecutionControlReply = eControl(context, next))) {
 					bRunning = false;
 
 				}
@@ -749,7 +744,18 @@ DWORD InternalExecutionController::ControlThread() {
 				if (EXECUTION_TERMINATE == (ipcData->data.asExecutionEndReply = eEnd(context))) {
 					bRunning = false;
 				}
+				break;*/
+
+			case REQUEST_BRANCH_HANDLER: {
+				void *context = ipcData->data.asBranchHandlerRequest.executionEnv;
+				ipc::ADDR_TYPE next = ipcData->data.asBranchHandlerRequest.nextInstruction;
+				ipcData->type = REPLY_BRANCH_HANDLER;
+				execState = SUSPENDED;
+				if (EXECUTION_TERMINATE == (ipcData->data.asBranchHandlerReply = BranchHandler(context, next, this))) {
+					bRunning = false;
+				}
 				break;
+			}
 
 			case REQUEST_SYSCALL_CONTROL:
 				ipcData->type = REPLY_SYSCALL_CONTROL;
@@ -763,12 +769,14 @@ DWORD InternalExecutionController::ControlThread() {
 			ipcToken->Release(REMOTE_TOKEN_USER);
 		}
 
+
+		fclose(fOffs);
 	} while (false);
 
 	CloseHandle(hDbg);
 	hDbg = INVALID_HANDLE_VALUE;
-	CloseHandle(hOffs);
-	hOffs = INVALID_HANDLE_VALUE;
+	//CloseHandle(hOffs);
+	//hOffs = INVALID_HANDLE_VALUE;
 
 	WaitForSingleObject(hProcess, INFINITE);
 
@@ -929,9 +937,109 @@ void InternalExecutionController::SetExecutionEndNotification(ExecutionEndFunc f
 	eEnd = func;
 }
 
+unsigned int InternalExecutionController::ExecutionBegin(void *address, void *cbCtx) {
+	if (!PatchProcess()) {
+		execState = ERR;
+		return EXECUTION_TERMINATE;
+	}
+	else {
+		execState = SUSPENDED_AT_START;
+		return eBegin(cbCtx, address);
+	}
+}
+
+unsigned int InternalExecutionController::ExecutionControl(void *address, void *cbCtx) {
+	return eControl(cbCtx, address);
+}
+
+unsigned int InternalExecutionController::ExecutionEnd(void *cbCtx) {
+	return eEnd(cbCtx);
+}
+
 void InternalExecutionController::GetCurrentRegisters(Registers &registers) {
 	RemoteRuntime *ree = (RemoteRuntime *)revCfg->pRuntime;
 
 	memcpy(&registers, (Registers *)ree->registers, sizeof(registers));
 	registers.esp = ree->virtualStack;
+}
+
+int GeneratePrefix(char *buff, int size, ...) {
+	va_list va;
+
+	va_start(va, size);
+	int sz = vsnprintf_s(
+		buff,
+		size,
+		size - 1,
+		"[%3s|%5s|%3s|%c] ",
+		va
+		);
+	va_end(va);
+
+	return sz;
+}
+
+void InternalExecutionController::DebugPrintf(const DWORD printMask, const char *fmt, ...) {
+	va_list va;
+	DWORD dwWr;
+	char tmpBuff[512];
+
+	char pfxBuff[] = "[___|_____|___|_]      ";
+	static char lastChar = '\n';
+
+	const char messageTypes[][4] = {
+		"___",
+		"ERR",
+		"INF",
+		"DBG"
+	};
+
+	const char executionStages[][6] = {
+		"_____",
+		"BRHND",
+		"DIASM",
+		"TRANS",
+		"REASM",
+		"RUNTM",
+		"INSPT",
+		"CNTNR"
+	};
+
+	const char codeTypes[][4] = {
+		"___",
+		"NAT",
+		"RIV",
+		"TRK",
+		"SYM"
+	};
+
+	const char codeDirections[] = {
+		'_', 'F', 'B'
+	};
+
+	if ('\n' == lastChar) {
+		
+		int sz = GeneratePrefix(
+			pfxBuff,
+			sizeof(pfxBuff),
+			messageTypes[(printMask & PRINT_MESSAGE_MASK) >> PRINT_MESSAGE_SHIFT],
+			executionStages[(printMask & PRINT_EXECUTION_MASK) >> PRINT_EXECUTION_SHIFT],
+			codeTypes[(printMask & PRINT_CODE_TYPE_MASK) >> PRINT_CODE_TYPE_SHIFT],
+			codeDirections[(printMask & PRINT_CODE_DIRECTION_MASK) >> PRINT_CODE_DIRECTION_SHIFT]
+		);
+		//debugLog.Write(pfxBuff, sz);
+
+		WriteFile(hDbg, pfxBuff, sz, &dwWr, NULL);
+	}
+
+	va_start(va, fmt);
+	int sz = vsnprintf_s(tmpBuff, sizeof(tmpBuff) - 1, sizeof(tmpBuff) - 1, fmt, va);
+	va_end(va);
+
+	if (sz) {
+		//debugLog.Write(tmpBuff, sz);
+
+		WriteFile(hDbg, tmpBuff, sz, &dwWr, NULL);
+		lastChar = tmpBuff[sz - 1];
+	}
 }

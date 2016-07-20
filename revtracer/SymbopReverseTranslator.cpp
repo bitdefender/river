@@ -2,7 +2,7 @@
 #include "CodeGen.h"
 
 void SymbopReverseTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	memcpy(&rOut, &rIn, sizeof(rOut));
+	rev_memcpy(&rOut, &rIn, sizeof(rOut));
 
 	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[0])) {
 		rOut.operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);

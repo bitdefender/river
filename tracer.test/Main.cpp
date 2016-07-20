@@ -153,14 +153,14 @@ void __stdcall Term(void *ctx) {
 }
 
 unsigned int seed = 0;
-unsigned int __stdcall ExecBegin(void *ctx, unsigned int address) {
+unsigned int __stdcall ExecBegin(void *ctx, void *address) {
 	printf("Process starting\n");
 	srand(seed);
 	return EXECUTION_ADVANCE;
 }
 
 FILE *fBlocks = NULL;
-unsigned int __stdcall ExecControl(void *ctx, unsigned int address) {
+unsigned int __stdcall ExecControl(void *ctx, void *address) {
 	ModuleInfo *mds;
 	int mCount;
 
@@ -168,14 +168,14 @@ unsigned int __stdcall ExecControl(void *ctx, unsigned int address) {
 
 	
 	fConfig.Resolve(mds, mCount);
-	fConfig.Trigger(address, FuzzTest);
+	fConfig.Trigger((DWORD)address, FuzzTest);
 	
 	const wchar_t unkmod[MAX_PATH] = L"???";
-	unsigned int offset = address;
+	unsigned int offset = (DWORD)address;
 	int foundModule = -1;
 
 	for (int i = 0; i < mCount; ++i) {
-		if ((mds[i].ModuleBase <= address) && (address < mds[i].ModuleBase + mds[i].Size)) {
+		if ((mds[i].ModuleBase <= (DWORD)address) && ((DWORD)address < mds[i].ModuleBase + mds[i].Size)) {
 			offset -= mds[i].ModuleBase;
 			foundModule = i;
 			break;

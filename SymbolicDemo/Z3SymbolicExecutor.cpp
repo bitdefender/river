@@ -131,13 +131,13 @@ void Z3SymbolicExecutor::EvalZF(Z3_ast result) {
 void Z3SymbolicExecutor::StepForward() {
 	variableTracker.Forward();
 	Z3_solver_push(context, solver);
-	printf("Solver push\n");
+	//printf("Solver push\n");
 }
 
 void Z3SymbolicExecutor::StepBackward() {
 	Z3_solver_pop(context, solver, 1);
 	variableTracker.Backward();
-	printf("Solver pop\n");
+	//printf("Solver pop\n");
 }
 
 void Z3SymbolicExecutor::Lock(Z3_ast t) {

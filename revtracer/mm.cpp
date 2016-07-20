@@ -6,13 +6,13 @@
 #include "common.h"
 #include "revtracer.h"
 
-void memcpy(void *dest, const void *src, unsigned int size) {
+extern "C" void rev_memcpy(void *dest, const void *src, unsigned int size) {
 	for (unsigned int i = 0; i < size; ++i) {
 		((char *)dest)[i] = ((char *)src)[i];
 	}
 }
 
-void memset(void *dest, int val, unsigned int size) {
+extern "C" void rev_memset(void *dest, int val, unsigned int size) {
 	for (unsigned int i = 0; i < size; ++i) {
 		((char *)dest)[i] = val;
 	}
@@ -47,7 +47,7 @@ bool RiverHeap::Init(DWORD heapSize) {
 		return false;
 	}
 	
-	memset (tHeap, 0, heapSize);
+	rev_memset(tHeap, 0, heapSize);
 
 	fz = (HeapZone *)tHeap; 
 

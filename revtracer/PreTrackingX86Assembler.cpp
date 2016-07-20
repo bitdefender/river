@@ -32,7 +32,7 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, BYTE riverFam
 		__asm int 3;
 	}
 
-	memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
+	rev_memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
 	px86.cursor[1] = regByte[cReg];
 	*(DWORD *)(&px86.cursor[2]) = (DWORD)&runtime->returnRegister;
 	px86.cursor += sizeof(preTrackMemPrefix);
@@ -100,7 +100,7 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, BYTE riverFam
 	px86.cursor++;
 	instrCounter++;
 
-	memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
+	rev_memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
 	px86.cursor[1] = regByte[cReg];
 	*(DWORD *)(&px86.cursor[2]) = (DWORD)&runtime->returnRegister;
 	px86.cursor += sizeof(preTrackMemSuffix);

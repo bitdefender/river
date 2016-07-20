@@ -116,7 +116,13 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 extern "C" void exit(int);
 
 void RiverX86Disassembler::DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	static BYTE opcode, extPrefix;
+	static DWORD address;
+
 	revtracerAPI.dbgPrintFunc(PRINT_ERROR | PRINT_DISASSEMBLY, "Disassembling unknown instruction %02x %02x \n", ri.modifiers & RIVER_MODIFIER_EXT ? 0x0F : 0x00, *px86);
+	opcode = *px86;
+	extPrefix = (ri.modifiers & RIVER_MODIFIER_EXT) ? 0x0F : 0x00;
+	address = ri.instructionAddress;
 	__asm int 3;
 	/*exit(0);*/
 	px86++;
@@ -781,7 +787,7 @@ const WORD specTbl[2][0x100] = {
 			/*0xB0*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_OP3 | RIVER_SPEC_MODIFIES_FLG,
 			/*0xB1*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_OP3 | RIVER_SPEC_MODIFIES_FLG,
 			/*0xB2*/ 0xFF,
-			/*0xB3*/ 0xFF,
+			/*0xB3*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG,
 			/*0xB4*/ 0xFF,
 			/*0xB5*/ 0xFF,
 			/*0xB6*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_IGNORES_OP1,

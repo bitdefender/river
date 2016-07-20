@@ -1,8 +1,13 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+#define ENABLE_DEBUG_TRANSLATIONS
+#define ENABLE_DEBUG_TRACKING
+#define ENABLE_DEBUG_BRANCHING
+
+
 #ifdef ENABLE_DEBUG_TRANSLATIONS
-#define TRANSLATE_PRINT revtracerAPI.dbgPrint
+#define TRANSLATE_PRINT revtracerAPI.dbgPrintFunc
 #define TRANSLATE_PRINT_INSTRUCTION RiverPrintInstruction
 #else
 #define TRANSLATE_PRINT
@@ -10,9 +15,17 @@
 #endif
 
 #ifdef ENABLE_DEBUG_TRACKING
-#define TRACKING_PRINT revtracerAPI.dbgPrint
+#define TRACKING_PRINT revtracerAPI.dbgPrintFunc
+#define LIB_TRACKING_PRINT exec->DebugPrintf
 #else
 #define TRACKING_PRINT
+#define LIB_TRACKING_PRINT
+#endif
+
+#ifdef ENABLE_DEBUG_BRANCHING
+#define BRANCHING_PRINT revtracerAPI.dbgPrintFunc
+#else
+#define BRANCHING_PRINT
 #endif
 
 #endif

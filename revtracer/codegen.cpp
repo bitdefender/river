@@ -68,7 +68,7 @@ bool RiverCodeGen::Destroy() {
 void RiverCodeGen::Reset() {
 	addrCount = trInstCount = fwInstCount = bkInstCount = 0;
 	symbopInstCount = 0;
-	memset(regVersions, 0, sizeof(regVersions));
+	rev_memset(regVersions, 0, sizeof(regVersions));
 }
 
 
@@ -82,7 +82,7 @@ struct RiverAddress *RiverCodeGen::AllocAddr(WORD flags) {
 
 RiverAddress *RiverCodeGen::CloneAddress(const RiverAddress &mem, WORD flags) {
 	struct RiverAddress *ret = AllocAddr(flags);
-	memcpy(ret, &mem, sizeof(*ret));
+	rev_memcpy(ret, &mem, sizeof(*ret));
 	return ret;
 }
 
@@ -125,8 +125,8 @@ unsigned char *DuplicateBuffer(RiverHeap *h, unsigned char *p, unsigned int sz) 
 		return NULL;
 	}
 
-	memcpy(pBuf, p, sz);
-	memset(pBuf + sz, 0x90, mSz - sz);
+	rev_memcpy(pBuf, p, sz);
+	rev_memset(pBuf + sz, 0x90, mSz - sz);
 	return pBuf;
 }
 
@@ -138,9 +138,9 @@ unsigned char *ConsolidateBlock(RiverHeap *h, unsigned char *outBuff, unsigned i
 		return NULL;
 	}
 
-	memcpy(pBuf, saveBuff, saveSz);
-	memcpy(&pBuf[saveSz], outBuff, outSz);
-	memset(&pBuf[saveSz + outSz], 0x90, mSz - outSz - saveSz);
+	rev_memcpy(pBuf, saveBuff, saveSz);
+	rev_memcpy(&pBuf[saveSz], outBuff, outSz);
+	rev_memset(&pBuf[saveSz + outSz], 0x90, mSz - outSz - saveSz);
 	return pBuf;
 }
 
@@ -242,7 +242,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 			currentBuffer++;
 		}
 
-		memcpy(&fwRiverInst[fwInstCount], instrBuffers[currentBuffer - 1], sizeof(fwRiverInst[0]) * instrCounts[currentBuffer - 1]);
+		rev_memcpy(&fwRiverInst[fwInstCount], instrBuffers[currentBuffer - 1], sizeof(fwRiverInst[0]) * instrCounts[currentBuffer - 1]);
 		fwInstCount += instrCounts[currentBuffer - 1];
 
 		dwInst++;
@@ -253,7 +253,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 }
 
 void GetSerializableInstruction(const RiverInstruction &rI, RiverInstruction &rO) {
-	memcpy(&rO, &rI, sizeof(rI));
+	rev_memcpy(&rO, &rI, sizeof(rI));
 
 	for (int i = 0; i < 4; ++i) {
 		if (RIVER_OPTYPE(rO.opTypes[i]) == RIVER_OPTYPE_MEM) {
@@ -298,7 +298,7 @@ bool SaveToStream(
 	const RiverInstruction *backwardCode, DWORD dwBkOpCount,
 	const RiverInstruction *trackCode, DWORD dwTrOpCount
 ) {
-	DWORD header[4] = { 'BBVR', dwFwOpCount, dwBkOpCount, dwTrOpCount };
+	/*DWORD header[4] = { 'BBVR', dwFwOpCount, dwBkOpCount, dwTrOpCount };
 	DWORD dwWr;
 
 	if (0 == Kernel32WriteFile(revtracerConfig.hBlocks, header, sizeof(header), &dwWr)) {
@@ -312,7 +312,7 @@ bool SaveToStream(
 		!SerializeInstructions(trackCode, dwTrOpCount)
 		) {
 		return false;
-	}
+	}*/
 
 	return true;
 }

@@ -2,7 +2,7 @@
 #include "CodeGen.h"
 
 void RiverMetaTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	memcpy(&rOut, &rIn, sizeof(rOut));
+	rev_memcpy(&rOut, &rIn, sizeof(rOut));
 
 	for (int i = 0; i < 4; ++i) {
 		if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[i])) {
@@ -732,7 +732,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0xB0 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xB1 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xB2 */ &RiverMetaTranslator::TranslateUnk,
-		/* 0xB3 */ &RiverMetaTranslator::TranslateUnk,
+		/* 0xB3 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xB4 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0xB5 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0xB6 */ &RiverMetaTranslator::TranslateDefault,

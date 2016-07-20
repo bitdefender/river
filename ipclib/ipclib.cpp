@@ -205,7 +205,7 @@ namespace ipc {
 		}
 	}
 
-	DLL_LINKAGE DWORD ExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
+	/*DLL_LINKAGE DWORD ExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
 		ipcData.type = REQUEST_EXECUTION_BEGIN;
 		ipcData.data.asExecutionBeginRequest.context = context;
 		ipcData.data.asExecutionBeginRequest.nextInstruction = nextInstruction;
@@ -250,6 +250,20 @@ namespace ipc {
 		}
 
 		return ipcData.data.asExecutionEndReply;
+	}*/
+
+	DLL_LINKAGE DWORD BranchHandlerFunc(void *context, ADDR_TYPE nextInstruction) {
+		ipcData.type = REQUEST_BRANCH_HANDLER;
+		ipcData.data.asBranchHandlerRequest.executionEnv = context;
+		ipcData.data.asBranchHandlerRequest.nextInstruction = nextInstruction;
+		ipcToken.Release(INPROC_TOKEN_USER);
+
+		ipcToken.Wait(INPROC_TOKEN_USER);
+		if (ipcData.type != REPLY_BRANCH_HANDLER) {
+			__asm int 3;
+		}
+
+		return ipcData.data.asBranchHandlerReply;
 	}
 
 	DLL_LINKAGE void SyscallControlFunc(void *context) {

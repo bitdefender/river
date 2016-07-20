@@ -35,12 +35,12 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 	if (rIn.family & RIVER_FAMILY_FLAG_ORIG_xSP) {
 		BYTE repReg = rIn.GetUnusedRegister();
 
-		memcpy(rTmp, &rIn, sizeof(*rTmp));
+		rev_memcpy(rTmp, &rIn, sizeof(*rTmp));
 		for (BYTE i = 0; i < 4; ++i) {
 			if (rIn.opTypes[i] != RIVER_OPTYPE_NONE) {
 				if (RIVER_OPTYPE(rIn.opTypes[i]) == RIVER_OPTYPE_MEM) {
 					rTmp->operands[i].asAddress = aTmp;
-					memcpy(aTmp, rIn.operands[i].asAddress, sizeof(*aTmp));
+					rev_memcpy(aTmp, rIn.operands[i].asAddress, sizeof(*aTmp));
 				}
 				FixRiverEspOp(rTmp->opTypes[i], &rTmp->operands[i], repReg);
 			}
@@ -56,7 +56,7 @@ const RiverInstruction *FixRiverEspInstruction(const RiverInstruction &rIn, Rive
 void X86Assembler::SwitchToRiver(BYTE *&px86, DWORD &instrCounter) {
 	static const unsigned char code[] = { 0x87, 0x25, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg esp, large ds:<dwVirtualStack>}
 
-	memcpy(px86, code, sizeof(code));
+	rev_memcpy(px86, code, sizeof(code));
 	*(unsigned int *)(&(px86[0x02])) = (unsigned int)&runtime->execBuff;
 
 	px86 += sizeof(code);
@@ -66,7 +66,7 @@ void X86Assembler::SwitchToRiver(BYTE *&px86, DWORD &instrCounter) {
 void X86Assembler::SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE repReg) {
 	static const unsigned char code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}
 
-	memcpy(px86, code, sizeof(code));
+	rev_memcpy(px86, code, sizeof(code));
 	px86[0x01] |= (repReg & 0x03); // choose the acording replacement register
 	*(unsigned int *)(&(px86[0x02])) = (unsigned int)&runtime->execBuff;
 
@@ -188,7 +188,7 @@ void X86Assembler::AssembleTrackingEnter(RelocableCodeBuffer &px86, DWORD &instr
 		0x8B, 0x75, 0x08					// 0x05 - mov esi, [ebp + 8] ; esi <- trackbuffer
 	};
 
-	memcpy(px86.cursor, trackingEnter, sizeof(trackingEnter));
+	rev_memcpy(px86.cursor, trackingEnter, sizeof(trackingEnter));
 	px86.cursor += sizeof(trackingEnter);
 
 	instrCounter += 5;
@@ -203,7 +203,7 @@ void X86Assembler::AssembleTrackingLeave(RelocableCodeBuffer &px86, DWORD &instr
 		0xC3								// 0x05 - ret
 	};
 
-	memcpy(px86.cursor, trackingLeave, sizeof(trackingLeave));
+	rev_memcpy(px86.cursor, trackingLeave, sizeof(trackingLeave));
 	px86.cursor += sizeof(trackingLeave);
 
 	instrCounter += 5;
@@ -286,7 +286,7 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 void X86Assembler::SwitchEspWithReg(RelocableCodeBuffer &px86, DWORD &instrCounter, BYTE repReg, DWORD dwStack) {
 	static const BYTE code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}
 
-	memcpy(px86.cursor, code, sizeof(code));
+	rev_memcpy(px86.cursor, code, sizeof(code));
 	px86.cursor[0x01] |= (repReg & 0x03); // choose the acording replacement register
 	*(DWORD *)(&px86.cursor[0x02]) = dwStack;
 
@@ -297,7 +297,7 @@ void X86Assembler::SwitchEspWithReg(RelocableCodeBuffer &px86, DWORD &instrCount
 void X86Assembler::SwitchToStack(RelocableCodeBuffer &px86, DWORD &instrCounter, DWORD dwStack) {
 	static const unsigned char code[] = { 0x87, 0x25, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg esp, large ds:<dwVirtualStack>}
 
-	memcpy(px86.cursor, code, sizeof(code));
+	rev_memcpy(px86.cursor, code, sizeof(code));
 	*(DWORD *)(&px86.cursor[0x02]) = dwStack;
 
 	px86.cursor += sizeof(code);

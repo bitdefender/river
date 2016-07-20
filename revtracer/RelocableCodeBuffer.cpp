@@ -22,7 +22,7 @@ void RelocableCodeBuffer::SetRelocation(BYTE *reloc) {
 }
 
 void RelocableCodeBuffer::CopyToFixed(BYTE *dst) const {
-	memcpy(dst, buffer, cursor - buffer);
+	rev_memcpy(dst, buffer, cursor - buffer);
 	if (needsRAFix) {
 		DWORD offset = (rvAddress - buffer);
 

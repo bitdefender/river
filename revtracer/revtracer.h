@@ -32,14 +32,19 @@ namespace rev {
 
 	typedef void(*InitializeContextFunc)(void *context);
 	typedef void(*CleanupContextFunc)(void *context);
-	typedef DWORD(*ExecutionBeginFunc)(void *context, ADDR_TYPE firstInstruction, void *cbCtx);
-	typedef DWORD(*ExecutionControlFunc)(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
-	typedef DWORD(*ExecutionEndFunc)(void *context, void *cbCtx);
+	//typedef DWORD(*ExecutionBeginFunc)(void *context, ADDR_TYPE firstInstruction, void *cbCtx);
+	//typedef DWORD(*ExecutionControlFunc)(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
+	//typedef DWORD(*ExecutionEndFunc)(void *context, void *cbCtx);
+
+	typedef DWORD(*BranchHandlerFunc)(void *context, ADDR_TYPE nextInstruction);
 	typedef void(*SyscallControlFunc)(void *context);
 	typedef void(*IpcLibInitFunc)();
 
 	typedef void(*TrackCallbackFunc)(DWORD value, DWORD address, DWORD segment);
 	typedef void(*MarkCallbackFunc)(DWORD oldValue, DWORD newValue, DWORD address, DWORD segment);
+
+	typedef void(*SymbolicPayloadFunc)(DWORD trackBuffer);
+	typedef void(*SymbolicSyncFunc)(SymbolicPayloadFunc pFunc, DWORD trackBuffer);
 
 	struct LowLevelRevtracerAPI {
 		/* Low level ntdll.dll functions */
@@ -71,9 +76,10 @@ namespace rev {
 		/* Execution callbacks */
 		InitializeContextFunc initializeContext;
 		CleanupContextFunc cleanupContext;
-		ExecutionBeginFunc executionBegin;
-		ExecutionControlFunc executionControl;
-		ExecutionEndFunc executionEnd;
+		//ExecutionBeginFunc executionBegin;
+		//ExecutionControlFunc executionControl;
+		//ExecutionEndFunc executionEnd;
+		BranchHandlerFunc branchHandler;
 		SyscallControlFunc syscallControl;
 
 		/* IpcLib initialization */
@@ -82,6 +88,9 @@ namespace rev {
 		/* Variable tracking callbacks */
 		TrackCallbackFunc trackCallback;
 		MarkCallbackFunc markCallback;
+
+		/* Symbolic synchronization function */
+		SymbolicSyncFunc symbolicSync;
 
 		LowLevelRevtracerAPI lowLevel;
 	};
@@ -148,7 +157,8 @@ namespace rev {
 		DLL_LINKAGE void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs);
 		DLL_LINKAGE void SetLowLevelAPI(LowLevelRevtracerAPI *llApi);
 		DLL_LINKAGE void SetContextMgmt(InitializeContextFunc initCtx, CleanupContextFunc cleanCtx);
-		DLL_LINKAGE void SetControlMgmt(ExecutionBeginFunc execBegin, ExecutionControlFunc execCtl, ExecutionEndFunc execEnd, SyscallControlFunc syscallCtl);
+		DLL_LINKAGE void SetControlMgmt(BranchHandlerFunc branchCtl, SyscallControlFunc syscallCtl);
+
 
 		DLL_LINKAGE void SetContextSize(DWORD sz);
 		DLL_LINKAGE void SetEntryPoint(ADDR_TYPE ep);

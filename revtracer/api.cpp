@@ -49,121 +49,62 @@ namespace rev {
 DWORD dwAddressTrackHandler = (DWORD)&rev::TrackAddr;
 DWORD dwAddressMarkHandler = (DWORD)&rev::MarkAddr;
 
-void RiverPrintInstruction(DWORD printMask, struct RiverInstruction *ri);
+void RiverPrintInstruction(DWORD printMask, RiverInstruction *ri);
 
 extern "C" {
-	void PushToExecutionBuffer(struct ExecutionEnvironment *pEnv, DWORD value) {
+	void PushToExecutionBuffer(ExecutionEnvironment *pEnv, DWORD value) {
 		pEnv->runtimeContext.execBuff -= 4;
 		*((DWORD *)pEnv->runtimeContext.execBuff) = value;
 	}
 
-	DWORD PopFromExecutionBuffer(struct ExecutionEnvironment *pEnv) {
+	DWORD PopFromExecutionBuffer(ExecutionEnvironment *pEnv) {
 		DWORD ret = *((DWORD *)pEnv->runtimeContext.execBuff);
 		pEnv->runtimeContext.execBuff += 4;
 		return ret;
 	}
 
-	bool ExecutionBufferEmpty(struct ExecutionEnvironment *pEnv) {
-		return (DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
+	DWORD TopFromExecutionBuffer(ExecutionEnvironment *pEnv) {
+		return *((DWORD *)pEnv->runtimeContext.execBuff);
 	}
 
-	typedef void(*TrackFunc)(DWORD trackBuffer);
+	bool ExecutionBufferEmpty(ExecutionEnvironment *pEnv) {
+		return (DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
+	}
 
 	typedef DWORD (*NtTerminateProcessFunc)(
 		DWORD ProcessHandle,
 		DWORD ExitStatus
 	);
 
-	void __stdcall BranchHandler(struct ExecutionEnvironment *pEnv, ADDR_TYPE a) {
+	void __stdcall BranchHandler(ExecutionEnvironment *pEnv, ADDR_TYPE a) {
 		//ExecutionRegs *currentRegs = (ExecutionRegs *)((&a) + 1);
+
 		pEnv->runtimeContext.registers = (UINT_PTR)((&a) + 1);
 		RiverBasicBlock *pCB;
 		pEnv->runtimeContext.trackBuff = pEnv->runtimeContext.trackBase;
 
-		if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
-			if (pEnv->bForward) {
-				DWORD dwLastBlock = pEnv->lastFwBlock; //TopFromExecutionBuffer(pEnv);
-				RiverBasicBlock *pLast = pEnv->blockCache.FindBlock(dwLastBlock);
-				if (NULL != pLast) {
-					((TrackFunc)pLast->pTrackCode)(pEnv->runtimeContext.trackBase - 4);
-				}
-			}
-		}
-
-
 		if (pEnv->bForward) {
 			PushToExecutionBuffer(pEnv, pEnv->lastFwBlock);
 		}
-		else {
-			/*switch (ctx->callCount % 5) {
-			case 3:
-			//copy the registers to validate them later
-			if (!RegCheck(pEnv, *currentRegs, regClone[1])) {
-			__asm int 3;
-			}
 
-			if (execStack[1] != pEnv->runtimeContext.virtualStack) {
-			//__asm int 3
-			}
-			break;
-			case 4:
-			//copy the registers to validate them later
-			if (!RegCheck(pEnv, *currentRegs, regClone[0])) {
-			__asm int 3;
-			}
-
-			if (execStack[0] != pEnv->runtimeContext.virtualStack) {
-			//__asm int 3
-			}
-			break;
-			}*/
-		}
-
-		DWORD dwDirection = EXECUTION_ADVANCE;  
-		if ((a == revtracerAPI.lowLevel.ntTerminateProcess) || (a == (ADDR_TYPE)pEnv->exitAddr)) {
-			// TODO: verify parameters
-			dwDirection = revtracerAPI.executionEnd(pEnv->userContext, pEnv);
-		} else if (ExecutionBufferEmpty(pEnv)) {
-			dwDirection = revtracerAPI.executionBegin(pEnv->userContext, a, pEnv);
-		} else {
-			dwDirection = revtracerAPI.executionControl(pEnv->userContext, a, pEnv);
-		}
-
+		
 		DWORD *stk = (DWORD *)pEnv->runtimeContext.virtualStack;
-		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_DEBUG, "EIP: 0x%08x Stack :\n", a);
-		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_DEBUG, "0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x00, stk[0], stk[1], stk[2], stk[3]);
-		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_DEBUG, "EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n",
+		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "EIP: 0x%08x Stack :\n", a);
+		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x00, stk[0], stk[1], stk[2], stk[3]);
+		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n",
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->eax, 
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->ecx,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->edx,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->ebx);
-		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_DEBUG, "ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n",
+		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n",
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->esp,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->ebp,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->esi,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->edi);
-		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_DEBUG, "Flags: 0x%08x\n",
+		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "Flags: 0x%08x\n",
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->eflags);
 
-		if (TRACER_FEATURE_TRACKING & pEnv->generationFlags) {
-			revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "Tainted registers :\n");
-			revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[0], pEnv->runtimeContext.taintedRegisters[1], pEnv->runtimeContext.taintedRegisters[2], pEnv->runtimeContext.taintedRegisters[3]);
-			revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n", pEnv->runtimeContext.taintedRegisters[4], pEnv->runtimeContext.taintedRegisters[5], pEnv->runtimeContext.taintedRegisters[6], pEnv->runtimeContext.taintedRegisters[7]);
-			revtracerAPI.dbgPrintFunc(PRINT_RUNTIME_TRACKING, "CF: 0x%08x  PF: 0x%08x  AF: 0x%08x  ZF: 0x%08x  SF: 0x%08x  OF: 0x%08x  DF: 0x%08x\n",
-				pEnv->runtimeContext.taintedFlags[0],
-				pEnv->runtimeContext.taintedFlags[1],
-				pEnv->runtimeContext.taintedFlags[2],
-				pEnv->runtimeContext.taintedFlags[3],
-				pEnv->runtimeContext.taintedFlags[4],
-				pEnv->runtimeContext.taintedFlags[5],
-				pEnv->runtimeContext.taintedFlags[6]
-			);
-		}
-
-		if ((EXECUTION_BACKTRACK == dwDirection) && (0 == (pEnv->generationFlags & TRACER_FEATURE_REVERSIBLE))) {
-			dwDirection = EXECUTION_ADVANCE;
-		}
-
+		DWORD dwDirection = revtracerAPI.branchHandler(pEnv, a);
 		if (EXECUTION_BACKTRACK == dwDirection) {
 			// go backwards
 			DWORD addr = PopFromExecutionBuffer(pEnv);
@@ -176,10 +117,6 @@ extern "C" {
 				pCB->MarkBackward();
 				//pEnv->posHist -= 1;
 				
-				if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
-					((TrackFunc)pCB->pRevTrackCode)(pEnv->runtimeContext.trackBase - 4);
-				}
-		
 				pEnv->bForward = 0;
 				pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pBkCode;
 			}
@@ -226,7 +163,7 @@ extern "C" {
 			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++++++++++++++++++++++++ \n");
 			((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
 		}
-
+		
 	}
 
 	void __stdcall SysHandler(struct ExecutionEnvironment *pEnv) {

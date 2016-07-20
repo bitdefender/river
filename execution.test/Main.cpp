@@ -16,7 +16,7 @@ unsigned int __stdcall ExecBegin(void *ctx, unsigned int address) {
 }
 
 FILE *fBlocks = NULL;
-unsigned int __stdcall ExecControl(void *ctx, unsigned int address) {
+unsigned int __stdcall ExecControl(void *ctx, void *address) {
 	//static bool b = true;
 	Registers rgs;
 
@@ -58,9 +58,9 @@ int main() {
 	
 	//ctrl->SetExecutionFeatures(FEATURE_);
 
-	ctrl->SetExecutionBeginNotification(ExecBegin);
+	//ctrl->SetExecutionBeginNotification(ExecBegin);
 	ctrl->SetExecutionControlNotification(ExecControl);
-	ctrl->SetExecutionEndNotification(ExecEnd);
+	//ctrl->SetExecutionEndNotification(ExecEnd);
 
 	ctrl->SetTerminationNotification(Term);
 

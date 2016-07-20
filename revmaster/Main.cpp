@@ -436,7 +436,7 @@ int main() {
 	}
 	revAPI->cleanupContext = (rev::CleanupContextFunc)(ipcLibAddr + dwIpcFuncOffset);
 
-	if (!fIpcLib->GetExport("ExecutionBeginFunc", dwIpcFuncOffset)) {
+	/*if (!fIpcLib->GetExport("ExecutionBeginFunc", dwIpcFuncOffset)) {
 		TerminateProcess(pInfo.hProcess, 0);
 		return 0;
 	}
@@ -452,7 +452,7 @@ int main() {
 		TerminateProcess(pInfo.hProcess, 0);
 		return 0;
 	}
-	revAPI->executionEnd = (rev::ExecutionEndFunc)(ipcLibAddr + dwIpcFuncOffset);
+	revAPI->executionEnd = (rev::ExecutionEndFunc)(ipcLibAddr + dwIpcFuncOffset);*/
 
 	if (!fIpcLib->GetExport("SyscallControlFunc", dwIpcFuncOffset)) {
 		TerminateProcess(pInfo.hProcess, 0);
@@ -562,7 +562,7 @@ int main() {
 			case REPLY_RESTORE_SNAPSHOT :
 			case REPLY_INITIALIZE_CONTEXT :
 			case REPLY_CLEANUP_CONTEXT :
-			case REPLY_EXECUTION_CONTORL :
+			//case REPLY_EXECUTION_CONTORL :
 			case REPLY_SYSCALL_CONTROL :
 				__asm int 3;
 				break;
@@ -575,7 +575,7 @@ int main() {
 				break;
 			}
 
-			case REQUEST_EXECUTION_BEGIN: {
+			/*case REQUEST_EXECUTION_BEGIN: {
 				ipc::ADDR_TYPE next = ipcData->data.asExecutionBeginRequest.nextInstruction;
 				
 				
@@ -593,10 +593,6 @@ int main() {
 				char mf[MAX_PATH];
 				char defMf[8] = "??";
 
-				/*if (((DWORD)next & 0xFFFD0000) == baseAddr) {
-					strcpy(defMf, "a.exe");
-				}*/
-
 				DWORD dwSz = GetMappedFileNameA(GetCurrentProcess(), next, mf, sizeof(mf)-1);
 
 				char *module = defMf;
@@ -610,7 +606,7 @@ int main() {
 					*t = toupper(*t);
 				}
 
-				fprintf(fOffs, "%s + 0x%04x\n", module, (DWORD)next /*& 0xFFFF*/);
+				fprintf(fOffs, "%s + 0x%04x\n", module, (DWORD)next);
 				fflush(fOffs);
 
 				ipcData->type = REPLY_EXECUTION_CONTORL;
@@ -622,7 +618,7 @@ int main() {
 				ipcData->type = REPLY_EXECUTION_END;
 				ipcData->data.asExecutionEndReply = EXECUTION_TERMINATE;
 				bRunning = false;
-				break;
+				break;*/
 
 			case REQUEST_SYSCALL_CONTROL:
 				ipcData->type = REPLY_SYSCALL_CONTROL;

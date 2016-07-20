@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 void SymbopSaveTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	memcpy(&rOut, &rIn, sizeof(rOut));
+	rev_memcpy(&rOut, &rIn, sizeof(rOut));
 
 	for (int i = 0; i < 4; ++i) {
 		if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[i])) {

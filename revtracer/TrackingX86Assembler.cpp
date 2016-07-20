@@ -12,7 +12,7 @@ void TrackingX86Assembler::AssembleTrackFlag(DWORD testFlags, RelocableCodeBuffe
 
 	for (BYTE c = 0, m = 1; m < RIVER_SPEC_FLAG_EXT; ++c, m <<= 1) {
 		if (m & testFlags) {
-			memcpy(px86.cursor, trackFlagInstr, sizeof(trackFlagInstr));
+			rev_memcpy(px86.cursor, trackFlagInstr, sizeof(trackFlagInstr));
 			*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
 			px86.cursor += sizeof(trackFlagInstr);
 			instrCounter++;
@@ -27,7 +27,7 @@ void TrackingX86Assembler::AssembleMarkFlag(DWORD modFlags, RelocableCodeBuffer 
 
 	for (BYTE c = 0, m = 1; m < RIVER_SPEC_FLAG_EXT; ++c, m <<= 1) {
 		if (m & modFlags) {
-			memcpy(px86.cursor, markFlagInstr, sizeof(markFlagInstr));
+			rev_memcpy(px86.cursor, markFlagInstr, sizeof(markFlagInstr));
 			*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
 			px86.cursor += sizeof(markFlagInstr);
 			instrCounter++;
@@ -40,7 +40,7 @@ void TrackingX86Assembler::AssembleTrackRegister(const RiverRegister &reg, Reloc
 	// TODO: implement register renaming, and overlapping registers
 	const BYTE trackRegInstr[] = { 0x0B, 0x3D, 0x00, 0x00, 0x00, 0x00 };
 
-	memcpy(px86.cursor, trackRegInstr, sizeof(trackRegInstr));
+	rev_memcpy(px86.cursor, trackRegInstr, sizeof(trackRegInstr));
 	*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedRegisters[GetFundamentalRegister(reg.name)];
 	px86.cursor += sizeof(trackRegInstr);
 	instrCounter++;
@@ -51,7 +51,7 @@ void TrackingX86Assembler::AssembleMarkRegister(const RiverRegister &reg, Reloca
 	// TODO: implement register renaming and overlapping registers
 	const BYTE markRegInstr[] = { 0x89, 0x3D, 0x00, 0x00, 0x00, 0x00 };
 
-	memcpy(px86.cursor, markRegInstr, sizeof(markRegInstr));
+	rev_memcpy(px86.cursor, markRegInstr, sizeof(markRegInstr));
 	*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedRegisters[GetFundamentalRegister(reg.name)];
 	px86.cursor += sizeof(markRegInstr);
 	instrCounter++;
@@ -74,15 +74,15 @@ void TrackingX86Assembler::AssembleTrackMemory(const RiverAddress *addr, BYTE of
 	};
 
 	if (addr->HasSegment()) {
-		memcpy(px86.cursor, trackSegInstr, sizeof(trackSegInstr));
+		rev_memcpy(px86.cursor, trackSegInstr, sizeof(trackSegInstr));
 		px86.cursor[0x02] = ~((offset - 1) << 2) + 1;
 		px86.cursor += sizeof(trackSegInstr);
 	} else {
-		memcpy(px86.cursor, trackImmInstr, sizeof(trackImmInstr));
+		rev_memcpy(px86.cursor, trackImmInstr, sizeof(trackImmInstr));
 		px86.cursor += sizeof(trackImmInstr);
 	}
 
-	memcpy(px86.cursor, trackMemInstr, sizeof(trackMemInstr));
+	rev_memcpy(px86.cursor, trackMemInstr, sizeof(trackMemInstr));
 	px86.cursor[0x02] = ~(offset << 2) + 1;
 	*(DWORD *)(&px86.cursor[0x05]) = (DWORD)&runtime->taintedAddresses;
 	*(DWORD *)(&px86.cursor[0x0B]) = (DWORD)&dwAddressTrackHandler;
@@ -117,16 +117,16 @@ void TrackingX86Assembler::AssembleMarkMemory(const RiverAddress *addr, BYTE off
 	};
 
 	if (addr->HasSegment()) {
-		memcpy(px86.cursor, markSegInstr, sizeof(markSegInstr));
+		rev_memcpy(px86.cursor, markSegInstr, sizeof(markSegInstr));
 		px86.cursor[0x02] = ~((offset - 1) << 2) + 1;
 		px86.cursor += sizeof(markSegInstr);
 	}
 	else {
-		memcpy(px86.cursor, markImmInstr, sizeof(markImmInstr));
+		rev_memcpy(px86.cursor, markImmInstr, sizeof(markImmInstr));
 		px86.cursor += sizeof(markImmInstr);
 	}
 
-	memcpy(px86.cursor, markMemInstr, sizeof(markMemInstr));
+	rev_memcpy(px86.cursor, markMemInstr, sizeof(markMemInstr));
 	*(BYTE *)(&px86.cursor[0x03]) = (BYTE)(~(offset << 2) + 1);
 	*(DWORD *)(&px86.cursor[0x06]) = (DWORD)&runtime->taintedAddresses;
 	*(DWORD *)(&px86.cursor[0x0C]) = (DWORD)&dwAddressMarkHandler;
@@ -139,7 +139,7 @@ void TrackingX86Assembler::AssembleAdjustESI(BYTE count, RelocableCodeBuffer &px
 		0x8D, 0x76, 0x00
 	};
 
-	memcpy(px86.cursor, adjustESI, sizeof(adjustESI));
+	rev_memcpy(px86.cursor, adjustESI, sizeof(adjustESI));
 	*(BYTE *)(&px86.cursor[0x02]) = (BYTE) (~(count << 2) + 1);
 	px86.cursor += sizeof(adjustESI);
 	instrCounter += 4;
@@ -179,7 +179,7 @@ void TrackingX86Assembler::AssembleUnmark(RelocableCodeBuffer &px86, DWORD &pFla
 		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x09 - call [dwAddressTrackHandler]
 	};
 
-	memcpy(px86.cursor, unmarkMem, sizeof(unmarkMem));
+	rev_memcpy(px86.cursor, unmarkMem, sizeof(unmarkMem));
 	*(DWORD *)(&px86.cursor[0x05]) = (DWORD)&runtime->taintedAddresses;
 	*(DWORD *)(&px86.cursor[0x0B]) = (DWORD)&dwAddressMarkHandler;
 	px86.cursor += sizeof(unmarkMem);
@@ -196,7 +196,7 @@ void TrackingX86Assembler::AssembleSymbolicCall(DWORD address, BYTE index, Reloc
 		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x0F - call [dwSymbolicHandler]
 	};
 
-	memcpy(px86.cursor, symCall, sizeof(symCall));
+	rev_memcpy(px86.cursor, symCall, sizeof(symCall));
 	px86.cursor[0x03] = index;
 	*(DWORD *)(&px86.cursor[0x05]) = address;
 	*(DWORD *)(&px86.cursor[0x0B]) = (DWORD)runtime;

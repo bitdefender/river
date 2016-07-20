@@ -117,7 +117,7 @@ public :
 	}
 
 	void Push(Z3_ast ast) {
-		printf("Pushing ast %08p %d\n", ast, executionPos - 1);
+		//printf("Pushing ast %08p %d\n", ast, executionPos - 1);
 		condStack[condCount].condition = ast;
 		condStack[condCount].step = executionPos - 1;
 		condCount++;
@@ -131,7 +131,7 @@ public :
 		if (condStack[condCount - 1].step == executionPos) {
 			condCount--;
 			ast = condStack[condCount].condition;
-			printf("Popping ast %08p %d\n", ast, executionPos);
+			//printf("Popping ast %08p %d\n", ast, executionPos);
 			return true;
 		}
 
@@ -145,7 +145,7 @@ public :
 
 		TrackedCondition *ret = freeConditions[--freeCondCount];
 		ret->wasInverted = false;
-		printf("Alloc condition %08p\n", ret);
+		//printf("Alloc condition %08p\n", ret);
 		return ret;
 	}
 
@@ -154,12 +154,12 @@ public :
 	}
 
 	void FreeCondition(TrackedCondition *cond) {
-		printf("Free condition %08p\n", cond);
+		//printf("Free condition %08p\n", cond);
 		freeConditions[freeCondCount++] = cond;
 	}
 
 	void Push(TrackedCondition *tvd) {
-		printf("Tracking condition %08p\n", tvd);
+		//printf("Tracking condition %08p\n", tvd);
 		tvds[revCount] = tvd;
 		revCount++;
 	}
@@ -168,7 +168,7 @@ public :
 		TrackedCondition *ret = tvds[--revCount];
 		tvds[revCount] = nullptr;
 
-		printf("Restoring condition %08p\n", ret);
+		//printf("Restoring condition %08p\n", ret);
 		return ret;
 	}
 
@@ -181,20 +181,43 @@ public :
 	}
 };
 
+LARGE_INTEGER liFreq, liStart, liStop, liSymStart, liSymStop, liSymTotal, liBrStart, liBrStop, liBrTotal;
+
+void BranchBegin() {
+	QueryPerformanceCounter(&liBrStart);
+}
+
+void BranchEnd() {
+	QueryPerformanceCounter(&liBrStop);
+	liBrTotal.QuadPart += liBrStop.QuadPart - liBrStart.QuadPart;
+}
+
 rev::DWORD CustomExecutionBegin(void *ctx, rev::ADDR_TYPE addr, void *cbCtx) {
 	static bool ctxInit = false;
 	CustomExecutionContext *cExt = (CustomExecutionContext *)ctx;
 
+	QueryPerformanceCounter(&liSymStart);
 	if (!ctxInit) {
 		cExt->Init();
 		ctxInit = true;
+		QueryPerformanceCounter(&liStart);
+		liSymTotal.QuadPart = 0;
 	}
 
+	rev::DWORD ret = EXECUTION_ADVANCE;
 
 	if (cExt->BACKTRACKING == cExt->executionState) {
-		return EXECUTION_TERMINATE;
+		QueryPerformanceCounter(&liStop);
+
+		fprintf(stderr, "$$ Symbolic time: %lfms\n", 1000.0 * liSymTotal.QuadPart / liFreq.QuadPart);
+		fprintf(stderr, "$$ Branching time: %lfms\n", 1000.0 * liBrTotal.QuadPart / liFreq.QuadPart);
+		fprintf(stderr, "$$ Execution time: %lfms\n", 1000.0 * (liStop.QuadPart - liStart.QuadPart) / liFreq.QuadPart);
+		ret = EXECUTION_TERMINATE;
 	}
-	return EXECUTION_ADVANCE;
+
+	QueryPerformanceCounter(&liSymStop);
+	liSymTotal.QuadPart += liSymStop.QuadPart - liSymStart.QuadPart;
+	return ret;
 }
 
 // here are the bindings to the payload
@@ -229,6 +252,7 @@ rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx
 	rev::DWORD ret = EXECUTION_ADVANCE;
 	Z3_ast ast;
 
+	QueryPerformanceCounter(&liSymStart);
 	static const char c[][32] = {
 		"EXPLORING",
 		"BACKTRACKING",
@@ -256,18 +280,19 @@ rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx
 							)
 						);
 
-						printf("Invert condition %08p\n", cond);
+						//printf("Invert condition %08p\n", cond);
 						ast = Z3_simplify(executor->context, ast);
 
 						if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, ast)) {
 							Z3_solver_assert(executor->context, executor->solver, ast);
 
-							printf("(assert %s)\n\n", Z3_ast_to_string(executor->context, ast));
+							//printf("(assert %s)\n\n", Z3_ast_to_string(executor->context, ast));
 
 							unsigned int actualPass[10] = { 0 };
 							Z3_lbool ret = Z3_solver_check(executor->context, executor->solver);
 
 							if (Z3_L_TRUE == ret) {
+								printf("==============================================================\n");
 								Z3_model model = Z3_solver_get_model(executor->context, executor->solver);
 
 								unsigned int cnt = Z3_model_get_num_consts(executor->context, model);
@@ -335,7 +360,7 @@ rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx
 				__asm int 3;
 		}
 
-		printf(
+		/*(
 			"*** step %d; addr 0x%08p; state %s; backSteps %d, coundCount %d\n",
 			cExt->executionPos,
 			addr,
@@ -344,9 +369,9 @@ rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx
 			cExt->condCount
 		);
 
-		fflush(stdout);
+		fflush(stdout);*/
 	} else if (EXECUTION_ADVANCE == lastDirection) {
-		printf(
+		/*printf(
 			"*** step %d; addr 0x%08p; state %s; backSteps %d, coundCount %d\n",
 			cExt->executionPos,
 			addr,
@@ -355,7 +380,7 @@ rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx
 			cExt->condCount
 		);
 
-		fflush(stdout);
+		fflush(stdout);*/
 
 		switch (cExt->executionState) {
 			case CustomExecutionContext::EXPLORING:
@@ -421,11 +446,16 @@ rev::DWORD CustomExecutionController(void *ctx, rev::ADDR_TYPE addr, void *cbCtx
 		cExt->executionPos++;
 	}
 
+	QueryPerformanceCounter(&liSymStop);
+	liSymTotal.QuadPart += liSymStop.QuadPart - liSymStart.QuadPart;
 	return ret;
 }
 
 rev::DWORD CustomExecutionEnd(void *ctx, void *cbCtx) {
 	CustomExecutionContext *cExt = (CustomExecutionContext *)ctx;
+
+	QueryPerformanceCounter(&liSymStart);
+
 	if (cExt->EXPLORING != cExt->executionState) {
 		__asm int 3;
 	}
@@ -467,6 +497,12 @@ rev::DWORD CustomExecutionEnd(void *ctx, void *cbCtx) {
 			fprintf(stderr, "%c", actualPass[i]);
 		}
 		fprintf(stderr, "\") = %04x\n", Check(actualPass));
+
+		printf("Check(\"");
+		for (int i = 0; actualPass[i]; ++i) {
+			printf("%c", actualPass[i]);
+		}
+		printf("\") = %04x\n", Check(actualPass));
 	}
 	else if (Z3_L_FALSE == ret) {
 		printf("unsat\n");
@@ -479,6 +515,11 @@ rev::DWORD CustomExecutionEnd(void *ctx, void *cbCtx) {
 	cExt->executionState = cExt->BACKTRACKING;
 	//cExt->executionPos--;
 	//executor->StepBackward();
+
+
+	QueryPerformanceCounter(&liSymStop);
+	liSymTotal.QuadPart += liSymStop.QuadPart - liSymStart.QuadPart;
+
 	return EXECUTION_BACKTRACK;
 	//return EXECUTION_TERMINATE;
 }
@@ -519,13 +560,12 @@ void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	api->lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
 	api->lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
 
-	api->executionBegin = CustomExecutionBegin;
+	/*api->executionBegin = CustomExecutionBegin;
 	api->executionControl = CustomExecutionController;
-	api->executionEnd = CustomExecutionEnd;
+	api->executionEnd = CustomExecutionEnd;*/
 
 	api->trackCallback = TrackCallback;
 	api->markCallback = MarkCallback;
-
 
 	rev::RevtracerConfig *config = &rev::revtracerConfig;
 	config->contextSize = sizeof(CustomExecutionContext);
@@ -543,7 +583,13 @@ int main(int argc, char *argv[]) {
 	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
 	//TmpPrint("ntdll.dll @ 0x%08x\n", (DWORD)hNtDll);
 
+	QueryPerformanceFrequency(&liFreq);
+
+	QueryPerformanceCounter(&liStart);
 	Payload();
+	QueryPerformanceCounter(&liStop);
+
+	fprintf(stderr, "$$ Native time: %lfms\n", 1000.0 * (liStop.QuadPart - liStart.QuadPart) / liFreq.QuadPart);
 
 	fDbg = CreateFileA("symb.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
 
@@ -558,7 +604,7 @@ int main(int argc, char *argv[]) {
 	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[7]), "a[7]");
 
 	rev::Execute(argc, argv);
-
+	
 	Z3_close_log();
 
 	CloseHandle(fDbg);
