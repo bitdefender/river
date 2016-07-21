@@ -108,6 +108,56 @@ bool InternalExecutionController::InitializeAllocator() {
 	return NULL != shmAlloc;
 }
 
+BYTE *GetFreeRegion(HANDLE hProcess, DWORD size) {
+	printf("Looking for a 0x%08x block\n", size);
+
+	size = (size + 0xFFF) & ~0xFFF;
+
+	DWORD dwGran = 0x10000;
+
+	// now look for a suitable address;
+
+	DWORD dwOffset = 0x01000000; // dwGran;
+	DWORD dwCandidate = 0, dwCandidateSize = 0xFFFFFFFF;
+
+	while (dwOffset < 0x2FFF0000) {
+		MEMORY_BASIC_INFORMATION32 mbi;
+		DWORD regionSize = 0xFFFFFFFF;
+		bool regionFree = true;
+
+		if (0 == VirtualQueryEx(hProcess, (LPCVOID)dwOffset, (PMEMORY_BASIC_INFORMATION)&mbi, sizeof(mbi))) {
+			return NULL;
+		}
+
+		DWORD dwSize = mbi.RegionSize - (dwOffset - mbi.BaseAddress); // or allocationbase
+		if (regionSize > dwSize) {
+			regionSize = dwSize;
+		}
+
+		regionFree &= (MEM_FREE == mbi.State);
+		
+		if (regionFree & (regionSize >= size) & (regionSize < dwCandidateSize)) {
+			printf("    Candidate found @0x%08x size 0x%08x\n", dwOffset, regionSize);
+			dwCandidate = dwOffset;
+			dwCandidateSize = regionSize;
+
+			if (regionSize == size) {
+				break;
+			}
+		}
+
+		dwOffset += regionSize;
+		dwOffset += dwGran - 1;
+		dwOffset &= ~(dwGran - 1);
+	}
+
+	if (0 == dwCandidate) {
+		return NULL;
+	}
+
+	return (BYTE *)dwCandidate;
+}
+
 bool InternalExecutionController::MapLoader() {
 	FloatingPE *fLoader = new FloatingPE("loader.dll");
 	ExternMapper mLoader(hProcess);
@@ -115,12 +165,14 @@ bool InternalExecutionController::MapLoader() {
 	bool bRet = false;
 	do {
 
-		pLoaderBase = (BYTE *)0x00500000;
+		pLoaderBase = GetFreeRegion(hProcess, fLoader->GetRequiredSize());
 		if (!fLoader->IsValid()) {
+			__asm int 3;
 			break;
 		}
 
 		if (!fLoader->MapPE(mLoader, (DWORD &)pLoaderBase)) {
+			__asm int 3;
 			break;
 		}
 
@@ -150,10 +202,12 @@ bool InternalExecutionController::MapLoader() {
 			!LoadExportedName(fLoader, pLoaderBase, "MapMemory", pLdrMapMemory) ||
 			!LoadExportedName(fLoader, pLoaderBase, "LoaderPerform", pLoaderPerform)
 		) {
+			__asm int 3;
 			break;
 		}
 
 		if (FALSE == WriteProcessMemory(hProcess, ldrAPIPtr, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
+			__asm int 3;
 			break;
 		}
 
@@ -526,6 +580,7 @@ bool InternalExecutionController::Execute() {
 	memset(&processInfo, 0, sizeof(processInfo));
 
 	if ((execState != INITIALIZED) && (execState != TERMINATED) && (execState != ERR)) {
+		__asm int 3;
 		return false;
 	}
 
@@ -544,6 +599,7 @@ bool InternalExecutionController::Execute() {
 
 	if (FALSE == bRet) {
 		execState = ERR;
+		__asm int 3;
 		return false;
 	}
 
@@ -552,26 +608,31 @@ bool InternalExecutionController::Execute() {
 
 	if (!InitializeAllocator()) {
 		execState = ERR;
+		__asm int 3;
 		return false;
 	}
 
 	if (!MapLoader()) {
 		execState = ERR;
+		__asm int 3;
 		return false;
 	}
 
 	if (!MapTracer()) {
 		execState = ERR;
+		__asm int 3;
 		return false;
 	}
 
 	if (!WriteLoaderConfig()) {
 		execState = ERR;
+		__asm int 3;
 		return false;
 	}
 
 	if (!SwitchEntryPoint()) {
 		execState = ERR;
+		__asm int 3;
 		return false;
 	}
 

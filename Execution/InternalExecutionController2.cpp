@@ -53,11 +53,9 @@ DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller) {
 	if (/*(a == revtracerAPI.lowLevel.ntTerminateProcess) ||*/ (a == (ADDR_TYPE)pEnv->exitAddr)) {
 		// TODO: verify parameters
 		dwDirection = exec->ExecutionEnd(pEnv);
-	}
-	else if (ExecutionBufferEmpty(pEnv)) {
+	} else if (ExecutionBufferEmpty(pEnv)) {
 		dwDirection = exec->ExecutionBegin(a, pEnv);
-	}
-	else {
+	} else {
 		dwDirection = exec->ExecutionControl(a, pEnv);
 	}
 

@@ -51,7 +51,7 @@ unsigned int __stdcall ExecEnd(void *ctx) {
 
 int main() {
 
-	fBlocks = fopen("e.t.txt", "wt");
+	fopen_s(&fBlocks, "e.t.txt", "wt");
 
 	ctrl = NewExecutionController();
 	ctrl->SetPath(L"D:\\wrk\\evaluators\\lzo\\a.exe");
