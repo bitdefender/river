@@ -91,6 +91,7 @@
     <ClCompile Include="SymbolicDemoMain.cpp" />
     <ClCompile Include="TrackingCookie.cpp" />
     <ClCompile Include="Z3SymbolicExecutor.cpp" />
+    <ClCompile Include="Z3SymbolicFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TrackingCookie.h" />

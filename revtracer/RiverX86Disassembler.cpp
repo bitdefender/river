@@ -113,8 +113,6 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 /* Opcode disassemblers                        */
 /* =========================================== */
 
-extern "C" void exit(int);
-
 void RiverX86Disassembler::DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
 	static BYTE opcode, extPrefix;
 	static DWORD address;

@@ -144,6 +144,7 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(UINT_PTR a) {
 				return pWalk;
 			}
 
+#ifndef BLOCK_CACHE_READ_ONLY
 			if (pWalk->dwCRC == (unsigned long) crc32 (0xEDB88320, (BYTE *) a, pWalk->dwSize)) {
 				cbLock.Unlock();
 				return pWalk;
@@ -154,6 +155,10 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(UINT_PTR a) {
 				cbLock.Unlock();
 				return NULL;
 			}
+#else
+			cbLock.Unlock();
+			return pWalk;
+#endif
 		}
 
 		pWalk = pWalk->pNext;

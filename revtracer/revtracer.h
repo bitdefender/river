@@ -7,7 +7,7 @@
 #define TRACER_FEATURE_REVERSIBLE				0x00000001
 #define TRACER_FEATURE_TRACKING					0x00000002
 #define TRACER_FEATURE_ADVANCED_TRACKING		0x00000004 // never use this flag --- use _SYMBOLIC instead
-#define TRACER_FEATURE_SYMBOLIC					TRACER_FEATURE_TRACKING | TRACER_FEATURE_ADVANCED_TRACKING
+#define TRACER_FEATURE_SYMBOLIC					(TRACER_FEATURE_TRACKING | TRACER_FEATURE_ADVANCED_TRACKING)
 
 namespace rev {
 
@@ -19,7 +19,7 @@ namespace rev {
 
 	typedef void *ADDR_TYPE;
 
-	typedef void(*DbgPrintFunc)(DWORD dwMask, const char *fmt, ...);
+	typedef void(*DbgPrintFunc)(const unsigned int dwMask, const char *fmt, ...);
 	typedef void *(*MemoryAllocFunc)(DWORD dwSize);
 	typedef void(*MemoryFreeFunc)(void *ptr);
 

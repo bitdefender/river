@@ -49,19 +49,18 @@ unsigned int __stdcall ExecEnd(void *ctx) {
 	return EXECUTION_TERMINATE;
 }
 
+extern int Payload();
+
 int main() {
 
 	fopen_s(&fBlocks, "e.t.txt", "wt");
 
-	ctrl = NewExecutionController();
-	ctrl->SetPath(L"D:\\wrk\\evaluators\\lzo\\a.exe");
+	ctrl = NewExecutionController(EXECUTION_INPROCESS);
+	ctrl->SetEntryPoint(Payload);
 	
-	//ctrl->SetExecutionFeatures(FEATURE_);
+	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING);
 
-	//ctrl->SetExecutionBeginNotification(ExecBegin);
 	ctrl->SetExecutionControlNotification(ExecControl);
-	//ctrl->SetExecutionEndNotification(ExecEnd);
-
 	ctrl->SetTerminationNotification(Term);
 
 	hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);

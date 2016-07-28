@@ -9,8 +9,13 @@
 #define EXECUTION_LINKAGE __declspec(dllimport)
 #endif
 
-#define EXECUTION_FEATURE_REVERSIBLE		0x00000001
-#define EXECUTION_FEATURE_TRACKING			0x00000004
+#define EXECUTION_INPROCESS						0x00000000
+#define EXECUTION_EXTERNAL						0x00000001
+
+#define EXECUTION_FEATURE_REVERSIBLE			0x00000001
+#define EXECUTION_FEATURE_TRACKING				0x00000002
+#define EXECUTION_FEATURE_ADVANCED_TRACKING		0x00000004 // never use this flag --- use _SYMBOLIC instead
+#define EXECUTION_FEATURE_SYMBOLIC				EXECUTION_FEATURE_TRACKING | EXECUTION_FEATURE_ADVANCED_TRACKING
 
 #define EXECUTION_ADVANCE					0x00000000
 #define EXECUTION_BACKTRACK					0x00000001
@@ -82,9 +87,10 @@ public:
 	virtual int GetState() const = 0;
 	virtual bool SetPath(const wstring &) = 0;
 	virtual bool SetCmdLine(const wstring &) = 0;
+	virtual bool SetEntryPoint(void *ep) = 0;
 	virtual bool SetExecutionFeatures(unsigned int feat) = 0;
 	virtual bool Execute() = 0;
-	virtual bool Terminate() = 0;
+	virtual bool WaitForTermination() = 0;
 
 	virtual void *GetProcessHandle() = 0;
 
@@ -108,7 +114,7 @@ public:
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
 };
 
-EXECUTION_LINKAGE ExecutionController *NewExecutionController();
+EXECUTION_LINKAGE ExecutionController *NewExecutionController(uint32_t type);
 EXECUTION_LINKAGE void DeleteExecutionController(ExecutionController *);
 
 #endif

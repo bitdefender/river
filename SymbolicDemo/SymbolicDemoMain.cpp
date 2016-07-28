@@ -545,6 +545,10 @@ void MarkCallback(rev::DWORD oldValue, rev::DWORD newValue, rev::DWORD address, 
 	//__asm int 3;
 }
 
+DWORD CustomBranchHandler(void *context, ADDR_TYPE nextInstruction) {
+
+}
+
 void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	HMODULE hNtDll = GetModuleHandle(L"ntdll.dll");
 	rev::RevtracerAPI *api = &rev::revtracerAPI;
@@ -563,6 +567,8 @@ void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
 	/*api->executionBegin = CustomExecutionBegin;
 	api->executionControl = CustomExecutionController;
 	api->executionEnd = CustomExecutionEnd;*/
+
+	api->branchHandler = CustomBranchHandler;
 
 	api->trackCallback = TrackCallback;
 	api->markCallback = MarkCallback;

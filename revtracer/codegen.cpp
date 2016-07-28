@@ -193,10 +193,8 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 
 		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags);
 
-		currentBuffer++;
-
-		for (DWORD i = 0; i < instrCounts[0]; ++i) {
-			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(instrBuffers[0][i].family)) {
+		for (DWORD i = 0; i < instrCounts[currentBuffer]; ++i) {
+			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(instrBuffers[currentBuffer][i].family)) {
 
 				TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, ".%08x    ", pAux);
 				iSize = pTmp - pAux;
@@ -214,6 +212,7 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 
 			TRANSLATE_PRINT_INSTRUCTION(PRINT_INFO | PRINT_DISASSEMBLY, &instrBuffers[0][i]);
 		}
+		currentBuffer++;
 
 		if (TRACER_FEATURE_REVERSIBLE & dwTranslationFlags) {
 			instrCounts[currentBuffer] = 0;
@@ -336,8 +335,11 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 
+		revtracerAPI.dbgPrintFunc(PRINT_DEBUG, "## this: %08x\n", this);
+
 		if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
-			// generate the reverse basic blcok representations
+			// generate the reverse basic block representations
+			revtracerAPI.dbgPrintFunc(PRINT_DEBUG, "##Rev: %08x %d instructions\n", fwRiverInst, fwInstCount);
 			for (DWORD i = 0; i < fwInstCount; ++i) {
 				//TranslateReverse(this, &fwRiverInst[fwInstCount - 1 - i], &bkRiverInst[i], &tmp);
 				revTranslator.Translate(fwRiverInst[fwInstCount - 1 - i], bkRiverInst[i]);

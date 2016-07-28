@@ -282,7 +282,7 @@ namespace rev {
 
 	/* Default API functions ************************************************************/
 
-	void NoDbgPrint(DWORD printMask, const char *fmt, ...) { }
+	void NoDbgPrint(const unsigned int printMask, const char *fmt, ...) { }
 
 	void DefaultIpcInitialize() {
 	}
@@ -417,7 +417,7 @@ namespace rev {
 	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)orig);
 		pBlock->address = (DWORD)det;
-		pEnv->codeGen.Translate(pBlock, 0);
+		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
 		pBlock->address = (DWORD)orig;
 		pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
 
@@ -435,7 +435,7 @@ namespace rev {
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)revtracerConfig.entryPoint);
 		pBlock->address = (DWORD)revtracerConfig.entryPoint;
 		revtracerConfig.pRuntime = &pEnv->runtimeContext;
-		pEnv->codeGen.Translate(pBlock, 0);
+		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
 		
 		pEnv->exitAddr = (DWORD)revtracerAPI.lowLevel.ntTerminateProcess;
 
@@ -561,7 +561,7 @@ namespace rev {
 		pEnv = new ExecutionEnvironment(revtracerConfig.featureFlags, 0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
 		pEnv->userContext = AllocUserContext(pEnv, revtracerConfig.contextSize);
 
-		if (TRACER_FEATURE_SYMBOLIC & revtracerConfig.featureFlags) {
+		if ((TRACER_FEATURE_SYMBOLIC & revtracerConfig.featureFlags) == TRACER_FEATURE_SYMBOLIC) {
 			SetSymbolicExecutor(revtracerConfig.sCons);
 			::InitSymbolicHandler(pEnv);
 		}

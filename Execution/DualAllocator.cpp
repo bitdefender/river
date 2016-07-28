@@ -8,7 +8,7 @@ DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const wchar_t *sh
 		0,
 		size,
 		shmName
-		);
+	);
 
 	dwSize = size;
 	dwUsed = 0;
@@ -103,7 +103,7 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 
 	void *ptr = MapViewOfFileEx(
 		hMapping,
-		FILE_MAP_ALL_ACCESS,
+		FILE_MAP_ALL_ACCESS | FILE_MAP_EXECUTE,
 		0,
 		offset,
 		size,
