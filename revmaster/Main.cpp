@@ -484,7 +484,7 @@ int main() {
 	}
 	rev::RevtracerConfig *revCfg = (rev::RevtracerConfig *)(revTracerAddr + revCfgOffset);
 
-	revCfg->contextSize = 4;
+	revCfg->context = nullptr;
 	revCfg->entryPoint = (rev::ADDR_TYPE)ctx.Eip;
 	InitSegments(pInfo.hThread, revCfg->segmentOffsets);
 

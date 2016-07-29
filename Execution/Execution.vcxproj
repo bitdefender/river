@@ -85,8 +85,12 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
     <ClCompile Include="CommonExecutionController.cpp" />
     <ClCompile Include="DualAllocator.cpp" />
     <ClCompile Include="ExternExecutionController.cpp" />
-    <ClCompile Include="ExternExecutionController2.cpp" />
+    <ClCompile Include="ExternExecutionController2.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="InprocessExecutionController.cpp" />
+    <ClCompile Include="CommonExecutionController2.cpp" />
     <ClCompile Include="LargeStack.cpp" />
     <ClCompile Include="Loader\Extern.Mapper.cpp" />
     <ClCompile Include="Loader\Inproc.Mapper.cpp" />

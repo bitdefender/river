@@ -32,6 +32,10 @@ DWORD __stdcall ThreadProc(LPVOID p) {
 	return _this->ControlThread();
 }
 
+//unsigned int BranchHandlerFunc(void *context, void *userContext, void *nextInstruction);
+void SyscallControlFunc(void *context, void *userContext);
+
+
 bool InprocessExecutionController::Execute() {
 	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
 	HMODULE hRevTracer = LoadLibraryW(L"revtracer.dll");
@@ -40,6 +44,9 @@ bool InprocessExecutionController::Execute() {
 	revCfg = (rev::RevtracerConfig *)GetProcAddress(hRevTracer, "revtracerConfig");
 
 	api->dbgPrintFunc = ::DebugPrintf;
+
+	api->branchHandler = BranchHandlerFunc;
+	api->syscallControl = SyscallControlFunc;
 
 	api->lowLevel.ntAllocateVirtualMemory = GetProcAddress(hNtDll, "NtAllocateVirtualMemory");
 	api->lowLevel.ntFreeVirtualMemory = GetProcAddress(hNtDll, "NtFreeVirtualMemory");
@@ -53,6 +60,7 @@ bool InprocessExecutionController::Execute() {
 	//config->contextSize = sizeof(CustomExecutionContext);
 	revCfg->entryPoint = entryPoint;
 	revCfg->featureFlags = featureFlags;
+	revCfg->context = this;
 	//config->sCons = SymExeConstructor;
 
 	hThread = CreateThread(

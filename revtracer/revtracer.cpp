@@ -318,11 +318,11 @@ namespace rev {
 		return EXECUTION_TERMINATE;
 	}
 
-	DWORD DefaultBranchHandlerFunc(void *context, ADDR_TYPE nextInstruction) {
+	DWORD DefaultBranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction) {
 		return EXECUTION_ADVANCE;
 	}
 
-	void DefaultSyscallControlFunc(void *context) { }
+	void DefaultSyscallControlFunc(void *context, void *userContext) { }
 
 	void DefaultTrackCallback(DWORD value, DWORD address, DWORD segSel) { }
 	void DefaultMarkCallback(DWORD oldValue, DWORD newValue, DWORD address, DWORD segSel) { }
@@ -434,7 +434,6 @@ namespace rev {
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", revtracerConfig.entryPoint);
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)revtracerConfig.entryPoint);
 		pBlock->address = (DWORD)revtracerConfig.entryPoint;
-		revtracerConfig.pRuntime = &pEnv->runtimeContext;
 		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
 		
 		pEnv->exitAddr = (DWORD)revtracerAPI.lowLevel.ntTerminateProcess;
@@ -443,7 +442,7 @@ namespace rev {
 		*((DWORD *)pEnv->runtimeContext.execBuff) = (DWORD)revtracerConfig.entryPoint;*/
 		
 		//switch (revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
-		switch (revtracerAPI.branchHandler(pEnv, revtracerConfig.entryPoint)) {
+		switch (revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
 			case EXECUTION_ADVANCE :
 				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
 				for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
@@ -545,8 +544,8 @@ namespace rev {
 		revtracerAPI.syscallControl = syscallCtl;
 	}
 
-	void SetContextSize(DWORD sz) {
-		revtracerConfig.contextSize = sz;
+	void SetContext(ADDR_TYPE ctx) {
+		revtracerConfig.context = ctx;
 	}
 
 	void SetEntryPoint(ADDR_TYPE ep) {
@@ -559,18 +558,20 @@ namespace rev {
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Feature flags %08x\n", revtracerConfig.featureFlags);
 
 		pEnv = new ExecutionEnvironment(revtracerConfig.featureFlags, 0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
-		pEnv->userContext = AllocUserContext(pEnv, revtracerConfig.contextSize);
+		pEnv->userContext = revtracerConfig.context; //AllocUserContext(pEnv, revtracerConfig.contextSize);
 
 		if ((TRACER_FEATURE_SYMBOLIC & revtracerConfig.featureFlags) == TRACER_FEATURE_SYMBOLIC) {
 			SetSymbolicExecutor(revtracerConfig.sCons);
 			::InitSymbolicHandler(pEnv);
 		}
+
+		revtracerConfig.pRuntime = &pEnv->runtimeContext;
 	}
 
 	void Execute(int argc, char *argv[]) {
 		DWORD ret;
 		//if (EXECUTION_ADVANCE == revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
-		if (EXECUTION_ADVANCE == revtracerAPI.branchHandler(pEnv, revtracerConfig.entryPoint)) {
+		if (EXECUTION_ADVANCE == revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
 			ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
 			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
 		}

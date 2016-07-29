@@ -32,12 +32,9 @@ namespace rev {
 
 	typedef void(*InitializeContextFunc)(void *context);
 	typedef void(*CleanupContextFunc)(void *context);
-	//typedef DWORD(*ExecutionBeginFunc)(void *context, ADDR_TYPE firstInstruction, void *cbCtx);
-	//typedef DWORD(*ExecutionControlFunc)(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
-	//typedef DWORD(*ExecutionEndFunc)(void *context, void *cbCtx);
 
-	typedef DWORD(*BranchHandlerFunc)(void *context, ADDR_TYPE nextInstruction);
-	typedef void(*SyscallControlFunc)(void *context);
+	typedef DWORD(*BranchHandlerFunc)(void *context, void *userContext, ADDR_TYPE nextInstruction);
+	typedef void(*SyscallControlFunc)(void *context, void *userContext);
 	typedef void(*IpcLibInitFunc)();
 
 	typedef void(*TrackCallbackFunc)(DWORD value, DWORD address, DWORD segment);
@@ -107,7 +104,7 @@ namespace rev {
 	struct RevtracerConfig {
 		ADDR_TYPE entryPoint;
 		ADDR_TYPE mainModule;
-		DWORD contextSize;
+		ADDR_TYPE context;
 		DWORD segmentOffsets[0x100];
 
 		DWORD featureFlags;
@@ -160,7 +157,7 @@ namespace rev {
 		DLL_LINKAGE void SetControlMgmt(BranchHandlerFunc branchCtl, SyscallControlFunc syscallCtl);
 
 
-		DLL_LINKAGE void SetContextSize(DWORD sz);
+		DLL_LINKAGE void SetContext(ADDR_TYPE ctx);
 		DLL_LINKAGE void SetEntryPoint(ADDR_TYPE ep);
 
 		DLL_LINKAGE void SetSymbolicExecutor(SymbolicExecutorConstructor func);

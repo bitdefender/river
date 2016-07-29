@@ -124,10 +124,12 @@ namespace ipc {
 
 			struct {
 				void *context;
+				void *userContext;
 			} asSyscallControlRequest;
 
 			struct {
 				void *executionEnv;
+				void *userContext;
 				ADDR_TYPE nextInstruction;
 			} asBranchHandlerRequest;
 		} data;
@@ -153,12 +155,12 @@ namespace ipc {
 
 		DLL_LINKAGE extern void InitializeContextFunc(void *context);
 		DLL_LINKAGE extern void CleanupContextFunc(void *context);
-		DLL_LINKAGE extern DWORD ExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
+		/*DLL_LINKAGE extern DWORD ExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
 		DLL_LINKAGE extern DWORD ExecutionControlFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx);
-		DLL_LINKAGE extern DWORD ExecutionEndFunc(void *context, void *cbCtx);
+		DLL_LINKAGE extern DWORD ExecutionEndFunc(void *context, void *cbCtx);*/
 
-		DLL_LINKAGE extern DWORD BranchHandlerFunc(void *context, ADDR_TYPE nextInstruction);
-		DLL_LINKAGE extern void SyscallControlFunc(void *context);
+		DLL_LINKAGE extern DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction);
+		DLL_LINKAGE extern void SyscallControlFunc(void *context, void *userContext);
 
 		DLL_LINKAGE extern void Initialize();
 

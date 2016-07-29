@@ -264,7 +264,7 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 
 	memcpy(revAPI, &tmpRevApi, sizeof(tmpRevApi));
 
-	revCfg->contextSize = 0;
+	revCfg->context = nullptr;
 	InitSegments(hMainThread, revCfg->segmentOffsets);
 	revCfg->hookCount = 0;
 	revCfg->featureFlags = featureFlags;
@@ -686,70 +686,12 @@ DWORD ExternExecutionController::ControlThread() {
 				break;
 			}
 
-			/*case REQUEST_EXECUTION_BEGIN: {
-				ipc::ADDR_TYPE next = ipcData->data.asExecutionBeginRequest.nextInstruction;
-
-				ipcData->type = REPLY_EXECUTION_BEGIN;
-				if (!PatchProcess()) {
-					ipcData->data.asExecutionBeginReply = EXECUTION_TERMINATE;
-					bRunning = false;
-					execState = ERR;
-				}
-				else {
-					execState = SUSPENDED_AT_START;
-					if (EXECUTION_TERMINATE == (ipcData->data.asExecutionBeginReply = eBegin(context, next))) {
-						bRunning = false;
-					}
-				}
-				break;
-			}
-
-			case REQUEST_EXECUTION_CONTORL: {
-				ipc::ADDR_TYPE next = ipcData->data.asExecutionControlRequest.nextInstruction;
-
-				char mf[MAX_PATH];
-				char defMf[8] = "??";
-
-				DWORD dwSz = GetMappedFileNameA(hProcess, next, mf, sizeof(mf)-1);
-
-				char *module = defMf;
-				for (DWORD i = 1; i < dwSz; ++i) {
-					if (mf[i - 1] == '\\') {
-						module = &mf[i];
-					}
-				}
-
-				for (char *t = module; *t != '\0'; ++t) {
-					*t = toupper(*t);
-				}
-
-				fprintf(fOffs, "%s + 0x%04X\n", module, (DWORD)next & 0xFFFF);
-				
-				fflush(fOffs);
-
-				ipcData->type = REPLY_EXECUTION_CONTORL;
-				execState = SUSPENDED;
-				if (EXECUTION_TERMINATE == (ipcData->data.asExecutionControlReply = eControl(context, next))) {
-					bRunning = false;
-
-				}
-				break;
-			}
-
-			case REQUEST_EXECUTION_END:
-				ipcData->type = REPLY_EXECUTION_END;
-				execState = SUSPENDED_AT_TERMINATION;
-				if (EXECUTION_TERMINATE == (ipcData->data.asExecutionEndReply = eEnd(context))) {
-					bRunning = false;
-				}
-				break;*/
-
 			case REQUEST_BRANCH_HANDLER: {
 				void *context = ipcData->data.asBranchHandlerRequest.executionEnv;
 				ipc::ADDR_TYPE next = ipcData->data.asBranchHandlerRequest.nextInstruction;
 				ipcData->type = REPLY_BRANCH_HANDLER;
 				execState = SUSPENDED;
-				if (EXECUTION_TERMINATE == (ipcData->data.asBranchHandlerReply = BranchHandler(context, next, this))) {
+				if (EXECUTION_TERMINATE == (ipcData->data.asBranchHandlerReply = BranchHandlerFunc(context, this, next))) {
 					bRunning = false;
 				}
 				break;

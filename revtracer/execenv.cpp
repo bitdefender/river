@@ -88,8 +88,6 @@ ExecutionEnvironment::ExecutionEnvironment(DWORD flags, unsigned int heapSize, u
 }*/
 
 ExecutionEnvironment::~ExecutionEnvironment() {
-	DeleteUserContext(this);
-
 	blockCache.Destroy(); 
 	heap.Destroy();
 
@@ -99,7 +97,11 @@ ExecutionEnvironment::~ExecutionEnvironment() {
 	pStack = NULL;
 }
 
-void *AllocUserContext(struct ExecutionEnvironment *pEnv, unsigned int size) {
+/*void SetUserContext(struct ExecutionEnvironment *pEnv, void *ptr) {
+	pEnv->userContext = ptr;
+}*/
+
+/*void *AllocUserContext(struct ExecutionEnvironment *pEnv, unsigned int size) {
 	if (NULL != pEnv->userContext) {
 		return NULL;
 	}
@@ -116,4 +118,4 @@ void DeleteUserContext(struct ExecutionEnvironment *pEnv) {
 
 	pEnv->heap.Free(pEnv->userContext);
 	pEnv->userContext = NULL;
-}
+}*/

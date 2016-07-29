@@ -104,7 +104,7 @@ extern "C" {
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "Flags: 0x%08x\n",
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->eflags);
 
-		DWORD dwDirection = revtracerAPI.branchHandler(pEnv, a);
+		DWORD dwDirection = revtracerAPI.branchHandler(pEnv, pEnv->userContext, a);
 		if (EXECUTION_BACKTRACK == dwDirection) {
 			// go backwards
 			DWORD addr = PopFromExecutionBuffer(pEnv);

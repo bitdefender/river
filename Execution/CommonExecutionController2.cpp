@@ -6,23 +6,22 @@
 
 #include "Execution.h"
 
-
 #define PRINT_RUNTIME_TRACKING	PRINT_INFO | PRINT_RUNTIME | PRINT_TRACKING
 #define PRINT_BRANCHING_ERROR	PRINT_ERROR | PRINT_BRANCH_HANDLER
 #define PRINT_BRANCHING_DEBUG	PRINT_DEBUG | PRINT_BRANCH_HANDLER
 #define PRINT_BRANCHING_INFO	PRINT_INFO | PRINT_BRANCH_HANDLER
 
-DWORD TopFromExecutionBuffer(ExecutionEnvironment *pEnv) {
+static DWORD TopFromExecutionBuffer(ExecutionEnvironment *pEnv) {
 	return *((DWORD *)pEnv->runtimeContext.execBuff);
 }
 
-bool ExecutionBufferEmpty(ExecutionEnvironment *pEnv) {
+static bool ExecutionBufferEmpty(ExecutionEnvironment *pEnv) {
 	return (DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
 }
 
-DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller) {
+rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction) {
 	ExecutionEnvironment *pEnv = (ExecutionEnvironment *)context;
-	ExecutionController *exec = (ExecutionController *)controller;
+	ExecutionController *exec = (ExecutionController *)userContext;
 
 	if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
 		if (pEnv->bForward) {
@@ -50,13 +49,15 @@ DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller) {
 	}
 
 	DWORD dwDirection = EXECUTION_ADVANCE;
-	if (/*(a == revtracerAPI.lowLevel.ntTerminateProcess) ||*/ (a == (ADDR_TYPE)pEnv->exitAddr)) {
+	if (/*(a == revtracerAPI.lowLevel.ntTerminateProcess) ||*/ (nextInstruction == (ADDR_TYPE)pEnv->exitAddr)) {
 		// TODO: verify parameters
 		dwDirection = exec->ExecutionEnd(pEnv);
-	} else if (ExecutionBufferEmpty(pEnv)) {
-		dwDirection = exec->ExecutionBegin(a, pEnv);
-	} else {
-		dwDirection = exec->ExecutionControl(a, pEnv);
+	}
+	else if (ExecutionBufferEmpty(pEnv)) {
+		dwDirection = exec->ExecutionBegin(nextInstruction, pEnv);
+	}
+	else {
+		dwDirection = exec->ExecutionControl(nextInstruction, pEnv);
 	}
 
 	if ((EXECUTION_BACKTRACK == dwDirection) && (0 == (pEnv->generationFlags & TRACER_FEATURE_REVERSIBLE))) {
@@ -81,4 +82,8 @@ DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller) {
 	}
 
 	return dwDirection;
+}
+
+void SyscallControlFunc(void *context, void *userContext) {
+	// *_this = (InprocessExecutionController *)context;
 }

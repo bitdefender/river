@@ -252,9 +252,10 @@ namespace ipc {
 		return ipcData.data.asExecutionEndReply;
 	}*/
 
-	DLL_LINKAGE DWORD BranchHandlerFunc(void *context, ADDR_TYPE nextInstruction) {
+	DLL_LINKAGE DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction) {
 		ipcData.type = REQUEST_BRANCH_HANDLER;
 		ipcData.data.asBranchHandlerRequest.executionEnv = context;
+		ipcData.data.asBranchHandlerRequest.userContext = userContext;
 		ipcData.data.asBranchHandlerRequest.nextInstruction = nextInstruction;
 		ipcToken.Release(INPROC_TOKEN_USER);
 
@@ -266,9 +267,10 @@ namespace ipc {
 		return ipcData.data.asBranchHandlerReply;
 	}
 
-	DLL_LINKAGE void SyscallControlFunc(void *context) {
+	DLL_LINKAGE void SyscallControlFunc(void *context, void *userContext) {
 		ipcData.type = REQUEST_SYSCALL_CONTROL;
 		ipcData.data.asSyscallControlRequest.context = context;
+		ipcData.data.asSyscallControlRequest.userContext = userContext;
 		ipcToken.Release(INPROC_TOKEN_USER);
 		// remote execution here
 

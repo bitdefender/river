@@ -2,12 +2,14 @@
 #define _COMMON_EXECUTION_CONTROLLER_H
 
 #include "Execution.h"
+#include "../revtracer/revtracer.h"
 
 #include <vector>
 
 using namespace std;
 
 void DebugPrintf(const unsigned int printMask, const char *fmt, ...);
+rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction);
 
 class CommonExecutionController : public ExecutionController {
 private :
