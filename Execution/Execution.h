@@ -3,6 +3,9 @@
 #include <string>
 #include <cstdint>
 
+#include "../revtracer/revtracer.h"
+#include "../revtracer/SymbolicEnvironment.h"
+
 #ifdef _EXECUTION_EXPORTS
 #define EXECUTION_LINKAGE __declspec(dllexport)
 #else
@@ -62,7 +65,7 @@ struct ModuleInfo {
 	uint32_t Size;
 };
 
-struct Registers {
+/*struct Registers {
 	uint32_t edi;
 	uint32_t esi;
 	uint32_t ebp;
@@ -73,14 +76,16 @@ struct Registers {
 	uint32_t ecx;
 	uint32_t eax;
 	uint32_t eflags;
+};*/
+
+class ExecutionObserver {
+public :
+	virtual unsigned int ExecutionBegin(void *ctx, void *address) = 0;
+	virtual unsigned int ExecutionControl(void *ctx, void *address) = 0;
+	virtual unsigned int ExecutionEnd(void *ctx) = 0;
+
+	virtual void TerminationNotification(void *ctx) = 0;
 };
-
-class ExecutionController;
-
-typedef void(__stdcall *TerminationNotifyFunc)(void *ctx);
-typedef unsigned int(__stdcall *ExecutionBeginFunc)(void *ctx, void *address);
-typedef unsigned int(__stdcall *ExecutionControlFunc)(void *ctx, void *address);
-typedef unsigned int(__stdcall *ExecutionEndFunc)(void *ctx);
 
 class ExecutionController {
 public:
@@ -98,20 +103,23 @@ public:
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount) = 0;
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) = 0;
 
-	virtual void SetNotificationContext(void *ctx) = 0;
-
-	virtual void SetTerminationNotification(TerminationNotifyFunc func) = 0;
-	virtual void SetExecutionBeginNotification(::ExecutionBeginFunc func) = 0;
-	virtual void SetExecutionControlNotification(::ExecutionControlFunc func) = 0;
-	virtual void SetExecutionEndNotification(::ExecutionEndFunc func) = 0;
+	virtual void SetExecutionObserver(ExecutionObserver *obs) = 0;
+	virtual void SetTrackingObserver(rev::TrackCallbackFunc track, rev::MarkCallbackFunc mark) = 0;
 
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionEnd(void *cbCtx) = 0;
 
-	virtual void GetCurrentRegisters(Registers &registers) = 0;
-
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
+
+	virtual void SetSymbolicConstructor(rev::SymExeConstructorFunc constr) = 0;
+
+	// in-execution api
+	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers) = 0;
+	virtual void *GetMemoryInfo(void *ctx, void *ptr) = 0;
+	virtual void MarkMemoryName(void *ctx, rev::ADDR_TYPE addr, const char *name) = 0;
+	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) = 0;
+
 };
 
 EXECUTION_LINKAGE ExecutionController *NewExecutionController(uint32_t type);

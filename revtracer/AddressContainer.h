@@ -3,19 +3,17 @@
 
 #include "revtracer.h"
 
-using namespace rev;
-
 #define MAX_CONTAINER_PAGES			1024
 
 struct ContainerPage {
-	DWORD mem[1024];
+	rev::DWORD mem[1024];
 };
 
 class AddressContainer {
 private :
 	ContainerPage pages[MAX_CONTAINER_PAGES];
 	ContainerPage *freePages[MAX_CONTAINER_PAGES];
-	DWORD freePageCount;
+	rev::DWORD freePageCount;
 	
 	void InitPageAllocator();
 	ContainerPage *AllocPage();
@@ -23,14 +21,14 @@ private :
 
 	ContainerPage *root;
 
-	DWORD RecursiveSet(ContainerPage *&page, DWORD dwAddress, DWORD value, DWORD mask, DWORD shift);
-	void RecursivePrintAddreses(ContainerPage *page, DWORD prefix, DWORD shift) const;
+	rev::DWORD RecursiveSet(ContainerPage *&page, rev::DWORD dwAddress, rev::DWORD value, rev::DWORD mask, rev::DWORD shift);
+	void RecursivePrintAddreses(ContainerPage *page, rev::DWORD prefix, rev::DWORD shift) const;
 public :
 	//AddressContainer();
 	void Init();
 
-	DWORD Set(DWORD dwAddress, DWORD value);
-	DWORD Get(DWORD dwAddress) const;
+	rev::DWORD Set(rev::DWORD dwAddress, rev::DWORD value);
+	rev::DWORD Get(rev::DWORD dwAddress) const;
 
 	void PrintAddreses() const;
 };

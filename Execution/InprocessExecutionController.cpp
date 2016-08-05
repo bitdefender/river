@@ -17,8 +17,7 @@ bool InprocessExecutionController::GetProcessVirtualMemory(VirtualMemorySection 
 	return false;
 }
 
-bool InprocessExecutionController::GetModules(ModuleInfo *& modules, int & moduleCount)
-{
+bool InprocessExecutionController::GetModules(ModuleInfo *& modules, int & moduleCount) {
 	return false;
 }
 
@@ -48,6 +47,14 @@ bool InprocessExecutionController::Execute() {
 	api->branchHandler = BranchHandlerFunc;
 	api->syscallControl = SyscallControlFunc;
 
+	if (nullptr != trackCb) {
+		api->trackCallback = trackCb;
+	}
+
+	if (nullptr != markCb) {
+		api->markCallback = markCb;
+	}
+
 	api->lowLevel.ntAllocateVirtualMemory = GetProcAddress(hNtDll, "NtAllocateVirtualMemory");
 	api->lowLevel.ntFreeVirtualMemory = GetProcAddress(hNtDll, "NtFreeVirtualMemory");
 
@@ -57,10 +64,22 @@ bool InprocessExecutionController::Execute() {
 	api->lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
 	api->lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
 
+	gcr = (GetCurrentRegistersFunc)GetProcAddress(hRevTracer, "GetCurrentRegisters");
+	gmi = (GetMemoryInfoFunc)GetProcAddress(hRevTracer, "GetMemoryInfo");
+	mmn = (MarkMemoryNameFunc)GetProcAddress(hRevTracer, "MarkMemoryName");
+	mmv = (MarkMemoryValueFunc)GetProcAddress(hRevTracer, "MarkMemoryValue");
+	
+	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmn) || (nullptr == mmv)) {
+		__asm int 3;
+		return false;
+	}
+
 	//config->contextSize = sizeof(CustomExecutionContext);
 	revCfg->entryPoint = entryPoint;
 	revCfg->featureFlags = featureFlags;
 	revCfg->context = this;
+	revCfg->sCons = symbolicConstructor;
+
 	//config->sCons = SymExeConstructor;
 
 	hThread = CreateThread(
@@ -88,7 +107,7 @@ DWORD InprocessExecutionController::ControlThread() {
 	revtraceExecute(0, nullptr);
 
 	execState = TERMINATED;
-	term(context);
+	observer->TerminationNotification(context);
 	return 0;
 }
 
@@ -98,10 +117,10 @@ bool InprocessExecutionController::WaitForTermination() {
 }
 
 
-void InprocessExecutionController::GetCurrentRegisters(Registers &registers) {
+/*void InprocessExecutionController::GetCurrentRegisters(Registers &registers) {
 	RemoteRuntime *ree = (RemoteRuntime *)revCfg->pRuntime;
 
 	memcpy(&registers, (Registers *)ree->registers, sizeof(registers));
 	registers.esp = ree->virtualStack;
-}
+}*/
 

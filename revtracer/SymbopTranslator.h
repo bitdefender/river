@@ -24,56 +24,54 @@
    - each instruction generates a symboptrack instruction
 */
 
-using namespace rev;
-
 class RiverCodeGen;
 
 class SymbopTranslator {
 private :
-	BYTE trackedValues;
+	rev::BYTE trackedValues;
 
 	RiverCodeGen *codegen;
 
 	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
 
-	DWORD GetMemRepr(const RiverAddress &mem);
+	rev::DWORD GetMemRepr(const RiverAddress &mem);
 
-	typedef void(SymbopTranslator::*TranslateOpcodeFunc)(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags);
+	typedef void(SymbopTranslator::*TranslateOpcodeFunc)(const RiverInstruction &rIn, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount, rev::DWORD dwTranslationFlags);
 	static TranslateOpcodeFunc translateOpcodes[2][0x100];
 public :
 	bool Init(RiverCodeGen *cg);
 
-	bool Translate(const RiverInstruction &rIn, RiverInstruction *rMainOut, DWORD &instrCount, RiverInstruction *rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags);
+	bool Translate(const RiverInstruction &rIn, RiverInstruction *rMainOut, rev::DWORD &instrCount, RiverInstruction *rTrackOut, rev::DWORD &trackCount, rev::DWORD dwTranslationFlags);
 
 private :
 	/* Translation helpers */
-	void MakeInitTrack(RiverInstruction *&rTrackOut, DWORD &trackCount);
-	void MakeCleanTrack(RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeInitTrack(RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
+	void MakeCleanTrack(RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 
-	DWORD MakeTrackFlg(BYTE flags, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	rev::DWORD MakeTrackFlg(rev::BYTE flags, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 
-	DWORD MakePreTrackReg(const RiverRegister &reg, RiverInstruction *&rMainOut, DWORD &instrCount);
-	void MakeTrackReg(const RiverRegister &reg, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	rev::DWORD MakePreTrackReg(const RiverRegister &reg, RiverInstruction *&rMainOut, rev::DWORD &instrCount);
+	void MakeTrackReg(const RiverRegister &reg, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 	
-	DWORD MakePreTrackMem(const RiverAddress &mem, WORD specifiers, DWORD addrOffset, RiverInstruction *&rMainOut, DWORD &instrCount);
-	void MakeTrackMem(const RiverAddress &mem, WORD specifiers, DWORD addrOffset, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	rev::DWORD MakePreTrackMem(const RiverAddress &mem, rev::WORD specifiers, rev::DWORD addrOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount);
+	void MakeTrackMem(const RiverAddress &mem, rev::WORD specifiers, rev::DWORD addrOffset, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 	
-	DWORD MakeTrackAddress(const RiverOperand &op, BYTE optype, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	rev::DWORD MakeTrackAddress(const RiverOperand &op, rev::BYTE optype, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 
-	void MakeMarkFlg(BYTE flags, DWORD offset, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
-	void MakeMarkReg(const RiverRegister &reg, DWORD addrOffset, DWORD valueOffset, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
-	void MakeMarkMem(const RiverAddress &mem, WORD specifiers, DWORD addrOffset, DWORD valueOffset, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
-	void MakeSkipMem(const RiverAddress &mem, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeMarkFlg(rev::BYTE flags, rev::DWORD offset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
+	void MakeMarkReg(const RiverRegister &reg, rev::DWORD addrOffset, rev::DWORD valueOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
+	void MakeMarkMem(const RiverAddress &mem, rev::WORD specifiers, rev::DWORD addrOffset, rev::DWORD valueOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
+	void MakeSkipMem(const RiverAddress &mem, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 	
 	/*  */
-	DWORD MakeTrackOp(DWORD opIdx, const BYTE type, const RiverOperand &op, WORD specifiers, DWORD addrOffset, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
-	void MakeMarkOp(const BYTE type, WORD specifiers, DWORD addrOffset, DWORD valueOffset, const RiverOperand &op, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	rev::DWORD MakeTrackOp(rev::DWORD opIdx, const rev::BYTE type, const RiverOperand &op, rev::WORD specifiers, rev::DWORD addrOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
+	void MakeMarkOp(const rev::BYTE type, rev::WORD specifiers, rev::DWORD addrOffset, rev::DWORD valueOffset, const RiverOperand &op, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 
-	void MakeCallSymbolic(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount);
+	void MakeCallSymbolic(const RiverInstruction &rIn, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 
 	/* Translators */
-	void TranslateUnk(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags);
-	void TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags);
+	void TranslateUnk(const RiverInstruction &rIn, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount, rev::DWORD dwTranslationFlags);
+	void TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount, rev::DWORD dwTranslationFlags);
 };
 
 

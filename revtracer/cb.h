@@ -5,8 +5,6 @@
 #include "mm.h"
 #include "sync.h"
 
-using namespace rev;
-
 #define RIVER_BASIC_BLOCK_DETOUR				0x80000000
 
 class RiverBasicBlock {

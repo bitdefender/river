@@ -138,6 +138,8 @@ namespace rev {
 		/* Execution context callbacks ********************/
 		DLL_LINKAGE void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
 		DLL_LINKAGE void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
+		DLL_LINKAGE void MarkMemoryName(void *ctx, ADDR_TYPE addr, const char *name);
+		DLL_LINKAGE void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
 
 		/* In process API *********************************/
 
@@ -164,9 +166,6 @@ namespace rev {
 
 		DLL_LINKAGE void Initialize();
 		DLL_LINKAGE void Execute(int argc, char *argv[]);
-
-		DLL_LINKAGE void MarkMemoryName(ADDR_TYPE addr, const char *name);
-		DLL_LINKAGE void MarkMemoryValue(ADDR_TYPE addr, DWORD value);
 	};
 
 };

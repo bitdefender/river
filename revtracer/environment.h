@@ -3,8 +3,6 @@
 
 #include "revtracer.h"
 
-using namespace rev;
-
 //void *EnvMemoryAlloc (DWORD dwSize);
 //void EnvMemoryFree (void *b);
 

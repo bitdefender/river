@@ -5,7 +5,7 @@
 void *CreateVariable(void *ctx, const char *name);
 void Execute(void *ctx, RiverInstruction *instruction);
 
-SymbolicExecutorFuncs sFuncs = {
+rev::SymbolicExecutorFuncs sFuncs = {
 	CreateVariable,
 	Execute,
 	nullptr,
@@ -18,7 +18,7 @@ void *CreateVariable(void *ctx, const char *name) {
 	Z3_symbol s = Z3_mk_string_symbol(_this->context, name);
 	Z3_ast ret = Z3_mk_const(_this->context, s, _this->dwordSort);
 
-	Z3_set_user_ptr(_this->context, ret, _this->cookieFuncs->allocCookie(), (void *)_this->cookieFuncs->allocCookie);
+	Z3_set_user_ptr(_this->context, ret, _this->cookieFuncs->allocCookie(), (void *)_this->cookieFuncs->freeCookie);
 
 	/*VariableTracker<Z3_ast> *ret = new VariableTracker<Z3_ast>(
 	Z3_mk_const(_this->context, s, _this->dwordSort)
@@ -88,7 +88,7 @@ void Unlock(void *ctx, Z3_ast *ast) {
 
 const unsigned int Z3SymbolicExecutor::Z3SymbolicCpuFlag::lazyMarker = 0xDEADBEEF;
 
-Z3SymbolicExecutor::Z3SymbolicExecutor(SymbolicEnvironment *e, TrackingCookieFuncs *f) :
+Z3SymbolicExecutor::Z3SymbolicExecutor(rev::SymbolicEnvironment *e, TrackingCookieFuncs *f) :
 		SymbolicExecutor(e, &sFuncs), 
 		variableTracker((void *)this, ::IsLocked, ::Lock, ::Unlock) 
 {
@@ -204,10 +204,12 @@ Z3_ast Z3SymbolicExecutor::ExecuteOr(Z3_ast o1, Z3_ast o2) {
 
 Z3_ast Z3SymbolicExecutor::ExecuteAdc(Z3_ast o1, Z3_ast o2) {
 	//return Z3_mk_bvadd(context, o1, o2);
+	return nullptr;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteSbb(Z3_ast o1, Z3_ast o2) {
 	//return Z3_mk_bvor(context, o1, o2);
+	return nullptr;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteAnd(Z3_ast o1, Z3_ast o2) {
@@ -252,21 +254,31 @@ void Z3SymbolicExecutor::SymbolicExecuteCmp(RiverInstruction *instruction) {
 	rev::BOOL tr[2];
 	rev::DWORD cv[2];
 	void *sv[2];
+	rev::BOOL symInput = false;
 
 	for (int i = 0; i < 2; ++i) {
 		env->GetOperand(i, tr[i], cv[i], sv[i]);
+		symInput |= tr[i];
+	}
 
-		if (!tr[i]) {
-			sv[i] = Z3_mk_int(context, cv[i], dwordSort);
+	if (symInput) {
+		for (int i = 0; i < 2; ++i) {
+			if (!tr[i]) {
+				sv[i] = Z3_mk_int(context, cv[i], dwordSort);
+			}
 		}
-	}
 
-	if (sv[0] == sv[1]) {
-		env->UnsetFlgValue(RIVER_SPEC_FLAG_ZF);
-	}
-	else {
-		Z3_ast sub = Z3_mk_bvsub(context, (Z3_ast)sv[0], (Z3_ast)sv[1]);
-		EvalZF(sub);
+		if (sv[0] == sv[1]) {
+			env->UnsetFlgValue(RIVER_SPEC_FLAG_ZF);
+		}
+		else {
+			Z3_ast sub = Z3_mk_bvsub(context, (Z3_ast)sv[0], (Z3_ast)sv[1]);
+			EvalZF(sub);
+		}
+	} else {
+		env->UnsetFlgValue(
+			RIVER_SPEC_FLAG_ZF
+		);
 	}
 }
 

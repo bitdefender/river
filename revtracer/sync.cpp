@@ -4,7 +4,7 @@
 
 #include <intrin.h>
 
-using namespace rev;
+//using namespace rev;
 
 RiverMutex::RiverMutex() {
 	mtx = 0;

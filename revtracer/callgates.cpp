@@ -25,7 +25,7 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 }
 
 
-DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
+rev::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
 	RiverBasicBlock *pBlock;
 	DWORD ret;
 

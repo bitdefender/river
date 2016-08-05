@@ -25,8 +25,6 @@ public :
 
 	virtual bool Execute();
 	virtual bool WaitForTermination();
-
-	virtual void GetCurrentRegisters(Registers &registers);
 };
 
 #endif

@@ -7,8 +7,6 @@
 
 #include "GenericX86Assembler.h"
 
-using namespace rev;
-
 class RiverX86Assembler : public GenericX86Assembler {
 private :
 	bool needsRAFix;

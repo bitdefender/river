@@ -578,15 +578,15 @@ namespace rev {
 	}
 
 	DWORD __stdcall MarkAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);
-	void MarkMemoryValue(ADDR_TYPE addr, DWORD value) {
-		MarkAddr(pEnv, (DWORD)addr, value, 0x2B);
+	void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value) {
+		MarkAddr((ExecutionEnvironment *)ctx, (DWORD)addr, value, 0x2B);
 	}
 
 		
 
-	void MarkMemoryName(ADDR_TYPE addr, const char *name) {
+	void MarkMemoryName(void *ctx, ADDR_TYPE addr, const char *name) {
 		if (TRACER_FEATURE_SYMBOLIC & revtracerConfig.featureFlags) {
-			MarkMemoryValue(addr, (DWORD)CreateSymbolicVariable(name));
+			MarkMemoryValue((ExecutionEnvironment *)ctx, addr, (DWORD)CreateSymbolicVariable(name));
 		}
 	}
 

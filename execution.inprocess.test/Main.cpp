@@ -60,6 +60,7 @@ int main() {
 	
 	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING);
 
+	ctrl->SetExecutionBeginNotification(ExecBegin);
 	ctrl->SetExecutionControlNotification(ExecControl);
 	ctrl->SetTerminationNotification(Term);
 

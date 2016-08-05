@@ -66,8 +66,6 @@ public:
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
 
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx);
-	
-	virtual void GetCurrentRegisters(Registers &registers);
 };
 
 

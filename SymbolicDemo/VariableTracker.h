@@ -14,10 +14,10 @@ public :
 private :
 	struct {
 		T var;
-		::DWORD step;
+		rev::DWORD step;
 	} stack[32];
-	::DWORD top;
-	::DWORD step;
+	rev::DWORD top;
+	rev::DWORD step;
 
 	IsLockedFunc isLocked;
 	LockFunc lock;

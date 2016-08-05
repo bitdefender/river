@@ -70,7 +70,7 @@ void *CreateSymbolicVariable(const char *name) {
 }
 
 
-void SymbolicHandler(ExecutionEnvironment *env, void *offset, rev::BYTE *address, rev::BYTE index) {
+void __stdcall SymbolicHandler(ExecutionEnvironment *env, void *offset, rev::BYTE *address, rev::BYTE index) {
 	RiverInstruction instr[16];
 	rev::DWORD cnt = 0, flg = 0;
 

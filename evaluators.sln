@@ -50,6 +50,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tracer.test", "tracer.test\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SymbolicDemo", "SymbolicDemo\SymbolicDemo.vcxproj", "{46888B68-5EAD-4787-B44B-1C20E8F13852}"
 	ProjectSection(ProjectDependencies) = postProject
+		{668C607E-2E3B-435D-9390-56BDB152C363} = {668C607E-2E3B-435D-9390-56BDB152C363}
 		{F348D3BE-A0A6-42C5-ACBE-806AC106ACC3} = {F348D3BE-A0A6-42C5-ACBE-806AC106ACC3}
 	EndProjectSection
 EndProject

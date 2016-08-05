@@ -264,10 +264,20 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 
 	memcpy(revAPI, &tmpRevApi, sizeof(tmpRevApi));
 
+	if (!LoadExportedName(fRevTracer, pRevtracerBase, "GetCurrentRegisters", gcr) ||
+		!LoadExportedName(fRevTracer, pRevtracerBase, "GetMemoryInfo", gmi) ||
+		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryName", mmn) ||
+		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryValue", mmv)
+	) {
+		__asm int 3;
+		return false;
+	} 
+
 	revCfg->context = nullptr;
 	InitSegments(hMainThread, revCfg->segmentOffsets);
 	revCfg->hookCount = 0;
 	revCfg->featureFlags = featureFlags;
+	revCfg->sCons = symbolicConstructor;
 
 #ifdef DUMP_BLOCKS
 	revCfg->dumpBlocks = TRUE;
@@ -726,7 +736,7 @@ DWORD ExternExecutionController::ControlThread() {
 	execState = TERMINATED;
 	delete shmAlloc;
 
-	term(context); // this needs to be the last thing called!
+	observer->TerminationNotification(context); // this needs to be the last thing called!
 	return 0;
 }
 
@@ -751,13 +761,13 @@ unsigned int ExternExecutionController::ExecutionBegin(void *address, void *cbCt
 	}
 	else {
 		execState = SUSPENDED_AT_START;
-		return eBegin(cbCtx, address);
+		return observer->ExecutionBegin(cbCtx, address);
 	}
 }
 
-void ExternExecutionController::GetCurrentRegisters(Registers &registers) {
+/*void ExternExecutionController::GetCurrentRegisters(Registers &registers) {
 	RemoteRuntime *ree = (RemoteRuntime *)revCfg->pRuntime;
 
 	memcpy(&registers, (Registers *)ree->registers, sizeof(registers));
 	registers.esp = ree->virtualStack;
-}
+}*/

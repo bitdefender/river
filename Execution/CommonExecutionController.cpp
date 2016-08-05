@@ -8,19 +8,22 @@
 #include <Winternl.h>
 
 
-void __stdcall DefaultTerminationNotify(void *ctx) { }
+class DefaultObserver : public ExecutionObserver {
+public :
+	unsigned int ExecutionBegin(void *ctx, void *address) {
+		return EXECUTION_ADVANCE;
+	}
 
-unsigned int __stdcall DefaultExecutionBegin(void *ctx, void *address) {
-	return EXECUTION_ADVANCE;
-}
+	unsigned int ExecutionControl(void *ctx, void *address) {
+		return EXECUTION_ADVANCE;
+	}
 
-unsigned int __stdcall DefaultExecutionControl(void *ctx, void *address) {
-	return EXECUTION_ADVANCE;
-}
+	unsigned int ExecutionEnd(void *ctx) {
+		return EXECUTION_TERMINATE;
+	}
 
-unsigned int __stdcall DefaultExecutionEnd(void *ctx) {
-	return EXECUTION_TERMINATE;
-}
+	void TerminationNotification(void *ctx) { }
+} defaultObserver;
 
 
 CommonExecutionController::CommonExecutionController() {
@@ -33,13 +36,13 @@ CommonExecutionController::CommonExecutionController() {
 
 	context = NULL;
 
-	term = DefaultTerminationNotify;
-	eBegin = DefaultExecutionBegin;
-	eControl = DefaultExecutionControl;
-	eEnd = DefaultExecutionEnd;
+	observer = &defaultObserver;
 
 	virtualSize = commitedSize = 0;
 	updated = false;
+
+	trackCb = nullptr;
+	markCb = nullptr;
 }
 
 int CommonExecutionController::GetState() const {
@@ -79,38 +82,27 @@ bool CommonExecutionController::SetExecutionFeatures(unsigned int feat) {
 	return true;
 }
 
-void CommonExecutionController::SetNotificationContext(void *ctx) {
-	context = ctx;
+void CommonExecutionController::SetExecutionObserver(ExecutionObserver * obs) {
+	observer = obs;
 }
 
-void CommonExecutionController::SetTerminationNotification(TerminationNotifyFunc func) {
-	term = func;
-}
-
-void CommonExecutionController::SetExecutionBeginNotification(ExecutionBeginFunc func) {
-	eBegin = func;
-}
-
-void CommonExecutionController::SetExecutionControlNotification(ExecutionControlFunc func) {
-	eControl = func;
-}
-
-void CommonExecutionController::SetExecutionEndNotification(ExecutionEndFunc func) {
-	eEnd = func;
+void CommonExecutionController::SetTrackingObserver(rev::TrackCallbackFunc track, rev::MarkCallbackFunc mark) {
+	trackCb = track;
+	markCb = mark;
 }
 
 unsigned int CommonExecutionController::ExecutionBegin(void *address, void *cbCtx) {
 	execState = SUSPENDED_AT_START;
-	return eBegin(cbCtx, address);
+	return observer->ExecutionBegin(cbCtx, address);
 }
 
 unsigned int CommonExecutionController::ExecutionControl(void *address, void *cbCtx) {
-	return eControl(cbCtx, address);
+	return observer->ExecutionControl(cbCtx, address);
 }
 
 unsigned int CommonExecutionController::ExecutionEnd(void *cbCtx) {
 	execState = SUSPENDED_AT_TERMINATION;
-	return eEnd(cbCtx);
+	return observer->ExecutionEnd(cbCtx);
 }
 
 struct _VM_COUNTERS_ {
@@ -329,4 +321,24 @@ void CommonExecutionController::DebugPrintf(const unsigned long printMask, const
 	va_start(va, fmt);
 	vDebugPrintf(printMask, fmt, va);
 	va_end(va);
+}
+
+void CommonExecutionController::GetCurrentRegisters(void *ctx, rev::ExecutionRegs *regs) {
+	gcr(ctx, regs);
+}
+
+void *CommonExecutionController::GetMemoryInfo(void *ctx, void *ptr) {
+	return gmi(ctx, ptr);
+}
+
+void CommonExecutionController::SetSymbolicConstructor(rev::SymExeConstructorFunc constr) {
+	symbolicConstructor = constr;
+}
+
+void CommonExecutionController::MarkMemoryName(void *ctx, rev::ADDR_TYPE addr, const char *name) {
+	mmn(ctx, addr, name);
+}
+
+void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) {
+	mmv(ctx, addr, value);
 }

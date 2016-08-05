@@ -7,7 +7,7 @@
 #include "VariableTracker.h"
 #include "TrackingCookie.h"
 
-class Z3SymbolicExecutor : public SymbolicExecutor {
+class Z3SymbolicExecutor : public rev::SymbolicExecutor {
 private:
 	void EvalZF(Z3_ast result);
 
@@ -73,7 +73,7 @@ public:
 
 	static SymbolicExecute executeFuncs[2][0x100];
 
-	Z3SymbolicExecutor(SymbolicEnvironment *e, TrackingCookieFuncs *f);
+	Z3SymbolicExecutor(rev::SymbolicEnvironment *e, TrackingCookieFuncs *f);
 
 	void SymbolicExecuteDispatch(RiverInstruction *instruction);
 
