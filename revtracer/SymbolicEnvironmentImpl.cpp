@@ -152,6 +152,10 @@ BYTE flagShifts[] = {
 
 bool GetFlgValue(void *ctx, rev::BYTE flg, rev::BOOL &isTracked, rev::BYTE &concreteValue, void *&symbolicValue) {
 	SymbolicEnvironmentImpl *_this = (SymbolicEnvironmentImpl *)ctx;
+	if (0 == (flg & _this->current->testFlags)) {
+		return false;
+	}
+
 	DWORD flgIdx = BinLog2(flg);
 	//void *expr = pEnv->runtimeContext.taintedFlags[flgIdx];
 

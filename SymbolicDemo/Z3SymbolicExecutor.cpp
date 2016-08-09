@@ -125,9 +125,20 @@ Z3SymbolicExecutor::Z3SymbolicExecutor(rev::SymbolicEnvironment *e, TrackingCook
 	solver = Z3_mk_solver(context);
 	Z3_solver_inc_ref(context, solver);
 
+	ls = new stk::LargeStack(saveStack, sizeof(saveStack), &saveTop, "flagStack.bin");
 }
 
-void Z3SymbolicExecutor::EvalZF(Z3_ast result) {
+Z3SymbolicExecutor::~Z3SymbolicExecutor() {
+	delete ls;
+
+	Z3_solver_dec_ref(context, solver);
+
+	for (int i = 0; i < 7; ++i) {
+		delete lazyFlags[i];
+	}
+}
+
+/*void Z3SymbolicExecutor::EvalZF(Z3_ast result) {
 	env->SetFlgValue(
 		RIVER_SPEC_FLAG_ZF,
 		Z3_mk_ite(context,
@@ -140,15 +151,23 @@ void Z3SymbolicExecutor::EvalZF(Z3_ast result) {
 			zeroFlag
 		)
 	);
-}
+}*/
 
 void Z3SymbolicExecutor::StepForward() {
 	variableTracker.Forward();
 	Z3_solver_push(context, solver);
+	for (int i = 0; i < 7; ++i) {
+		lazyFlags[i]->SaveState(*ls);
+	}
+
 	//printf("Solver push\n");
 }
 
 void Z3SymbolicExecutor::StepBackward() {
+	for (int i = 6; i >= 0; --i) {
+		lazyFlags[i]->LoadState(*ls);
+	}
+
 	Z3_solver_pop(context, solver, 1);
 	variableTracker.Backward();
 	//printf("Solver pop\n");
@@ -158,37 +177,15 @@ void Z3SymbolicExecutor::Lock(Z3_ast t) {
 	variableTracker.Lock(&t);
 }
 
-void Z3SymbolicExecutor::SymbolicExecuteUnk(RiverInstruction *instruction) {
+void Z3SymbolicExecutor::SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops) {
 	__asm int 3;
 }
 
-void Z3SymbolicExecutor::SymbolicExecuteJz(RiverInstruction *instruction) {
-	rev::BOOL isTracked;
-	rev::BYTE concreteValue;
-	void *symValue;
-
-	env->GetFlgValue(RIVER_SPEC_FLAG_ZF, isTracked, concreteValue, symValue);
-
+template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops) {
 	Z3_ast cond = Z3_mk_eq(
 		context,
-		(1 == concreteValue) ? oneFlag : zeroFlag,
-		(Z3_ast)symValue
-	);
-
-	lastCondition = Z3_simplify(context, cond);
-}
-
-void Z3SymbolicExecutor::SymbolicExecuteJnz(RiverInstruction *instruction) {
-	rev::BOOL isTracked;
-	rev::BYTE concreteValue;
-	void *symValue;
-
-	env->GetFlgValue(RIVER_SPEC_FLAG_ZF, isTracked, concreteValue, symValue);
-
-	Z3_ast cond = Z3_mk_eq(
-		context,
-		(1 == concreteValue) ? oneFlag : zeroFlag,
-		(Z3_ast)symValue
+		(1 == ops->cvf[flag]) ? oneFlag : zeroFlag,
+		(Z3_ast)ops->svf[flag]
 	);
 
 	lastCondition = Z3_simplify(context, cond);
@@ -228,127 +225,159 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(Z3_ast o1, Z3_ast o2) {
 	return Z3_mk_bvxor(context, o1, o2);
 }
 
-void Z3SymbolicExecutor::SymbolicExecuteTest(RiverInstruction *instruction) {
-	rev::BOOL tr[2];
-	rev::DWORD cv[2];
-	void *sv[2];
-
-	for (int i = 0; i < 2; ++i) {
-		env->GetOperand(i, tr[i], cv[i], sv[i]);
-
-		if (!tr[i]) {
-			sv[i] = Z3_mk_int(context, cv[i], dwordSort);
-		}
-	}
-
-	if (sv[0] == sv[1]) {
+void Z3SymbolicExecutor::SymbolicExecuteTest(RiverInstruction *instruction, SymbolicOperands *ops) {
+	if (ops->sv[0] == ops->sv[1]) {
 		env->UnsetFlgValue(RIVER_SPEC_FLAG_ZF);
 	}
 	else {
-		Z3_ast sub = Z3_mk_bvand(context, (Z3_ast)sv[0], (Z3_ast)sv[1]);
-		EvalZF(sub);
+		Z3_ast sub = Z3_mk_bvand(context, (Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1]);
+		//EvalZF(sub);
+
+		lazyFlags[RIVER_SPEC_IDX_ZF]->SetSource(sub, nullptr, nullptr, nullptr, 0);
+		env->SetFlgValue(RIVER_SPEC_FLAG_ZF, lazyFlags[RIVER_SPEC_IDX_ZF]);
 	}
 }
 
-void Z3SymbolicExecutor::SymbolicExecuteCmp(RiverInstruction *instruction) {
-	rev::BOOL tr[2];
-	rev::DWORD cv[2];
-	void *sv[2];
-	rev::BOOL symInput = false;
-
-	for (int i = 0; i < 2; ++i) {
-		env->GetOperand(i, tr[i], cv[i], sv[i]);
-		symInput |= tr[i];
+void Z3SymbolicExecutor::SymbolicExecuteCmp(RiverInstruction *instruction, SymbolicOperands *ops) {
+	if (ops->sv[0] == ops->sv[1]) {
+		env->UnsetFlgValue(RIVER_SPEC_FLAG_ZF);
 	}
+	else {
+		Z3_ast sub = Z3_mk_bvsub(context, (Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1]);
 
-	if (symInput) {
-		for (int i = 0; i < 2; ++i) {
-			if (!tr[i]) {
-				sv[i] = Z3_mk_int(context, cv[i], dwordSort);
-			}
-		}
-
-		if (sv[0] == sv[1]) {
-			env->UnsetFlgValue(RIVER_SPEC_FLAG_ZF);
-		}
-		else {
-			Z3_ast sub = Z3_mk_bvsub(context, (Z3_ast)sv[0], (Z3_ast)sv[1]);
-			EvalZF(sub);
-		}
-	} else {
-		env->UnsetFlgValue(
-			RIVER_SPEC_FLAG_ZF
-		);
+		lazyFlags[RIVER_SPEC_IDX_ZF]->SetSource(sub, nullptr, nullptr, nullptr, 0);
+		env->SetFlgValue(RIVER_SPEC_FLAG_ZF, lazyFlags[RIVER_SPEC_IDX_ZF]);
 	}
 }
 
-void Z3SymbolicExecutor::SymbolicExecuteMov(RiverInstruction *instruction) {
+void Z3SymbolicExecutor::SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops) {
 	// mov dest, addr
-
-	rev::BOOL isTracked;
-	rev::DWORD concreteValue;
-	void *symValue;
-
-	env->GetOperand(1, isTracked, concreteValue, symValue);
-
-	if (isTracked) {
-		env->SetOperand(0, symValue);
+	if (ops->tr[1]) {
+		env->SetOperand(0, ops->sv[1]);
 	} else {
 		env->UnsetOperand(0);
 	}
 }
 
-void Z3SymbolicExecutor::SymbolicExecuteMovSx(RiverInstruction *instruction) {
-	rev::BOOL isTracked;
-	rev::DWORD concreteValue;
-	void *symValue;
-
-	env->GetOperand(1, isTracked, concreteValue, symValue);
-
-	if (isTracked) {
-		Z3_ast dst = Z3_mk_sign_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)symValue));
-		env->SetOperand(0, symValue);
+void Z3SymbolicExecutor::SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops) {
+	if (ops->tr[1]) {
+		Z3_ast dst = Z3_mk_sign_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)ops->sv[1]));
+		env->SetOperand(0, (void *)dst);
 	}
 	else {
 		env->UnsetOperand(0);
 	}
 }
 
-void Z3SymbolicExecutor::SymboliExecute0x83(RiverInstruction *instruction) {
+void Z3SymbolicExecutor::SymboliExecute0x83(RiverInstruction *instruction, SymbolicOperands *ops) {
 	if (0x07 == instruction->subOpCode) {
-		SymbolicExecuteCmp(instruction);
+		SymbolicExecuteCmp(instruction, ops);
 	}
 }
 
-template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void Z3SymbolicExecutor::SymbolicExecuteInteger(RiverInstruction *instruction) {
-	rev::BOOL tr[2];
-	rev::DWORD cv[2];
-	void *sv[2];
-
-	for (int i = 0; i < 2; ++i) {
-		env->GetOperand(i, tr[i], cv[i], sv[i]);
-
-		if (!tr[i]) {
-			sv[i] = Z3_mk_int(context, cv[i], dwordSort);
-		}
-	}
-
-	Z3_ast ret = (this->*func)((Z3_ast)sv[0], (Z3_ast)sv[1]); //Z3_mk_bvadd(context, (Z3_ast)sv[0], (Z3_ast)sv[1]);
+template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void Z3SymbolicExecutor::SymbolicExecuteInteger(RiverInstruction *instruction, SymbolicOperands *ops) {
+	Z3_ast ret = (this->*func)((Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1]); //Z3_mk_bvadd(context, (Z3_ast)sv[0], (Z3_ast)sv[1]);
 	void *symValue = (void *)ret;
 
 	env->SetOperand(0, symValue);
 
 	for (int i = 0; i < 7; ++i) {
 		if ((1 << i) & instruction->modFlags) {
-			lazyFlags[i]->SetSource(ret, (Z3_ast)sv[0], (Z3_ast)sv[1], nullptr, funcCode);
+			lazyFlags[i]->SetSource(ret, (Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1], nullptr, funcCode);
+			env->SetFlgValue(1 << i, lazyFlags[i]);
+		}
+	}
+}
+
+void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, rev::DWORD mask) {
+	static const unsigned char flagList[] = {
+		RIVER_SPEC_FLAG_CF,
+		RIVER_SPEC_FLAG_PF,
+		RIVER_SPEC_FLAG_AF,
+		RIVER_SPEC_FLAG_ZF,
+		RIVER_SPEC_FLAG_SF,
+		RIVER_SPEC_FLAG_OF
+	};
+
+	static const int flagCount = sizeof(flagList) / sizeof(flagList[0]);
+	rev::DWORD m = mask & ops->av;
+
+	for (int i = 0; i < 4; ++i) {
+		if ((OPERAND_BITMASK(i) & m) && !ops->tr[i]) {
+			ops->sv[i] = Z3_mk_int(context, ops->cv[i], dwordSort);
+		}
+	}
+
+	for (int i = 0; i < flagCount; ++i) {
+		if (flagList[i] & m) {
+			if (!ops->trf[i]) {
+				ops->svf[i] = Z3_mk_int(context, ops->cvf[i], bitSort);
+			} else {
+				ops->svf[i] = ((Z3SymbolicCpuFlag *)ops->svf[i])->GetValue();
+			}
+		}
+
+		if ((flagList[i] & m) && !ops->trf[i]) {
+			ops->svf[i] = Z3_mk_int(context, ops->cvf[i], bitSort);
 		}
 	}
 }
 
 void Z3SymbolicExecutor::SymbolicExecuteDispatch(RiverInstruction *instruction) {
-	// do some actual work
-	rev::DWORD dwTable = (instruction->modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
-	(this->*executeFuncs[dwTable][instruction->opCode])(instruction);
+	static const unsigned char flagList[] = {
+		RIVER_SPEC_FLAG_CF,
+		RIVER_SPEC_FLAG_PF,
+		RIVER_SPEC_FLAG_AF,
+		RIVER_SPEC_FLAG_ZF,
+		RIVER_SPEC_FLAG_SF,
+		RIVER_SPEC_FLAG_OF
+	};
+
+	static const int flagCount = sizeof(flagList) / sizeof(flagList[0]);
+
+	SymbolicOperands ops;
+
+	ops.av = 0;
+	rev::BOOL uo[4], uof[flagCount];
+	rev::BOOL isSymb = false;
+
+	for (int i = 0; i < 4; ++i) {
+		ops.tr[i] = false;
+		if (true == (uo[i] = env->GetOperand(i, ops.tr[i], ops.cv[i], ops.sv[i]))) {
+			ops.av |= OPERAND_BITMASK(i);
+			isSymb |= ops.tr[i];
+		}
+	}
+
+	for (int i = 0; i < flagCount; ++i) {
+		ops.trf[i] = false;
+		if (true == (uof[i] = env->GetFlgValue(flagList[i], ops.trf[i], ops.cvf[i], ops.svf[i]))) {
+			ops.av |= flagList[i];
+			isSymb |= ops.trf[i];
+		}
+	}
+
+	if (isSymb) {
+		// This functionality must be moved into individual functions if the need arises
+		GetSymbolicValues(&ops, ops.av);
+
+		rev::DWORD dwTable = (instruction->modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
+		(this->*executeFuncs[dwTable][instruction->opCode])(instruction, &ops);
+	} else {
+		// unset all modified operands
+		for (int i = 0; i < 4; ++i) {
+			if (RIVER_SPEC_MODIFIES_OP(i) & instruction->specifiers) {
+				env->UnsetOperand(i);
+			}
+		}
+
+		// unset all modified flags
+		for (int i = 0; i < flagCount; ++i) {
+			if (flagList[i] & instruction->modFlags) {
+				env->UnsetFlgValue(flagList[i]);
+			}
+		}
+	}
 }
 
 
@@ -389,9 +418,9 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x68*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0x6C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
-		/*0x70*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x74*/ &Z3SymbolicExecutor::SymbolicExecuteJz, &Z3SymbolicExecutor::SymbolicExecuteJnz, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x78*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x70*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>,
+		/*0x74*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x78*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>,
 		/*0x7C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0x80*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteCmp, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymboliExecute0x83,
@@ -474,9 +503,9 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x78*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0x7C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
-		/*0x80*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x84*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x88*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x80*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>,
+		/*0x84*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x88*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>,
 		/*0x8C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0x90*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,

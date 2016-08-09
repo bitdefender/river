@@ -6,21 +6,38 @@
 
 #include "VariableTracker.h"
 #include "TrackingCookie.h"
+#include "LargeStack.h"
+
+#define OPERAND_BITMASK(idx) (0x00010000 << (idx))
 
 class Z3SymbolicExecutor : public rev::SymbolicExecutor {
 private:
-	void EvalZF(Z3_ast result);
+	stk::DWORD saveTop;
+	stk::DWORD saveStack[0x10000];
+	stk::LargeStack *ls;
 
-	void SymbolicExecuteUnk(RiverInstruction *instruction);
+	struct SymbolicOperands {
+		rev::DWORD av;
+		rev::BOOL tr[4];
+		rev::DWORD cv[4];
+		void *sv[4];
 
-	void SymbolicExecuteJz(RiverInstruction *instruction);
-	void SymbolicExecuteJnz(RiverInstruction *instruction);
+		rev::BOOL trf[7];
+		rev::BYTE cvf[7];
+		void *svf[7];
+	};
 
-	void SymbolicExecuteTest(RiverInstruction *instruction);
-	void SymbolicExecuteCmp(RiverInstruction *instruction);
-	void SymbolicExecuteMov(RiverInstruction *instruction);
-	void SymbolicExecuteMovSx(RiverInstruction *instruction);
-	void SymboliExecute0x83(RiverInstruction *instruction);
+	//void EvalZF(Z3_ast result);
+
+	void SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops);
+
+	template <unsigned int flag> void SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops);
+
+	void SymbolicExecuteTest(RiverInstruction *instruction, SymbolicOperands *ops);
+	void SymbolicExecuteCmp(RiverInstruction *instruction, SymbolicOperands *ops);
+	void SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops);
+	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);
+	void SymboliExecute0x83(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	Z3_ast ExecuteAdd(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteOr (Z3_ast o1, Z3_ast o2);
@@ -31,8 +48,10 @@ private:
 	Z3_ast ExecuteXor(Z3_ast o1, Z3_ast o2);
 
 	typedef Z3_ast (Z3SymbolicExecutor::*IntegerFunc)(Z3_ast o1, Z3_ast o2);
-	template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void SymbolicExecuteInteger(RiverInstruction *instruction);
+	template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void SymbolicExecuteInteger(RiverInstruction *instruction, SymbolicOperands *ops);
 
+
+	void GetSymbolicValues(SymbolicOperands *ops, rev::DWORD mask);
 public:
 	int symIndex;
 
@@ -45,11 +64,10 @@ public:
 	Z3_ast zero32, zeroFlag, oneFlag;
 
 	class Z3SymbolicCpuFlag {
-	private :
-		Z3_ast value;
 	protected:
 		Z3SymbolicExecutor *parent;
 		virtual Z3_ast Eval() = 0;
+		Z3_ast value;
 
 		static const unsigned int lazyMarker;
 	public :
@@ -57,6 +75,9 @@ public:
 		void SetParent(Z3SymbolicExecutor *p);
 
 		virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) = 0;
+		virtual void SaveState(stk::LargeStack &stack) = 0;
+		virtual void LoadState(stk::LargeStack &stack) = 0;
+
 		void SetValue(Z3_ast val);
 		void Unset();
 
@@ -69,11 +90,12 @@ public:
 
 	VariableTracker<Z3_ast> variableTracker;
 
-	typedef void(Z3SymbolicExecutor::*SymbolicExecute)(RiverInstruction *instruction);
+	typedef void(Z3SymbolicExecutor::*SymbolicExecute)(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	static SymbolicExecute executeFuncs[2][0x100];
 
 	Z3SymbolicExecutor(rev::SymbolicEnvironment *e, TrackingCookieFuncs *f);
+	virtual ~Z3SymbolicExecutor();
 
 	void SymbolicExecuteDispatch(RiverInstruction *instruction);
 
@@ -88,6 +110,9 @@ private :
 protected :
 	virtual Z3_ast Eval();
 	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+
+	virtual void SaveState(stk::LargeStack &stack);
+	virtual void LoadState(stk::LargeStack &stack);
 };
 
 
@@ -97,6 +122,9 @@ private:
 protected:
 	virtual Z3_ast Eval();
 	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+
+	virtual void SaveState(stk::LargeStack &stack);
+	virtual void LoadState(stk::LargeStack &stack);
 };
 
 class Z3FlagPF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
@@ -105,6 +133,9 @@ private:
 protected:
 	virtual Z3_ast Eval();
 	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+
+	virtual void SaveState(stk::LargeStack &stack);
+	virtual void LoadState(stk::LargeStack &stack);
 };
 
 #define Z3_FLAG_OP_ADD		0x80
@@ -118,6 +149,9 @@ private:
 protected:
 	virtual Z3_ast Eval();
 	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+
+	virtual void SaveState(stk::LargeStack &stack);
+	virtual void LoadState(stk::LargeStack &stack);
 };
 
 class Z3FlagOF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
@@ -127,6 +161,9 @@ private:
 protected:
 	virtual Z3_ast Eval();
 	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+
+	virtual void SaveState(stk::LargeStack &stack);
+	virtual void LoadState(stk::LargeStack &stack);
 };
 
 class Z3FlagAF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
@@ -135,6 +172,9 @@ private:
 protected:
 	virtual Z3_ast Eval();
 	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+
+	virtual void SaveState(stk::LargeStack &stack);
+	virtual void LoadState(stk::LargeStack &stack);
 };
 
 class Z3FlagDF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
@@ -143,6 +183,9 @@ private:
 protected:
 	virtual Z3_ast Eval();
 	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+
+	virtual void SaveState(stk::LargeStack &stack);
+	virtual void LoadState(stk::LargeStack &stack);
 };
 
 

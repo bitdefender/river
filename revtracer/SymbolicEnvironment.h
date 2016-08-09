@@ -94,7 +94,7 @@ namespace rev {
 		 *		true - if the expression was bound successfully
 		 *		false - otherwise
 		 */
-		bool SetOperand(rev::BYTE opIdx, void *&symbolicValue) {
+		bool SetOperand(rev::BYTE opIdx, void *symbolicValue) {
 			return ops->SetOperand(this, opIdx, symbolicValue);
 		}
 

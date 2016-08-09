@@ -84,6 +84,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LargeStack.cpp" />
     <ClCompile Include="Payload.cpp">
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
@@ -94,6 +95,7 @@
     <ClCompile Include="Z3SymbolicFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LargeStack.h" />
     <ClInclude Include="TrackingCookie.h" />
     <ClInclude Include="VariableTracker.h" />
     <ClInclude Include="Z3SymbolicExecutor.h" />

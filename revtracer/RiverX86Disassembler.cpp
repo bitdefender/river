@@ -90,6 +90,8 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 	rOut.opTypes[0] = rOut.opTypes[1] = rOut.opTypes[2] = rOut.opTypes[3] = RIVER_OPTYPE_NONE;
 	rOut.instructionAddress = (DWORD)px86;
 	rOut.instructionIndex = 0;
+	rOut.modFlags = 0;
+	rOut.testFlags = 0;
 
 	flags = 0;
 	do {

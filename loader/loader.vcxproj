@@ -75,6 +75,7 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
+      <EntryPointSymbol>Entry</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
