@@ -33,11 +33,8 @@ private:
 
 	template <unsigned int flag> void SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	void SymbolicExecuteTest(RiverInstruction *instruction, SymbolicOperands *ops);
-	void SymbolicExecuteCmp(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);
-	void SymboliExecute0x83(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	Z3_ast ExecuteAdd(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteOr (Z3_ast o1, Z3_ast o2);
@@ -46,10 +43,11 @@ private:
 	Z3_ast ExecuteAnd(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteSub(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteXor(Z3_ast o1, Z3_ast o2);
+	Z3_ast ExecuteCmp(Z3_ast o1, Z3_ast o2);
+	Z3_ast ExecuteTest(Z3_ast o1, Z3_ast o2);
 
 	typedef Z3_ast (Z3SymbolicExecutor::*IntegerFunc)(Z3_ast o1, Z3_ast o2);
 	template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void SymbolicExecuteInteger(RiverInstruction *instruction, SymbolicOperands *ops);
-
 
 	void GetSymbolicValues(SymbolicOperands *ops, rev::DWORD mask);
 public:
@@ -59,7 +57,7 @@ public:
 
 	Z3_config config;
 	Z3_context context;
-	Z3_sort dwordSort, byteSort, bitSort;
+	Z3_sort dwordSort, wordSort, byteSort, bitSort;
 
 	Z3_ast zero32, zeroFlag, oneFlag;
 
@@ -91,8 +89,10 @@ public:
 	VariableTracker<Z3_ast> variableTracker;
 
 	typedef void(Z3SymbolicExecutor::*SymbolicExecute)(RiverInstruction *instruction, SymbolicOperands *ops);
-
+	template <Z3SymbolicExecutor::SymbolicExecute fSubOps[8]> void SymbolicExecuteSubOp(RiverInstruction *instruction, SymbolicOperands *ops);
+	
 	static SymbolicExecute executeFuncs[2][0x100];
+	static SymbolicExecute executeIntegerFuncs[8];
 
 	Z3SymbolicExecutor(rev::SymbolicEnvironment *e, TrackingCookieFuncs *f);
 	virtual ~Z3SymbolicExecutor();
@@ -138,9 +138,15 @@ protected:
 	virtual void LoadState(stk::LargeStack &stack);
 };
 
-#define Z3_FLAG_OP_ADD		0x80
-#define Z3_FLAG_OP_SUB		0x81
-#define Z3_FLAG_OP_XOR		0x82
+#define Z3_FLAG_OP_ADD		0xA0
+#define Z3_FLAG_OP_OR 		0xA1
+#define Z3_FLAG_OP_ADC		0xA2
+#define Z3_FLAG_OP_SBB		0xA3
+#define Z3_FLAG_OP_AND		0xA4
+#define Z3_FLAG_OP_SUB		0xA5
+#define Z3_FLAG_OP_XOR		0xA6
+#define Z3_FLAG_OP_CMP		0xA7
+
 
 class Z3FlagCF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
 private:

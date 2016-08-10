@@ -46,13 +46,20 @@ namespace rev {
 		UnsetRegValueFunc UnsetRegValue;
 	};
 
+	class SymbolicExecutorFuncs;
+
 	/** 
 		The symbolic environment
 	 */
 	class SymbolicEnvironment {
 	protected :
 		SymbolicEnvironmentFuncs *ops;
+		SymbolicExecutorFuncs *execOps;
 	public :
+
+		void SetExecutorFuncs(SymbolicExecutorFuncs *_execOps) {
+			execOps = _execOps;
+		}
 
 		/**
 		 *	The GetOperand function returns an operand by index.
@@ -153,16 +160,23 @@ namespace rev {
 
 	/** Following function types are part of the symbolic executor interface */
 	typedef void *(*CreateVariableFunc)(void *_this, const char *name);
+	typedef void *(*MakeConstFunc)(void *_this, rev::DWORD value, rev::DWORD bits); 
+	
+	typedef void *(*ExtractBitsFunc)(void *_this, void *expr, rev::DWORD lsb, rev::DWORD size);
+	typedef void *(*ConcatBitsFunc)(void *_this, void *expr1, void *expr2);
+
 	typedef void(*ExecuteFunc)(void *_this, RiverInstruction *instruction);
-	typedef void(*ConvertRegisterFunc)(void *_this);
-	typedef void(*UnalignedMemoryAccessFunc)(void *_this);
+	
 
 	class SymbolicExecutorFuncs {
 	public:
 		CreateVariableFunc CreateVariable;
+		MakeConstFunc MakeConst;
+		
+		ExtractBitsFunc ExtractBits;
+		ConcatBitsFunc ConcatBits;
+
 		ExecuteFunc Execute;
-		ConvertRegisterFunc ConvertRegister;
-		UnalignedMemoryAccessFunc UnalignedMemoryAccess;
 	};
 
 	/** Executor class. Inherit this class to provide bindings to a SMT solver. */
@@ -175,6 +189,7 @@ namespace rev {
 		SymbolicExecutor(SymbolicEnvironment *e, SymbolicExecutorFuncs *f) {
 			env = e;
 			ops = f;
+			env->SetExecutorFuncs(ops);
 		}
 
 		// Create a new symbolic variable
@@ -182,21 +197,24 @@ namespace rev {
 			return ops->CreateVariable(this, name);
 		}
 
+		// Make a new constant
+		void *MakeConstant(rev::DWORD value, rev::DWORD bits) {
+			return ops->MakeConst(this, value, bits);
+		}
+
+		// Extract bits from an expression
+		void *ExtractBits(void *expr, rev::DWORD lsb, rev::DWORD size) {
+			return ops->ExtractBits(this, expr, lsb, size);
+		}
+
+		void *ConcatBits(void *expr1, void *expr2) {
+			return ops->ConcatBits(this, expr1, expr2);
+		}
+
 		// Access the symbolic environment through env->* methods
 		// The environment might be subject to change as more features are added
 		void Execute(RiverInstruction *instruction) {
 			ops->Execute(this, instruction);
-		}
-
-		// Future developments 
-		// This function will handle conversions between different register sizes
-		virtual void ConvertRegister(/* don't know yet */) {
-			ops->ConvertRegister(this);
-		}
-
-		// This function will handle unaligned memory accesed
-		virtual void UnalignedMemoryAccess(/* don't know yet*/) {
-			ops->UnalignedMemoryAccess(this);
 		}
 	};
 

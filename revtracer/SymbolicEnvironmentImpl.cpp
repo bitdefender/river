@@ -1,5 +1,147 @@
 #include "SymbolicEnvironmentImpl.h"
 
+// offsets from the lsb
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rOff[5] = { 0, 0, 2, 0, 1 };
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rSize[5] = { 4, 2, 2, 1, 1 };
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rParent[5] = { 0xFF, 0, 0, 1, 1 };
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rLChild[5] = { 1, 3, 0xFF, 0xFF, 0xFF};
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rMChild[5] = { 1, 4, 0xFF, 0xFF, 0xFF};
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rSeed[4] = { 0, 1, 3, 4 };
+
+rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::needConcat = 0xdeadbeef;
+rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::needExtract = 0xdeadbeef;
+
+void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::MarkNeedExtract(rev::DWORD node) {
+	if (rLChild[node] != 0xFF) {
+		subRegs[rLChild[node]] = &needExtract;
+		MarkNeedExtract(rLChild[node]);
+	}
+
+	if (rMChild[node] != 0xFF) {
+		subRegs[rMChild[node]] = &needExtract;
+		MarkNeedExtract(rMChild[node]);
+	}
+}
+
+void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::MarkUnset(rev::DWORD node) {
+	if (rLChild[node] != 0xFF) {
+		subRegs[rLChild[node]] = nullptr;
+		MarkNeedExtract(rLChild[node]);
+	}
+
+	if (rMChild[node] != 0xFF) {
+		subRegs[rMChild[node]] = nullptr;
+		MarkNeedExtract(rMChild[node]);
+	}
+}
+
+void *SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Get(rev::DWORD node) {
+	rev::DWORD c;
+	void *ms, *ls;
+	if (subRegs[node] == &needExtract) {
+		c = node;
+		while ((c != 0xFF) && (subRegs[c] != &needExtract)) {
+			c = rParent[c];
+		}
+
+		if (c == 0xFF) {
+			__asm int 3;
+		}
+
+		return nullptr; // Extract
+	} else if (subRegs[node] == &needConcat) {
+		ms = Get(rMChild[node]);
+		ls = Get(rLChild[node]);
+
+		if ((nullptr != ms) && (nullptr != ls)) {
+			return parent->execOps->ConcatBits(parent, ms, ls); //Concat(ms, ls)
+		}
+
+		if ((nullptr == ms) && (nullptr == ls)) {
+			return nullptr; //ideally we should never arrive here
+		}
+
+		if (nullptr == ms) {
+			return parent->execOps->ConcatBits(
+				parent,
+				parent->execOps->MakeConst(
+					parent,
+					0, // replace with actual value
+					16 // replace with actual value
+				),
+				ls
+			); //Concat(Const(ms), ls)
+		}
+
+		return parent->execOps->ConcatBits(
+			parent,
+			ms,
+			parent->execOps->MakeConst(
+				parent,
+				0, // replace with actual value
+				16 // replace with actual value
+			)
+		); //Concat(ms, Const(ls))
+	} else {
+		return subRegs[node];
+	}
+}
+
+void *SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Get(RiverRegister &reg) {
+	rev::BYTE idx = (reg.name >> 3);
+
+	if (idx > 3) {
+		__asm int 3; // do not handle special registers yet
+	}
+
+	rev::DWORD seed = rSeed[idx];
+	return Get(seed);
+}
+
+void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Set(RiverRegister &reg, void *value) {
+	rev::BYTE idx = (reg.name >> 3);
+
+	if (idx > 3) {
+		__asm int 3; // do not handle special registers yet
+	}
+
+	rev::DWORD seed = rSeed[idx];
+	// set the current register
+	subRegs[seed] = value;
+
+	// mark parents as needing concat
+	for (rev::DWORD c = rParent[seed]; c != 0xFF; c = rParent[c]) {
+		subRegs[c] = &needConcat;
+	}
+
+	// mark children as needing extract
+	MarkNeedExtract(seed);
+}
+
+void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Unset(RiverRegister &reg) {
+	rev::BYTE idx = (reg.name >> 3);
+
+	if (idx > 3) {
+		__asm int 3; // do not handle special registers yet
+	}
+
+	rev::DWORD seed = rSeed[idx];
+	// set the current register
+	subRegs[seed] = nullptr;
+
+	// unset parents if both children are unset
+	for (rev::DWORD c = rParent[seed]; c != 0xFF; c = rParent[c]) {
+		if ((nullptr == subRegs[rMChild[c]]) || (nullptr == subRegs[rLChild[c]])) {
+			subRegs[c] = nullptr;
+		} else {
+			subRegs[c] = &needConcat;
+		}
+	}
+
+	// unset children as well
+	MarkUnset(seed);
+}
+
 void SymbolicEnvironmentImpl::GetOperandLayout(const RiverInstruction &rIn) {
 	DWORD trackIndex = 0;
 
