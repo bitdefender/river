@@ -247,11 +247,12 @@ bool GetOperand(void *ctx, rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &co
 			// how do we handle dereferenced symbolic values?
 
 			if (0 == _this->current->operands[opIdx].asAddress->type) {
-				symExpr = (void *)_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asAddress->base.name)];
+				//symExpr = (void *)_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asAddress->base.name)];
+				reg = (SymbolicEnvironmentImpl::SymbolicOverlappedRegister *)_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)];
 
 				isTracked = (symExpr != NULL);
-				symbolicValue = symExpr;
 				concreteValue = _this->opBase[-(_this->valueOffsets[opIdx])];
+				symbolicValue = reg->Get(_this->current->operands[opIdx].asAddress->base, concreteValue);
 				return true;
 			}
 
@@ -342,7 +343,19 @@ bool SetOperand(void *ctx, rev::BYTE opIdx, void *symbolicValue) {
 
 		case RIVER_OPTYPE_MEM :
 			if (0 == _this->current->operands[opIdx].asAddress->type) {
-				_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asAddress->base.name)] = (DWORD)symbolicValue;
+				//_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asAddress->base.name)] = (DWORD)symbolicValue;
+
+				reg = &_this->regs[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)];
+				if (nullptr != symbolicValue) {
+					reg->Set(_this->current->operands[opIdx].asAddress->base, symbolicValue);
+				}
+				else {
+					if (reg->Unset(_this->current->operands[opIdx].asAddress->base)) {
+						reg = nullptr;
+					}
+				}
+
+				_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)] = (DWORD)reg;
 			} else {
 				MarkAddr(_this->pEnv, _this->opBase[-(_this->addressOffsets[opIdx])], (DWORD)symbolicValue, 0);
 			}
