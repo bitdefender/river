@@ -195,21 +195,6 @@ Z3SymbolicExecutor::~Z3SymbolicExecutor() {
 	}
 }
 
-/*void Z3SymbolicExecutor::EvalZF(Z3_ast result) {
-	env->SetFlgValue(
-		RIVER_SPEC_FLAG_ZF,
-		Z3_mk_ite(context,
-			Z3_mk_eq(
-				context,
-				result,
-				zero32
-			),
-			oneFlag,
-			zeroFlag
-		)
-	);
-}*/
-
 void Z3SymbolicExecutor::StepForward() {
 	variableTracker.Forward();
 	Z3_solver_push(context, solver);
@@ -301,31 +286,6 @@ Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
 Z3_ast Z3SymbolicExecutor::ExecuteTest(Z3_ast o1, Z3_ast o2) {
 	return Z3_mk_bvand(context, o1, o2);
 }
-
-/*void Z3SymbolicExecutor::SymbolicExecuteTest(RiverInstruction *instruction, SymbolicOperands *ops) {
-	if (ops->sv[0] == ops->sv[1]) {
-		env->UnsetFlgValue(RIVER_SPEC_FLAG_ZF);
-	}
-	else {
-		Z3_ast sub = Z3_mk_bvand(context, (Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1]);
-		//EvalZF(sub);
-
-		lazyFlags[RIVER_SPEC_IDX_ZF]->SetSource(sub, nullptr, nullptr, nullptr, 0);
-		env->SetFlgValue(RIVER_SPEC_FLAG_ZF, lazyFlags[RIVER_SPEC_IDX_ZF]);
-	}
-}*/
-
-/*void Z3SymbolicExecutor::SymbolicExecuteCmp(RiverInstruction *instruction, SymbolicOperands *ops) {
-	if (ops->sv[0] == ops->sv[1]) {
-		env->UnsetFlgValue(RIVER_SPEC_FLAG_ZF);
-	}
-	else {
-		Z3_ast sub = Z3_mk_bvsub(context, (Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1]);
-
-		lazyFlags[RIVER_SPEC_IDX_ZF]->SetSource(sub, nullptr, nullptr, nullptr, 0);
-		env->SetFlgValue(RIVER_SPEC_FLAG_ZF, lazyFlags[RIVER_SPEC_IDX_ZF]);
-	}
-}*/
 
 void Z3SymbolicExecutor::SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops) {
 	// mov dest, addr

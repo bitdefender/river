@@ -95,7 +95,7 @@ public:
 	static SymbolicExecute executeIntegerFuncs[8];
 
 	Z3SymbolicExecutor(rev::SymbolicEnvironment *e, TrackingCookieFuncs *f);
-	virtual ~Z3SymbolicExecutor();
+	~Z3SymbolicExecutor();
 
 	void SymbolicExecuteDispatch(RiverInstruction *instruction);
 

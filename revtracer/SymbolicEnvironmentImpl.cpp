@@ -1,11 +1,11 @@
 #include "SymbolicEnvironmentImpl.h"
 
 // offsets from the lsb
-const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rOff[5] = { 0, 0, 2, 0, 1 };
-const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rSize[5] = { 4, 2, 2, 1, 1 };
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rOff[5] = { 0, 0, 16, 0, 8 };
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rSize[5] = { 32, 16, 16, 8, 8 };
 const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rParent[5] = { 0xFF, 0, 0, 1, 1 };
 const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rLChild[5] = { 1, 3, 0xFF, 0xFF, 0xFF};
-const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rMChild[5] = { 1, 4, 0xFF, 0xFF, 0xFF};
+const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rMChild[5] = { 2, 4, 0xFF, 0xFF, 0xFF};
 const rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::rSeed[4] = { 0, 1, 3, 4 };
 
 rev::DWORD SymbolicEnvironmentImpl::SymbolicOverlappedRegister::needConcat = 0xdeadbeef;
@@ -35,10 +35,9 @@ void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::MarkUnset(rev::DWORD n
 	}
 }
 
-void *SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Get(rev::DWORD node) {
-	rev::DWORD c;
-	void *ms, *ls;
+void *SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Get(rev::DWORD node, rev::DWORD concreteValue) {
 	if (subRegs[node] == &needExtract) {
+		rev::DWORD c; 
 		c = node;
 		while ((c != 0xFF) && (subRegs[c] != &needExtract)) {
 			c = rParent[c];
@@ -48,46 +47,48 @@ void *SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Get(rev::DWORD node) 
 			__asm int 3;
 		}
 
-		return nullptr; // Extract
-	} else if (subRegs[node] == &needConcat) {
-		ms = Get(rMChild[node]);
-		ls = Get(rLChild[node]);
-
-		if ((nullptr != ms) && (nullptr != ls)) {
-			return parent->execOps->ConcatBits(parent, ms, ls); //Concat(ms, ls)
-		}
-
-		if ((nullptr == ms) && (nullptr == ls)) {
-			return nullptr; //ideally we should never arrive here
-		}
-
-		if (nullptr == ms) {
-			return parent->execOps->ConcatBits(
-				parent,
-				parent->execOps->MakeConst(
-					parent,
-					0, // replace with actual value
-					16 // replace with actual value
-				),
-				ls
-			); //Concat(Const(ms), ls)
-		}
-
-		return parent->execOps->ConcatBits(
+		return parent->execOps->ExtractBits(
 			parent,
-			ms,
-			parent->execOps->MakeConst(
+			subRegs[c],
+			rOff[node] << 3,
+			rSize[node]
+		);
+	} else if (subRegs[node] == &needConcat) {
+		rev::DWORD msz = rSize[rMChild[node]];
+
+		rev::DWORD msk = (1 << msz) - 1;
+		rev::DWORD mVal = (concreteValue >> msz) & msk;
+		rev::DWORD lVal = concreteValue & msk;
+
+		void *ms = Get(rMChild[node], mVal);
+		if (nullptr == ms) {
+			ms = parent->execOps->MakeConst(
 				parent,
-				0, // replace with actual value
-				16 // replace with actual value
-			)
-		); //Concat(ms, Const(ls))
+				mVal,
+				msz
+			);
+		}
+
+		void *ls = Get(rLChild[node], lVal);
+		if (nullptr == ls) {
+			ls = parent->execOps->MakeConst(
+				parent,
+				lVal,
+				msz
+			);
+		}
+
+		return parent->execOps->ConcatBits(parent, ms, ls);
 	} else {
 		return subRegs[node];
 	}
 }
 
-void *SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Get(RiverRegister &reg) {
+void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::SetParent(SymbolicEnvironmentImpl *p) {
+	parent = p;
+}
+
+void *SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Get(RiverRegister &reg, rev::DWORD concreteValue) {
 	rev::BYTE idx = (reg.name >> 3);
 
 	if (idx > 3) {
@@ -95,7 +96,7 @@ void *SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Get(RiverRegister &re
 	}
 
 	rev::DWORD seed = rSeed[idx];
-	return Get(seed);
+	return Get(seed, concreteValue);
 }
 
 void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Set(RiverRegister &reg, void *value) {
@@ -118,7 +119,7 @@ void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Set(RiverRegister &reg
 	MarkNeedExtract(seed);
 }
 
-void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Unset(RiverRegister &reg) {
+bool SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Unset(RiverRegister &reg) {
 	rev::BYTE idx = (reg.name >> 3);
 
 	if (idx > 3) {
@@ -140,6 +141,8 @@ void SymbolicEnvironmentImpl::SymbolicOverlappedRegister::Unset(RiverRegister &r
 
 	// unset children as well
 	MarkUnset(seed);
+
+	return (subRegs[0] == nullptr);
 }
 
 void SymbolicEnvironmentImpl::GetOperandLayout(const RiverInstruction &rIn) {
@@ -204,7 +207,9 @@ namespace rev {
 
 bool GetOperand(void *ctx, rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue) {
 	SymbolicEnvironmentImpl *_this = (SymbolicEnvironmentImpl *)ctx;
+	SymbolicEnvironmentImpl::SymbolicOverlappedRegister *reg;
 	void *symExpr;
+
 
 	if (RIVER_SPEC_IGNORES_OP(opIdx) & _this->current->specifiers) {
 		return false;
@@ -230,11 +235,12 @@ bool GetOperand(void *ctx, rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &co
 			return true;
 
 		case RIVER_OPTYPE_REG :
-			symExpr = (void *)_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)];
+			//symExpr = (void *)_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)];
+			reg = (SymbolicEnvironmentImpl::SymbolicOverlappedRegister *)_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)];
 
-			isTracked = (symExpr != NULL);
-			symbolicValue = symExpr;
+			isTracked = (reg != NULL);
 			concreteValue = _this->opBase[- (_this->valueOffsets[opIdx])];
+			symbolicValue = reg->Get(_this->current->operands[opIdx].asRegister, concreteValue);
 			return true;
 
 		case RIVER_OPTYPE_MEM :
@@ -314,6 +320,7 @@ bool GetFlgValue(void *ctx, rev::BYTE flg, rev::BOOL &isTracked, rev::BYTE &conc
 
 bool SetOperand(void *ctx, rev::BYTE opIdx, void *symbolicValue) {
 	SymbolicEnvironmentImpl *_this = (SymbolicEnvironmentImpl *)ctx;
+	SymbolicEnvironmentImpl::SymbolicOverlappedRegister *reg;
 
 	switch (RIVER_OPTYPE(_this->current->opTypes[opIdx])) {
 		case RIVER_OPTYPE_NONE :
@@ -321,7 +328,16 @@ bool SetOperand(void *ctx, rev::BYTE opIdx, void *symbolicValue) {
 			return false;
 
 		case RIVER_OPTYPE_REG :
-			_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)] = (DWORD)symbolicValue;
+			reg = &_this->regs[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)];
+			if (nullptr != symbolicValue) {
+				reg->Set(_this->current->operands[opIdx].asRegister, symbolicValue);
+			} else {
+				if (reg->Unset(_this->current->operands[opIdx].asRegister)) {
+					reg = nullptr;
+				}
+			}
+
+			_this->pEnv->runtimeContext.taintedRegisters[GetFundamentalRegister(_this->current->operands[opIdx].asRegister.name)] = (DWORD)reg;
 			return true;
 
 		case RIVER_OPTYPE_MEM :
@@ -378,4 +394,12 @@ void SymbolicEnvironmentImpl::Init(ExecutionEnvironment *env) {
 	pEnv = env;
 	current = nullptr;
 	ops = &sFuncs;
+
+	RiverRegister rg;
+
+	for (int i = 0; i < 8; ++i) {
+		regs[i].SetParent(this);
+		rg.name = i;
+		regs[i].Unset(rg);
+	}
 }

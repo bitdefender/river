@@ -27,14 +27,16 @@ public :
 		void MarkNeedExtract(rev::DWORD node);
 		void MarkUnset(rev::DWORD node);
 
-		void *Get(rev::DWORD node);
+		void *Get(rev::DWORD node, rev::DWORD concreteValue);
 	public :
-		void *Get(RiverRegister &reg);
+		void SetParent(SymbolicEnvironmentImpl *p);
+
+		void *Get(RiverRegister &reg, rev::DWORD concreteValue);
 		void Set(RiverRegister &reg, void *value);
-		void Unset(RiverRegister &reg);
+		bool Unset(RiverRegister &reg);
 	};
 
-
+	SymbolicOverlappedRegister regs[8];
 
 	void GetOperandLayout(const RiverInstruction &rIn);
 public :
