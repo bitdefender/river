@@ -21,8 +21,6 @@
     <ClInclude Include="PreTrackingX86Assembler.h" />
     <ClInclude Include="revtracer.h" />
     <ClInclude Include="RiverTrackingX86Assembler.h" />
-    <ClInclude Include="SymbolicEnvironment.h" />
-    <ClInclude Include="SymbolicEnvironmentImpl.h" />
     <ClInclude Include="SymbopReverseTranslator.h" />
     <ClInclude Include="SymbopSaveTranslator.h" />
     <ClInclude Include="Tracking.h" />
@@ -80,8 +78,6 @@
     <ClCompile Include="NativeX86Assembler.cpp">
       <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
     </ClCompile>
-    <ClCompile Include="SymbolicEnvironmentImpl.cpp" />
-    <ClCompile Include="SymbolicHandler.cpp" />
     <ClCompile Include="SymbopReverseTranslator.cpp" />
     <ClCompile Include="SymbopTranslator.cpp" />
     <ClCompile Include="SymbopSaveTranslator.cpp" />

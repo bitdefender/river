@@ -2,10 +2,6 @@
 
 #include "CodeGen.h"
 
-#include "SymbolicEnvironment.h"
-
-#include <stdint.h>
-
 void SymbopSaveTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
 	rev_memcpy(&rOut, &rIn, sizeof(rOut));
 
