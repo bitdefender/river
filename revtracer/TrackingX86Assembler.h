@@ -5,30 +5,30 @@
 
 class TrackingX86Assembler : public GenericX86Assembler {
 private :
-	void AssembleTrackFlag(DWORD testFlags, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
-	void AssembleMarkFlag(DWORD testFlags, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleTrackFlag(rev::DWORD testFlags, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
+	void AssembleMarkFlag(rev::DWORD testFlags, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
 
-	void AssembleTrackRegister(const RiverRegister &reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
-	void AssembleMarkRegister(const RiverRegister &reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleTrackRegister(const RiverRegister &reg, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
+	void AssembleMarkRegister(const RiverRegister &reg, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
 
-	void AssembleTrackMemory(const RiverAddress *addr, BYTE offset, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
-	void AssembleMarkMemory(const RiverAddress *addr, BYTE offset, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleTrackMemory(const RiverAddress *addr, rev::BYTE offset, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
+	void AssembleMarkMemory(const RiverAddress *addr, rev::BYTE offset, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
 
-	void AssembleTrackAddress(const RiverAddress *addr, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
-	void AssembleUnmark(RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleTrackAddress(const RiverAddress *addr, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
+	void AssembleUnmark(RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
 
-	void AssembleAdjustESI(BYTE count, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
-	void AssembleSetZero(BYTE reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleAdjustESI(rev::BYTE count, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
+	void AssembleSetZero(rev::BYTE reg, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
 
-	void AssembleSymbolicCall(DWORD address, BYTE index, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleSymbolicCall(rev::DWORD address, rev::BYTE index, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
 
-	DWORD GetOperandTrackSize(const RiverInstruction &ri, BYTE idx);
+	rev::DWORD GetOperandTrackSize(const RiverInstruction &ri, rev::BYTE idx);
 
-	DWORD dwTranslationFlags;
+	rev::DWORD dwTranslationFlags;
 public :
-	void SetTranslationFlags(DWORD dwFlags);
+	void SetTranslationFlags(rev::DWORD dwFlags);
 
-	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType);
+	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);
 };
 
 

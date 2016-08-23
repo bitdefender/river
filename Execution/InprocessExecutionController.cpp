@@ -55,6 +55,10 @@ bool InprocessExecutionController::Execute() {
 		api->markCallback = markCb;
 	}
 
+	if (nullptr != symbCb) {
+		api->symbolicHandler = symbCb;
+	}
+
 	api->lowLevel.ntAllocateVirtualMemory = GetProcAddress(hNtDll, "NtAllocateVirtualMemory");
 	api->lowLevel.ntFreeVirtualMemory = GetProcAddress(hNtDll, "NtFreeVirtualMemory");
 
@@ -66,10 +70,9 @@ bool InprocessExecutionController::Execute() {
 
 	gcr = (GetCurrentRegistersFunc)GetProcAddress(hRevTracer, "GetCurrentRegisters");
 	gmi = (GetMemoryInfoFunc)GetProcAddress(hRevTracer, "GetMemoryInfo");
-	mmn = (MarkMemoryNameFunc)GetProcAddress(hRevTracer, "MarkMemoryName");
 	mmv = (MarkMemoryValueFunc)GetProcAddress(hRevTracer, "MarkMemoryValue");
 	
-	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmn) || (nullptr == mmv)) {
+	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv)) {
 		__asm int 3;
 		return false;
 	}
@@ -78,7 +81,8 @@ bool InprocessExecutionController::Execute() {
 	revCfg->entryPoint = entryPoint;
 	revCfg->featureFlags = featureFlags;
 	revCfg->context = this;
-	revCfg->sCons = symbolicConstructor;
+	//revCfg->sCons = symbolicConstructor;
+
 
 	//config->sCons = SymExeConstructor;
 

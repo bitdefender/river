@@ -3,8 +3,6 @@
 
 #include "revtracer.h"
 
-using namespace rev;
-
 #define HEAP_SIZE 0x100000
 
 extern "C" void rev_memcpy(void *dest, const void *src, unsigned int size);
@@ -15,20 +13,20 @@ struct HeapZone;
 /* A self contained heap */
 class RiverHeap {
 private :
-	BYTE *pHeap;
+	rev::BYTE *pHeap;
 	HeapZone *pFirstFree;
-	DWORD size;
+	rev::DWORD size;
 public :
 	RiverHeap();
 	~RiverHeap();
 
-	bool Init(DWORD heapSize);
+	bool Init(rev::DWORD heapSize);
 	bool Destroy();
 
 	void PrintInfo(HeapZone *fz);
 	void List();
 
-	void *Alloc(DWORD size);
+	void *Alloc(rev::DWORD size);
 	void Free(void *ptr);
 };
 

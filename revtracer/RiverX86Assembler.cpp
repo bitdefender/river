@@ -5,6 +5,8 @@
 
 #include "mm.h"
 
+using namespace rev;
+
 extern const BYTE specAssemblerTbl[2][0x100];
 
 #define X86_OPZISE_PREFIX			0x66

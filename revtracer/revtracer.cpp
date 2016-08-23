@@ -347,8 +347,8 @@ namespace rev {
 		__asm int 3;
 	}
 
-	void DefaultSymbolicSyncFunc(SymbolicPayloadFunc pFunc, DWORD trackBuffer) {
-		pFunc(trackBuffer);
+	void __stdcall DefaultSymbolicHandler(void *context, void *offset, void *address) {
+		return;
 	}
 
 	/* Execution context callbacks ********************************************************/
@@ -387,7 +387,7 @@ namespace rev {
 		DefaultTrackCallback,
 		DefaultMarkCallback,
 
-		DefaultSymbolicSyncFunc,
+		DefaultSymbolicHandler,
 
 		{
 			(ADDR_TYPE)DefaultNtAllocateVirtualMemory,
@@ -560,11 +560,6 @@ namespace rev {
 		pEnv = new ExecutionEnvironment(revtracerConfig.featureFlags, 0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
 		pEnv->userContext = revtracerConfig.context; //AllocUserContext(pEnv, revtracerConfig.contextSize);
 
-		if ((TRACER_FEATURE_SYMBOLIC & revtracerConfig.featureFlags) == TRACER_FEATURE_SYMBOLIC) {
-			SetSymbolicExecutor(revtracerConfig.sCons);
-			::InitSymbolicHandler(pEnv);
-		}
-
 		revtracerConfig.pRuntime = &pEnv->runtimeContext;
 	}
 
@@ -577,17 +572,9 @@ namespace rev {
 		}
 	}
 
-	DWORD __stdcall MarkAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);
+	DWORD __stdcall MarkAddr(void *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);
 	void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value) {
 		MarkAddr((ExecutionEnvironment *)ctx, (DWORD)addr, value, 0x2B);
-	}
-
-		
-
-	void MarkMemoryName(void *ctx, ADDR_TYPE addr, const char *name) {
-		if (TRACER_FEATURE_SYMBOLIC & revtracerConfig.featureFlags) {
-			MarkMemoryValue((ExecutionEnvironment *)ctx, addr, (DWORD)CreateSymbolicVariable(name));
-		}
 	}
 
 };

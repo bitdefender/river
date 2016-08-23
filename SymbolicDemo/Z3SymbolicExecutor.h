@@ -2,7 +2,7 @@
 #define _Z3_SYMBOLIC_EXECUTOR_
 
 #include "z3.h"
-#include "../revtracer/SymbolicEnvironment.h"
+#include "SymbolicEnvironment.h"
 
 #include "VariableTracker.h"
 #include "TrackingCookie.h"
@@ -10,7 +10,7 @@
 
 #define OPERAND_BITMASK(idx) (0x00010000 << (idx))
 
-class Z3SymbolicExecutor : public rev::SymbolicExecutor {
+class Z3SymbolicExecutor : public sym::SymbolicExecutor {
 private:
 	stk::DWORD saveTop;
 	stk::DWORD saveStack[0x10000];
@@ -94,14 +94,19 @@ public:
 	static SymbolicExecute executeFuncs[2][0x100];
 	static SymbolicExecute executeIntegerFuncs[8];
 
-	Z3SymbolicExecutor(rev::SymbolicEnvironment *e, TrackingCookieFuncs *f);
+	Z3SymbolicExecutor(sym::SymbolicEnvironment *e, TrackingCookieFuncs *f);
 	~Z3SymbolicExecutor();
-
-	void SymbolicExecuteDispatch(RiverInstruction *instruction);
 
 	void StepForward();
 	void StepBackward();
 	void Lock(Z3_ast t);
+
+
+	virtual void *CreateVariable(const char *name);
+	virtual void *MakeConst(rev::DWORD value, rev::DWORD bits);
+	virtual void *ExtractBits(void *expr, rev::DWORD lsb, rev::DWORD size);
+	virtual void *ConcatBits(void *expr1, void *expr2);
+	virtual void Execute(RiverInstruction *instruction);
 };
 
 class Z3FlagZF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {

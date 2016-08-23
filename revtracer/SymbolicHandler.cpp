@@ -70,15 +70,17 @@ void *CreateSymbolicVariable(const char *name) {
 }
 
 
-void __stdcall SymbolicHandler(ExecutionEnvironment *env, void *offset, rev::BYTE *address, rev::BYTE index) {
-	RiverInstruction instr[16];
-	rev::DWORD cnt = 0, flg = 0;
+/*void __stdcall SymbolicHandler(ExecutionEnvironment *env, void *offset, rev::BYTE *address) {
+	RiverInstruction *instr = (RiverInstruction *)address;
+	sEnv.SetCurrentContext(instr, offset);
 
-	env->codeGen.Reset();
-	env->codeGen.DisassembleSingle(address, instr, cnt, flg);
-	sEnv.SetCurrentContext(&instr[index], offset);
+	glue.sExe->Execute(instr);
+}*/
 
-	glue.sExe->Execute(&instr[index]);
+void __stdcall SymbolicHandler(ExecutionEnvironment *env, void *offset, RiverInstruction *instr) {
+	sEnv.SetCurrentContext(instr, offset);
+
+	glue.sExe->Execute(instr);
 }
 
 

@@ -4,22 +4,20 @@
 #include "revtracer.h"
 #include "mm.h"
 
-using namespace rev;
-
 class RelocableCodeBuffer {
 private :
-	BYTE *buffer;
+	rev::BYTE *buffer;
 	bool needsRAFix;
-	BYTE *rvAddress;
+	rev::BYTE *rvAddress;
 public :
-	BYTE *cursor;
+	rev::BYTE *cursor;
 
 	RelocableCodeBuffer();
-	void Init(BYTE *buff);
+	void Init(rev::BYTE *buff);
 
 	void Reset();
-	void SetRelocation(BYTE *reloc);
-	void CopyToFixed(BYTE *dst) const;
+	void SetRelocation(rev::BYTE *reloc);
+	void CopyToFixed(rev::BYTE *dst) const;
 };
 
 #endif

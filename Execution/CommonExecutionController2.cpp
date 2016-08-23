@@ -19,6 +19,8 @@ static bool ExecutionBufferEmpty(ExecutionEnvironment *pEnv) {
 	return (DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
 }
 
+typedef void(*SymbolicPayloadFunc)(DWORD trackBuffer);
+
 rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction) {
 	ExecutionEnvironment *pEnv = (ExecutionEnvironment *)context;
 	ExecutionController *exec = (ExecutionController *)userContext;

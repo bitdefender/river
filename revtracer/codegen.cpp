@@ -4,7 +4,6 @@
 #include "cb.h"
 #include "mm.h"
 #include "modrm32.h"
-#include "translatetbl.h"
 #include "crc32.h"
 #include "revtracer.h"
 
@@ -13,15 +12,6 @@
 #include "RiverX86Disassembler.h"
 #include "RiverReverseTranslator.h"
 #include "RiverSaveTranslator.h"
-
-/* x86toriver converts a single x86 intruction to one ore more river instructions */
-/* returns the instruction length */
-/* dwInstrCount contains the number of generated river instructions */
-DWORD x86toriver(RiverCodeGen *cg, RiverX86Disassembler &dis, RiverSaveTranslator &save, BYTE *px86, struct RiverInstruction *pRiver, DWORD *dwInstrCount);
-
-/* rivertox86 converts a block of river instructions to x86 */
-/* returns the nuber of bytes written in px86 */
-DWORD rivertox86(RiverCodeGen *pEnv, RiverRuntime *rt, RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flags);
 
 RiverCodeGen::RiverCodeGen() {
 	outBufferSize = 0;
@@ -167,7 +157,7 @@ bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD 
 	return true;
 }
 
-DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTranslationFlags) {
+DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, BYTE *&disasm, DWORD dwTranslationFlags) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
 
@@ -192,6 +182,38 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTrans
 		//metaTranslator.Translate(dis, instrBuffers[currentBuffer], instrCounts[currentBuffer]);
 
 		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags);
+
+		DWORD addrCount = 0;
+		
+		for (DWORD i = 0; i < instrCounts[currentBuffer]; ++i) {
+			for (DWORD j = 0; j < 4; ++j) {
+				if (RIVER_OPTYPE(instrBuffers[currentBuffer][i].opTypes[j]) == RIVER_OPTYPE_MEM) {
+					addrCount++;
+				}
+			}
+		}
+		RiverAddress *serialAddress = nullptr;
+		RiverInstruction *serialInstr = (RiverInstruction *)heap->Alloc(
+			instrCounts[currentBuffer] * sizeof(serialInstr[0])
+			+ addrCount * sizeof(serialAddress[0])
+		); // put head of buffer here
+		serialAddress = (RiverAddress *)&serialInstr[instrCounts[currentBuffer]];
+
+		addrCount = 0;
+		rev_memcpy(serialInstr, instrBuffers[currentBuffer], instrCounts[currentBuffer] * sizeof(serialInstr[0]));
+		for (DWORD i = 0; i < instrCounts[currentBuffer]; ++i) {
+			for (DWORD j = 0; j < 4; ++j) {
+				instrBuffers[currentBuffer][i].instructionAddress = (DWORD)&serialInstr[i];
+
+				if (RIVER_OPTYPE(serialInstr[i].opTypes[j]) == RIVER_OPTYPE_MEM) {
+					rev_memcpy(&serialAddress[addrCount], serialInstr[i].operands[j].asAddress, sizeof(serialAddress[0]));
+					serialInstr[i].operands[j].asAddress = &serialAddress[addrCount];
+					addrCount++;
+				}
+			}
+		}
+
+		disasm = (unsigned char *)serialInstr;
 
 		for (DWORD i = 0; i < instrCounts[currentBuffer]; ++i) {
 			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(instrBuffers[currentBuffer][i].family)) {
@@ -331,7 +353,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		Reset();
 
 		pCB->dwOrigOpCount = 0;
-		pCB->dwSize = TranslateBasicBlock((BYTE *)pCB->address, pCB->dwOrigOpCount, dwTranslationFlags); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
+		pCB->dwSize = TranslateBasicBlock((BYTE *)pCB->address, pCB->dwOrigOpCount, pCB->pDisasmCode, dwTranslationFlags); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
 		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 

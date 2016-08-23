@@ -19,7 +19,7 @@ bool GenericX86Assembler::Init(RiverRuntime *rt) {
 	return true;
 }
 
-bool GeneratePrefixes(const RiverInstruction &ri, BYTE *&px86) {
+bool GeneratePrefixes(const RiverInstruction &ri, rev::BYTE *&px86) {
 	if (ri.modifiers & RIVER_MODIFIER_LOCK) {
 		*px86 = X86_LOCK_PREFIX;
 		px86++;
@@ -74,7 +74,7 @@ bool GeneratePrefixes(const RiverInstruction &ri, BYTE *&px86) {
 	return true;
 }
 
-bool ClearPrefixes(const RiverInstruction &ri, BYTE *&px86) {
+bool ClearPrefixes(const RiverInstruction &ri, rev::BYTE *&px86) {
 	if (ri.modifiers & 0x07) {
 		px86--;
 	}

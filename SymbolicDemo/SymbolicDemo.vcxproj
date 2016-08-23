@@ -52,7 +52,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_NO_TRACK_CALLBACKS_;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)z3/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -71,7 +71,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_NO_TRACK_CALLBACKS_;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)z3/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -84,18 +84,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\revtracer\AddressContainer.cpp" />
+    <ClCompile Include="..\revtracer\Tracking.cpp" />
     <ClCompile Include="LargeStack.cpp" />
+    <ClCompile Include="OverlappedRegisters.cpp" />
     <ClCompile Include="Payload.cpp">
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
     </ClCompile>
+    <ClCompile Include="RevSymbolicEnvironment.cpp" />
     <ClCompile Include="SymbolicDemoMain.cpp" />
+    <ClCompile Include="SymbolicEnvironment.cpp" />
     <ClCompile Include="TrackingCookie.cpp" />
     <ClCompile Include="Z3SymbolicExecutor.cpp" />
     <ClCompile Include="Z3SymbolicFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LargeStack.h" />
+    <ClInclude Include="OverlappedRegisters.h" />
+    <ClInclude Include="RevSymbolicEnvironment.h" />
+    <ClInclude Include="SymbolicEnvironment.h" />
     <ClInclude Include="TrackingCookie.h" />
     <ClInclude Include="VariableTracker.h" />
     <ClInclude Include="Z3SymbolicExecutor.h" />

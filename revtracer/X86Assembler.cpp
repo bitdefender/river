@@ -5,6 +5,8 @@
 
 #include "mm.h"
 
+using namespace rev;
+
 #define FLAG_GENERATE_RIVER_xSP		0x0F
 /*#define FLAG_GENERATE_RIVER_xSP_xAX	0x01
 #define FLAG_GENERATE_RIVER_xSP_xCX	0x02

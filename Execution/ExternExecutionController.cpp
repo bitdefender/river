@@ -255,6 +255,18 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	tmpRevApi.lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
 	tmpRevApi.lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
 
+	/*if (nullptr != trackCb) {
+		api->trackCallback = trackCb;
+	}
+
+	if (nullptr != markCb) {
+		api->markCallback = markCb;
+	}*/
+
+	if (nullptr != symbCb) {
+		tmpRevApi.symbolicHandler = symbCb;
+	}
+
 	rev::RevtracerAPI *revAPI;
 	if (!LoadExportedName(fRevTracer, pRevtracerBase, "revtracerAPI", revAPI) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "revtracerConfig", revCfg)
@@ -266,7 +278,6 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 
 	if (!LoadExportedName(fRevTracer, pRevtracerBase, "GetCurrentRegisters", gcr) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "GetMemoryInfo", gmi) ||
-		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryName", mmn) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryValue", mmv)
 	) {
 		__asm int 3;
@@ -277,7 +288,7 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	InitSegments(hMainThread, revCfg->segmentOffsets);
 	revCfg->hookCount = 0;
 	revCfg->featureFlags = featureFlags;
-	revCfg->sCons = symbolicConstructor;
+	//revCfg->sCons = symbolicConstructor;
 
 #ifdef DUMP_BLOCKS
 	revCfg->dumpBlocks = TRUE;

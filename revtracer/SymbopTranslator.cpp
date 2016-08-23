@@ -338,9 +338,7 @@ void SymbopTranslator::MakeCallSymbolic(const RiverInstruction &rIn, RiverInstru
 	rTrackOut->family = RIVER_FAMILY_TRACK;
 	rTrackOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
 	rTrackOut->operands[0].asImm32 = rIn.instructionAddress;
-	rTrackOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
-	rTrackOut->operands[1].asImm8 = (BYTE)rIn.instructionIndex;
-	rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
+	rTrackOut->opTypes[1] = rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
 	rTrackOut->TrackEspAsParameter();
 	rTrackOut->TrackUnusedRegisters();
 

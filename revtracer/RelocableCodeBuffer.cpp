@@ -1,5 +1,7 @@
 #include "RelocableCodeBuffer.h"
 
+using namespace rev;
+
 RelocableCodeBuffer::RelocableCodeBuffer() {
 	buffer = NULL;
 	Reset();

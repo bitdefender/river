@@ -42,7 +42,7 @@ private :
 	SymbopSaveTranslator symbopSaveTranslator;
 	SymbopReverseTranslator symbopReverseTranslator;
 
-	DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, DWORD dwTranslationFlags);
+	rev::DWORD TranslateBasicBlock(rev::BYTE *px86, rev::DWORD &dwInst, rev::BYTE *&disasm, rev::DWORD dwTranslationFlags);
 public :
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];
@@ -52,8 +52,8 @@ public :
 
 	struct RiverAddress32 trRiverAddr[16384];
 	
-	DWORD trInstCount, fwInstCount, bkInstCount, /*srInstCount,*/ sfInstCount, sbInstCount, addrCount, outBufferSize;
-	DWORD symbopInstCount;
+	rev::DWORD trInstCount, fwInstCount, bkInstCount, /*srInstCount,*/ sfInstCount, sbInstCount, addrCount, outBufferSize;
+	rev::DWORD symbopInstCount;
 
 	unsigned char *outBuffer;
 	unsigned int regVersions[8];
@@ -63,20 +63,20 @@ public :
 	RiverCodeGen();
 	~RiverCodeGen();
 
-	bool Init(RiverHeap *hp, RiverRuntime *rt, DWORD buffSz, DWORD dwTranslationFlags);
+	bool Init(RiverHeap *hp, RiverRuntime *rt, rev::DWORD buffSz, rev::DWORD dwTranslationFlags);
 	bool Destroy();
 	void Reset();
 
-	struct RiverAddress *AllocAddr(WORD flags);
-	struct RiverAddress *CloneAddress(const RiverAddress &mem, WORD flags);
+	struct RiverAddress *AllocAddr(rev::WORD flags);
+	struct RiverAddress *CloneAddress(const RiverAddress &mem, rev::WORD flags);
 
 	unsigned int GetCurrentReg(unsigned char regName) const;
 	unsigned int GetPrevReg(unsigned char regName) const;
 
 	unsigned int NextReg(unsigned char regName);
 
-	bool Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags);
-	bool DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD &count, DWORD &dwFlags);
+	bool Translate(RiverBasicBlock *pCB, rev::DWORD dwTranslationFlags);
+	bool DisassembleSingle(rev::BYTE *&px86, RiverInstruction *rOut, rev::DWORD &count, rev::DWORD &dwFlags);
 };
 
 #endif

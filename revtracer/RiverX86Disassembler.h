@@ -4,11 +4,9 @@
 #include "revtracer.h"
 #include "river.h"
 
-using namespace rev;
-
 class RiverCodeGen;
 
-WORD GetSpecifiers(RiverInstruction &ri);
+rev::WORD GetSpecifiers(RiverInstruction &ri);
 
 class RiverX86Disassembler {
 private:
@@ -18,15 +16,15 @@ private:
 	/*void TrackUnusedRegisters(RiverInstruction &ri);
 	void TrackUnusedRegistersOperand(RiverInstruction &ri, BYTE optype, const RiverOperand &op);*/
 
-	typedef void(RiverX86Disassembler::*DisassembleOpcodeFunc)(BYTE *&px86, RiverInstruction &ri, DWORD &flags);
-	typedef void(RiverX86Disassembler::*DisassembleExtraFunc)(BYTE extra, RiverInstruction &ri);
-	typedef void(RiverX86Disassembler::*DisassembleOperandsFunc)(BYTE *&px86, RiverInstruction &ri);
+	typedef void(RiverX86Disassembler::*DisassembleOpcodeFunc)(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags);
+	typedef void(RiverX86Disassembler::*DisassembleExtraFunc)(rev::BYTE extra, RiverInstruction &ri);
+	typedef void(RiverX86Disassembler::*DisassembleOperandsFunc)(rev::BYTE *&px86, RiverInstruction &ri);
 
 	static DisassembleOpcodeFunc disassembleOpcodes[2][0x100];
 	static DisassembleOperandsFunc disassembleOperands[2][0x100];
 
-	static BYTE testFlags[2][0x100];
-	static BYTE modFlags[2][0x100];
+	static rev::BYTE testFlags[2][0x100];
+	static rev::BYTE modFlags[2][0x100];
 	void TrackFlagUsage(RiverInstruction &ri);
 
 	static DisassembleOpcodeFunc disassemble0xFFInstr[8];
@@ -43,12 +41,12 @@ private:
 public :
 	bool Init(RiverCodeGen *cg);
 
-	bool Translate(BYTE *&px86, RiverInstruction &rOut, DWORD &flags);
+	bool Translate(rev::BYTE *&px86, RiverInstruction &rOut, rev::DWORD &flags);
 private :
 	/* opcodes disassemblers */
-	void DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags);
+	void DisassembleUnkInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags);
 
-	template <WORD modifiers = 0, WORD tflags = 0> void DisassembleDefaultInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <rev::WORD modifiers = 0, rev::WORD tflags = 0> void DisassembleDefaultInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		ri.opCode = *px86;
 		ri.modifiers |= modifiers;
 		ri.specifiers = GetSpecifiers(ri);
@@ -56,7 +54,7 @@ private :
 		px86++;
 	}
 
-	template <WORD modifiers = 0, WORD tflags = 0> void DisassembleExtInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <rev::WORD modifiers = 0, rev::WORD tflags = 0> void DisassembleExtInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		/*ri.opCode = *px86;
 		px86++;
 
@@ -71,7 +69,7 @@ private :
 		flags |= tflags;
 	}
 
-	template <WORD segment> void DisassembleSegInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <rev::WORD segment> void DisassembleSegInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		flags |= RIVER_FLAG_PFX;
 		ri.modifiers &= 0xF8;
 		ri.modifiers |= segment;
@@ -79,7 +77,7 @@ private :
 		px86++;
 	}
 
-	template <BYTE base, WORD modifiers = 0> void DisassemblePlusRegInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <rev::BYTE base, rev::WORD modifiers = 0> void DisassemblePlusRegInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		ri.opCode = base;
 		ri.modifiers |= modifiers;
 		ri.specifiers = GetSpecifiers(ri);
@@ -87,7 +85,7 @@ private :
 		px86++;
 	}
 
-	template <BYTE regName, WORD modifiers = 0> void DisassembleDefaultRegInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <rev::BYTE regName, rev::WORD modifiers = 0> void DisassembleDefaultRegInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		ri.opCode = *px86;
 		ri.modifiers |= modifiers;
 		ri.specifiers = GetSpecifiers(ri);
@@ -95,7 +93,7 @@ private :
 		px86++;
 	}
 
-	template <BYTE regName, WORD modifiers = 0> void DisassembleDefaultSecondRegInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <rev::BYTE regName, rev::WORD modifiers = 0> void DisassembleDefaultSecondRegInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		ri.opCode = *px86;
 		ri.modifiers |= modifiers;
 		ri.specifiers = GetSpecifiers(ri);
@@ -103,7 +101,7 @@ private :
 		px86++;
 	}
 
-	template <BYTE regName0, BYTE regName1, WORD modifiers = 0> void DisassembleDefault2RegInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <rev::BYTE regName0, rev::BYTE regName1, rev::WORD modifiers = 0> void DisassembleDefault2RegInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		ri.opCode = *px86;
 		ri.modifiers |= modifiers;
 		ri.specifiers = GetSpecifiers(ri);
@@ -112,17 +110,17 @@ private :
 		px86++;
 	}
 
-	template <BYTE instrLen> void DisassembleRelJmpInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <rev::BYTE instrLen> void DisassembleRelJmpInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		ri.opCode = *px86;
 		ri.specifiers = GetSpecifiers(ri);
 		ri.opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
-		ri.operands[1].asImm32 = (DWORD)px86 + instrLen;
+		ri.operands[1].asImm32 = (rev::DWORD)px86 + instrLen;
 		flags |= RIVER_FLAG_BRANCH;
 		px86++;
 	}
 
-	void DisassembleRelJmpModRMInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
-		BYTE extra;
+	void DisassembleRelJmpModRMInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
+		rev::BYTE extra;
 		ri.opCode = *px86;
 		ri.specifiers = GetSpecifiers(ri);
 
@@ -130,82 +128,82 @@ private :
 		DisassembleModRMOp(0, px86, ri, extra);
 
 		ri.opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
-		ri.operands[1].asImm32 = (DWORD)px86;
+		ri.operands[1].asImm32 = (rev::DWORD)px86;
 		flags |= RIVER_FLAG_BRANCH;
 	}
 
 	/*void DisassembleExtInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags);*/
 
-	template <DisassembleOpcodeFunc *fSubOps> void DisassembleSubOpInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
+	template <DisassembleOpcodeFunc *fSubOps> void DisassembleSubOpInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags) {
 		ri.subOpCode = (*(px86 + 1) >> 3) & 0x7;
 		(this->*fSubOps[ri.subOpCode])(px86, ri, flags);
 	}
 
 	/* operand helpers */
-	void DisassembleImmOp(BYTE opIdx, BYTE *&px86, RiverInstruction &ri, BYTE immSize);
-	void DisassembleRegOp(BYTE opIdx, RiverInstruction &ri, BYTE reg);
-	void DisassembleModRMOp(BYTE opIdx, BYTE *&px86, RiverInstruction &ri, BYTE &extra);
-	void DisassembleSzModRMOp(BYTE opIdx, BYTE *&px86, RiverInstruction &ri, BYTE &extra, WORD sz);
-	void DisassembleMoffs8(BYTE opIdx, BYTE *&px86, RiverInstruction &ri);
-	void DisassembleMoffs32(BYTE opIdx, BYTE *&px86, RiverInstruction &ri);
+	void DisassembleImmOp(rev::BYTE opIdx, rev::BYTE *&px86, RiverInstruction &ri, rev::BYTE immSize);
+	void DisassembleRegOp(rev::BYTE opIdx, RiverInstruction &ri, rev::BYTE reg);
+	void DisassembleModRMOp(rev::BYTE opIdx, rev::BYTE *&px86, RiverInstruction &ri, rev::BYTE &extra);
+	void DisassembleSzModRMOp(rev::BYTE opIdx, rev::BYTE *&px86, RiverInstruction &ri, rev::BYTE &extra, rev::WORD sz);
+	void DisassembleMoffs8(rev::BYTE opIdx, rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleMoffs32(rev::BYTE opIdx, rev::BYTE *&px86, RiverInstruction &ri);
 
 	/* extra disassemblers */
-	void DropExtra(BYTE extra, RiverInstruction &ri) {}
-	void SubOpExtra(BYTE extra, RiverInstruction &ri) {
+	void DropExtra(rev::BYTE extra, RiverInstruction &ri) {}
+	void SubOpExtra(rev::BYTE extra, RiverInstruction &ri) {
 		ri.subOpCode = extra;
 	}
-	template <BYTE opIdx> void RegExtra(BYTE extra, RiverInstruction &ri) {
+	template <rev::BYTE opIdx> void RegExtra(rev::BYTE extra, RiverInstruction &ri) {
 		DisassembleRegOp(opIdx, ri, extra);
 	}
 
 	/* operand disassemblers */
-	void DisassembleUnkOp(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleNoOp(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleRegModRM(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleModRMReg(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleModRMImm8(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleModRMImm32(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleSubOpModRM(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleSubOpModRMImm8(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleSubOpModRMImm32(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleImm8(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleImm16(BYTE *&px86, RiverInstruction &ri); 
-	void DisassembleImm32(BYTE *&px86, RiverInstruction &ri);
+	void DisassembleUnkOp(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleNoOp(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleRegModRM(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleModRMReg(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleModRMImm8(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleModRMImm32(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleSubOpModRM(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleSubOpModRMImm8(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleSubOpModRMImm32(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleImm8(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleImm16(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleImm32(rev::BYTE *&px86, RiverInstruction &ri);
 
-	void DisassembleImm32Imm16(BYTE *&px86, RiverInstruction &ri);
+	void DisassembleImm32Imm16(rev::BYTE *&px86, RiverInstruction &ri);
 
-	void DisassembleRegModRMImm32(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleRegModRMImm8(BYTE *&px86, RiverInstruction &ri);
-	void DisassembleModRMRegImm8(BYTE *&px86, RiverInstruction &ri);
+	void DisassembleRegModRMImm32(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleRegModRMImm8(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleModRMRegImm8(rev::BYTE *&px86, RiverInstruction &ri);
 	
-	template <BYTE opIdx> void DisassembleMoffs8(BYTE *&px86, RiverInstruction &ri) {
+	template <rev::BYTE opIdx> void DisassembleMoffs8(rev::BYTE *&px86, RiverInstruction &ri) {
 		DisassembleMoffs32(opIdx, px86, ri);
 	}
 
-	template <BYTE opIdx> void DisassembleMoffs32(BYTE *&px86, RiverInstruction &ri) {
+	template <rev::BYTE opIdx> void DisassembleMoffs32(rev::BYTE *&px86, RiverInstruction &ri) {
 		DisassembleMoffs32(opIdx, px86, ri);
 	}
 
-	template <BYTE opIdx, BYTE immSize> void DisassembleImmOp(BYTE *&px86, RiverInstruction &ri) {
+	template <rev::BYTE opIdx, rev::BYTE immSize> void DisassembleImmOp(rev::BYTE *&px86, RiverInstruction &ri) {
 		DisassembleImmOp(opIdx, px86, ri, immSize);
 	}
 
-	template <BYTE opIdx> void DisassembleModRM(BYTE *&px86, RiverInstruction &ri) {
-		BYTE extra;
+	template <rev::BYTE opIdx> void DisassembleModRM(rev::BYTE *&px86, RiverInstruction &ri) {
+		rev::BYTE extra;
 		DisassembleModRMOp(opIdx, px86, ri, extra);
 	}
 
-	template <DisassembleOperandsFunc *fSubOps> void DisassembleSubOpOp(BYTE *&px86, RiverInstruction &ri) {
+	template <DisassembleOperandsFunc *fSubOps> void DisassembleSubOpOp(rev::BYTE *&px86, RiverInstruction &ri) {
 		(this->*fSubOps[ri.subOpCode])(px86, ri);
 	}
 
-	template <WORD secondOpSz> void DisassembleRegSzModRM(BYTE *&px86, RiverInstruction &ri) {
-		BYTE sec;
+	template <rev::WORD secondOpSz> void DisassembleRegSzModRM(rev::BYTE *&px86, RiverInstruction &ri) {
+		rev::BYTE sec;
 		DisassembleSzModRMOp(1, px86, ri, sec, secondOpSz);
 		DisassembleRegOp(0, ri, sec);
 	}
 
-	template <BYTE opIdx, BYTE opFlg, BYTE regName, DisassembleOperandsFunc cont> void DisassembleConstRegOperand(BYTE *&px86, RiverInstruction &ri) {
+	template <rev::BYTE opIdx, rev::BYTE opFlg, rev::BYTE regName, DisassembleOperandsFunc cont> void DisassembleConstRegOperand(rev::BYTE *&px86, RiverInstruction &ri) {
 		(this->*cont)(px86, ri);
 
 		//ri.opTypes[opIdx] = RIVER_OPTYPE_REG | opFlg;
@@ -215,7 +213,7 @@ private :
 		ri.opTypes[opIdx] |= opFlg;
 	}
 
-	template <BYTE opIdx, BYTE opFlg, BYTE base, BYTE disp8, DisassembleOperandsFunc cont> void DisassembleConstMemOperand(BYTE *&px86, RiverInstruction &ri) {
+	template <rev::BYTE opIdx, rev::BYTE opFlg, rev::BYTE base, rev::BYTE disp8, DisassembleOperandsFunc cont> void DisassembleConstMemOperand(rev::BYTE *&px86, RiverInstruction &ri) {
 		(this->*cont)(px86, ri);
 
 		RiverAddress32 *rAddr = (RiverAddress32 *)codegen->AllocAddr(ri.modifiers); //new RiverAddress;
@@ -224,7 +222,7 @@ private :
 		rAddr->type = RIVER_ADDR_BASE | RIVER_ADDR_DIRTY;
 		rAddr->type |= (disp8 != 0) ? RIVER_ADDR_DISP8 : 0;
 		
-		BYTE opType = RIVER_OPTYPE_MEM | opFlg;
+		rev::BYTE opType = RIVER_OPTYPE_MEM | opFlg;
 		if (RIVER_MODIFIER_O8 & ri.modifiers) {
 			opType |= RIVER_OPSIZE_8;
 		}

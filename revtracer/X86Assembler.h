@@ -21,28 +21,28 @@ private :
 	TrackingX86Assembler tAsm;
 	RiverTrackingX86Assembler rtAsm;
 
-	void SwitchToRiver(BYTE *&px86, DWORD &instrCounter);
-	void SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE repReg);
-	void EndRiverConversion(RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter);
+	void SwitchToRiver(rev::BYTE *&px86, rev::DWORD &instrCounter);
+	void SwitchToRiverEsp(rev::BYTE *&px86, rev::DWORD &instrCounter, rev::BYTE repReg);
+	void EndRiverConversion(RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter);
 
-	void SwitchEspWithReg(RelocableCodeBuffer &px86, DWORD &instrCounter, BYTE repReg, DWORD dwStack);
-	void SwitchToStack(RelocableCodeBuffer &px86, DWORD &instrCounter, DWORD dwStack);
-	bool SwitchToNative(RelocableCodeBuffer &px86, BYTE &currentFamily, BYTE repReg, DWORD &instrCounter, DWORD dwStack);
+	void SwitchEspWithReg(RelocableCodeBuffer &px86, rev::DWORD &instrCounter, rev::BYTE repReg, rev::DWORD dwStack);
+	void SwitchToStack(RelocableCodeBuffer &px86, rev::DWORD &instrCounter, rev::DWORD dwStack);
+	bool SwitchToNative(RelocableCodeBuffer &px86, rev::BYTE &currentFamily, rev::BYTE repReg, rev::DWORD &instrCounter, rev::DWORD dwStack);
 
-	bool GenerateTransitionsNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter);
-	bool GenerateTransitionsTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter);
+	bool GenerateTransitionsNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter);
+	bool GenerateTransitionsTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter);
 
-	void AssembleTrackingEnter(RelocableCodeBuffer &px86, DWORD &instrCounter);
-	void AssembleTrackingLeave(RelocableCodeBuffer &px86, DWORD &instrCounter);
+	void AssembleTrackingEnter(RelocableCodeBuffer &px86, rev::DWORD &instrCounter);
+	void AssembleTrackingLeave(RelocableCodeBuffer &px86, rev::DWORD &instrCounter);
 
-	//bool GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter);
-	bool TranslateNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType);
-	bool TranslateTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType);
+	//bool GenerateTransitions(const RiverInstruction &ri, rev::BYTE *&px86, rev::DWORD &pFlags, rev::BYTE &repReg, rev::DWORD &instrCounter);
+	bool TranslateNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);
+	bool TranslateTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);
 public :
-	virtual bool Init(RiverRuntime *rt, DWORD dwTranslationFlags);
+	virtual bool Init(RiverRuntime *rt, rev::DWORD dwTranslationFlags);
 
-	virtual bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter, BYTE outputType);
-	//bool AssembleTracking(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter);
+	virtual bool Assemble(RiverInstruction *pRiver, rev::DWORD dwInstrCount, RelocableCodeBuffer &px86, rev::DWORD flg, rev::DWORD &instrCounter, rev::DWORD &byteCounter, rev::BYTE outputType);
+	//bool AssembleTracking(RiverInstruction *pRiver, rev::DWORD dwInstrCount, RelocableCodeBuffer &px86, rev::DWORD flg, rev::DWORD &instrCounter, rev::DWORD &byteCounter);
 };
 
 

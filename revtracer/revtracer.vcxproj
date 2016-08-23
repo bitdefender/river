@@ -25,8 +25,7 @@
     <ClInclude Include="SymbolicEnvironmentImpl.h" />
     <ClInclude Include="SymbopReverseTranslator.h" />
     <ClInclude Include="SymbopSaveTranslator.h" />
-    <ClInclude Include="TrackedValues.h" />
-    <ClInclude Include="TrackingItem.h" />
+    <ClInclude Include="Tracking.h" />
     <ClInclude Include="TrackingX86Assembler.h" />
     <ClInclude Include="X86AssemblerFuncs.h" />
     <ClInclude Include="RelocableCodeBuffer.h" />
@@ -42,7 +41,6 @@
     <ClInclude Include="RiverX86Disassembler.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="SymbopTranslator.h" />
-    <ClInclude Include="translatetbl.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="environment.h" />
@@ -88,7 +86,7 @@
     <ClCompile Include="SymbopTranslator.cpp" />
     <ClCompile Include="SymbopSaveTranslator.cpp" />
     <ClCompile Include="sync.cpp" />
-    <ClCompile Include="TrackedValues.cpp" />
+    <ClCompile Include="Tracking.cpp" />
     <ClCompile Include="TrackingX86Assembler.cpp" />
     <ClCompile Include="X86Assembler.cpp" />
     <ClCompile Include="X86AssemblerFuncs.cpp" />

@@ -40,8 +40,7 @@ namespace rev {
 	typedef void(*TrackCallbackFunc)(DWORD value, DWORD address, DWORD segment);
 	typedef void(*MarkCallbackFunc)(DWORD oldValue, DWORD newValue, DWORD address, DWORD segment);
 
-	typedef void(*SymbolicPayloadFunc)(DWORD trackBuffer);
-	typedef void(*SymbolicSyncFunc)(SymbolicPayloadFunc pFunc, DWORD trackBuffer);
+	typedef void(__stdcall *SymbolicHandlerFunc)(void *context, void *offset, void *instr);
 
 	struct LowLevelRevtracerAPI {
 		/* Low level ntdll.dll functions */
@@ -87,7 +86,7 @@ namespace rev {
 		MarkCallbackFunc markCallback;
 
 		/* Symbolic synchronization function */
-		SymbolicSyncFunc symbolicSync;
+		SymbolicHandlerFunc symbolicHandler;
 
 		LowLevelRevtracerAPI lowLevel;
 	};
@@ -116,8 +115,6 @@ namespace rev {
 
 		DWORD hookCount;
 		CodeHooks hooks[0x10];
-
-		SymbolicExecutorConstructor sCons;
 	};
 
 	struct ExecutionRegs {
@@ -138,7 +135,6 @@ namespace rev {
 		/* Execution context callbacks ********************/
 		DLL_LINKAGE void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
 		DLL_LINKAGE void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
-		DLL_LINKAGE void MarkMemoryName(void *ctx, ADDR_TYPE addr, const char *name);
 		DLL_LINKAGE void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
 
 		/* In process API *********************************/
@@ -161,8 +157,6 @@ namespace rev {
 
 		DLL_LINKAGE void SetContext(ADDR_TYPE ctx);
 		DLL_LINKAGE void SetEntryPoint(ADDR_TYPE ep);
-
-		DLL_LINKAGE void SetSymbolicExecutor(SymbolicExecutorConstructor func);
 
 		DLL_LINKAGE void Initialize();
 		DLL_LINKAGE void Execute(int argc, char *argv[]);

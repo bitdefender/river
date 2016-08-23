@@ -1,5 +1,7 @@
 #include "X86AssemblerFuncs.h"
 
+using namespace rev;
+
 void AssembleUnkInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
 	__asm int 3;
 }

@@ -4,8 +4,6 @@
 #include "revtracer.h"
 #include "river.h"
 
-using namespace rev;
-
 class RiverCodeGen;
 
 class RiverSaveTranslator {
@@ -14,14 +12,14 @@ private :
 
 	void RiverSaveTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
 
-	typedef void(RiverSaveTranslator::*TranslateOpcodeFunc)(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	typedef void(RiverSaveTranslator::*TranslateOpcodeFunc)(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
 	
 	static TranslateOpcodeFunc translateOpcodes[2][0x100];
 	static TranslateOpcodeFunc translate0xF7[8], translate0xFF[8], translate0x0FC7[8];
 
 public :
 	bool Init(RiverCodeGen *cg);
-	void Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount);
+	void Translate(const RiverInstruction &rIn, RiverInstruction *rOut, rev::DWORD &instrCount);
 
 private :
 	/* Translation helpers */
@@ -34,15 +32,15 @@ private :
 	void MakeSaveOp(RiverInstruction *rOut, unsigned char opType, const RiverOperand &op, const RiverInstruction &rIn);
 	void MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstruction &rIn);
 
-	void SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
 
 	/* Opcode translators */
-	void TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateSaveCPUID(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
-	void TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount);
+	void TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
+	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
+	void TranslateSaveCPUID(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
+	void TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
 
-	template <TranslateOpcodeFunc subOp> void TranslateRep(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	template <TranslateOpcodeFunc subOp> void TranslateRep(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount) {
 		if ((rIn.modifiers & RIVER_MODIFIER_REP) || (rIn.modifiers & RIVER_MODIFIER_REPZ) || (rIn.modifiers & RIVER_MODIFIER_REPNZ)) {
 			RiverRegister tmpReg;
 
@@ -55,7 +53,7 @@ private :
 		(this->*subOp)(rOut, rIn, instrCount);
 	}
 
-	template <TranslateOpcodeFunc *fSubOps> void TranslateSubOp(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+	template <TranslateOpcodeFunc *fSubOps> void TranslateSubOp(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount) {
 		(this->*fSubOps[rIn.subOpCode])(rOut, rIn, instrCount);
 	}
 };

@@ -198,7 +198,7 @@ namespace rev {
 		}
 
 		// Make a new constant
-		void *MakeConstant(rev::DWORD value, rev::DWORD bits) {
+		void *MakeConst(rev::DWORD value, rev::DWORD bits) {
 			return ops->MakeConst(this, value, bits);
 		}
 

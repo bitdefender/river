@@ -2,6 +2,8 @@
 
 #include "X86AssemblerFuncs.h"
 
+using namespace rev;
+
 void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, BYTE riverFamily, RelocableCodeBuffer &px86, DWORD &instrCounter) {
 	const BYTE regByte[] = { 0x05, 0x0D, 0x15, 0x1D };
 

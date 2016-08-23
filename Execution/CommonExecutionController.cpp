@@ -43,6 +43,7 @@ CommonExecutionController::CommonExecutionController() {
 
 	trackCb = nullptr;
 	markCb = nullptr;
+	symbCb = nullptr;
 }
 
 int CommonExecutionController::GetState() const {
@@ -89,6 +90,10 @@ void CommonExecutionController::SetExecutionObserver(ExecutionObserver * obs) {
 void CommonExecutionController::SetTrackingObserver(rev::TrackCallbackFunc track, rev::MarkCallbackFunc mark) {
 	trackCb = track;
 	markCb = mark;
+}
+
+void CommonExecutionController::SetSymbolicHandler(rev::SymbolicHandlerFunc symb) {
+	symbCb = symb;
 }
 
 unsigned int CommonExecutionController::ExecutionBegin(void *address, void *cbCtx) {
@@ -329,14 +334,6 @@ void CommonExecutionController::GetCurrentRegisters(void *ctx, rev::ExecutionReg
 
 void *CommonExecutionController::GetMemoryInfo(void *ctx, void *ptr) {
 	return gmi(ctx, ptr);
-}
-
-void CommonExecutionController::SetSymbolicConstructor(rev::SymExeConstructorFunc constr) {
-	symbolicConstructor = constr;
-}
-
-void CommonExecutionController::MarkMemoryName(void *ctx, rev::ADDR_TYPE addr, const char *name) {
-	mmn(ctx, addr, name);
 }
 
 void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) {

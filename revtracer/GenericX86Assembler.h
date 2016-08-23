@@ -19,10 +19,10 @@ protected :
 
 public:
 	virtual bool Init(RiverRuntime *rt);
-	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) = 0;
+	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType) = 0;
 };
 
-bool GeneratePrefixes(const RiverInstruction &ri, BYTE *&px86);
-bool ClearPrefixes(const RiverInstruction &ri, BYTE *&px86);
+bool GeneratePrefixes(const RiverInstruction &ri, rev::BYTE *&px86);
+bool ClearPrefixes(const RiverInstruction &ri, rev::BYTE *&px86);
 
 #endif

@@ -13,7 +13,6 @@ typedef void(*GetCurrentRegistersFunc)(void *ctx, rev::ExecutionRegs *regs);
 typedef void *(*GetMemoryInfoFunc)(void *ctx, void *ptr);
 typedef void (*SetSymbolicExecutorFunc)(rev::SymbolicExecutorConstructor);
 
-typedef void (*MarkMemoryNameFunc)(void *ctx, rev::ADDR_TYPE addr, const char *name);
 typedef void (*MarkMemoryValueFunc)(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value);
 
 class CommonExecutionController : public ExecutionController {
@@ -52,12 +51,12 @@ protected:
 
 	GetCurrentRegistersFunc gcr;
 	GetMemoryInfoFunc gmi;
-	MarkMemoryNameFunc mmn;
 	MarkMemoryValueFunc mmv;
 
-	rev::SymExeConstructorFunc symbolicConstructor;
+	//rev::SymExeConstructorFunc symbolicConstructor;
 	rev::TrackCallbackFunc trackCb;
 	rev::MarkCallbackFunc markCb;
+	rev::SymbolicHandlerFunc symbCb;
 
 public :
 	virtual int GetState() const;
@@ -69,6 +68,7 @@ public :
 
 	virtual void SetExecutionObserver(ExecutionObserver *obs);
 	virtual void SetTrackingObserver(rev::TrackCallbackFunc track, rev::MarkCallbackFunc mark);
+	virtual void SetSymbolicHandler(rev::SymbolicHandlerFunc symb);
 
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx);
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx);
@@ -79,11 +79,8 @@ public :
 
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...);
 
-	virtual void SetSymbolicConstructor(rev::SymExeConstructorFunc constr);
-
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);
-	virtual void MarkMemoryName(void *ctx, rev::ADDR_TYPE addr, const char *name);
 	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value);
 };
 

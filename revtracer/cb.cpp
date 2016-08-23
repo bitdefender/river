@@ -17,7 +17,7 @@ void RiverBasicBlock::MarkBackward() {
 }
 
 
-DWORD HashFunc(unsigned int logHashSize, unsigned long a) {
+rev::DWORD HashFunc(unsigned int logHashSize, unsigned long a) {
 	//DbgPrint("Value = %08x\n", a);
 	//DbgPrint("logHashSize = %08x\n", logHashSize);
 	//DbgPrint("mask = %08x\n", ((1 << logHashSize) - 1));
@@ -36,7 +36,7 @@ RiverBasicBlockCache::~RiverBasicBlockCache() {
 	}
 }
 
-RiverBasicBlock *RiverBasicBlockCache::NewBlock(UINT_PTR a) {
+RiverBasicBlock *RiverBasicBlockCache::NewBlock(rev::UINT_PTR a) {
 	RiverBasicBlock *pNew;
 	
 	pNew = (RiverBasicBlock *)heap->Alloc(sizeof(*pNew));
@@ -50,7 +50,7 @@ RiverBasicBlock *RiverBasicBlockCache::NewBlock(UINT_PTR a) {
 
 	cbLock.Lock();
 
-	DWORD dwHash = HashFunc(logHashSize, pNew->address); // & 0xFFFF;
+	rev::DWORD dwHash = HashFunc(logHashSize, pNew->address); // & 0xFFFF;
 
 	pNew->pNext = hashTable[dwHash];
 	hashTable[dwHash] = pNew;
@@ -60,12 +60,12 @@ RiverBasicBlock *RiverBasicBlockCache::NewBlock(UINT_PTR a) {
 	return pNew;
 }
 
-bool RiverBasicBlockCache::Init(RiverHeap *hp, DWORD logHSize, DWORD histSize) {
+bool RiverBasicBlockCache::Init(RiverHeap *hp, rev::DWORD logHSize, rev::DWORD histSize) {
 	heap = hp;
 
 	logHashSize = logHSize;
 	historySize = histSize;
-	hashTable = (RiverBasicBlock **)revtracerAPI.memoryAllocFunc((1 << logHashSize) * sizeof(hashTable[0]));
+	hashTable = (RiverBasicBlock **)rev::revtracerAPI.memoryAllocFunc((1 << logHashSize) * sizeof(hashTable[0]));
 
 	if (0 == hashTable) {
 		return false;
@@ -106,7 +106,7 @@ bool RiverBasicBlockCache::Destroy() {
 			pAdd = pWalk;
 			pWalk = pWalk->pNext;
 
-			if (pAdd->address != (UINT_PTR)pAdd->pCode) {
+			if (pAdd->address != (rev::UINT_PTR)pAdd->pCode) {
 				heap->Free(pAdd->pCode);
 			}
 
@@ -116,7 +116,7 @@ bool RiverBasicBlockCache::Destroy() {
 
 	//	SC_Unlock (&dwCBLock);
 
-	revtracerAPI.memoryFreeFunc((BYTE *)hashTable);
+	rev::revtracerAPI.memoryFreeFunc((rev::BYTE *)hashTable);
 	hashTable = NULL;
 	logHashSize = 0;
 
@@ -128,7 +128,7 @@ bool RiverBasicBlockCache::Destroy() {
 
 #endif
 
-RiverBasicBlock *RiverBasicBlockCache::FindBlock(UINT_PTR a) {
+RiverBasicBlock *RiverBasicBlockCache::FindBlock(rev::UINT_PTR a) {
 	RiverBasicBlock *pWalk;
 	int arr = 0;
 	unsigned long hash = HashFunc(logHashSize, a);
@@ -145,7 +145,7 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(UINT_PTR a) {
 			}
 
 #ifndef BLOCK_CACHE_READ_ONLY
-			if (pWalk->dwCRC == (unsigned long) crc32 (0xEDB88320, (BYTE *) a, pWalk->dwSize)) {
+			if (pWalk->dwCRC == (unsigned long) crc32 (0xEDB88320, (rev::BYTE *) a, pWalk->dwSize)) {
 				cbLock.Unlock();
 				return pWalk;
 			} else {

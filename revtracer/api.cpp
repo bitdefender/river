@@ -5,8 +5,7 @@
 #include "river.h"
 
 #include "AddressContainer.h"
-#include "TrackedValues.h"
-#include "TrackingItem.h"
+#include "Tracking.h"
 
 #define PRINT_RUNTIME_TRACKING	PRINT_INFO | PRINT_RUNTIME | PRINT_TRACKING
 #define PRINT_BRANCHING_ERROR	PRINT_ERROR | PRINT_BRANCH_HANDLER
@@ -18,33 +17,6 @@
 	__asm int 3; \
 	*(WORD *)revtracerConfig.mainModule = '  '; \
 }
-
-namespace rev {
-	TrackingTable<Temp, 128> trItem;
-
-	DWORD __stdcall TrackAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD segSel) {
-		DWORD ret = pEnv->ac.Get(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF]);
-
-		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "TrackAddr 0x%08x => %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
-
-		if (0 != ret) {
-			revtracerAPI.trackCallback(ret, dwAddr, segSel);
-		}
-
-		return ret;
-	}
-
-	DWORD __stdcall MarkAddr(struct ::ExecutionEnvironment *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
-		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "MarkAddr 0x%08x <= %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
-		DWORD ret = pEnv->ac.Set(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
-
-		if (0 != ret) {
-			revtracerAPI.markCallback(ret, value, dwAddr, segSel);
-		}
-
-		return ret;
-	}
-};
 
 DWORD dwAddressTrackHandler = (DWORD)&rev::TrackAddr;
 DWORD dwAddressMarkHandler = (DWORD)&rev::MarkAddr;

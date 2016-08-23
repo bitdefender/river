@@ -3,6 +3,8 @@
 #include "X86AssemblerFuncs.h"
 #include "mm.h"
 
+using namespace rev;
+
 extern DWORD dwAddressTrackHandler;
 extern DWORD dwAddressMarkHandler;
 extern DWORD dwSymbolicHandler;
@@ -188,19 +190,17 @@ void TrackingX86Assembler::AssembleUnmark(RelocableCodeBuffer &px86, DWORD &pFla
 
 void TrackingX86Assembler::AssembleSymbolicCall(DWORD address, BYTE index, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
 	const BYTE symCall[] = {
-		0x74, 0x13,										// 0x00 - jz <over_this_block>
-		0x6A, 0x00,										// 0x02 - push instructionIndex
-		0x68, 0x00, 0x00, 0x00, 0x00,					// 0x04 - push instructionAddress
-		0x56,											// 0x09 - push esi - data offset
-		0x68, 0x00, 0x00, 0x00, 0x00,					// 0x0A	- push runtimeContext (or env)
-		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x0F - call [dwSymbolicHandler]
+		0x74, 0x11,										// 0x00 - jz <over_this_block>
+		0x68, 0x00, 0x00, 0x00, 0x00,					// 0x02 - push instructionAddress
+		0x56,											// 0x07 - push esi - data offset
+		0x68, 0x00, 0x00, 0x00, 0x00,					// 0x08	- push runtimeContext (or env)
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00				// 0x0D - call [dwSymbolicHandler]
 	};
 
 	rev_memcpy(px86.cursor, symCall, sizeof(symCall));
-	px86.cursor[0x03] = index;
-	*(DWORD *)(&px86.cursor[0x05]) = address;
-	*(DWORD *)(&px86.cursor[0x0B]) = (DWORD)runtime;
-	*(DWORD *)(&px86.cursor[0x11]) = (DWORD)&dwSymbolicHandler;
+	*(DWORD *)(&px86.cursor[0x03]) = address;
+	*(DWORD *)(&px86.cursor[0x09]) = (DWORD)runtime;
+	*(DWORD *)(&px86.cursor[0x0F]) = (DWORD)&revtracerAPI.symbolicHandler;
 	px86.cursor += sizeof(symCall);
 	instrCounter += 5;
 }

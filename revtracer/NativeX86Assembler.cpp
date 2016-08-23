@@ -2,12 +2,12 @@
 
 #include "mm.h"
 
-extern DWORD dwSysHandler; // = 0; // &SysHandler
-extern DWORD dwSysEndHandler; // = 0; // &SysEndHandler
-extern DWORD dwBranchHandler; // = 0; // &BranchHandler
+extern rev::DWORD dwSysHandler; // = 0; // &SysHandler
+extern rev::DWORD dwSysEndHandler; // = 0; // &SysEndHandler
+extern rev::DWORD dwBranchHandler; // = 0; // &BranchHandler
 
-bool NativeX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
-	DWORD dwTable = 0;
+bool NativeX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType) {
+	rev::DWORD dwTable = 0;
 
 	if (ri.modifiers & RIVER_MODIFIER_EXT) {
 		*px86.cursor = 0x0F;
@@ -27,20 +27,20 @@ bool NativeX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuff
 
 #include "X86AssemblerFuncs.h"
 
-void NativeX86Assembler::AssembleUnkInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleUnkInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	::AssembleUnkInstr(ri, px86, pFlags, instrCounter);
 }
 
-void NativeX86Assembler::AssembleDefaultInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleDefaultInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	::AssembleDefaultInstr(ri, px86, pFlags, instrCounter);
 }
 
-void NativeX86Assembler::AssemblePlusRegInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssemblePlusRegInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	::AssemblePlusRegInstr(ri, px86, pFlags, instrCounter);
 }
 
-void NativeX86Assembler::AssembleRelJMPInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	static const BYTE pBranchJMP[] = {
+void NativeX86Assembler::AssembleRelJMPInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
+	static const rev::BYTE pBranchJMP[] = {
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x00 - xchg esp, large ds:<dwVirtualStack>
 		0x9C, 										// 0x06 - pushf
 		0x60,										// 0x07 - pusha
@@ -82,8 +82,8 @@ void NativeX86Assembler::AssembleRelJMPInstr(const RiverInstruction &ri, Relocab
 	instrCounter += 12;
 }
 
-void NativeX86Assembler::AssembleJMPInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	static const BYTE pBranchJMP[] = {
+void NativeX86Assembler::AssembleJMPInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
+	static const rev::BYTE pBranchJMP[] = {
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x00 - xchg esp, large ds:<dwVirtualStack>
 		0x9C, 										// 0x06 - pushf
 		0x60,										// 0x07 - pusha
@@ -116,12 +116,12 @@ void NativeX86Assembler::AssembleJMPInstr(const RiverInstruction &ri, RelocableC
 void NativeX86Assembler::AssembleLeaveForSyscall(
 	const RiverInstruction &ri,
 	RelocableCodeBuffer &px86,
-	DWORD &pFlags,
-	DWORD &instrCounter,
+	rev::DWORD &pFlags,
+	rev::DWORD &instrCounter,
 	NativeX86Assembler::AssembleOpcodeFunc opcodeFunc,
 	NativeX86Assembler::AssembleOperandsFunc operandsFunc
 ) {
-	static const BYTE pBranchSyscall[] = {
+	static const rev::BYTE pBranchSyscall[] = {
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x00 - xchg esp, large ds:<dwVirtualStack>
 		0x9C, 										// 0x06 - pushf
 		0x60,										// 0x07 - pusha
@@ -149,7 +149,7 @@ void NativeX86Assembler::AssembleLeaveForSyscall(
 	(*this.*operandsFunc)(ri, px86);
 
 	// call $a
-	static const BYTE pBranchSysret[] = {
+	static const rev::BYTE pBranchSysret[] = {
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x00 - xchg esp, large ds:<dwVirtualStack>
 		0x9C, 										// 0x06 - pushf
 		0x60,										// 0x07 - pusha
@@ -179,8 +179,8 @@ void NativeX86Assembler::AssembleLeaveForSyscall(
 	instrCounter += 12;
 }
 
-void NativeX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	static const BYTE pBranchJCC[] = {
+void NativeX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
+	static const rev::BYTE pBranchJCC[] = {
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x00 - xchg esp, large ds:<dwVirtualStack>
 		0x9C, 										// 0x06 - pushf
 		0x60,										// 0x07 - pusha
@@ -220,11 +220,11 @@ void NativeX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, Rel
 		px86.cursor += 1;
 		break;
 	case RIVER_OPSIZE_16:
-		*(WORD *)px86.cursor = sizeof(pBranchJCC);
+		*(rev::WORD *)px86.cursor = sizeof(pBranchJCC);
 		px86.cursor += 2;
 		break;
 	case RIVER_OPSIZE_32:
-		*(DWORD *)px86.cursor = sizeof(pBranchJCC);
+		*(rev::DWORD *)px86.cursor = sizeof(pBranchJCC);
 		px86.cursor += 4;
 		break;
 	}
@@ -255,8 +255,8 @@ void NativeX86Assembler::AssembleRelJmpCondInstr(const RiverInstruction &ri, Rel
 	instrCounter += 25;
 }
 
-void NativeX86Assembler::AssembleCallInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	static const BYTE pBranchCall[] = {
+void NativeX86Assembler::AssembleCallInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
+	static const rev::BYTE pBranchCall[] = {
 		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x00 - push <retAddr>
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x05 - xchg esp, large ds:<dwVirtualStack>
 		0x9C, 										// 0x0B - pushf
@@ -302,7 +302,7 @@ void NativeX86Assembler::AssembleCallInstr(const RiverInstruction &ri, Relocable
 	instrCounter += 25;
 }
 
-void NativeX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	static const char pGetAddrCode[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - [<dwEaxSave>], eax
 		0x8B										// 0x05 - mov ...
@@ -344,7 +344,7 @@ void NativeX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, Relocab
 	instrCounter += 16;
 }
 
-void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	static const char pSaveEdxCode[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x00 - mov [<eaxSave>], eax
 		0x8B, 0x02,										// 0x05 - mov eax, [edx]
@@ -371,13 +371,13 @@ void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableC
 }
 
 
-void NativeX86Assembler::AssembleSyscall(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleSyscall(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	px86.cursor--;
 	ClearPrefixes(ri, px86.cursor);
 	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &NativeX86Assembler::AssembleSyscall2, &NativeX86Assembler::AssembleNoOp);
 }
 
-void NativeX86Assembler::AssembleFarJump2(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleFarJump2(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	static const char pBranchFarJmp[] = {
 		0x8F, 0x05, 0x00, 0x00, 0x00, 0x00,			// 0x00 - pop [<eaxSave>]
 		0xEB, 0x07,									// 0x06 - jmp $+7
@@ -415,12 +415,12 @@ void NativeX86Assembler::AssembleFarJump2(const RiverInstruction &ri, RelocableC
 	instrCounter += 15;
 }
 
-void NativeX86Assembler::AssembleFarJumpInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleFarJumpInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	ClearPrefixes(ri, px86.cursor);
 	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &NativeX86Assembler::AssembleFarJump2, &NativeX86Assembler::AssembleNoOp);
 }
 
-void NativeX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	/*static const char pGetAddrCode[] = {
 	0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - [<dwEaxSave>], eax
 	//0x8B										// 0x05 - mov ...
@@ -480,11 +480,11 @@ void NativeX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, Relocab
 	instrCounter += 17;
 }
 
-void NativeX86Assembler::AssembleRetnInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleRetnInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	//RetImm - copy the value
 	//Retn - 0
 	//RetFar - 4
-	static const BYTE pBranchRet[] = {
+	static const rev::BYTE pBranchRet[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - mov [<dwEaxSave>], eax
 		0x58,										// 0x05 - pop eax
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x06 - xchg esp, large ds:<dwVirtualStack>
@@ -522,11 +522,11 @@ void NativeX86Assembler::AssembleRetnInstr(const RiverInstruction &ri, Relocable
 	instrCounter += 17;
 }
 
-void NativeX86Assembler::AssembleRetnImmInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void NativeX86Assembler::AssembleRetnImmInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	//RetImm - copy the value
 	//Retn - 0
 	//RetFar - 4
-	static const BYTE pBranchRet[] = {
+	static const rev::BYTE pBranchRet[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - mov [<dwEaxSave>], eax
 		0x58,										// 0x05 - pop eax
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x06 - xchg esp, large ds:<dwVirtualStack>

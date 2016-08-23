@@ -2,10 +2,13 @@
 #include <stdio.h>
 
 #include "../Execution/Execution.h"
-#include "../revtracer/SymbolicEnvironment.h"
+#include "SymbolicEnvironment.h"
 
 #include "VariableTracker.h"
 #include "TrackingCookie.h"
+
+#include "RevSymbolicEnvironment.h"
+#include "OverlappedRegisters.h"
 #include "Z3SymbolicExecutor.h"
 
 #include "z3.h"
@@ -82,6 +85,8 @@ void DebugPrint(rev::DWORD printMask, const char *fmt, ...) {
 }
 
 Z3SymbolicExecutor *executor = nullptr;
+OverlappedRegistersEnvironment *regEnv = nullptr;
+RevSymbolicEnvironment *revEnv = nullptr;
 ::DWORD lastDirection = EXECUTION_ADVANCE;
 
 struct CustomExecutionContext {
@@ -218,16 +223,21 @@ public:
 		
 		QueryPerformanceCounter(&liSymStart);
 		if (!ctxInit) {
-			cec.Init();
+			revEnv = new RevSymbolicEnvironment(ctx);
+			regEnv = new OverlappedRegistersEnvironment();
+			regEnv->SetSubEnvironment(revEnv); //Init(env);
+			executor = new Z3SymbolicExecutor(regEnv, &trackingCookieFuncs);
 
-			ctrl->MarkMemoryName(ctx, (rev::ADDR_TYPE)(&buffer[0]), "a[0]");
-			ctrl->MarkMemoryName(ctx, (rev::ADDR_TYPE)(&buffer[1]), "a[1]");
-			ctrl->MarkMemoryName(ctx, (rev::ADDR_TYPE)(&buffer[2]), "a[2]");
-			ctrl->MarkMemoryName(ctx, (rev::ADDR_TYPE)(&buffer[3]), "a[3]");
-			ctrl->MarkMemoryName(ctx, (rev::ADDR_TYPE)(&buffer[4]), "a[4]");
-			ctrl->MarkMemoryName(ctx, (rev::ADDR_TYPE)(&buffer[5]), "a[5]");
-			ctrl->MarkMemoryName(ctx, (rev::ADDR_TYPE)(&buffer[6]), "a[6]");
-			ctrl->MarkMemoryName(ctx, (rev::ADDR_TYPE)(&buffer[7]), "a[7]");
+
+			cec.Init();
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[0]), (rev::DWORD)executor->CreateVariable("a[0]"));
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[1]), (rev::DWORD)executor->CreateVariable("a[1]"));
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[2]), (rev::DWORD)executor->CreateVariable("a[2]"));
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[3]), (rev::DWORD)executor->CreateVariable("a[3]"));
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[4]), (rev::DWORD)executor->CreateVariable("a[4]"));
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[5]), (rev::DWORD)executor->CreateVariable("a[5]"));
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[6]), (rev::DWORD)executor->CreateVariable("a[6]"));
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[7]), (rev::DWORD)executor->CreateVariable("a[7]"));
 
 			ctxInit = true;
 			QueryPerformanceCounter(&liStart);
@@ -560,8 +570,11 @@ public:
 
 } symbolicExecution;
 
-rev::SymbolicExecutor *SymExeConstructor(rev::SymbolicEnvironment *env) {
-	executor = new Z3SymbolicExecutor(env, &trackingCookieFuncs);
+sym::SymbolicExecutor *SymExeConstructor(sym::SymbolicEnvironment *env) {
+	regEnv = new OverlappedRegistersEnvironment();
+	regEnv->SetSubEnvironment(env); //Init(env);
+
+	executor = new Z3SymbolicExecutor(regEnv, &trackingCookieFuncs);
 	//variableTracker = new VariableTracker<Z3_ast>(executor, IsLocked, Lock, Unlock);
 	return executor;
 }
@@ -610,6 +623,13 @@ void MarkCallback(rev::DWORD oldValue, rev::DWORD newValue, rev::DWORD address, 
 	rev::Initialize();
 }*/
 
+void __stdcall SymbolicHandler(void *ctx, void *offset, void *addr) {
+	RiverInstruction *instr = (RiverInstruction *)addr;
+	
+	regEnv->SetCurrentInstruction(instr, offset);
+	executor->Execute(instr);
+}
+
 int main(int argc, char *argv[]) {
 	
 	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
@@ -623,37 +643,13 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stderr, "$$ Native time: %lfms\n", 1000.0 * (liStop.QuadPart - liStart.QuadPart) / liFreq.QuadPart);
 
-	/*fDbg = CreateFileA("symb.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
-
-	InitializeRevtracer((rev::ADDR_TYPE)(&Payload));
-	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[0]), "a[0]");
-	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[1]), "a[1]");
-	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[2]), "a[2]");
-	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[3]), "a[3]");
-	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[4]), "a[4]");
-	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[5]), "a[5]");
-	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[6]), "a[6]");
-	rev::MarkMemoryName((rev::ADDR_TYPE)(&buffer[7]), "a[7]");
-
-	rev::Execute(argc, argv);
-	
-	Z3_close_log();
-
-	CloseHandle(fDbg);*/
-
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);
 	ctrl->SetEntryPoint(Payload);
 
 	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_SYMBOLIC);
-
 	ctrl->SetExecutionObserver(&symbolicExecution);
-	ctrl->SetSymbolicConstructor(SymExeConstructor);
+	ctrl->SetSymbolicHandler(SymbolicHandler);
 	ctrl->SetTrackingObserver(TrackCallback, MarkCallback);
-
-	//ctrl->SetExecutionBeginNotification(CustomExecutionBegin);
-	//ctrl->SetExecutionControlNotification(CustomExecutionController);
-	//ctrl->SetExecutionEndNotification(CustomExecutionEnd);
-	//ctrl->SetTerminationNotification(Term);
 
 	ctrl->Execute();
 	ctrl->WaitForTermination();

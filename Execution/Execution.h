@@ -4,7 +4,6 @@
 #include <cstdint>
 
 #include "../revtracer/revtracer.h"
-#include "../revtracer/SymbolicEnvironment.h"
 
 #ifdef _EXECUTION_EXPORTS
 #define EXECUTION_LINKAGE __declspec(dllexport)
@@ -105,6 +104,7 @@ public:
 
 	virtual void SetExecutionObserver(ExecutionObserver *obs) = 0;
 	virtual void SetTrackingObserver(rev::TrackCallbackFunc track, rev::MarkCallbackFunc mark) = 0;
+	virtual void SetSymbolicHandler(rev::SymbolicHandlerFunc symb) = 0;
 
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx) = 0;
@@ -112,12 +112,9 @@ public:
 
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
 
-	virtual void SetSymbolicConstructor(rev::SymExeConstructorFunc constr) = 0;
-
 	// in-execution api
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers) = 0;
 	virtual void *GetMemoryInfo(void *ctx, void *ptr) = 0;
-	virtual void MarkMemoryName(void *ctx, rev::ADDR_TYPE addr, const char *name) = 0;
 	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) = 0;
 
 };

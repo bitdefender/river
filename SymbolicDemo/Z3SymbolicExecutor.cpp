@@ -2,92 +2,67 @@
 
 #include "TrackingCookie.h"
 
-void *CreateVariable(void *ctx, const char *name);
-void *MakeConst(void *ctx, rev::DWORD value, rev::DWORD bits);
+void *Z3SymbolicExecutor::CreateVariable(const char *name) {
+	Z3_symbol s = Z3_mk_string_symbol(context, name);
+	Z3_ast ret = Z3_mk_const(context, s, dwordSort);
 
-void *ExtractBits(void *ctx, void *expr, rev::DWORD lsb, rev::DWORD size);
-void *ConcatBits(void *ctx, void *expr1, void* expr2);
-
-void Execute(void *ctx, RiverInstruction *instruction);
-
-rev::SymbolicExecutorFuncs sFuncs = {
-	CreateVariable,
-	MakeConst,
-
-	ExtractBits,
-	ConcatBits,
-	Execute
-};
-
-void *CreateVariable(void *ctx, const char *name) {
-	Z3SymbolicExecutor *_this = (Z3SymbolicExecutor *)ctx;
-
-	Z3_symbol s = Z3_mk_string_symbol(_this->context, name);
-	Z3_ast ret = Z3_mk_const(_this->context, s, _this->dwordSort);
-
-	Z3_set_user_ptr(_this->context, ret, _this->cookieFuncs->allocCookie(), (void *)_this->cookieFuncs->freeCookie);
-
-	/*VariableTracker<Z3_ast> *ret = new VariableTracker<Z3_ast>(
-	Z3_mk_const(_this->context, s, _this->dwordSort)
-	);*/
+	Z3_set_user_ptr(context, ret, cookieFuncs->allocCookie(), (void *)cookieFuncs->freeCookie);
 
 	Z3_ast l1[2] = {
 		Z3_mk_bvule(
-			_this->context,
-			Z3_mk_int(_this->context, 'a', _this->dwordSort),
+			context,
+			Z3_mk_int(context, 'a', dwordSort),
 			ret
 		),
 		Z3_mk_bvuge(
-			_this->context,
-			Z3_mk_int(_this->context, 'z', _this->dwordSort),
+			context,
+			Z3_mk_int(context, 'z', dwordSort),
 			ret
 		)
 	};
 
 	Z3_ast l2[2] = {
 		Z3_mk_eq(
-			_this->context,
-			_this->zero32,
+			context,
+			zero32,
 			ret
 		),
 		Z3_mk_and(
-			_this->context,
+			context,
 			2,
 			l1
 		)
 	};
 
 	Z3_ast cond = Z3_mk_or(
-		_this->context,
+		context,
 		2,
 		l2
 	);
 
-	Z3_solver_assert(_this->context, _this->solver, cond);
-	printf("(assert %s)\n\n", Z3_ast_to_string(_this->context, cond));
+	Z3_solver_assert(context, solver, cond);
+	printf("(assert %s)\n\n", Z3_ast_to_string(context, cond));
 
-	_this->symIndex++;
+	symIndex++;
 	return ret;
 }
 
-void *MakeConst(void *ctx, rev::DWORD value, rev::DWORD bits) {
-	Z3SymbolicExecutor *_this = (Z3SymbolicExecutor *)ctx;
-	
+void *Z3SymbolicExecutor::MakeConst(rev::DWORD value, rev::DWORD bits) {
 	Z3_sort type;
 
 	switch (bits) {
 		case 8:
-			type = _this->byteSort;
+			type = byteSort;
 		case 16:
-			type = _this->wordSort;
+			type = wordSort;
 		case 32:
-			type = _this->dwordSort;
+			type = dwordSort;
 		default :
 			__asm int 3;
 	}
 
 	Z3_ast ret = Z3_mk_int(
-		_this->context,
+		context,
 		value,
 		type
 	);
@@ -95,11 +70,9 @@ void *MakeConst(void *ctx, rev::DWORD value, rev::DWORD bits) {
 	return (void *)ret;
 }
 
-void *ExtractBits(void *ctx, void *expr, rev::DWORD lsb, rev::DWORD size) {
-	Z3SymbolicExecutor *_this = (Z3SymbolicExecutor *)ctx;
-	
+void *Z3SymbolicExecutor::ExtractBits(void *expr, rev::DWORD lsb, rev::DWORD size) {
 	Z3_ast ret = Z3_mk_extract(
-		_this->context,
+		context,
 		lsb + size - 1,
 		lsb,
 		(Z3_ast)expr
@@ -107,21 +80,14 @@ void *ExtractBits(void *ctx, void *expr, rev::DWORD lsb, rev::DWORD size) {
 	return (void *)ret;
 }
 
-void *ConcatBits(void *ctx, void *expr1, void *expr2) {
-	Z3SymbolicExecutor *_this = (Z3SymbolicExecutor *)ctx;
-
+void *Z3SymbolicExecutor::ConcatBits(void *expr1, void *expr2) {
 	Z3_ast ret = Z3_mk_concat(
-		_this->context,
+		context,
 		(Z3_ast)expr1,
 		(Z3_ast)expr2
 	);
 
 	return (void *)ret;
-}
-
-void Execute(void *ctx, RiverInstruction *instruction) {
-	Z3SymbolicExecutor *_this = (Z3SymbolicExecutor *)ctx;
-	_this->SymbolicExecuteDispatch(instruction);
 }
 
 bool IsLocked(void *ctx, const Z3_ast *ast) {
@@ -144,8 +110,10 @@ void Unlock(void *ctx, Z3_ast *ast) {
 
 const unsigned int Z3SymbolicExecutor::Z3SymbolicCpuFlag::lazyMarker = 0xDEADBEEF;
 
-Z3SymbolicExecutor::Z3SymbolicExecutor(rev::SymbolicEnvironment *e, TrackingCookieFuncs *f) :
-		SymbolicExecutor(e, &sFuncs), 
+/*====================================================================================================*/
+
+Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e, TrackingCookieFuncs *f) :
+		sym::SymbolicExecutor(e), 
 		variableTracker((void *)this, ::IsLocked, ::Lock, ::Unlock) 
 {
 	symIndex = 1;
@@ -202,10 +170,18 @@ void Z3SymbolicExecutor::StepForward() {
 		lazyFlags[i]->SaveState(*ls);
 	}
 
+	/*for (int i = 0; i < 8; ++i) {
+		subRegisters[i].SaveState(*ls);
+	}*/
+
 	//printf("Solver push\n");
 }
 
 void Z3SymbolicExecutor::StepBackward() {
+	/*for (int i = 7; i >= 0; --i) {
+		subRegisters[i].LoadState(*ls);
+	}*/
+
 	for (int i = 6; i >= 0; --i) {
 		lazyFlags[i]->LoadState(*ls);
 	}
@@ -355,7 +331,7 @@ void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, rev::DWORD mas
 	}
 }
 
-void Z3SymbolicExecutor::SymbolicExecuteDispatch(RiverInstruction *instruction) {
+void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 	static const unsigned char flagList[] = {
 		RIVER_SPEC_FLAG_CF,
 		RIVER_SPEC_FLAG_PF,

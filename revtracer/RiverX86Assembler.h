@@ -10,27 +10,27 @@
 class RiverX86Assembler : public GenericX86Assembler {
 private :
 	bool needsRAFix;
-	BYTE *rvAddress;
+	rev::BYTE *rvAddress;
 
-	void SwitchToRiver(BYTE *&px86, DWORD &instrCounter);
-	void SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE repReg);
-	void EndRiverConversion(BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter);
+	void SwitchToRiver(rev::BYTE *&px86, rev::DWORD &instrCounter);
+	void SwitchToRiverEsp(rev::BYTE *&px86, rev::DWORD &instrCounter, rev::BYTE repReg);
+	void EndRiverConversion(rev::BYTE *&px86, rev::DWORD &pFlags, rev::BYTE &repReg, rev::DWORD &instrCounter);
 
-	bool GenerateTransitions(const RiverInstruction &ri, BYTE *&px86, DWORD &pFlags, BYTE &repReg, DWORD &instrCounter);
+	bool GenerateTransitions(const RiverInstruction &ri, rev::BYTE *&px86, rev::DWORD &pFlags, rev::BYTE &repReg,  rev::DWORD &instrCounter);
 
 public :
 	//bool Init(RiverRuntime *rt);
-	//bool Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, BYTE *px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter);
-	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType);
+	//bool Assemble(RiverInstruction *pRiver,  rev::WORD dwInstrCount, BYTE *px86,  rev::WORD flg,  rev::WORD &instrCounter,  rev::WORD &byteCounter);
+	virtual bool Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86,  rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg,  rev::DWORD &instrCounter, rev::BYTE outputType);
 
 private :
-	void AssembleRiverAddSubInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter);
+	void AssembleRiverAddSubInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
 
 	void AssembleRiverAddSubOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 
 	void AssembleRegModRMOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 
-	void AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, BYTE extra);
+	void AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::BYTE extra);
 };
 
 

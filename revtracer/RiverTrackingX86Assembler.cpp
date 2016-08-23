@@ -1,5 +1,7 @@
 #include "RiverTrackingX86Assembler.h"
 
+using namespace rev;
+
 extern DWORD dwAddressTrackHandler;
 extern DWORD dwAddressMarkHandler;
 
