@@ -12,6 +12,21 @@ private :
 	void *pEnv;
 
 	void GetOperandLayout(const RiverInstruction &rIn);
+
+	typedef void *(RevSymbolicEnvironment::*GetSubExpFunc)(rev::DWORD address);
+	template <rev::BYTE offset, rev::BYTE size> void *GetSubexpression(rev::DWORD address);
+	void *GetSubexpressionInvalid(rev::DWORD address);
+	static GetSubExpFunc subExpsGet[4][5];
+
+	/*typedef void *(RevSymbolicEnvironment::*SetSubExpFunc)(void *expr, rev::DWORD address);
+	template <rev::BYTE offset, rev::BYTE size> void *SetSubexpression(void *expr, rev::DWORD address);
+	void *SetSubexpressionInvalid(void *expr, rev::DWORD address);
+	static SetSubExpFunc subExpsSet[4][5];*/
+
+	void *GetExpression(rev::DWORD address, rev::DWORD size);
+	//void SetExpression(void *exp, rev::DWORD address, rev::DWORD size);
+
+
 public :
 	RevSymbolicEnvironment(void *revEnv);
 

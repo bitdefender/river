@@ -302,6 +302,8 @@ public:
 				if (cec.TryPop(ast)) {
 					CustomExecutionContext::TrackedCondition *cond = (CustomExecutionContext::TrackedCondition *)Z3_get_user_ptr(executor->context, ast);
 
+					PRINTF("Trying to invert condition\n");
+
 					if (!cond->wasInverted) {
 						ast = Z3_simplify(
 							executor->context,
@@ -317,7 +319,7 @@ public:
 						if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, ast)) {
 							Z3_solver_assert(executor->context, executor->solver, ast);
 
-							//PRINTF("(assert %s)\n\n", Z3_ast_to_string(executor->context, ast));
+							PRINTF("(tryassert %s)\n\n", Z3_ast_to_string(executor->context, ast));
 
 							//unsigned int actualPass[10] = { 0 };
 							Z3_lbool ret = Z3_solver_check(executor->context, executor->solver);

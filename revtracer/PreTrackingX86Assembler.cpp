@@ -4,7 +4,7 @@
 
 using namespace rev;
 
-void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, BYTE riverFamily, RelocableCodeBuffer &px86, DWORD &instrCounter) {
+void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal, BYTE riverFamily, RelocableCodeBuffer &px86, DWORD &instrCounter) {
 	const BYTE regByte[] = { 0x05, 0x0D, 0x15, 0x1D };
 
 	const BYTE preTrackMemPrefix[] = {
@@ -92,15 +92,25 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, BYTE riverFam
 	AssembleDefaultInstr(rLea, px86, flags, instrCounter);
 	AssembleRegModRMOp(rLea, px86);
 	
-
-	/*px86.cursor[0] = 0x8D;
-	px86.cursor++;
-	addr->EncodeTox86(px86.cursor, cReg, riverFamily, 0);
-	instrCounter++;*/
-
 	px86.cursor[0] = 0x50 + cReg; // push reg;
 	px86.cursor++;
 	instrCounter++;
+
+	if (saveVal) {
+		const BYTE saveVal[] = {
+			0x83, 0xE0, 0xFC,					// 0x00 - and eax, 0xFC
+			0xFF, 0x70, 0x04,					// 0x03 - push [eax + 0x04]
+			0xFF, 0x30							// 0x06 - push [eax]
+		};
+
+		rev_memcpy(px86.cursor, saveVal, sizeof(saveVal));
+		px86.cursor[1] += cReg;
+		px86.cursor[4] += cReg;
+		px86.cursor[7] += cReg;
+
+		px86.cursor += sizeof(saveVal);
+		instrCounter += 3;
+	}
 
 	rev_memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
 	px86.cursor[1] = regByte[cReg];
@@ -124,10 +134,10 @@ bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 
 		case 0x8D :
 			ClearPrefixes(ri, px86.cursor);
-			AssemblePreTrackMem(ri.operands[0].asAddress, ri.family, px86, instrCounter);
+			AssemblePreTrackMem(ri.operands[0].asAddress, ri.operands[1].asImm8 == 1, ri.family, px86, instrCounter);
 			break;
 
-		case 0xFF :
+		/*case 0xFF :
 			if (6 == ri.subOpCode) {
 				::GeneratePrefixes(ri, px86.cursor);
 				::AssembleDefaultInstr(ri, px86, pFlags, instrCounter);
@@ -136,7 +146,7 @@ bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 				break;
 			} else {
 				__asm int 3;
-			}
+			}*/
 
 		default :
 			__asm int 3;

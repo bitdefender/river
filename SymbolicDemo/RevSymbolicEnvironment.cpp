@@ -36,6 +36,11 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 		if ((RIVER_OPTYPE(rIn.opTypes[i]) == RIVER_OPTYPE_MEM) && (0 != rIn.operands[i].asAddress->type)) {
 			addressOffsets[i] = trackIndex;
 			trackIndex += rIn.operands[i].asAddress->HasSegment() ? 2 : 1;
+
+			if (0 == (rIn.specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
+				valueOffsets[i] = trackIndex;
+				trackIndex += 2;
+			}
 		}
 	}
 
@@ -45,17 +50,94 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 			case RIVER_OPTYPE_NONE:
 			case RIVER_OPTYPE_IMM:
 				break;
+			case RIVER_OPTYPE_MEM: // holy shit this is an effed up switch
+				if (0 == rIn.operands[i].asAddress->type) {
 			case RIVER_OPTYPE_REG:
-			case RIVER_OPTYPE_MEM:
+					valueOffsets[i] = trackIndex;
+					trackIndex++;
+				}
+				break;
+			/*case RIVER_OPTYPE_REG:
 				valueOffsets[i] = trackIndex;
 				trackIndex++;
-				break;
+				break;*/
 			default:
 				_asm int 3;
 			}
 		}
 	}
 }
+
+template <rev::BYTE offset, rev::BYTE size> void *RevSymbolicEnvironment::GetSubexpression(rev::DWORD address) {
+	void *symExpr = (void *)TrackAddr(pEnv, address, 0);
+
+	return exec->ExtractBits(symExpr, (3 - offset) << 3, size << 3);
+}
+
+template <> void *RevSymbolicEnvironment::GetSubexpression<0, 4>(rev::DWORD address) {
+	return (void *)TrackAddr(pEnv, address, 0);
+}
+
+void *RevSymbolicEnvironment::GetSubexpressionInvalid(rev::DWORD address) {
+	__asm int 3;
+}
+
+RevSymbolicEnvironment::GetSubExpFunc RevSymbolicEnvironment::subExpsGet[4][5] = {
+	{ nullptr, &RevSymbolicEnvironment::GetSubexpression<0, 1>, &RevSymbolicEnvironment::GetSubexpression<0, 2>,  &RevSymbolicEnvironment::GetSubexpression<0, 3>,  &RevSymbolicEnvironment::GetSubexpression<0, 4>  }, 
+	{ nullptr, &RevSymbolicEnvironment::GetSubexpression<1, 1>, &RevSymbolicEnvironment::GetSubexpression<1, 2>,  &RevSymbolicEnvironment::GetSubexpression<1, 3>,  &RevSymbolicEnvironment::GetSubexpressionInvalid },
+	{ nullptr, &RevSymbolicEnvironment::GetSubexpression<2, 1>, &RevSymbolicEnvironment::GetSubexpression<2, 2>,  &RevSymbolicEnvironment::GetSubexpressionInvalid, &RevSymbolicEnvironment::GetSubexpressionInvalid },
+	{ nullptr, &RevSymbolicEnvironment::GetSubexpression<3, 1>, &RevSymbolicEnvironment::GetSubexpressionInvalid, &RevSymbolicEnvironment::GetSubexpressionInvalid, &RevSymbolicEnvironment::GetSubexpressionInvalid },
+};
+
+void *RevSymbolicEnvironment::GetExpression(rev::DWORD address, rev::DWORD size) {
+	static const rev::DWORD sizes[3] = { 4, 2, 1 };
+	rev::DWORD sz = sizes[RIVER_OPSIZE(size)];
+	
+	void *ret = nullptr;
+
+	while (sz) {
+		rev::DWORD fa = address & (~0x03), fo = address & 0x03;
+		rev::DWORD copy = 4 - fo;
+
+		if (sz < copy) {
+			copy = sz;
+		}
+
+		void *tmp = (this->*subExpsGet[fo][sz])(address);
+
+		if (nullptr == ret) {
+			ret = tmp;
+		} else {
+			ret = exec->ConcatBits(ret, tmp);
+		}
+
+		address += copy;
+		sz -= copy;
+	}
+
+	return ret;
+}
+
+
+
+/*void RevSymbolicEnvironment::SetExpression(void *exp, rev::DWORD address, rev::DWORD size) {
+	static const rev::DWORD sizes[3] = { 4, 2, 1 };
+	rev::DWORD sz = sizes[RIVER_OPSIZE(size)];
+	rev::DWORD osz = sz;
+
+	while (sz) {
+		rev::DWORD fa = address & (~0x03), fo = address & 0x03;
+		rev::DWORD copy = 4 - fo;
+
+		if (sz < copy) {
+			copy = sz;
+		}
+
+		void *ext = (osz == copy) ? exp : exec->ExtractBits(exp, (sz - copy) << 3, copy << 3);
+
+		(this->*subExpsSet[fo][sz])(ext, address);
+	}
+}*/
 
 bool RevSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *rIn, void *context) {
 	opBase = (rev::DWORD *)context;
@@ -124,7 +206,7 @@ bool RevSymbolicEnvironment::GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, r
 			__asm int 3;
 		}
 
-		symExpr = (void *)TrackAddr(pEnv, opBase[-(addressOffsets[opIdx])], 0);
+		symExpr = GetExpression(opBase[-(addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx])); //(void *)TrackAddr(pEnv, opBase[-(addressOffsets[opIdx])], 0);
 		isTracked = (symExpr != NULL);
 		symbolicValue = symExpr;
 		concreteValue = opBase[-(valueOffsets[opIdx])];

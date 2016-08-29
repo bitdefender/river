@@ -53,18 +53,18 @@ private :
 	rev::DWORD MakePreTrackReg(const RiverRegister &reg, RiverInstruction *&rMainOut, rev::DWORD &instrCount);
 	void MakeTrackReg(const RiverRegister &reg, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 	
-	rev::DWORD MakePreTrackMem(const RiverAddress &mem, rev::WORD specifiers, rev::DWORD addrOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount);
+	//rev::DWORD MakePreTrackMem(const RiverAddress &mem, rev::WORD specifiers, rev::DWORD addrOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount);
 	void MakeTrackMem(const RiverAddress &mem, rev::WORD specifiers, rev::DWORD addrOffset, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 	
-	rev::DWORD MakeTrackAddress(const RiverOperand &op, rev::BYTE optype, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
+	rev::DWORD MakeTrackAddress(rev::WORD specifiers, const RiverOperand &op, rev::BYTE optype, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount, rev::DWORD &valuesOut);
 
 	void MakeMarkFlg(rev::BYTE flags, rev::DWORD offset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 	void MakeMarkReg(const RiverRegister &reg, rev::DWORD addrOffset, rev::DWORD valueOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 	void MakeMarkMem(const RiverAddress &mem, rev::WORD specifiers, rev::DWORD addrOffset, rev::DWORD valueOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
-	void MakeSkipMem(const RiverAddress &mem, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
+	//void MakeSkipMem(const RiverAddress &mem, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 	
 	/*  */
-	rev::DWORD MakeTrackOp(rev::DWORD opIdx, const rev::BYTE type, const RiverOperand &op, rev::WORD specifiers, rev::DWORD addrOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
+	void MakeTrackOp(rev::DWORD opIdx, const rev::BYTE type, const RiverOperand &op, rev::WORD specifiers, rev::DWORD addrOffset, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount, rev::DWORD &valueOffset);
 	void MakeMarkOp(const rev::BYTE type, rev::WORD specifiers, rev::DWORD addrOffset, rev::DWORD valueOffset, const RiverOperand &op, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
 
 	void MakeCallSymbolic(const RiverInstruction &rIn, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount);
