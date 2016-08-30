@@ -38,7 +38,7 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 			trackIndex += rIn.operands[i].asAddress->HasSegment() ? 2 : 1;
 
 			if (0 == (rIn.specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
-				valueOffsets[i] = trackIndex;
+				valueOffsets[i] = trackIndex + 1; // look at the layout one more time
 				trackIndex += 2;
 			}
 		}
@@ -118,12 +118,54 @@ void *RevSymbolicEnvironment::GetExpression(rev::DWORD address, rev::DWORD size)
 	return ret;
 }
 
+template<rev::BYTE offset, rev::BYTE size> void RevSymbolicEnvironment::SetSubexpression(void *expr, rev::DWORD address, rev::DWORD value) {
+	rev::DWORD l = value >> ((size + offset) << 3);
+	rev::DWORD r = value & ((1 << (offset << 3)) - 1);
 
+	void *ret = exec->MakeConst(l, (4 - size - offset) << 3);
+	ret = exec->ConcatBits(ret, expr);
+	ret = exec->ConcatBits(ret, exec->MakeConst(r, offset << 3));
 
-/*void RevSymbolicEnvironment::SetExpression(void *exp, rev::DWORD address, rev::DWORD size) {
+	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
+}
+
+template<rev::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(void *expr, rev::DWORD address, rev::DWORD value) {
+	rev::DWORD r = value & ((1 << ((4 - size) << 3)) - 1);
+
+	void *ret = exec->ConcatBits(expr, exec->MakeConst(r, (4 - size) << 3));
+	
+	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
+}
+
+template<rev::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOff0(void *expr, rev::DWORD address, rev::DWORD value) {
+	rev::DWORD l = value >> (size << 3);
+
+	void *ret = exec->MakeConst(l, (4 - size) << 3);
+	ret = exec->ConcatBits(ret, expr);
+
+	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
+}
+
+template <> void RevSymbolicEnvironment::SetSubexpression<0, 4>(void *expr, rev::DWORD address, rev::DWORD value) {
+	MarkAddr(pEnv, address, (rev::DWORD)expr, 0);
+}
+
+void RevSymbolicEnvironment::SetSubexpressionInvalid(void *expr, rev::DWORD address, rev::DWORD value) {
+	__asm int 3;
+}
+
+RevSymbolicEnvironment::SetSubExpFunc RevSymbolicEnvironment::subExpsSet[4][5] = {
+	{ nullptr, &RevSymbolicEnvironment::SetSubexpressionOff0<1>, &RevSymbolicEnvironment::SetSubexpressionOff0<2>, &RevSymbolicEnvironment::SetSubexpressionOff0<3>, &RevSymbolicEnvironment::SetSubexpression<0, 4>  },
+	{ nullptr, &RevSymbolicEnvironment::SetSubexpression<1, 1>,  &RevSymbolicEnvironment::SetSubexpression<1, 2>,  &RevSymbolicEnvironment::SetSubexpressionOffM<3>,  &RevSymbolicEnvironment::SetSubexpressionInvalid },
+	{ nullptr, &RevSymbolicEnvironment::SetSubexpression<2, 1>,  &RevSymbolicEnvironment::SetSubexpressionOffM<2>,  &RevSymbolicEnvironment::SetSubexpressionInvalid, &RevSymbolicEnvironment::SetSubexpressionInvalid },
+	{ nullptr, &RevSymbolicEnvironment::SetSubexpressionOffM<1>, &RevSymbolicEnvironment::SetSubexpressionInvalid, &RevSymbolicEnvironment::SetSubexpressionInvalid, &RevSymbolicEnvironment::SetSubexpressionInvalid }
+};
+
+void RevSymbolicEnvironment::SetExpression(void *exp, rev::DWORD address, rev::DWORD size, rev::DWORD *values) {
 	static const rev::DWORD sizes[3] = { 4, 2, 1 };
 	rev::DWORD sz = sizes[RIVER_OPSIZE(size)];
 	rev::DWORD osz = sz;
+	rev::DWORD ptr = 0;
 
 	while (sz) {
 		rev::DWORD fa = address & (~0x03), fo = address & 0x03;
@@ -135,9 +177,13 @@ void *RevSymbolicEnvironment::GetExpression(rev::DWORD address, rev::DWORD size)
 
 		void *ext = (osz == copy) ? exp : exec->ExtractBits(exp, (sz - copy) << 3, copy << 3);
 
-		(this->*subExpsSet[fo][sz])(ext, address);
+		(this->*subExpsSet[fo][sz])(ext, address, values[ptr]);
+		ptr++;
+
+		address += copy;
+		sz -= copy;
 	}
-}*/
+}
 
 bool RevSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *rIn, void *context) {
 	opBase = (rev::DWORD *)context;
@@ -273,7 +319,8 @@ bool RevSymbolicEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue) {
 			((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)] = (rev::DWORD)symbolicValue;
 		}
 		else {
-			MarkAddr(pEnv, opBase[-(addressOffsets[opIdx])], (rev::DWORD)symbolicValue, 0);
+			//MarkAddr(pEnv, opBase[-(addressOffsets[opIdx])], (rev::DWORD)symbolicValue, 0);
+			SetExpression(symbolicValue, opBase[-(addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx]), &opBase[-(valueOffsets[opIdx])]);
 		}
 		return true;
 

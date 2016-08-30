@@ -429,15 +429,6 @@ public:
 			switch (cec.executionState) {
 			case CustomExecutionContext::EXPLORING:
 				if (nullptr != executor->lastCondition) {
-
-					// revert last condition
-					/*if (0x1769 == ((rev::DWORD)addr & 0xFFFF)) {
-					executor->lastCondition = Z3_mk_not(
-					executor->context,
-					executor->lastCondition
-					);
-					}*/
-
 					if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, executor->lastCondition)) {
 						CustomExecutionContext::TrackedCondition *cond = cec.AllocCondition();
 						cond->wasInverted = false;
@@ -515,57 +506,13 @@ public:
 		}
 		PRINTF("\") = %04x\n", Check(buffer));
 
-		//unsigned int actualPass[10] = { 0 };
-		/*Z3_lbool ret = Z3_solver_check(executor->context, executor->solver);
-
-		if (Z3_L_TRUE == ret) {
-			Z3_model model = Z3_solver_get_model(executor->context, executor->solver);
-			fprintf(stderr, "%s\n", Z3_model_to_string(executor->context, model));
-
-			unsigned int cnt = Z3_model_get_num_consts(executor->context, model);
-
-			for (unsigned int i = 0; i < cnt; ++i) {
-				Z3_func_decl c = Z3_model_get_const_decl(executor->context, model, i);
-
-				//PRINTF("%s\n", Z3_func_decl_to_string(executor->context, c));
-
-				Z3_ast ast = Z3_func_decl_to_ast(executor->context, c);
-				Z3_symbol sName = Z3_get_decl_name(executor->context, c);
-				Z3_string r = Z3_get_symbol_string(executor->context, sName);
-
-				Z3_ast val;
-				Z3_bool pEval = Z3_eval_func_decl(
-					executor->context,
-					model,
-					c,
-					&val
-				);
-
-				rev::DWORD ret;
-				Z3_bool p = Z3_get_numeral_uint(executor->context, val, (unsigned int *)&ret);
-
-				newPass[r[2] - '0'] = ret;
-				//actualPass[r[2] - '0'] = ret;
-			}
-		}
-		else if (Z3_L_FALSE == ret) {
-			PRINTF("unsat\n");
-		}
-		else { // undef
-			PRINTF("undef\n");
-		}*/
-
 		lastDirection = EXECUTION_BACKTRACK;
 		cec.executionState = cec.BACKTRACKING;
-		//cExt->executionPos--;
-		//executor->StepBackward();
-
-
+		
 		QueryPerformanceCounter(&liSymStop);
 		liSymTotal.QuadPart += liSymStop.QuadPart - liSymStart.QuadPart;
 
 		return EXECUTION_BACKTRACK;
-		//return EXECUTION_TERMINATE;
 	}
 
 	virtual void TerminationNotification(void *ctx) { }
@@ -574,10 +521,9 @@ public:
 
 sym::SymbolicExecutor *SymExeConstructor(sym::SymbolicEnvironment *env) {
 	regEnv = new OverlappedRegistersEnvironment();
-	regEnv->SetSubEnvironment(env); //Init(env);
+	regEnv->SetSubEnvironment(env);
 
 	executor = new Z3SymbolicExecutor(regEnv, &trackingCookieFuncs);
-	//variableTracker = new VariableTracker<Z3_ast>(executor, IsLocked, Lock, Unlock);
 	return executor;
 }
 
@@ -586,7 +532,6 @@ void TrackCallback(rev::DWORD value, rev::DWORD address, rev::DWORD segSel) {
 		Z3_ast t = (Z3_ast)value;
 
 		if (nullptr != Z3_get_user_ptr(executor->context, t)) {
-			//variableTracker->Lock(&t);
 			executor->Lock(t);
 		}
 	}
@@ -595,35 +540,6 @@ void TrackCallback(rev::DWORD value, rev::DWORD address, rev::DWORD segSel) {
 void MarkCallback(rev::DWORD oldValue, rev::DWORD newValue, rev::DWORD address, rev::DWORD segSel) {
 	//__asm int 3;
 }
-
-/*void InitializeRevtracer(rev::ADDR_TYPE entryPoint) {
-	HMODULE hNtDll = GetModuleHandle(L"ntdll.dll");
-	rev::RevtracerAPI *api = &rev::revtracerAPI;
-
-	api->dbgPrintFunc = DebugPrint;
-
-	api->lowLevel.ntAllocateVirtualMemory = GetProcAddress(hNtDll, "NtAllocateVirtualMemory");
-	api->lowLevel.ntFreeVirtualMemory = GetProcAddress(hNtDll, "NtFreeVirtualMemory");
-
-	api->lowLevel.ntQueryInformationThread = GetProcAddress(hNtDll, "NtQueryInformationThread");
-	api->lowLevel.ntTerminateProcess = GetProcAddress(hNtDll, "NtTerminateProcess");
-
-	api->lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
-	api->lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
-
-	api->branchHandler = CustomBranchHandler;
-
-	api->trackCallback = TrackCallback;
-	api->markCallback = MarkCallback;
-
-	rev::RevtracerConfig *config = &rev::revtracerConfig;
-	config->contextSize = sizeof(CustomExecutionContext);
-	config->entryPoint = entryPoint;
-	config->featureFlags = TRACER_FEATURE_SYMBOLIC | TRACER_FEATURE_REVERSIBLE;
-	config->sCons = SymExeConstructor;
-
-	rev::Initialize();
-}*/
 
 void __stdcall SymbolicHandler(void *ctx, void *offset, void *addr) {
 	RiverInstruction *instr = (RiverInstruction *)addr;

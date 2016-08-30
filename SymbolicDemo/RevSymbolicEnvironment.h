@@ -18,13 +18,15 @@ private :
 	void *GetSubexpressionInvalid(rev::DWORD address);
 	static GetSubExpFunc subExpsGet[4][5];
 
-	/*typedef void *(RevSymbolicEnvironment::*SetSubExpFunc)(void *expr, rev::DWORD address);
-	template <rev::BYTE offset, rev::BYTE size> void *SetSubexpression(void *expr, rev::DWORD address);
-	void *SetSubexpressionInvalid(void *expr, rev::DWORD address);
-	static SetSubExpFunc subExpsSet[4][5];*/
+	typedef void (RevSymbolicEnvironment::*SetSubExpFunc)(void *expr, rev::DWORD address, rev::DWORD value);
+	template <rev::BYTE offset, rev::BYTE size> void SetSubexpression(void *expr, rev::DWORD address, rev::DWORD value);
+	template <rev::BYTE size> void SetSubexpressionOff0(void *expr, rev::DWORD address, rev::DWORD value);
+	template <rev::BYTE size> void SetSubexpressionOffM(void *expr, rev::DWORD address, rev::DWORD value);
+	void SetSubexpressionInvalid(void *expr, rev::DWORD address, rev::DWORD value);
+	static SetSubExpFunc subExpsSet[4][5];
 
 	void *GetExpression(rev::DWORD address, rev::DWORD size);
-	//void SetExpression(void *exp, rev::DWORD address, rev::DWORD size);
+	void SetExpression(void *exp, rev::DWORD address, rev::DWORD size, rev::DWORD *values);
 
 
 public :
