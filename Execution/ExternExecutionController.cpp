@@ -198,9 +198,6 @@ bool ExternExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 		!LoadExportedName(fIpcLib, pIpcBase, "RestoreSnapshot", tmpRevApi.restoreSnapshot) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "InitializeContextFunc", tmpRevApi.initializeContext) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "CleanupContextFunc", tmpRevApi.cleanupContext) ||
-		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionBeginFunc", tmpRevApi.executionBegin) ||
-		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionControlFunc", tmpRevApi.executionControl) ||
-		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionEndFunc", tmpRevApi.executionEnd) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "BranchHandlerFunc", tmpRevApi.branchHandler) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "IsProcessorFeaturePresent", pIPFPFunc)
@@ -619,7 +616,7 @@ bool ExternExecutionController::WaitForTermination() {
 	return true;
 }
 
-DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller);
+//DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller);
 
 DWORD ExternExecutionController::ControlThread() {
 	bool bRunning = true;
@@ -693,7 +690,6 @@ DWORD ExternExecutionController::ControlThread() {
 			case REPLY_RESTORE_SNAPSHOT:
 			case REPLY_INITIALIZE_CONTEXT:
 			case REPLY_CLEANUP_CONTEXT:
-			//case REPLY_EXECUTION_CONTORL:
 			case REPLY_SYSCALL_CONTROL:
 			case REPLY_BRANCH_HANDLER:
 				__asm int 3;
