@@ -2,10 +2,29 @@
 #define _LOADER_H
 
 namespace ldr {
-#ifdef _BUILDING_LOADER_DLL
-#define DLL_LINKAGE __declspec(dllexport)
+#if defined _WIN32 || defined __CYGWIN__
+	#ifdef _BUILDING_LOADER_DLL
+		#ifdef __GNUC__
+			#define DLL_PUBLIC __attribute__ ((dllexport))
+		#else
+			#define DLL_PUBLIC __declspec(dllexport)
+		#endif
+	#else
+		#ifdef __GNUC__
+			#define DLL_PUBLIC __attribute__ ((dllimport))
+		#else
+			#define DLL_PUBLIC __declspec(dllimport)
+		#endif
+	#endif
+	#define DLL_LOCAL
 #else
-#define DLL_LINKAGE __declspec(dllimport)
+	#if __GNUC__ >= 4
+		#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+		#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+	#else
+		#define DLL_PUBLIC
+		#define DLL_LOCAL
+	#endif
 #endif
 
 /* Define NULL pointer value */
@@ -88,11 +107,11 @@ namespace ldr {
 
 
 	extern "C" {
-		DLL_LINKAGE extern LoaderConfig loaderConfig;
-		DLL_LINKAGE extern LoaderAPI loaderAPI;
+		DLL_PUBLIC extern LoaderConfig loaderConfig;
+		DLL_PUBLIC extern LoaderAPI loaderAPI;
 
-		DLL_LINKAGE void *MapMemory(DWORD desiredAccess, DWORD offset, SIZE_T size, void *address);
-		DLL_LINKAGE void LoaderPerform();
+		DLL_PUBLIC void *MapMemory(DWORD desiredAccess, DWORD offset, SIZE_T size, void *address);
+		DLL_PUBLIC void LoaderPerform();
 	}
 
 };

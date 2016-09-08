@@ -3,7 +3,7 @@
 #include "ExternExecutionController.h"
 #include "InprocessExecutionController.h"
 
-EXECUTION_LINKAGE ExecutionController *NewExecutionController(uint32_t type) {
+DLL_PUBLIC_EXECUTION ExecutionController *NewExecutionController(uint32_t type) {
 	switch (type) {
 		case EXECUTION_EXTERNAL:
 			return new ExternExecutionController();
@@ -14,7 +14,7 @@ EXECUTION_LINKAGE ExecutionController *NewExecutionController(uint32_t type) {
 	};
 }
 
-EXECUTION_LINKAGE void DeleteExecutionController(ExecutionController *ptr) {
+DLL_PUBLIC_EXECUTION void DeleteExecutionController(ExecutionController *ptr) {
 	delete ptr;
 }
 

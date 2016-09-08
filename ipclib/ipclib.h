@@ -5,10 +5,29 @@
 #include "RingBuffer.h"
 
 namespace ipc {
-#ifdef _BUILDING_IPC_DLL
-#define DLL_LINKAGE __declspec(dllexport)
+#if defined _WIN32 || defined __CYGWIN__
+	#ifdef _BUILDING_IPC_DLL
+		#ifdef __GNUC__
+			#define DLL_PUBLIC __attribute__ ((dllexport))
+		#else
+			#define DLL_PUBLIC __declspec(dllexport)
+		#endif
+	#else
+		#ifdef __GNUC__
+			#define DLL_PUBLIC __attribute__ ((dllimport))
+		#else
+			#define DLL_PUBLIC __declspec(dllimport)
+		#endif
+	#endif
+	#define DLL_LOCAL
 #else
-#define DLL_LINKAGE __declspec(dllimport)
+	#if __GNUC__ >= 4
+		#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+		#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+	#else
+		#define DLL_PUBLIC
+		#define DLL_LOCAL
+	#endif
 #endif
 
 /* Define NULL pointer value */
@@ -133,29 +152,29 @@ namespace ipc {
 #define REMOTE_TOKEN_USER 1
 
 	extern "C" {
-		DLL_LINKAGE extern RingBuffer<(1 << 20)> debugLog;
-		DLL_LINKAGE extern ShmTokenRing ipcToken;
+		DLL_PUBLIC extern RingBuffer<(1 << 20)> debugLog;
+		DLL_PUBLIC extern ShmTokenRing ipcToken;
 
-		DLL_LINKAGE extern IpcAPI ipcAPI;
-		DLL_LINKAGE extern IpcData ipcData;
+		DLL_PUBLIC extern IpcAPI ipcAPI;
+		DLL_PUBLIC extern IpcData ipcData;
 
-		DLL_LINKAGE void DebugPrint(DWORD printMask, const char *fmt, ...);
+		DLL_PUBLIC void DebugPrint(DWORD printMask, const char *fmt, ...);
 
-		DLL_LINKAGE extern void *MemoryAllocFunc(DWORD dwSize);
-		DLL_LINKAGE extern void MemoryFreeFunc(void *ptr);
+		DLL_PUBLIC extern void *MemoryAllocFunc(DWORD dwSize);
+		DLL_PUBLIC extern void MemoryFreeFunc(void *ptr);
 
-		DLL_LINKAGE extern QWORD TakeSnapshot();
-		DLL_LINKAGE extern QWORD RestoreSnapshot();
+		DLL_PUBLIC extern QWORD TakeSnapshot();
+		DLL_PUBLIC extern QWORD RestoreSnapshot();
 
-		DLL_LINKAGE extern void InitializeContextFunc(void *context);
-		DLL_LINKAGE extern void CleanupContextFunc(void *context);
+		DLL_PUBLIC extern void InitializeContextFunc(void *context);
+		DLL_PUBLIC extern void CleanupContextFunc(void *context);
 
-		DLL_LINKAGE extern DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction);
-		DLL_LINKAGE extern void SyscallControlFunc(void *context, void *userContext);
+		DLL_PUBLIC extern DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction);
+		DLL_PUBLIC extern void SyscallControlFunc(void *context, void *userContext);
 
-		DLL_LINKAGE extern void Initialize();
+		DLL_PUBLIC extern void Initialize();
 
-		DLL_LINKAGE BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature);
+		DLL_PUBLIC BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature);
 	}
 };
 

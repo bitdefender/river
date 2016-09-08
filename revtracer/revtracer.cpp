@@ -29,7 +29,7 @@ namespace rev {
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 #endif
 
-	DLL_LINKAGE DWORD revtracerLastError;
+	DLL_PUBLIC DWORD revtracerLastError;
 
 	typedef DWORD(__stdcall *RtlNtStatusToDosErrorFunc)(NTSTATUS status);
 
