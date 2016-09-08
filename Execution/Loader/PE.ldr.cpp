@@ -540,7 +540,7 @@ bool PESection::Load(FILE *fModule) {
 
     fseek(fModule, header.PointerToRawData, SEEK_SET);
     if (header.SizeOfRawData != fread(data, 1, header.SizeOfRawData, fModule)) {
-        dbg_log("read error, in section %s\n", header.Name);
+        //dbg_log("read error, in section %s\n", header.Name);
         return false;
     }
 
