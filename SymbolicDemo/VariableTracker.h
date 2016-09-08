@@ -1,10 +1,6 @@
 #ifndef _VARIABLE_TRACKER_H_
 #define _VARIABLE_TRACKER_H_
 
-//#include <Windows.h>
-
-//class VariableTracker;
-
 template <typename T> class VariableTracker {
 public :
 	typedef bool(*IsLockedFunc)(void *ctx, const T*);

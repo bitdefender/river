@@ -11,6 +11,8 @@
 #include "OverlappedRegisters.h"
 #include "Z3SymbolicExecutor.h"
 
+#include "ReversibleAction.h"
+
 #include "z3.h"
 
 ExecutionController *ctrl;
@@ -84,10 +86,35 @@ void DebugPrint(rev::DWORD printMask, const char *fmt, ...) {
 	lastChar = tmpBuff[sz - 1];
 }
 
+ReversibleAction<TrackedVariableData, Unlock, 32> lockedVariables;
 Z3SymbolicExecutor *executor = nullptr;
 OverlappedRegistersEnvironment *regEnv = nullptr;
 RevSymbolicEnvironment *revEnv = nullptr;
 ::DWORD lastDirection = EXECUTION_ADVANCE;
+
+// here are the bindings to the payload
+extern "C" unsigned int bufferDword[];
+int PayloadDword();
+int CheckDword(unsigned int *ptr);
+
+extern "C" unsigned char bufferByte[];
+int PayloadByte();
+int CheckByte(unsigned char *ptr);
+
+class TVDBuffer {
+private:
+	TrackedVariableData vars[8];
+public :
+	TrackedVariableData *GetVariable(rev::ADDR_TYPE addr) {
+		DWORD idx = (rev::BYTE *)addr - bufferByte;
+
+		if (idx < 8) {
+			return &vars[idx];
+		}
+
+		return nullptr;
+	}
+} tvdTracker;
 
 struct CustomExecutionContext {
 public :
@@ -197,21 +224,7 @@ public :
 
 LARGE_INTEGER liFreq, liStart, liStop, liSymStart, liSymStop, liSymTotal, liBrStart, liBrStop, liBrTotal;
 
-void BranchBegin() {
-	QueryPerformanceCounter(&liBrStart);
-}
-
-void BranchEnd() {
-	QueryPerformanceCounter(&liBrStop);
-	liBrTotal.QuadPart += liBrStop.QuadPart - liBrStart.QuadPart;
-}
-
-// here are the bindings to the payload
-extern "C" unsigned int buffer[];
-int Payload();
-int Check(unsigned int *ptr);
-
-unsigned int newPass[9];
+unsigned char newPass[9];
 
 class SymbolicExecution : public ExecutionObserver {
 private :
@@ -223,21 +236,30 @@ public:
 		
 		QueryPerformanceCounter(&liSymStart);
 		if (!ctxInit) {
-			revEnv = new RevSymbolicEnvironment(ctx);
+			revEnv = new RevSymbolicEnvironment(ctx, ctrl);
 			regEnv = new OverlappedRegistersEnvironment();
 			regEnv->SetSubEnvironment(revEnv); //Init(env);
-			executor = new Z3SymbolicExecutor(regEnv, &trackingCookieFuncs);
+			executor = new Z3SymbolicExecutor(regEnv);
+			regEnv->SetExecutor(executor);
 
 
 			cec.Init();
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[0]), (rev::DWORD)executor->CreateVariable("a[0]"));
+			revEnv->SetSymbolicVariable("a[0]", (rev::ADDR_TYPE)(&bufferByte[0]), 1);
+			revEnv->SetSymbolicVariable("a[1]", (rev::ADDR_TYPE)(&bufferByte[1]), 1);
+			revEnv->SetSymbolicVariable("a[2]", (rev::ADDR_TYPE)(&bufferByte[2]), 1);
+			revEnv->SetSymbolicVariable("a[3]", (rev::ADDR_TYPE)(&bufferByte[3]), 1);
+			revEnv->SetSymbolicVariable("a[4]", (rev::ADDR_TYPE)(&bufferByte[4]), 1);
+			revEnv->SetSymbolicVariable("a[5]", (rev::ADDR_TYPE)(&bufferByte[5]), 1);
+			revEnv->SetSymbolicVariable("a[6]", (rev::ADDR_TYPE)(&bufferByte[6]), 1);
+			revEnv->SetSymbolicVariable("a[7]", (rev::ADDR_TYPE)(&bufferByte[7]), 1);
+			/*ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[0]), (rev::DWORD)executor->CreateVariable("a[0]"));
 			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[1]), (rev::DWORD)executor->CreateVariable("a[1]"));
 			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[2]), (rev::DWORD)executor->CreateVariable("a[2]"));
 			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[3]), (rev::DWORD)executor->CreateVariable("a[3]"));
 			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[4]), (rev::DWORD)executor->CreateVariable("a[4]"));
 			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[5]), (rev::DWORD)executor->CreateVariable("a[5]"));
 			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[6]), (rev::DWORD)executor->CreateVariable("a[6]"));
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[7]), (rev::DWORD)executor->CreateVariable("a[7]"));
+			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[7]), (rev::DWORD)executor->CreateVariable("a[7]"));*/
 
 			ctxInit = true;
 			QueryPerformanceCounter(&liStart);
@@ -264,10 +286,11 @@ public:
 		bool ret = true;
 		for (unsigned int i = 0; i < size; ++i) {
 			if (orig[i] != newVal[i]) {
-				Z3_ast ast = (Z3_ast)ctrl->GetMemoryInfo(ctx, &orig[i]);
-				TrackedVariableData *tvd = (TrackedVariableData *)Z3_get_user_ptr(executor->context, ast);
+				/*Z3_ast ast = (Z3_ast)ctrl->GetMemoryInfo(ctx, &orig[i]);
+				TrackedVariableData *tvd = (TrackedVariableData *)Z3_get_user_ptr(executor->context, ast);*/
+				TrackedVariableData *tvd = tvdTracker.GetVariable(&orig[i]);
 
-				if (tvd->isLocked) {
+				if (tvd->IsLocked()) {
 					ret = false;
 				}
 				else {
@@ -294,6 +317,7 @@ public:
 		if (EXECUTION_BACKTRACK == lastDirection) {
 			cec.executionPos--;
 			executor->StepBackward();
+			lockedVariables.Backward();
 
 			switch (cec.executionState) {
 			case CustomExecutionContext::BACKTRACKING:
@@ -354,7 +378,7 @@ public:
 									rev::DWORD ret;
 									Z3_bool p = Z3_get_numeral_uint(executor->context, val, (unsigned int *)&ret);
 
-									newPass[r[2] - '0'] = ret;
+									newPass[r[2] - '0'] = (unsigned char)ret;
 									//actualPass[r[2] - '0'] = ret;
 								}
 
@@ -362,13 +386,13 @@ public:
 								for (int i = 0; newPass[i]; ++i) {
 									PRINTF("%c", newPass[i]);
 								}
-								PRINTF("\" OUTPUT %04x\n", Check(newPass));
+								PRINTF("\" OUTPUT %04x\n", CheckByte(newPass));
 
 								fprintf(stderr, "NEW INPUT \"");
 								for (int i = 0; newPass[i]; ++i) {
 									fprintf(stderr, "%c", newPass[i]);
 								}
-								fprintf(stderr, "\" OUTPUT %04x\n", Check(newPass));
+								fprintf(stderr, "\" OUTPUT %04x\n", CheckByte(newPass));
 
 								cec.executionState = cec.PATCHING;
 							}
@@ -392,7 +416,7 @@ public:
 					cec.Push(cond);
 				}
 
-				if (DonePatching(ctx, buffer, newPass, 8)) {
+				if (DonePatching(ctx, (unsigned int *)bufferByte, (unsigned int *)newPass, 2)) {
 					cec.executionState = cec.RESTORING;
 					ret = EXECUTION_ADVANCE;
 				}
@@ -429,6 +453,8 @@ public:
 			switch (cec.executionState) {
 			case CustomExecutionContext::EXPLORING:
 				if (nullptr != executor->lastCondition) {
+					PRINTF("!@(assert %s)\n\n", Z3_ast_to_string(executor->context, executor->lastCondition));
+
 					if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, executor->lastCondition)) {
 						CustomExecutionContext::TrackedCondition *cond = cec.AllocCondition();
 						cond->wasInverted = false;
@@ -479,6 +505,7 @@ public:
 
 		if (EXECUTION_ADVANCE == ret) {
 			executor->StepForward();
+			lockedVariables.Forward();
 			cec.executionPos++;
 		}
 
@@ -495,16 +522,16 @@ public:
 		}
 
 		fprintf(stderr, "Check(\"");
-		for (int i = 0; buffer[i]; ++i) {
-			fprintf(stderr, "%c", buffer[i]);
+		for (int i = 0; bufferByte[i]; ++i) {
+			fprintf(stderr, "%c", bufferByte[i]);
 		}
-		fprintf(stderr, "\") = %04x\n", Check(buffer));
+		fprintf(stderr, "\") = %04x\n", CheckByte(bufferByte));
 
 		PRINTF("Check(\"");
-		for (int i = 0; buffer[i]; ++i) {
-			PRINTF("%c", buffer[i]);
+		for (int i = 0; bufferByte[i]; ++i) {
+			PRINTF("%c", bufferByte[i]);
 		}
-		PRINTF("\") = %04x\n", Check(buffer));
+		PRINTF("\") = %04x\n", CheckByte(bufferByte));
 
 		lastDirection = EXECUTION_BACKTRACK;
 		cec.executionState = cec.BACKTRACKING;
@@ -523,16 +550,17 @@ sym::SymbolicExecutor *SymExeConstructor(sym::SymbolicEnvironment *env) {
 	regEnv = new OverlappedRegistersEnvironment();
 	regEnv->SetSubEnvironment(env);
 
-	executor = new Z3SymbolicExecutor(regEnv, &trackingCookieFuncs);
+	executor = new Z3SymbolicExecutor(regEnv);
 	return executor;
 }
 
 void TrackCallback(rev::DWORD value, rev::DWORD address, rev::DWORD segSel) {
 	if (EXECUTION_ADVANCE == lastDirection) {
-		Z3_ast t = (Z3_ast)value;
+		TrackedVariableData *tvd = tvdTracker.GetVariable((rev::ADDR_TYPE)address);
 
-		if (nullptr != Z3_get_user_ptr(executor->context, t)) {
-			executor->Lock(t);
+		if ((nullptr != tvd) && (!tvd->IsLocked())) {
+			tvd->Lock();
+			lockedVariables.Push(tvd);
 		}
 	}
 }
@@ -556,13 +584,13 @@ int main(int argc, char *argv[]) {
 	QueryPerformanceFrequency(&liFreq);
 
 	QueryPerformanceCounter(&liStart);
-	Payload();
+	PayloadByte();
 	QueryPerformanceCounter(&liStop);
 
 	fprintf(stderr, "$$ Native time: %lfms\n", 1000.0 * (liStop.QuadPart - liStart.QuadPart) / liFreq.QuadPart);
 
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);
-	ctrl->SetEntryPoint(Payload);
+	ctrl->SetEntryPoint(PayloadByte);
 
 	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_SYMBOLIC);
 	ctrl->SetExecutionObserver(&symbolicExecution);

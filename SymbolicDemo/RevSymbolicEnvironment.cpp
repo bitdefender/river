@@ -2,6 +2,7 @@
 
 #include "../revtracer/execenv.h"
 #include "../revtracer/Tracking.h"
+#include "../Execution/Execution.h"
 
 static rev::BYTE GetFundamentalRegister(rev::BYTE reg) {
 	if (reg < 0x20) {
@@ -10,7 +11,8 @@ static rev::BYTE GetFundamentalRegister(rev::BYTE reg) {
 	return reg;
 }
 
-RevSymbolicEnvironment::RevSymbolicEnvironment(void *revEnv) {
+RevSymbolicEnvironment::RevSymbolicEnvironment(void *revEnv, ExecutionController *ctl) {
+	ctrl = ctl;
 	pEnv = revEnv;
 }
 
@@ -118,39 +120,38 @@ void *RevSymbolicEnvironment::GetExpression(rev::DWORD address, rev::DWORD size)
 	return ret;
 }
 
-template<rev::BYTE offset, rev::BYTE size> void RevSymbolicEnvironment::SetSubexpression(void *expr, rev::DWORD address, rev::DWORD value) {
-	rev::DWORD l = value >> ((size + offset) << 3);
-	rev::DWORD r = value & ((1 << (offset << 3)) - 1);
+template<rev::BYTE offset, rev::BYTE size> void RevSymbolicEnvironment::SetSubexpression(void *expr, rev::DWORD address, void *value) {
+	rev::DWORD rSz = (4 - offset - size) << 3;
+	rev::DWORD lSz = offset << 3;
+	rev::DWORD lLsb = (4 - offset) << 3;
 
-	void *ret = exec->MakeConst(l, (4 - size - offset) << 3);
+	void *ret = exec->ExtractBits(value, lLsb, lSz);
 	ret = exec->ConcatBits(ret, expr);
-	ret = exec->ConcatBits(ret, exec->MakeConst(r, offset << 3));
+	ret = exec->ConcatBits(ret, exec->ExtractBits(value, 0, rSz));
 
 	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
 }
 
-template<rev::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(void *expr, rev::DWORD address, rev::DWORD value) {
-	rev::DWORD r = value & ((1 << ((4 - size) << 3)) - 1);
+template<rev::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(void *expr, rev::DWORD address, void *value) {
+	rev::DWORD rSz = (4 - size) << 3;
 
-	void *ret = exec->ConcatBits(expr, exec->MakeConst(r, (4 - size) << 3));
+	void *ret = exec->ConcatBits(exec->ExtractBits(value, size << 3, rSz), expr);
 	
 	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
 }
 
-template<rev::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOff0(void *expr, rev::DWORD address, rev::DWORD value) {
-	rev::DWORD l = value >> (size << 3);
-
-	void *ret = exec->MakeConst(l, (4 - size) << 3);
-	ret = exec->ConcatBits(ret, expr);
+template<rev::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOff0(void *expr, rev::DWORD address, void *value) {
+	void *ret = exec->ExtractBits(value, 0, (4 - size) << 3);
+	ret = exec->ConcatBits(expr, ret);
 
 	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
 }
 
-template <> void RevSymbolicEnvironment::SetSubexpression<0, 4>(void *expr, rev::DWORD address, rev::DWORD value) {
+template <> void RevSymbolicEnvironment::SetSubexpression<0, 4>(void *expr, rev::DWORD address, void *value) {
 	MarkAddr(pEnv, address, (rev::DWORD)expr, 0);
 }
 
-void RevSymbolicEnvironment::SetSubexpressionInvalid(void *expr, rev::DWORD address, rev::DWORD value) {
+void RevSymbolicEnvironment::SetSubexpressionInvalid(void *expr, rev::DWORD address, void *value) {
 	__asm int 3;
 }
 
@@ -177,7 +178,13 @@ void RevSymbolicEnvironment::SetExpression(void *exp, rev::DWORD address, rev::D
 
 		void *ext = (osz == copy) ? exp : exec->ExtractBits(exp, (sz - copy) << 3, copy << 3);
 
-		(this->*subExpsSet[fo][sz])(ext, address, values[ptr]);
+		void *val = (void *)TrackAddr(pEnv, fa, 0);
+		if (nullptr == val) {
+			val = exec->MakeConst(values[ptr], 32);
+		}
+
+
+		(this->*subExpsSet[fo][sz])(ext, address, val);
 		ptr++;
 
 		address += copy;
@@ -341,4 +348,32 @@ void RevSymbolicEnvironment::SetFlgValue(rev::BYTE flg, void *symbolicValue) {
 
 void RevSymbolicEnvironment::UnsetFlgValue(rev::BYTE flg) {
 	SetFlgValue(flg, nullptr);
+}
+
+void RevSymbolicEnvironment::SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, rev::DWORD size) {
+	rev::DWORD buff[2];
+	ctrl->ReadProcessMemory((unsigned int)addr & ~0x03, 8, (unsigned char *)buff);
+
+	rev::DWORD oSize = 0;
+
+	switch (size) {
+	case 4:
+		oSize = RIVER_OPSIZE_32;
+		break;
+	case 2:
+		oSize = RIVER_OPSIZE_16;
+		break;
+	case 1 : 
+		oSize = RIVER_OPSIZE_8;
+		break;
+	default :
+		__asm int 3;
+	}
+
+	SetExpression(
+		exec->CreateVariable(name, size),
+		(rev::DWORD)addr,
+		oSize,
+		buff
+	);
 }

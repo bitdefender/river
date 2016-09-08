@@ -1,24 +1,28 @@
 #ifndef _TRACKING_COOKIE_
 #define _TRACKING_COOKIE_
 
-typedef void *(* AllocateTrackingCookieFunc)();
-typedef void (* FreeTrackingCookieFunc)(void *);
-
-struct TrackingCookieFuncs {
-	AllocateTrackingCookieFunc allocCookie;
-	FreeTrackingCookieFunc freeCookie;
-};
-
-extern TrackingCookieFuncs trackingCookieFuncs;
-
 struct TrackedVariableData {
-public:
+private:
 	bool isLocked;
-
+public:
 	TrackedVariableData() {
 		isLocked = false;
 	}
+
+	void Lock() {
+		isLocked = true;
+	}
+
+	void Unlock() {
+		isLocked = false;
+	}
+
+	bool IsLocked() const {
+		return isLocked;
+	}
 };
+
+void Unlock(void *ctx, TrackedVariableData *tvd);
 
 /**/
 

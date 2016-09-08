@@ -128,7 +128,7 @@ namespace sym {
 		}
 
 		// Create a new symbolic variable
-		virtual void *CreateVariable(const char *name) = 0;
+		virtual void *CreateVariable(const char *name, rev::DWORD size) = 0;
 
 		// Make a new constant
 		virtual void *MakeConst(rev::DWORD value, rev::DWORD bits) = 0;

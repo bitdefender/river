@@ -102,6 +102,7 @@
   <ItemGroup>
     <ClInclude Include="LargeStack.h" />
     <ClInclude Include="OverlappedRegisters.h" />
+    <ClInclude Include="ReversibleAction.h" />
     <ClInclude Include="RevSymbolicEnvironment.h" />
     <ClInclude Include="SymbolicEnvironment.h" />
     <ClInclude Include="TrackingCookie.h" />

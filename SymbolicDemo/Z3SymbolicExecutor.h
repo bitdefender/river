@@ -35,6 +35,7 @@ private:
 
 	void SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);
+	void SymbolicExecuteMovZx(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	Z3_ast ExecuteAdd(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteOr (Z3_ast o1, Z3_ast o2);
@@ -53,13 +54,11 @@ private:
 public:
 	int symIndex;
 
-	TrackingCookieFuncs *cookieFuncs;
-
 	Z3_config config;
 	Z3_context context;
-	Z3_sort dwordSort, wordSort, byteSort, bitSort;
+	Z3_sort dwordSort, wordSort, tbSort, byteSort, bitSort;
 
-	Z3_ast zero32, zeroFlag, oneFlag;
+	Z3_ast zero32, zero16, zero8, zeroFlag, oneFlag;
 
 	class Z3SymbolicCpuFlag {
 	protected:
@@ -86,7 +85,7 @@ public:
 
 	Z3_solver solver;
 
-	VariableTracker<Z3_ast> variableTracker;
+	//VariableTracker<Z3_ast> variableTracker;
 
 	typedef void(Z3SymbolicExecutor::*SymbolicExecute)(RiverInstruction *instruction, SymbolicOperands *ops);
 	template <Z3SymbolicExecutor::SymbolicExecute fSubOps[8]> void SymbolicExecuteSubOp(RiverInstruction *instruction, SymbolicOperands *ops);
@@ -94,15 +93,15 @@ public:
 	static SymbolicExecute executeFuncs[2][0x100];
 	static SymbolicExecute executeIntegerFuncs[8];
 
-	Z3SymbolicExecutor(sym::SymbolicEnvironment *e, TrackingCookieFuncs *f);
+	Z3SymbolicExecutor(sym::SymbolicEnvironment *e);
 	~Z3SymbolicExecutor();
 
 	void StepForward();
 	void StepBackward();
-	void Lock(Z3_ast t);
+	//void Lock(Z3_ast t);
 
 
-	virtual void *CreateVariable(const char *name);
+	virtual void *CreateVariable(const char *name, rev::DWORD size);
 	virtual void *MakeConst(rev::DWORD value, rev::DWORD bits);
 	virtual void *ExtractBits(void *expr, rev::DWORD lsb, rev::DWORD size);
 	virtual void *ConcatBits(void *expr1, void *expr2);

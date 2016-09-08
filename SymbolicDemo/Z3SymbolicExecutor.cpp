@@ -2,21 +2,39 @@
 
 #include "TrackingCookie.h"
 
-void *Z3SymbolicExecutor::CreateVariable(const char *name) {
+void *Z3SymbolicExecutor::CreateVariable(const char *name, rev::DWORD size) {
 	Z3_symbol s = Z3_mk_string_symbol(context, name);
-	Z3_ast ret = Z3_mk_const(context, s, dwordSort);
+	Z3_sort srt;
+	Z3_ast zro;
 
-	Z3_set_user_ptr(context, ret, cookieFuncs->allocCookie(), (void *)cookieFuncs->freeCookie);
+	switch (size) {
+	case 1 :
+		srt = byteSort;
+		zro = zero8;
+		break;
+	case 2 :
+		srt = wordSort;
+		zro = zero16;
+		break;
+	case 4 :
+		srt = dwordSort;
+		zro = zero32;
+		break;
+	default :
+		return nullptr;
+	};
+
+	Z3_ast ret = Z3_mk_const(context, s, srt);
 
 	Z3_ast l1[2] = {
 		Z3_mk_bvule(
 			context,
-			Z3_mk_int(context, 'a', dwordSort),
+			Z3_mk_int(context, 'a', srt),
 			ret
 		),
 		Z3_mk_bvuge(
 			context,
-			Z3_mk_int(context, 'z', dwordSort),
+			Z3_mk_int(context, 'z', srt),
 			ret
 		)
 	};
@@ -24,7 +42,7 @@ void *Z3SymbolicExecutor::CreateVariable(const char *name) {
 	Z3_ast l2[2] = {
 		Z3_mk_eq(
 			context,
-			zero32,
+			zro,
 			ret
 		),
 		Z3_mk_and(
@@ -44,6 +62,8 @@ void *Z3SymbolicExecutor::CreateVariable(const char *name) {
 	printf("(assert %s)\n\n", Z3_ast_to_string(context, cond));
 
 	symIndex++;
+
+	printf("<sym> var %08x <= %s\n", ret, name);
 	return ret;
 }
 
@@ -53,10 +73,16 @@ void *Z3SymbolicExecutor::MakeConst(rev::DWORD value, rev::DWORD bits) {
 	switch (bits) {
 		case 8:
 			type = byteSort;
+			break;
 		case 16:
 			type = wordSort;
+			break;
+		case 24: // only for unaligned mem acceses
+			type = tbSort;
+			break;
 		case 32:
 			type = dwordSort;
+			break;
 		default :
 			__asm int 3;
 	}
@@ -66,6 +92,8 @@ void *Z3SymbolicExecutor::MakeConst(rev::DWORD value, rev::DWORD bits) {
 		value,
 		type
 	);
+
+	printf("<sym> const %08x <= %08x\n", ret, value);
 
 	return (void *)ret;
 }
@@ -77,6 +105,7 @@ void *Z3SymbolicExecutor::ExtractBits(void *expr, rev::DWORD lsb, rev::DWORD siz
 		lsb,
 		(Z3_ast)expr
 	);
+	printf("<sym> extract %08x <= %08x, %d, %d\n", ret, expr, lsb+size-1, lsb);
 	return (void *)ret;
 }
 
@@ -87,34 +116,51 @@ void *Z3SymbolicExecutor::ConcatBits(void *expr1, void *expr2) {
 		(Z3_ast)expr2
 	);
 
+	printf("<sym> concat %08x <= %08x, %08x\n", ret, expr1, expr2);
 	return (void *)ret;
 }
 
-bool IsLocked(void *ctx, const Z3_ast *ast) {
+/*bool IsLocked(void *ctx, const Z3_ast *ast) {
 	void *v = Z3_get_user_ptr((Z3_context)ctx, *ast);
 	const TrackedVariableData *tvd = (const TrackedVariableData *)v;
-	return tvd->isLocked;
+	const TrackedVariableData *tmp = tvd;
+
+	do {
+		if (tmp->isLocked) {
+			return true;
+		}
+		tmp = tmp->next;
+	} while (tmp != tvd);
+
+	return false;
 }
 
 void Lock(void *ctx, Z3_ast *ast) {
 	void *v = Z3_get_user_ptr((Z3_context)ctx, *ast);
 	TrackedVariableData *tvd = (TrackedVariableData *)v;
-	tvd->isLocked = true;
+	TrackedVariableData *tmp = tvd;
+	do {
+		tmp->isLocked = true;
+		tmp = tmp->next;
+	} while (tmp != tvd);
 }
 
 void Unlock(void *ctx, Z3_ast *ast) {
 	void *v = Z3_get_user_ptr((Z3_context)ctx, *ast);
 	TrackedVariableData *tvd = (TrackedVariableData *)v;
-	tvd->isLocked = false;
-}
+	TrackedVariableData *tmp = tvd;
+	do {
+		tmp->isLocked = true;
+		tmp = tmp->next;
+	} while (tmp != tvd);
+}*/
 
 const unsigned int Z3SymbolicExecutor::Z3SymbolicCpuFlag::lazyMarker = 0xDEADBEEF;
 
 /*====================================================================================================*/
 
-Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e, TrackingCookieFuncs *f) :
-		sym::SymbolicExecutor(e), 
-		variableTracker((void *)this, ::IsLocked, ::Lock, ::Unlock) 
+Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e) :
+		sym::SymbolicExecutor(e)
 {
 	symIndex = 1;
 
@@ -132,18 +178,19 @@ Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e, TrackingCook
 	
 	lastCondition = nullptr;
 
-	cookieFuncs = f;
-
 	config = Z3_mk_config();
 	context = Z3_mk_context(config);
 	Z3_open_log("Z3.log");
 
 	dwordSort = Z3_mk_bv_sort(context, 32);
+	tbSort = Z3_mk_bv_sort(context, 24);
 	wordSort = Z3_mk_bv_sort(context, 16);
 	byteSort = Z3_mk_bv_sort(context, 8);
 	bitSort = Z3_mk_bv_sort(context, 1);
 
 	zero32 = Z3_mk_int(context, 0, dwordSort);
+	zero16 = Z3_mk_int(context, 0, wordSort);
+	zero8 = Z3_mk_int(context, 0, byteSort);
 	zeroFlag = Z3_mk_int(context, 0, bitSort);
 	oneFlag = Z3_mk_int(context, 1, bitSort);
 
@@ -164,7 +211,7 @@ Z3SymbolicExecutor::~Z3SymbolicExecutor() {
 }
 
 void Z3SymbolicExecutor::StepForward() {
-	variableTracker.Forward();
+	//variableTracker.Forward();
 	Z3_solver_push(context, solver);
 	for (int i = 0; i < 7; ++i) {
 		lazyFlags[i]->SaveState(*ls);
@@ -187,19 +234,21 @@ void Z3SymbolicExecutor::StepBackward() {
 	}
 
 	Z3_solver_pop(context, solver, 1);
-	variableTracker.Backward();
+	//variableTracker.Backward();
 	//printf("Solver pop\n");
 }
 
-void Z3SymbolicExecutor::Lock(Z3_ast t) {
-	variableTracker.Lock(&t);
-}
+//void Z3SymbolicExecutor::Lock(Z3_ast t) {
+	//variableTracker.Lock(&t);
+//}
 
 void Z3SymbolicExecutor::SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops) {
 	__asm int 3;
 }
 
 template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops) {
+	printf("<sym> jcc %08x\n", ops->svf[flag]);
+	
 	Z3_ast cond = Z3_mk_eq(
 		context,
 		(1 == ops->cvf[flag]) ? oneFlag : zeroFlag,
@@ -212,12 +261,16 @@ template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverIn
 Z3_ast Z3SymbolicExecutor::ExecuteAdd(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvadd(context, o1, o2);
 	env->SetOperand(0, r);
+
+	printf("<sym> add %08x <= %08x, %08x\n", r, o1, o2);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteOr(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvor(context, o1, o2);
 	env->SetOperand(0, r);
+
+	printf("<sym> or %08x <= %08x, %08x\n", r, o1, o2);
 	return r;
 }
 
@@ -236,12 +289,16 @@ Z3_ast Z3SymbolicExecutor::ExecuteSbb(Z3_ast o1, Z3_ast o2) {
 Z3_ast Z3SymbolicExecutor::ExecuteAnd(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvand(context, o1, o2);
 	env->SetOperand(0, r);
+
+	printf("<sym> and %08x <= %08x, %08x\n", r, o1, o2);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteSub(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
 	env->SetOperand(0, r);
+
+	printf("<sym> sub %08x <= %08x, %08x\n", r, o1, o2);
 	return r;
 }
 
@@ -252,15 +309,21 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(Z3_ast o1, Z3_ast o2) {
 
 	Z3_ast r = Z3_mk_bvxor(context, o1, o2);
 	env->SetOperand(0, r);
+
+	printf("<sym> xor %08x <= %08x, %08x\n", r, o1, o2);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
-	return Z3_mk_bvsub(context, o1, o2);
+	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
+	printf("<sym> cmp %08x <= %08x, %08x\n", r, o1, o2);
+	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteTest(Z3_ast o1, Z3_ast o2) {
-	return Z3_mk_bvand(context, o1, o2);
+	Z3_ast r = Z3_mk_bvand(context, o1, o2);
+	printf("<sym> test %08x <= %08x, %08x\n", r, o1, o2);
+	return r;
 }
 
 void Z3SymbolicExecutor::SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops) {
@@ -276,6 +339,20 @@ void Z3SymbolicExecutor::SymbolicExecuteMovSx(RiverInstruction *instruction, Sym
 	if (ops->tr[1]) {
 		Z3_ast dst = Z3_mk_sign_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)ops->sv[1]));
 		env->SetOperand(0, (void *)dst);
+
+		printf("<sym> movsx %08x <= %08x\n", dst, ops->sv[1]);
+	}
+	else {
+		env->UnsetOperand(0);
+	}
+}
+
+void Z3SymbolicExecutor::SymbolicExecuteMovZx(RiverInstruction *instruction, SymbolicOperands *ops) {
+	if (ops->tr[1]) {
+		Z3_ast dst = Z3_mk_zero_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)ops->sv[1]));
+		env->SetOperand(0, (void *)dst);
+
+		printf("<sym> movsx %08x <= %08x\n", dst, ops->sv[1]);
 	}
 	else {
 		env->UnsetOperand(0);
@@ -445,8 +522,8 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0xA8*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0xAC*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
-		/*0xB0*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0xB4*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0xB0*/ &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov,
+		/*0xB4*/ &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov,
 		/*0xB8*/ &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov,
 		/*0xBC*/ &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov,
 
@@ -526,7 +603,7 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0xAC*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0xB0*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0xB4*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0xB4*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteMovZx, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0xB8*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0xBC*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteMovSx, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
