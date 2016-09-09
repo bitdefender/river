@@ -2,6 +2,7 @@
 #define _Z3_SYMBOLIC_EXECUTOR_
 
 #include "z3.h"
+
 #include "SymbolicEnvironment.h"
 
 #include "VariableTracker.h"

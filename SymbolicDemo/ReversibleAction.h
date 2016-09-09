@@ -13,9 +13,17 @@ private :
 
 public :
 	ReversibleAction<ActionItem, actionFunc, SIZE>(void *context = nullptr) {
-		context = ctx;
+		ctx = context;
 		top = 0;
 		step = 0;
+	}
+
+	unsigned int GetStep() const {
+		return step;
+	}
+
+	unsigned int GetTop() const {
+		return top;
 	}
 
 	bool Push(ActionItem *itm) {
@@ -35,7 +43,6 @@ public :
 
 	void Backward() {
 		step--;
-
 		while ((top > 0) && (stack[top - 1].step > step)) {
 			top--;
 			actionFunc(ctx, stack[top].var);

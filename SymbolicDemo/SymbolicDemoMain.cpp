@@ -116,27 +116,14 @@ public :
 	}
 } tvdTracker;
 
-struct CustomExecutionContext {
+struct TrackedCondition {
+	bool wasInverted;
+	Z3_ast ast;
+};
+void UnloadCondition(void *ctx, TrackedCondition *itm);
+
+struct ConditionTracker : public ReversibleAction<TrackedCondition, UnloadCondition, 64> {
 public :
-	::DWORD executionPos;
-	int backSteps;
-	enum {
-		EXPLORING,
-		BACKTRACKING,
-		PATCHING,
-		RESTORING
-	} executionState;
-
-	struct {
-		Z3_ast condition;
-		::DWORD step;
-	} condStack[64];
-	::DWORD condCount;
-
-	struct TrackedCondition {
-		bool wasInverted;
-	};
-
 	TrackedCondition conditionPool[64];
 	TrackedCondition *freeConditions[64];
 	::DWORD freeCondCount;
@@ -144,39 +131,15 @@ public :
 	TrackedCondition *tvds[64];
 	::DWORD revCount;
 
-	void Init() {
-		executionPos = 0;
-		backSteps = 0;
-		executionState = EXPLORING;
-		condCount = 0;
-		revCount = 0;
+	TrackedCondition *lastCond;
 
+	ConditionTracker() : ReversibleAction<TrackedCondition, UnloadCondition, 64>(this) {
 		freeCondCount = sizeof(conditionPool) / sizeof(conditionPool[0]);
+		revCount = 0;
+		lastCond = nullptr;
 		for (::DWORD i = 0; i < freeCondCount; ++i) {
 			freeConditions[i] = &conditionPool[i];
 		}
-	}
-
-	void Push(Z3_ast ast) {
-		//PRINTF("Pushing ast %08p %d\n", ast, executionPos - 1);
-		condStack[condCount].condition = ast;
-		condStack[condCount].step = executionPos - 1;
-		condCount++;
-	}
-
-	bool TryPop(Z3_ast &ast) {
-		if (0 == condCount) {
-			return false;
-		}
-
-		if (condStack[condCount - 1].step == executionPos) {
-			condCount--;
-			ast = condStack[condCount].condition;
-			//PRINTF("Popping ast %08p %d\n", ast, executionPos);
-			return true;
-		}
-
-		return false;
 	}
 
 	TrackedCondition *AllocCondition() {
@@ -190,22 +153,20 @@ public :
 		return ret;
 	}
 
-	static void DummyFreeCondition(void *) {
-		__asm int 3;
-	}
-
 	void FreeCondition(TrackedCondition *cond) {
 		//PRINTF("Free condition %08p\n", cond);
 		freeConditions[freeCondCount++] = cond;
 	}
 
-	void Push(TrackedCondition *tvd) {
+	void Unload(TrackedCondition *tvd) {
 		//PRINTF("Tracking condition %08p\n", tvd);
 		tvds[revCount] = tvd;
 		revCount++;
+
+		lastCond = tvd;
 	}
 
-	TrackedCondition *Pop() {
+	TrackedCondition *Reload() {
 		TrackedCondition *ret = tvds[--revCount];
 		tvds[revCount] = nullptr;
 
@@ -217,8 +178,45 @@ public :
 		for (::DWORD i = 0; i < revCount; ++i) {
 			FreeCondition(tvds[i]);
 		}
-
 		revCount = 0;
+	}
+
+	bool TryPop(TrackedCondition *&cond) {
+		if (0 < revCount) {
+			cond = lastCond;
+			lastCond = nullptr;
+
+			if (nullptr != cond) {
+				revCount--;
+				return true;
+			}
+		}
+
+		return false;
+	}
+};
+
+void UnloadCondition(void *ctx, TrackedCondition *itm) {
+	ConditionTracker *_this = (ConditionTracker *)ctx;
+
+	_this->Unload(itm);
+}
+
+struct CustomExecutionContext : public ConditionTracker {
+public :
+	::DWORD executionPos;
+	int backSteps;
+	enum {
+		EXPLORING,
+		BACKTRACKING,
+		PATCHING,
+		RESTORING
+	} executionState;
+
+	void Init() {
+		executionPos = 0;
+		backSteps = 0;
+		executionState = EXPLORING;
 	}
 };
 
@@ -304,7 +302,7 @@ public:
 
 	virtual unsigned int ExecutionControl(void *ctx, rev::ADDR_TYPE addr) {
 		rev::DWORD ret = EXECUTION_ADVANCE;
-		Z3_ast ast;
+		TrackedCondition *lastCondition;
 
 		QueryPerformanceCounter(&liSymStart);
 		static const char c[][32] = {
@@ -315,35 +313,35 @@ public:
 		};
 
 		if (EXECUTION_BACKTRACK == lastDirection) {
-			cec.executionPos--;
+			//cec.executionPos--;
 			executor->StepBackward();
 			lockedVariables.Backward();
+			cec.Backward();
 
 			switch (cec.executionState) {
 			case CustomExecutionContext::BACKTRACKING:
 				ret = EXECUTION_BACKTRACK;
 
-				if (cec.TryPop(ast)) {
-					CustomExecutionContext::TrackedCondition *cond = (CustomExecutionContext::TrackedCondition *)Z3_get_user_ptr(executor->context, ast);
+				if (cec.TryPop(lastCondition)) {
+					PRINTF("Trying to invert condition %08p - %s\n", lastCondition->ast, lastCondition->wasInverted ? "true" : "false");
 
-					PRINTF("Trying to invert condition\n");
-
-					if (!cond->wasInverted) {
-						ast = Z3_simplify(
+					if (!lastCondition->wasInverted) {
+						lastCondition->ast = Z3_simplify(
 							executor->context,
 							Z3_mk_not(
 								executor->context,
-								ast
+								lastCondition->ast
 							)
 						);
 
 						//PRINTF("Invert condition %08p\n", cond);
-						ast = Z3_simplify(executor->context, ast);
+						lastCondition->ast = Z3_simplify(executor->context, lastCondition->ast);
+						//PRINTF("(tryinvert %s)\n\n", Z3_ast_to_string(executor->context, lastCondition->ast));
 
-						if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, ast)) {
-							Z3_solver_assert(executor->context, executor->solver, ast);
+						if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, lastCondition->ast)) {
+							Z3_solver_assert(executor->context, executor->solver, lastCondition->ast);
 
-							PRINTF("(tryassert %s)\n\n", Z3_ast_to_string(executor->context, ast));
+							PRINTF("(tryassert %s)\n\n", Z3_ast_to_string(executor->context, lastCondition->ast));
 
 							//unsigned int actualPass[10] = { 0 };
 							Z3_lbool ret = Z3_solver_check(executor->context, executor->solver);
@@ -401,8 +399,8 @@ public:
 							else {
 							}
 
-							cond->wasInverted = true;
-							cec.Push(cond);
+							lastCondition->wasInverted = true;
+							cec.Unload(lastCondition);
 						}
 					}
 				}
@@ -411,10 +409,12 @@ public:
 			case CustomExecutionContext::PATCHING:
 				ret = EXECUTION_BACKTRACK;
 				cec.backSteps++;
-				if (cec.TryPop(ast)) {
-					CustomExecutionContext::TrackedCondition *cond = (CustomExecutionContext::TrackedCondition *)Z3_get_user_ptr(executor->context, ast);
-					cec.Push(cond);
-				}
+
+				/* this should happen now automagically
+				
+				  if (cec.TryPop(lastCondition)) {
+					cec.Unload(lastCondition);
+				}*/
 
 				if (DonePatching(ctx, (unsigned int *)bufferByte, (unsigned int *)newPass, 2)) {
 					cec.executionState = cec.RESTORING;
@@ -429,11 +429,11 @@ public:
 
 			PRINTF(
 				"*** step %d; addr 0x%08p; state %s; backSteps %d, coundCount %d\n",
-				cec.executionPos,
+				cec.GetStep(),
 				addr,
 				c[cec.executionState],
 				cec.backSteps,
-				cec.condCount
+				cec.GetTop()
 			);
 
 			fflush(stdout);
@@ -441,11 +441,11 @@ public:
 		else if (EXECUTION_ADVANCE == lastDirection) {
 			PRINTF(
 				"*** step %d; addr 0x%08p; state %s; backSteps %d, coundCount %d\n",
-				cec.executionPos,
+				cec.GetStep(),
 				addr,
 				c[cec.executionState],
 				cec.backSteps,
-				cec.condCount
+				cec.GetTop()
 			);
 
 			fflush(stdout);
@@ -456,11 +456,12 @@ public:
 					PRINTF("!@(assert %s)\n\n", Z3_ast_to_string(executor->context, executor->lastCondition));
 
 					if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, executor->lastCondition)) {
-						CustomExecutionContext::TrackedCondition *cond = cec.AllocCondition();
+						TrackedCondition *cond = cec.AllocCondition();
 						cond->wasInverted = false;
-						Z3_set_user_ptr(executor->context, executor->lastCondition, cond, CustomExecutionContext::DummyFreeCondition);
+						cond->ast = executor->lastCondition;
+						//Z3_set_user_ptr(executor->context, executor->lastCondition, cond, CustomExecutionContext::DummyFreeCondition);
 
-						cec.Push(executor->lastCondition);
+						cec.Push(cond);
 						Z3_solver_assert(executor->context, executor->solver, executor->lastCondition);
 
 						PRINTF("(assert %s)\n\n", Z3_ast_to_string(executor->context, executor->lastCondition));
@@ -474,10 +475,11 @@ public:
 				if (nullptr != executor->lastCondition) {
 
 					if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, executor->lastCondition)) {
-						CustomExecutionContext::TrackedCondition *cond = cec.Pop();
-						Z3_set_user_ptr(executor->context, executor->lastCondition, cond, CustomExecutionContext::DummyFreeCondition);
+						TrackedCondition *cond = cec.Reload();
+						//Z3_set_user_ptr(executor->context, executor->lastCondition, cond, CustomExecutionContext::DummyFreeCondition);
+						cond->ast = executor->lastCondition;
 
-						cec.Push(executor->lastCondition);
+						cec.Push(cond);
 						Z3_solver_assert(executor->context, executor->solver, executor->lastCondition);
 
 						PRINTF("(assert %s)\n\n", Z3_ast_to_string(executor->context, executor->lastCondition));
@@ -506,7 +508,8 @@ public:
 		if (EXECUTION_ADVANCE == ret) {
 			executor->StepForward();
 			lockedVariables.Forward();
-			cec.executionPos++;
+			//cec.executionPos++;
+			cec.Forward();
 		}
 
 		QueryPerformanceCounter(&liSymStop);
