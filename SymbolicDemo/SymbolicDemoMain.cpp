@@ -250,14 +250,6 @@ public:
 			revEnv->SetSymbolicVariable("a[5]", (rev::ADDR_TYPE)(&bufferByte[5]), 1);
 			revEnv->SetSymbolicVariable("a[6]", (rev::ADDR_TYPE)(&bufferByte[6]), 1);
 			revEnv->SetSymbolicVariable("a[7]", (rev::ADDR_TYPE)(&bufferByte[7]), 1);
-			/*ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[0]), (rev::DWORD)executor->CreateVariable("a[0]"));
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[1]), (rev::DWORD)executor->CreateVariable("a[1]"));
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[2]), (rev::DWORD)executor->CreateVariable("a[2]"));
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[3]), (rev::DWORD)executor->CreateVariable("a[3]"));
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[4]), (rev::DWORD)executor->CreateVariable("a[4]"));
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[5]), (rev::DWORD)executor->CreateVariable("a[5]"));
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[6]), (rev::DWORD)executor->CreateVariable("a[6]"));
-			ctrl->MarkMemoryValue(ctx, (rev::ADDR_TYPE)(&buffer[7]), (rev::DWORD)executor->CreateVariable("a[7]"));*/
 
 			ctxInit = true;
 			QueryPerformanceCounter(&liStart);

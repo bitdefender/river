@@ -8,6 +8,7 @@ using namespace std;
 
 void DebugPrintf(const unsigned int printMask, const char *fmt, ...);
 rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction);
+void InitSegments(void *hThread, rev::DWORD *segments);
 
 typedef void(*GetCurrentRegistersFunc)(void *ctx, rev::ExecutionRegs *regs);
 typedef void *(*GetMemoryInfoFunc)(void *ctx, void *ptr);

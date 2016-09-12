@@ -95,6 +95,8 @@ bool InprocessExecutionController::Execute() {
 		NULL
 	);
 
+	InitSegments(hThread, revCfg->segmentOffsets);
+	
 	return NULL != hThread;
 }
 

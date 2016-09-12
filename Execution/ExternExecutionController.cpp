@@ -211,33 +211,6 @@ bool ExternExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 	return true;
 }
 
-void InitSegment(HANDLE hThread, DWORD dwSeg, DWORD &offset) {
-	LDT_ENTRY entry;
-	DWORD base, limit;
-
-	if (FALSE == GetThreadSelectorEntry(hThread, dwSeg, &entry)) {
-		base = 0xFFFFFFFF;
-		limit = 0;
-	}
-	else {
-		base = entry.BaseLow | (entry.HighWord.Bytes.BaseMid << 16) | (entry.HighWord.Bytes.BaseHi << 24);
-		limit = entry.LimitLow | (entry.HighWord.Bits.LimitHi << 16);
-	}
-
-	if (entry.HighWord.Bits.Granularity) {
-		limit = (limit << 12) | 0x0FFF;
-	}
-
-	offset = base;
-}
-
-
-void InitSegments(HANDLE hThread, DWORD *segments) {
-	for (DWORD i = 0; i < 0x100; ++i) {
-		InitSegment(hThread, i, segments[i]);
-	}
-}
-
 bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	/* Imports */
 	HMODULE hNtDll = GetModuleHandle("ntdll.dll");
