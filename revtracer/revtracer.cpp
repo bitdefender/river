@@ -25,19 +25,6 @@ namespace rev {
 #define TRUE  1
 #define FALSE 0
 
-#ifndef NT_SUCCESS
-#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
-#endif
-
-	DLL_PUBLIC DWORD revtracerLastError;
-
-	typedef DWORD(__stdcall *RtlNtStatusToDosErrorFunc)(NTSTATUS status);
-
-	DWORD Kernel32BaseSetLastNTError(NTSTATUS status) {
-		revtracerLastError = ((RtlNtStatusToDosErrorFunc)revtracerAPI.lowLevel.rtlNtStatusToDosError)(status);
-		return revtracerLastError;
-	}
-
 #define PAGE_EXECUTE           0x10     
 #define PAGE_EXECUTE_READ      0x20     
 #define PAGE_EXECUTE_READWRITE 0x40     
@@ -46,41 +33,7 @@ namespace rev {
 #define MEM_COMMIT                  0x1000      
 #define MEM_RESERVE                 0x2000      
 
-	typedef NTSTATUS(__stdcall *NtAllocateVirtualMemoryFunc)(
-		HANDLE               ProcessHandle,
-		LPVOID               *BaseAddress,
-		DWORD                ZeroBits,
-		size_t               *RegionSize,
-		DWORD                AllocationType,
-		DWORD                Protect);
-
-	LPVOID __stdcall Kernel32VirtualAllocEx(HANDLE hProcess, LPVOID lpAddress, size_t dwSize, DWORD flAllocationType, DWORD flProtect) {
-		LPVOID addr = lpAddress;
-		if (lpAddress && (unsigned int)lpAddress < 0x10000) {
-			//RtlSetLastWin32Error(87);
-		}
-		else {
-			NTSTATUS ret = ((NtAllocateVirtualMemoryFunc)revtracerAPI.lowLevel.ntAllocateVirtualMemory)(
-				hProcess,
-				&addr,
-				0,
-				&dwSize,
-				flAllocationType & 0xFFFFFFF0,
-				flProtect
-				);
-			if (NT_SUCCESS(ret)) {
-				return addr;
-			}
-			Kernel32BaseSetLastNTError(ret);
-		}
-		return 0;
-	}
-
-
-	LPVOID __stdcall Kernel32VirtualAlloc(LPVOID lpAddress, size_t dwSize, DWORD flAllocationType, DWORD flProtect) {
-		return Kernel32VirtualAllocEx((HANDLE)0xFFFFFFFF, lpAddress, dwSize, flAllocationType, flProtect);
-	}
-
+	typedef void* (*AllocateMemoryCall)(size_t size);
 
 	HANDLE Kernel32GetCurrentThread() {
 		return (HANDLE)0xFFFFFFFE;
@@ -112,48 +65,6 @@ namespace rev {
 	} LDT_ENTRY, *LPLDT_ENTRY;
 
 	typedef DWORD THREADINFOCLASS;
-
-	typedef NTSTATUS(__stdcall *NtQueryInformationThreadFunc)(
-		HANDLE ThreadHandle,
-		THREADINFOCLASS ThreadInformationClass,
-		void *ThreadInformation,
-		DWORD ThreadInformationLength,
-		DWORD *ReturnLength
-		);
-
-	BOOL Kernel32GetThreadSelectorEntry(HANDLE hThread, DWORD dwSeg, LPLDT_ENTRY entry) {
-		NTSTATUS ret;
-		DWORD segBuffer[3];
-
-		segBuffer[0] = dwSeg;
-		ret = ((NtQueryInformationThreadFunc)revtracerAPI.lowLevel.ntQueryInformationThread)(
-			hThread,
-			(THREADINFOCLASS)6,
-			&segBuffer,
-			sizeof(segBuffer),
-			NULL
-			);
-
-		if (NT_SUCCESS(ret)) {
-			*(DWORD *)&entry->LimitLow = segBuffer[1];
-			*(DWORD *)&entry->HighWord.Bytes.BaseMid = segBuffer[2];
-			return TRUE;
-		}
-		else {
-			Kernel32BaseSetLastNTError(ret);
-			return FALSE;
-		}
-	}
-
-
-	typedef NTSTATUS(__stdcall *NtTerminateProcessFunc)(
-		HANDLE ProcessHandle,
-		NTSTATUS ExitStatus
-	);
-
-	BOOL Kernel32TerminateProcess(HANDLE hProcess, DWORD uExitCode) {
-		return ((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(hProcess, uExitCode);
-	}
 
 	void *GetTEB() {
 		DWORD r;
@@ -262,7 +173,7 @@ namespace rev {
 				if ((ret & 0xC0000000) == 0x80000000) {
 					*lpNumberOfBytesWritten = ioStatus.Information;
 				}
-				Kernel32BaseSetLastNTError(ret);
+				//DefaultSetLastError(ret);
 				return FALSE;
 			}
 			ret = ioStatus.Status;
@@ -275,7 +186,7 @@ namespace rev {
 		if ((ret & 0xC0000000) == 0x80000000) {
 			*lpNumberOfBytesWritten = ioStatus.Information;
 		}
-		Kernel32BaseSetLastNTError(ret);
+		//DefaultSetLastError(ret);
 		return FALSE;
 
 	}
@@ -288,7 +199,7 @@ namespace rev {
 	}
 
 	void *DefaultMemoryAlloc(unsigned long dwSize) {
-		return Kernel32VirtualAlloc(NULL, dwSize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		return ((AllocateMemoryCall)revtracerAPI.lowLevel.ntAllocateVirtualMemory)(dwSize);
 	}
 
 	void DefaultMemoryFree(void *ptr) {
@@ -410,10 +321,6 @@ namespace rev {
 
 	struct ExecutionEnvironment *pEnv = NULL;
 
-	void TerminateCurrentProcess() {
-		Kernel32TerminateProcess((HANDLE)0xFFFFFFFF, 0);
-	}
-
 	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)orig);
 		pBlock->address = (DWORD)det;
@@ -456,11 +363,11 @@ namespace rev {
 				revtracerConfig.entryPoint = pBlock->pFwCode;
 				break;
 			case EXECUTION_TERMINATE :
-				revtracerConfig.entryPoint = TerminateCurrentProcess;
+				revtracerConfig.entryPoint = revtracerAPI.lowLevel.ntTerminateProcess;
 				break;
 			case EXECUTION_BACKTRACK :
 				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "EXECUTION_BACKTRACK @executionBegin");
-				revtracerConfig.entryPoint = TerminateCurrentProcess;
+				revtracerConfig.entryPoint = revtracerAPI.lowLevel.ntTerminateProcess;
 				break;
 		}
 	}
