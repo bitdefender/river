@@ -2,13 +2,11 @@
 #include <stdio.h>
 
 #include "../Execution/Execution.h"
-#include "SymbolicEnvironment.h"
 
 #include "VariableTracker.h"
 #include "TrackingCookie.h"
 
-#include "RevSymbolicEnvironment.h"
-#include "OverlappedRegisters.h"
+#include "../SymbolicEnvironment/Environment.h"
 #include "Z3SymbolicExecutor.h"
 
 #include "ReversibleAction.h"
@@ -88,8 +86,8 @@ void DebugPrint(rev::DWORD printMask, const char *fmt, ...) {
 
 ReversibleAction<TrackedVariableData, Unlock, 32> lockedVariables;
 Z3SymbolicExecutor *executor = nullptr;
-OverlappedRegistersEnvironment *regEnv = nullptr;
-RevSymbolicEnvironment *revEnv = nullptr;
+sym::SymbolicEnvironment *regEnv = nullptr;
+sym::SymbolicEnvironment *revEnv = nullptr;
 ::DWORD lastDirection = EXECUTION_ADVANCE;
 
 // here are the bindings to the payload
@@ -234,9 +232,8 @@ public:
 		
 		QueryPerformanceCounter(&liSymStart);
 		if (!ctxInit) {
-			revEnv = new RevSymbolicEnvironment(ctx, ctrl);
-			regEnv = new OverlappedRegistersEnvironment();
-			regEnv->SetSubEnvironment(revEnv); //Init(env);
+			revEnv = NewX86RevtracerEnvironment(ctx, ctrl); //new RevSymbolicEnvironment(ctx, ctrl);
+			regEnv = NewX86RegistersEnvironment(revEnv); //new OverlappedRegistersEnvironment();
 			executor = new Z3SymbolicExecutor(regEnv);
 			regEnv->SetExecutor(executor);
 
@@ -540,14 +537,6 @@ public:
 	virtual void TerminationNotification(void *ctx) { }
 
 } symbolicExecution;
-
-sym::SymbolicExecutor *SymExeConstructor(sym::SymbolicEnvironment *env) {
-	regEnv = new OverlappedRegistersEnvironment();
-	regEnv->SetSubEnvironment(env);
-
-	executor = new Z3SymbolicExecutor(regEnv);
-	return executor;
-}
 
 void TrackCallback(rev::DWORD value, rev::DWORD address, rev::DWORD segSel) {
 	if (EXECUTION_ADVANCE == lastDirection) {

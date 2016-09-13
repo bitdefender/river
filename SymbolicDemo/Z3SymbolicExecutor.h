@@ -3,7 +3,7 @@
 
 #include "z3.h"
 
-#include "SymbolicEnvironment.h"
+#include "../SymbolicEnvironment/SymbolicEnvironment.h"
 
 #include "VariableTracker.h"
 #include "TrackingCookie.h"
