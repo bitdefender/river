@@ -2,7 +2,6 @@
 #include <cstdio>
 
 #pragma section("hook", read, execute)
-
 #pragma code_seg(push, "hook")
 
 void __stdcall KiUEDPayload(PEXCEPTION_RECORD exception, PCONTEXT context) {

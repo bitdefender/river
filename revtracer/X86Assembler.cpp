@@ -423,6 +423,8 @@ void X86Assembler::SetOriginalInstructions(RiverInstruction *ptr) {
 }
 
 void X86Assembler::MarkOriginalInstruction(unsigned int offset) {
-	original[originalIdx].assembledOffset = offset;
-	originalIdx++;
+	if (nullptr != original) {
+		original[originalIdx].assembledOffset = offset;
+		originalIdx++;
+	}
 }

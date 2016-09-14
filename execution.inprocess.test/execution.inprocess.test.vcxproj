@@ -11,10 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Hook.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Payload.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Hook.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F79ED47A-7A0D-49BC-B4D7-68BD24D5858C}</ProjectGuid>

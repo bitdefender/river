@@ -419,6 +419,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		//assembler.CopyFix(pCB->pFwCode, outBuffer);
 		codeBuffer.CopyToFixed(pCB->pFwCode);
 		
+		assembler.SetOriginalInstructions(nullptr);
 		//outBufferSize = rivertox86(this, rt, bkRiverInst, bkInstCount, outBuffer, 0x00);
 
 		if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {

@@ -20,7 +20,7 @@ extern "C" unsigned int buffer[] = {
 int Payload() {
 	int ret;
 
-	ret = Check(buffer);
+	ret = Check(nullptr);
 	if (ret == 0xad6d) {
 		return 1;
 	}

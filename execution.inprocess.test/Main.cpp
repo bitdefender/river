@@ -1,4 +1,5 @@
 #include "../Execution/Execution.h"
+#include "Hook.h"
 
 #include <Windows.h>
 
@@ -53,11 +54,16 @@ public :
 	}
 } observer;
 
+void *ExceptionHandler(unsigned int trEip, unsigned int &oEip) {
+	oEip = trEip;
+	return nullptr;
+}
+
 extern int Payload();
 
 int main() {
 
-	Payload();
+	ApplyExceptionHook(ExceptionHandler);
 
 	fopen_s(&observer.fBlocks, "e.t.txt", "wt");
 
