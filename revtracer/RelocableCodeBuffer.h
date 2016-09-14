@@ -18,6 +18,7 @@ public :
 	void Reset();
 	void SetRelocation(rev::BYTE *reloc);
 	void CopyToFixed(rev::BYTE *dst) const;
+	rev::DWORD GetOffset() const;
 };
 
 #endif

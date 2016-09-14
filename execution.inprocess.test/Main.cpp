@@ -57,6 +57,8 @@ extern int Payload();
 
 int main() {
 
+	Payload();
+
 	fopen_s(&observer.fBlocks, "e.t.txt", "wt");
 
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);

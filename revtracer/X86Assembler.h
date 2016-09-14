@@ -38,8 +38,14 @@ private :
 	//bool GenerateTransitions(const RiverInstruction &ri, rev::BYTE *&px86, rev::DWORD &pFlags, rev::BYTE &repReg, rev::DWORD &instrCounter);
 	bool TranslateNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);
 	bool TranslateTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);
+
+	RiverInstruction *original;
+	unsigned int originalIdx;
 public :
 	virtual bool Init(RiverRuntime *rt, rev::DWORD dwTranslationFlags);
+	
+	void SetOriginalInstructions(RiverInstruction *ptr);
+	void MarkOriginalInstruction(unsigned int offset);
 
 	virtual bool Assemble(RiverInstruction *pRiver, rev::DWORD dwInstrCount, RelocableCodeBuffer &px86, rev::DWORD flg, rev::DWORD &instrCounter, rev::DWORD &byteCounter, rev::BYTE outputType);
 	//bool AssembleTracking(RiverInstruction *pRiver, rev::DWORD dwInstrCount, RelocableCodeBuffer &px86, rev::DWORD flg, rev::DWORD &instrCounter, rev::DWORD &byteCounter);

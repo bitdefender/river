@@ -32,3 +32,7 @@ void RelocableCodeBuffer::CopyToFixed(BYTE *dst) const {
 		*(DWORD *)(&dst[offset]) += (DWORD)dst;
 	}
 }
+
+DWORD RelocableCodeBuffer::GetOffset() const {
+	return cursor - buffer;
+}

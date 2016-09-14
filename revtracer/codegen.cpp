@@ -413,6 +413,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 
 		//outBufferSize = rivertox86(this, rt, fwRiverInst, fwInstCount, outBuffer, 0x01);
 		codeBuffer.Reset();
+		assembler.SetOriginalInstructions((RiverInstruction *)pCB->pDisasmCode);
 		assembler.Assemble(fwRiverInst, fwInstCount, codeBuffer, 0x10, pCB->dwFwOpCount, outBufferSize, ASSEMBLER_CODE_NATIVE | ASSEMBLER_DIR_FORWARD);
 		pCB->pFwCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 		//assembler.CopyFix(pCB->pFwCode, outBuffer);

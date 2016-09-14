@@ -215,6 +215,7 @@ struct RiverInstruction {
 	union RiverOperand operands[4];
 
 	rev::DWORD instructionAddress; // relevant only for native and meta instructions
+	rev::DWORD assembledOffset;
 
 	inline void PromoteModifiers() {
 		for (int i = 0; i < 4; ++i) {

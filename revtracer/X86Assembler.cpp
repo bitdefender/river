@@ -104,14 +104,6 @@ bool X86Assembler::TranslateNative(const RiverInstruction &ri, RelocableCodeBuff
 		return true;
 	}
 
-	//if (/*(RIVER_FAMILY(ri.family) == RIVER_FAMILY_TRACK) || */(RIVER_FAMILY(ri.family) == RIVER_FAMILY_PRETRACK)) {
-	//	return true;
-	//}
-
-	/*if ((RIVER_FAMILY_RIVER == RIVER_FAMILY(ri.family)) && (0x10 & pFlags)) {
-		return true;
-	}*/
-
 	// when generating fwcode skip meta instructions
 	if ((RIVER_FAMILY(ri.family) == RIVER_FAMILY_PREMETA) || (RIVER_FAMILY(ri.family) == RIVER_FAMILY_POSTMETA)) {
 		if (pFlags & FLAG_SKIP_METAOP) {
@@ -129,15 +121,6 @@ bool X86Assembler::TranslateNative(const RiverInstruction &ri, RelocableCodeBuff
 
 	DWORD dwTable = 0;
 
-	/*if (rOut->modifiers & RIVER_MODIFIER_EXT) {
-		*px86.cursor = 0x0F;
-		px86.cursor++;
-		dwTable = 1;
-	}*/
-
-	//(this->*assembleOpcodes[dwTable][rOut->opCode])(*rOut, px86, pFlags, instrCounter);
-	//(this->*assembleOperands[dwTable][rOut->opCode])(*rOut, px86);
-
 	GenericX86Assembler *casm = &nAsm;
 
 	if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_RIVER) {
@@ -150,6 +133,10 @@ bool X86Assembler::TranslateNative(const RiverInstruction &ri, RelocableCodeBuff
 		casm = &rtAsm;
 	} else if (RIVER_FAMILY(rOut->family) != RIVER_FAMILY_NATIVE) {
 		__asm int 3;
+	}
+
+	if (casm == &nAsm) {
+		MarkOriginalInstruction(px86.GetOffset());
 	}
 
 	casm->Translate(*rOut, px86, pFlags, currentFamily, repReg, instrCounter, outputType);
@@ -428,4 +415,14 @@ bool X86Assembler::Init(RiverRuntime *runtime, DWORD dwTranslationFlags) {
 	rtAsm.Init(runtime);
 
 	return true;
+}
+
+void X86Assembler::SetOriginalInstructions(RiverInstruction *ptr) {
+	original = ptr;
+	originalIdx = 0;
+}
+
+void X86Assembler::MarkOriginalInstruction(unsigned int offset) {
+	original[originalIdx].assembledOffset = offset;
+	originalIdx++;
 }
