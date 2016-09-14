@@ -27,6 +27,7 @@
 //      B must be prev
 
 #include "LargeStack.h"
+#include "Common.h"
 
 #define LOG_MIN_CHUNK_SIZE 12
 #define MIN_CHUNK_SIZE (1 << LOG_MIN_CHUNK_SIZE)
@@ -37,7 +38,7 @@ namespace rev {
 
 	LargeStack::LargeStack(DWORD *base, DWORD size, DWORD *top, char *fName) {
 		if (size & (MIN_STACK_SIZE - 1)) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		stackBase = base;
@@ -64,7 +65,7 @@ namespace rev {
 		);
 
 		if (INVALID_HANDLE_VALUE == hVirtualStack) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 

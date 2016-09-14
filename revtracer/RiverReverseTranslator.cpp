@@ -29,7 +29,7 @@ void RiverReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstruc
 }
 
 void RiverReverseTranslator::TranslateUnk(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void RiverReverseTranslator::TranslatePushReg(RiverInstruction &rOut, const RiverInstruction &rIn) {
@@ -91,7 +91,7 @@ void RiverReverseTranslator::Translate0x83(RiverInstruction &rOut, const RiverIn
 			rOut.operands[0].asRegister.versioned -= 0x100; // previous register version
 			break;
 		default:
-			__asm int 3;
+			DEBUG_BREAK;
 	}
 }
 

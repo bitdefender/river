@@ -1,4 +1,5 @@
 #include "DualAllocator.h"
+#include "Common.h"
 
 DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const wchar_t *shmName, DWORD granularity) {
 	hMapping = CreateFileMappingW(
@@ -111,7 +112,7 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 		);
 
 	if (dwCandidate != (DWORD)ptr) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	mappedViews.push_back(ptr);

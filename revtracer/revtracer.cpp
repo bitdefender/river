@@ -239,23 +239,23 @@ namespace rev {
 	void DefaultMarkCallback(DWORD oldValue, DWORD newValue, DWORD address, DWORD segSel) { }
 
 	void DefaultNtAllocateVirtualMemory() {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	void DefaultNtFreeVirtualMemory() {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	void DefaultNtQueryInformationThread() {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	void DefaultRtlNtStatusToDosError() {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	void Defaultvsnprintf_s() {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	void __stdcall DefaultSymbolicHandler(void *context, void *offset, void *address) {

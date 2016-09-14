@@ -5,6 +5,7 @@
 /* river is a fixed length extended x86 instruction set */
 /* river is designed to be efficiently translated to and from x86 */
 
+#include "common.h"
 #include "environment.h"
 
 /* River mofifiers (present in riverInstruction.modifiers) */
@@ -247,7 +248,7 @@ struct RiverInstruction {
 			}
 			return RIVER_REG_xBX;
 		} else {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 

@@ -169,7 +169,7 @@ bool FloatingPE::Relocate(DWORD newAddr) {
 					*((QWORD *)RVA(reloc->VirtualAddress + off)) += (long)offset;
 					break;
 				default :
-					//__asm int 3;
+					//DEBUG_BREAK;
 					__debugbreak();
 			}
         }

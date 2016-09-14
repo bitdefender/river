@@ -4,6 +4,7 @@
 #include "Loader/Mem.Mapper.h"
 
 #include "RiverStructs.h"
+#include "Common.h"
 
 //#define DUMP_BLOCKS
 
@@ -109,12 +110,12 @@ bool ExternExecutionController::MapLoader() {
 
 		pLoaderBase = GetFreeRegion(hProcess, fLoader->GetRequiredSize());
 		if (!fLoader->IsValid()) {
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 		}
 
 		if (!fLoader->MapPE(mLoader, (DWORD &)pLoaderBase)) {
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 		}
 
@@ -144,12 +145,12 @@ bool ExternExecutionController::MapLoader() {
 			!LoadExportedName(fLoader, pLoaderBase, "MapMemory", pLdrMapMemory) ||
 			!LoadExportedName(fLoader, pLoaderBase, "LoaderPerform", pLoaderPerform)
 		) {
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 		}
 
 		if (FALSE == WriteProcessMemory(hProcess, ldrAPIPtr, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 		}
 
@@ -277,7 +278,7 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 		!LoadExportedName(fRevTracer, pRevtracerBase, "GetMemoryInfo", gmi) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryValue", mmv)
 	) {
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	} 
 
@@ -540,7 +541,7 @@ bool ExternExecutionController::Execute() {
 	memset(&processInfo, 0, sizeof(processInfo));
 
 	if ((execState != INITIALIZED) && (execState != TERMINATED) && (execState != ERR)) {
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
@@ -559,7 +560,7 @@ bool ExternExecutionController::Execute() {
 
 	if (FALSE == bRet) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
@@ -568,31 +569,31 @@ bool ExternExecutionController::Execute() {
 
 	if (!InitializeAllocator()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
 	if (!MapLoader()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
 	if (!MapTracer()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
 	if (!WriteLoaderConfig()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
 	if (!SwitchEntryPoint()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
@@ -692,7 +693,7 @@ DWORD ExternExecutionController::ControlThread() {
 			case REPLY_CLEANUP_CONTEXT:
 			case REPLY_SYSCALL_CONTROL:
 			case REPLY_BRANCH_HANDLER:
-				__asm int 3;
+				DEBUG_BREAK;
 				break;
 
 			case REQUEST_MEMORY_ALLOC: {
@@ -719,7 +720,7 @@ DWORD ExternExecutionController::ControlThread() {
 				break;
 
 			default:
-				__asm int 3;
+				DEBUG_BREAK;
 				break;
 			}
 

@@ -29,7 +29,7 @@ static void FixRiverEspOp(BYTE opType, RiverOperand *op, BYTE repReg) {
 	case RIVER_OPTYPE_MEM:
 		break;
 	default:
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 }
 
@@ -90,7 +90,7 @@ void X86Assembler::EndRiverConversion(RelocableCodeBuffer &px86, DWORD &pFlags, 
 				currentStack = (DWORD)&runtime->trackBuff;
 				break;
 			default:
-				__asm int 3;
+				DEBUG_BREAK;
 				break;
 		}
 
@@ -149,7 +149,7 @@ bool X86Assembler::TranslateNative(const RiverInstruction &ri, RelocableCodeBuff
 	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_RIVER_TRACK) {
 		casm = &rtAsm;
 	} else if (RIVER_FAMILY(rOut->family) != RIVER_FAMILY_NATIVE) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	casm->Translate(*rOut, px86, pFlags, currentFamily, repReg, instrCounter, outputType);
@@ -173,7 +173,7 @@ bool X86Assembler::TranslateTracking(const RiverInstruction &ri, RelocableCodeBu
 	} else if (RIVER_FAMILY(ri.family) == RIVER_FAMILY_RIVER_TRACK) {
 		casm = &rtAsm;
 	} else {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 	
 	casm->Translate(ri, px86, pFlags, currentFamily, repReg, instrCounter, outputType);
@@ -322,7 +322,7 @@ bool X86Assembler::SwitchToNative(RelocableCodeBuffer &px86, BYTE &currentFamily
 			SwitchToStack(px86, instrCounter, (DWORD)&runtime->trackBuff);
 			break;
 		default:
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 	}
 
@@ -346,7 +346,7 @@ bool X86Assembler::GenerateTransitionsNative(const RiverInstruction &ri, Relocab
 			currentStack = (DWORD)&runtime->trackBuff;
 			break;
 		default:
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 	}
 
@@ -374,7 +374,7 @@ bool X86Assembler::GenerateTransitionsNative(const RiverInstruction &ri, Relocab
 				currentFamily = RIVER_FAMILY_RIVER_TRACK;
 				currentStack = (DWORD)&runtime->trackStack;
 			default:
-				__asm int 3;
+				DEBUG_BREAK;
 				break;
 		}
 	}
@@ -406,7 +406,7 @@ bool X86Assembler::GenerateTransitionsTracking(const RiverInstruction &ri, Reloc
 	BYTE tf = RIVER_FAMILY(ri.family);
 
 	if ((tf != RIVER_FAMILY_RIVER_TRACK) && (tf != RIVER_FAMILY_TRACK)) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	if (cf != tf) {

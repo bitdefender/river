@@ -82,7 +82,7 @@ void RiverSaveTranslator::MakeSaveMem(RiverInstruction *rOut, const RiverAddress
 
 void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags, const RiverInstruction &rIn) {
 	if (mem.type == 0) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 	else {
 		RiverAddress32 tMem;
@@ -108,7 +108,7 @@ void RiverSaveTranslator::MakeSaveOp(RiverInstruction *rOut, unsigned char opTyp
 	switch (RIVER_OPTYPE(opType)) {
 	case RIVER_OPTYPE_NONE:
 	case RIVER_OPTYPE_IMM:
-		__asm int 3;
+		DEBUG_BREAK;
 		break;
 	case RIVER_OPTYPE_REG:
 		MakeSaveReg(rOut, op.asRegister, 0);
@@ -155,12 +155,12 @@ void RiverSaveTranslator::SaveOperands(RiverInstruction *rOut, const RiverInstru
 /* Opcode translators */
 
 void RiverSaveTranslator::TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void RiverSaveTranslator::TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	/*if (RIVER_SPEC_MODIFIES_xSP & rIn.specifiers) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}*/
 
 	SaveOperands(rOut, rIn, instrCount);

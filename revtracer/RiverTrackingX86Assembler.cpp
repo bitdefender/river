@@ -136,7 +136,7 @@ bool RiverTrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableC
 			break;*/
 
 		default :
-			__asm int 3;
+			DEBUG_BREAK;
 
 	}
 

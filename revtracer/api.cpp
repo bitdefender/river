@@ -12,9 +12,9 @@
 #define PRINT_BRANCHING_DEBUG	PRINT_DEBUG | PRINT_BRANCH_HANDLER
 #define PRINT_BRANCHING_INFO	PRINT_INFO | PRINT_BRANCH_HANDLER
 
-#define DEBUG_BREAK { \
+#define DEBUG_BREAK_ { \
 	*(WORD *)revtracerConfig.mainModule = 'ZM'; \
-	__asm int 3; \
+	DEBUG_BREAK; \
 	*(WORD *)revtracerConfig.mainModule = '  '; \
 }
 
@@ -94,7 +94,7 @@ extern "C" {
 			}
 			else {
 				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_ERROR, "No reverse block found!");
-				__asm int 3;
+				DEBUG_BREAK;
 			}
 
 		} else if (EXECUTION_ADVANCE == dwDirection) {

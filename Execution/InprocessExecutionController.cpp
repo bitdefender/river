@@ -1,5 +1,6 @@
 #include "InprocessExecutionController.h"
 #include "RiverStructs.h"
+#include "Common.h"
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 
 #ifdef _LINUX
@@ -132,7 +133,7 @@ bool InprocessExecutionController::Execute() {
 
 	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "RevtracerWrapperInit");
 	if (nullptr == ((GetHandlerCallback)initHandler)()) {
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
@@ -153,7 +154,7 @@ bool InprocessExecutionController::Execute() {
 	mmv = (MarkMemoryValueFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "MarkMemoryValue");
 
 	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv)) {
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 

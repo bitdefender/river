@@ -10,7 +10,7 @@ WORD GetSpecifiers(RiverInstruction &ri) {
 	WORD tmp = specTbl[dwTable][ri.opCode];
 
 	if (tmp == 0xFF) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	if (tmp & RIVER_SPEC_MODIFIES_EXT) {
@@ -18,7 +18,7 @@ WORD GetSpecifiers(RiverInstruction &ri) {
 	}
 
 	if (tmp == 0xFF) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	return tmp;
@@ -45,7 +45,7 @@ void RiverX86Disassembler::TrackFlagUsage(RiverInstruction &ri) {
 	BYTE tmp = modFlags[dwTable][ri.opCode];
 
 	if (tmp == 0xFF) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	if (tmp & RIVER_SPEC_FLAG_EXT) {
@@ -53,7 +53,7 @@ void RiverX86Disassembler::TrackFlagUsage(RiverInstruction &ri) {
 	}
 
 	if (tmp == 0xFF) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	ri.modFlags = tmp;
@@ -61,7 +61,7 @@ void RiverX86Disassembler::TrackFlagUsage(RiverInstruction &ri) {
 	tmp = testFlags[dwTable][ri.opCode];
 
 	if (tmp == 0xFF) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	if (tmp & RIVER_SPEC_FLAG_EXT) {
@@ -69,7 +69,7 @@ void RiverX86Disassembler::TrackFlagUsage(RiverInstruction &ri) {
 	}
 
 	if (tmp == 0xFF) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	ri.testFlags = tmp;
@@ -122,7 +122,7 @@ void RiverX86Disassembler::DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri
 	opcode = *px86;
 	extPrefix = (ri.modifiers & RIVER_MODIFIER_EXT) ? 0x0F : 0x00;
 	address = ri.instructionAddress;
-	__asm int 3;
+	DEBUG_BREAK;
 	/*exit(0);*/
 	px86++;
 }
@@ -262,7 +262,7 @@ void RiverX86Disassembler::DisassembleMoffs32(BYTE opIdx, BYTE *&px86, RiverInst
 /* =========================================== */
 
 void RiverX86Disassembler::DisassembleUnkOp(BYTE *&px86, RiverInstruction &ri) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void RiverX86Disassembler::DisassembleNoOp(BYTE *&px86, RiverInstruction &ri) {

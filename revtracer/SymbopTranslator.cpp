@@ -366,7 +366,7 @@ void SymbopTranslator::TranslateUnk(const RiverInstruction &rIn, RiverInstructio
 	lastOpcode = rIn.opCode;
 	lastAddr = rIn.instructionAddress;
 
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount, DWORD dwTranslationFlags) {

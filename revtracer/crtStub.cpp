@@ -1,7 +1,6 @@
-
-
+#include "common.h"
 
 extern "C" int __cdecl _purecall(void) {
-	__asm int 3;
+	DEBUG_BREAK;
 	return 0;
 }
