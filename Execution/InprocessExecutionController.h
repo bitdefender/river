@@ -6,9 +6,16 @@
 
 #include "../revtracer/revtracer.h"
 
+#ifdef _LINUX
+#include <pthread.h>
+typedef pthread_t THREAD_T;
+#else
+typedef HANDLE THREAD_T;
+#endif
+
 class InprocessExecutionController : public CommonExecutionController {
 private :
-	HANDLE hThread;
+	THREAD_T hThread;
 
 	rev::RevtracerConfig *revCfg;
 public :
