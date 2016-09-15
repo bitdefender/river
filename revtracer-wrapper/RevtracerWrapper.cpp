@@ -6,8 +6,8 @@
 
 namespace revwrapper {
 
-	#ifdef _LINUX
-	#define GET_LIB_HANDLER(libname) dlopen((name), RTLD_LAZY)
+	#ifdef __linux__
+	#define GET_LIB_HANDLER(libname) dlopen((libname), RTLD_LAZY)
 	#define CLOSE_LIB(libhandler) dlclose((libhandler))
 	#define LOAD_PROC(libhandler, szProc) dlsym((libhandler), (szProc))
 	#else
@@ -16,18 +16,18 @@ namespace revwrapper {
 	#define LOAD_PROC(libhandler, szProc) GetProcAddress((libhandler), (szProc))
 	#endif
 
-	#ifdef _LINUX
+	#ifdef __linux__
 	__attribute__((constructor)) void somain(void) {
-		libhandler = GET_LIB_HANDLER(L"libc.so");
+		libhandler = GET_LIB_HANDLER("libc.so");
 	}
 	#else
 	BOOL WINAPI DllMain(_In_ HINSTANCE hinstDLL, _In_ DWORD fdwReason, _In_ LPVOID lpvReserved) {
 		return TRUE;
 	}
 	#endif
-	
+
 	//Platform specific functions and types
-	#ifdef _LINUX
+	#ifdef __linux__
 	typedef void* (*AllocateMemoryHandler)(size_t size);
 	typedef long (*ConvertToSystemErrorHandler)(long status);
 	typedef void(*TerminateProcessHandler)(int status);
@@ -92,15 +92,17 @@ namespace revwrapper {
 	#endif
 
 	//Library API implementation
+#ifdef _WIN32
 	DLL_PUBLIC extern ADDR_TYPE RevtracerWrapperInit(void)
 	{
 		libhandler = GET_LIB_HANDLER(L"ntdll.dll");
 		return libhandler;
 	}
+#endif
 
 	DLL_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long dwSize)
 	{
-		#ifdef _LINUX
+		#ifdef __linux__
 		ADDR_TYPE proc = GetAllocateMemoryHandler();
 		return ((AllocateMemoryHandler)proc)(dwSize);
 		#else
@@ -112,7 +114,7 @@ namespace revwrapper {
 	{ }
 
 	DLL_PUBLIC extern void CallTerminateProcessHandler(void) {
-		#ifdef _LINUX
+		#ifdef __linux__
 		ADDR_TYPE proc = GetTerminateProcessHandler();
 		((TerminateProcessHandler)proc)(0);
 		#else
@@ -131,7 +133,7 @@ namespace revwrapper {
 	}
 
 	//Local functions definitions
-#ifdef _LINUX
+#ifdef __linux__
 	DLL_LOCAL long ConvertToSystemError(long status) {
 		return status;
 	}
@@ -143,7 +145,7 @@ namespace revwrapper {
 	}
 
 	DLL_LOCAL ADDR_TYPE GetAllocateMemoryHandler(void) {
-		#ifdef _LINUX
+		#ifdef __linux__
 		return LOAD_PROC(libhandler, "malloc");
 		#else
 		return LOAD_PROC(libhandler, "NtAllocateVirtualMemory");
@@ -152,8 +154,8 @@ namespace revwrapper {
 
 	DLL_LOCAL ADDR_TYPE GetConvertToSystemErrorHandler(void)
 	{
-		#ifdef _LINUX
-		return &ConvertToSystemError;
+		#ifdef __linux__
+		return (ADDR_TYPE)&ConvertToSystemError;
 		#else
 		return LOAD_PROC(libhandler, "RtlNtStatusToDosError");
 		#endif
@@ -161,7 +163,7 @@ namespace revwrapper {
 
 	DLL_LOCAL ADDR_TYPE GetTerminateProcessHandler(void)
 	{
-		#ifdef _LINUX
+		#ifdef __linux__
 		return LOAD_PROC(libhandler, "exit");
 		#else
 		return LOAD_PROC(libhandler, "NtTerminateProcess");
@@ -170,7 +172,7 @@ namespace revwrapper {
 
 	DLL_LOCAL ADDR_TYPE GetFreeMemoryHandler(void)
 	{
-		#ifdef _LINUX
+		#ifdef __linux__
 		return LOAD_PROC(libhandler, "free");
 		#else
 		return LOAD_PROC(libhandler, "NtFreeVirtualMemory");
@@ -179,7 +181,7 @@ namespace revwrapper {
 
 	DLL_LOCAL ADDR_TYPE GetFormattedPrintHandler(void)
 	{
-		#ifdef _LINUX
+		#ifdef __linux__
 		return LOAD_PROC(libhandler, "vsnprintf");
 		#else
 		return LOAD_PROC(libhandler, "_vsnprintf_s");

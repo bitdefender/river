@@ -1,11 +1,12 @@
 #ifndef _REVTRACER_WRAPPER_H
 #define _REVTRACER_WRAPPER_H
 
-#ifdef _LINUX
+#ifdef __linux__
+#include <stdarg.h>
+#include <stdlib.h>
 #include <dlfcn.h>
 typedef void* lib_t;
 #else
-#include <windows.h>
 typedef HMODULE lib_t;
 #endif
 typedef void *ADDR_TYPE;
@@ -50,8 +51,9 @@ namespace revwrapper {
 
 	extern "C" {
 		DLL_PUBLIC long revtracerLastError;
-
+#ifdef _WIN32
 		DLL_PUBLIC extern ADDR_TYPE RevtracerWrapperInit(void);
+#endif
 		DLL_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long);
 		DLL_PUBLIC extern void CallFreeMemoryHandler(void*);
 		DLL_PUBLIC extern void CallTerminateProcessHandler(void);
