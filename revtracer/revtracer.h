@@ -40,6 +40,10 @@ namespace rev {
 	typedef void(*TrackCallbackFunc)(DWORD value, DWORD address, DWORD segment);
 	typedef void(*MarkCallbackFunc)(DWORD oldValue, DWORD newValue, DWORD address, DWORD segment);
 
+	typedef ADDR_TYPE(*GetExceptingIpFunc)(void *context, ADDR_TYPE hookAddress);
+	typedef void (*SetExceptingIpFunc)(void *context, ADDR_TYPE hookAddress, ADDR_TYPE newIp);
+	typedef void(*ApplyHookFunc)(ADDR_TYPE originalAddr, ADDR_TYPE hookedAddr);
+
 	typedef void(__stdcall *SymbolicHandlerFunc)(void *context, void *offset, void *instr);
 
 	struct LowLevelRevtracerAPI {
@@ -78,6 +82,11 @@ namespace rev {
 		BranchHandlerFunc branchHandler;
 		SyscallControlFunc syscallControl;
 
+		/* Exception handling callbacks */
+		ApplyHookFunc applyHook;
+		GetExceptingIpFunc getExceptingIp;
+		SetExceptingIpFunc setExceptingIp;
+
 		/* IpcLib initialization */
 		IpcLibInitFunc ipcLibInitialize;
 
@@ -91,9 +100,18 @@ namespace rev {
 		LowLevelRevtracerAPI lowLevel;
 	};
 
+// these hooks are used for substituting pieces of code
+// both original and detour addresses are used
+#define HOOK_NORMAL					0x00000000
+// these hooks are used for catching back the execution
+// only original address is used
+// WARNING: native hooks modify process memory
+#define HOOK_NATIVE					0x00000001
+
 	struct CodeHooks {
 		ADDR_TYPE originalAddr;
 		ADDR_TYPE detourAddr;
+		DWORD     hookFlags;
 	};
 
 	class SymbolicExecutor;

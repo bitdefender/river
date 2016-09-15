@@ -324,6 +324,16 @@ namespace rev {
 
 	void DefaultSyscallControlFunc(void *context, void *userContext) { }
 
+	void DefaultApplyHook(ADDR_TYPE originalAddr, ADDR_TYPE hookedAddr) {
+		__asm int 3;
+	}
+
+	ADDR_TYPE DefaultGetExceptingIp(void *context, ADDR_TYPE hookAddress) {
+		return hookAddress; // not sure what else to place here
+	}
+
+	void DefaultSetExceptingIp(void *context, ADDR_TYPE hookAddress, ADDR_TYPE newIp) {	}
+
 	void DefaultTrackCallback(DWORD value, DWORD address, DWORD segSel) { }
 	void DefaultMarkCallback(DWORD oldValue, DWORD newValue, DWORD address, DWORD segSel) { }
 
@@ -382,6 +392,10 @@ namespace rev {
 		DefaultBranchHandlerFunc,
 		DefaultSyscallControlFunc,
 
+		DefaultApplyHook,
+		DefaultGetExceptingIp,
+		DefaultSetExceptingIp,
+
 		DefaultIpcInitialize,
 
 		DefaultTrackCallback,
@@ -414,12 +428,18 @@ namespace rev {
 		Kernel32TerminateProcess((HANDLE)0xFFFFFFFF, 0);
 	}
 
-	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
+	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det, DWORD flags) {
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)orig);
-		pBlock->address = (DWORD)det;
-		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
-		pBlock->address = (DWORD)orig;
-		pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
+
+		if (flags & HOOK_NATIVE) {
+			pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags | TRANSLATION_HOOK);
+			revtracerAPI.applyHook(orig, pBlock->pFwCode);
+		} else {
+			pBlock->address = (DWORD)det;
+			pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
+			pBlock->address = (DWORD)orig;
+			pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
+		}
 
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Added detour from 0x%08x to 0x%08x\n", orig, det);
 	}
@@ -446,7 +466,7 @@ namespace rev {
 			case EXECUTION_ADVANCE :
 				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
 				for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
-					CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
+					CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr, revtracerConfig.hooks[i].hookFlags);
 				}
 				pEnv->lastFwBlock = (UINT_PTR)revtracerConfig.entryPoint;
 				pEnv->bForward = 1;

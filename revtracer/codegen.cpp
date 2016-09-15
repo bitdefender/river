@@ -339,7 +339,7 @@ bool SaveToStream(
 }
 
 bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
-	if (dwTranslationFlags & 0x80000000) {
+	if (dwTranslationFlags & TRANSLATION_EXIT) {
 		pCB->dwSize = 0;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, 0);
 
@@ -414,7 +414,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		//outBufferSize = rivertox86(this, rt, fwRiverInst, fwInstCount, outBuffer, 0x01);
 		codeBuffer.Reset();
 		assembler.SetOriginalInstructions((RiverInstruction *)pCB->pDisasmCode);
-		assembler.Assemble(fwRiverInst, fwInstCount, codeBuffer, 0x10, pCB->dwFwOpCount, outBufferSize, ASSEMBLER_CODE_NATIVE | ASSEMBLER_DIR_FORWARD);
+		assembler.Assemble(fwRiverInst, fwInstCount, codeBuffer, 0x10, pCB->dwFwOpCount, outBufferSize, ASSEMBLER_CODE_NATIVE | ASSEMBLER_DIR_FORWARD | ((TRANSLATION_HOOK & dwTranslationFlags) ? ASSEMBLER_CODE_HOOK : 0));
 		pCB->pFwCode = DuplicateBuffer(heap, outBuffer, outBufferSize);
 		//assembler.CopyFix(pCB->pFwCode, outBuffer);
 		codeBuffer.CopyToFixed(pCB->pFwCode);

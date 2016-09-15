@@ -13,6 +13,8 @@
 #define ASSEMBLER_CODE_NATIVE		0x00
 #define ASSEMBLER_CODE_TRACKING		0x02
 
+#define ASSEMBLER_CODE_HOOK			0x04
+
 class GenericX86Assembler {
 protected :
 	RiverRuntime *runtime;

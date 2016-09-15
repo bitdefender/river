@@ -198,6 +198,38 @@ void X86Assembler::AssembleTrackingLeave(RelocableCodeBuffer &px86, DWORD &instr
 	instrCounter += 5;
 }
 
+extern "C" {
+	void __stdcall ExceptionHandler(struct ExecutionEnvironment *pEnv, ADDR_TYPE a);
+};
+
+DWORD dwExceptionHandler = (DWORD) ::ExceptionHandler;
+
+void X86Assembler::AssembleHook(RelocableCodeBuffer &px86, DWORD &instrCounter, DWORD address) {
+	static const BYTE hookCode[] = {
+		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x00 - xchg esp, large ds:<dwVirtualStack>
+		0x9C, 										// 0x06 - pushf
+		0x60,										// 0x07 - pusha
+		0x68, 0x46, 0x02, 0x00, 0x00,				// 0x08 - push 0x00000246 - NEW FLAGS
+		0x9D,										// 0x0D - popf
+		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x0E - push <EIP>
+		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x13 - push <execution_environment>
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,			// 0x18 - call <dwExceptionHandler>
+		0x61,										// 0x1E - popa
+		0x9D,										// 0x1F - popf
+		0x87, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x20 - xchg esp, large ds:<dwVirtualStack>
+	};
+
+	rev_memcpy(px86.cursor, hookCode, sizeof(hookCode));
+	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
+	*(unsigned int *)(&(px86.cursor[0x0F])) = (unsigned int)address;
+	*(unsigned int *)(&(px86.cursor[0x14])) = (unsigned int)runtime;
+	*(unsigned int *)(&(px86.cursor[0x1A])) = (unsigned int)&dwExceptionHandler;
+	*(unsigned int *)(&(px86.cursor[0x22])) = (unsigned int)&runtime->virtualStack;
+	px86.cursor += sizeof(hookCode);
+
+	instrCounter += 11;
+}
+
 bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, RelocableCodeBuffer &px86, DWORD flg, DWORD &instrCounter, DWORD &byteCounter, BYTE outputType) {
 	BYTE *pTmp = px86.cursor, *pAux = px86.cursor;
 	DWORD pFlags = flg;
@@ -218,12 +250,25 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 		PRINT_TRACKING | PRINT_BACKWARD
 	};
 
-	DWORD printMask = PRINT_INFO | PRINT_ASSEMBLY | masks[outputType];
+	DWORD printMask = PRINT_INFO | PRINT_ASSEMBLY | masks[outputType & 3];
 
-	TRANSLATE_PRINT(printMask, "=%s============================================\n", headers[outputType]);
+	TRANSLATE_PRINT(printMask, "=%s============================================\n", headers[outputType & 3]);
 
 	if (ASSEMBLER_CODE_TRACKING & outputType) {
 		AssembleTrackingEnter(px86, instrCounter);
+		for (; pTmp < px86.cursor; ++pTmp) {
+			TRANSLATE_PRINT(printMask, "%02x ", *pTmp);
+		}
+		TRANSLATE_PRINT(printMask, "\n");
+	}
+
+	if (ASSEMBLER_CODE_HOOK & outputType) {
+		unsigned int firstNative = 0;
+		while ((firstNative < dwInstrCount) && (RIVER_FAMILY(pRiver[firstNative].family) != RIVER_FAMILY_NATIVE)) {
+			firstNative++;
+		}
+
+		AssembleHook(px86, instrCounter, pRiver[firstNative].instructionAddress);
 		for (; pTmp < px86.cursor; ++pTmp) {
 			TRANSLATE_PRINT(printMask, "%02x ", *pTmp);
 		}

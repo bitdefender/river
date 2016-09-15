@@ -35,6 +35,8 @@ private :
 	void AssembleTrackingEnter(RelocableCodeBuffer &px86, rev::DWORD &instrCounter);
 	void AssembleTrackingLeave(RelocableCodeBuffer &px86, rev::DWORD &instrCounter);
 
+	void AssembleHook(RelocableCodeBuffer & px86, rev::DWORD &instrCounter, rev::DWORD address);
+
 	//bool GenerateTransitions(const RiverInstruction &ri, rev::BYTE *&px86, rev::DWORD &pFlags, rev::BYTE &repReg, rev::DWORD &instrCounter);
 	bool TranslateNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);
 	bool TranslateTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);

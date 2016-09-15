@@ -145,6 +145,16 @@ extern "C" {
 	void __stdcall SysHandler(struct ExecutionEnvironment *pEnv) {
 		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "SysHandler!!!\n");
 	}
+
+	void __stdcall ExceptionHandler(struct ExecutionEnvironment *pEnv, ADDR_TYPE a) {
+		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "ExceptionHandler!!!\n");
+
+		ADDR_TYPE exceptionIp = revtracerAPI.getExceptingIp(pEnv, a);
+
+		ADDR_TYPE originalIp = exceptionIp; //TODO: get original IP
+		revtracerAPI.setExceptingIp(pEnv, a, originalIp);
+	}
+
 };
 
 

@@ -25,6 +25,9 @@
 #define SYMBOP_TRACK_FORWARD_INSTRUCTIONS			1024
 #define SYMBOP_TRACK_BACKWARD_INSTRUCTIONS			1024
 
+#define TRANSLATION_EXIT							0x80000000
+#define TRANSLATION_HOOK							0x40000000
+
 /* A resettable river code translator */
 class RiverCodeGen {
 private :
