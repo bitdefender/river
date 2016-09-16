@@ -79,7 +79,7 @@ public :
 	unsigned int NextReg(unsigned char regName);
 
 	bool Translate(RiverBasicBlock *pCB, rev::DWORD dwTranslationFlags);
-	bool DisassembleSingle(rev::BYTE *&px86, RiverInstruction *rOut, rev::DWORD &count, rev::DWORD &dwFlags);
+	bool DisassembleSingle(rev::BYTE *&px86, RiverInstruction *rOut, rev::DWORD &count, rev::DWORD &dwFlags, rev::DWORD index);
 };
 
 #endif

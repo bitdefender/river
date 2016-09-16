@@ -21,15 +21,15 @@ public:
 	void Translate(const RiverInstruction &rIn, RiverInstruction *rOut, rev::DWORD &instrCount);
 
 private:
-	void MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, rev::BYTE family, rev::DWORD addr);
-	void MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, rev::BYTE family, rev::DWORD addr);
+	void MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, rev::BYTE family, rev::DWORD addr, rev::DWORD index);
+	void MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, rev::BYTE family, rev::DWORD addr, rev::DWORD index);
 
-	void MakeMovRegMem32(RiverInstruction *rOut, const RiverRegister &reg, const RiverAddress &mem, rev::BYTE family, rev::DWORD addr);
-	void MakeMovMemReg32(RiverInstruction *rOut, const RiverAddress &mem, const RiverRegister &reg, rev::BYTE family, rev::DWORD addr);
-	void MakeMovMemMem32(RiverInstruction *rOut, const RiverAddress &memd, const RiverAddress &mems, rev::BYTE family, rev::DWORD addr);
+	void MakeMovRegMem32(RiverInstruction *rOut, const RiverRegister &reg, const RiverAddress &mem, rev::BYTE family, rev::DWORD addr, rev::DWORD index);
+	void MakeMovMemReg32(RiverInstruction *rOut, const RiverAddress &mem, const RiverRegister &reg, rev::BYTE family, rev::DWORD addr, rev::DWORD index);
+	void MakeMovMemMem32(RiverInstruction *rOut, const RiverAddress &memd, const RiverAddress &mems, rev::BYTE family, rev::DWORD addr, rev::DWORD index);
 
 
-	void MakeMovMemImm32(RiverInstruction *rOut, const RiverAddress &mem, rev::DWORD imm, rev::BYTE family, rev::DWORD addr);
+	void MakeMovMemImm32(RiverInstruction *rOut, const RiverAddress &mem, rev::DWORD imm, rev::BYTE family, rev::DWORD addr, rev::DWORD index);
 
 	void TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
 	void TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);

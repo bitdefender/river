@@ -148,10 +148,10 @@ void MakeJMP(struct RiverInstruction *ri, DWORD jmpAddr) {
 
 void RiverPrintInstruction(DWORD printMask, RiverInstruction *ri);
 
-bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD &count, DWORD &dwFlags) {
+bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD &count, DWORD &dwFlags, DWORD index) {
 	RiverInstruction dis;
 
-	disassembler.Translate(px86, dis, dwFlags);
+	disassembler.Translate(px86, dis, dwFlags, index);
 	metaTranslator.Translate(dis, rOut, count);
 
 	return true;
@@ -160,6 +160,7 @@ bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD 
 DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, BYTE *&disasm, DWORD dwTranslationFlags) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
+	DWORD instructionIndex = 0;
 
 	TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "= x86 to river ================================================================\n");
 
@@ -181,7 +182,8 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, BYTE *&disasm
 		//disassembler.Translate(pTmp, dis, pFlags);
 		//metaTranslator.Translate(dis, instrBuffers[currentBuffer], instrCounts[currentBuffer]);
 
-		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags);
+		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags, instructionIndex);
+		instructionIndex++;
 
 		DWORD addrCount = 0;
 		

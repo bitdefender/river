@@ -10,9 +10,9 @@ private :
 
 	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
 
-	void MakePushFlg(rev::BYTE flags, RiverInstruction *&rOut, rev::DWORD &instrCount);
-	void MakePushReg(RiverRegister reg, RiverInstruction *&rOut, rev::DWORD &instrCount);
-	void MakePushMem(const RiverInstruction &rIn, RiverInstruction *&rOut, rev::DWORD &instrCount);
+	void MakePushFlg(rev::BYTE flags, RiverInstruction *&rOut, rev::DWORD &instrCount, rev::DWORD index);
+	void MakePushReg(RiverRegister reg, RiverInstruction *&rOut, rev::DWORD &instrCount, rev::DWORD index);
+	void MakePushMem(const RiverInstruction &rIn, RiverInstruction *&rOut, rev::DWORD &instrCount, rev::DWORD index);
 public :
 	bool Init(RiverCodeGen *cg);
 

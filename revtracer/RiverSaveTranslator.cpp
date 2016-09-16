@@ -31,23 +31,28 @@ void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstructio
 /* Translation helpers                         */
 /* =========================================== */
 
-void RiverSaveTranslator::MakeSaveFlags(RiverInstruction *rOut) {
+void RiverSaveTranslator::MakeSaveFlags(RiverInstruction *rOut, DWORD index) {
 	rOut->opCode = 0x9C; // PUSHF
 	rOut->modifiers = 0;
 	rOut->family = RIVER_FAMILY_RIVER;
 	rOut->specifiers = 0; // maybe
 	rOut->unusedRegisters = RIVER_UNUSED_ALL;
+	rOut->instructionAddress = 0;
+	rOut->index = index;
 
 	rOut->opTypes[0] = rOut->opTypes[1] = rOut->opTypes[2] = rOut->opTypes[3] = RIVER_OPTYPE_NONE;
 }
 
-void RiverSaveTranslator::MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short familyFlag) {
+void RiverSaveTranslator::MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short familyFlag, DWORD index) {
 	//unsigned char rg = (reg.name & 0x07) | RIVER_OPSIZE_32;
 
 	rOut->opCode = 0x50; // | (reg.name & 0x07); //PUSH
 	rOut->modifiers = 0;
 	rOut->family = RIVER_FAMILY_RIVER | familyFlag;
 	rOut->specifiers = 0;
+	rOut->instructionAddress = 0;
+	rOut->index = index;
+
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
 	rOut->operands[0].asRegister.versioned = codegen->GetPrevReg(reg.name);
@@ -60,14 +65,16 @@ void RiverSaveTranslator::MakeSaveReg(RiverInstruction *rOut, const RiverRegiste
 	rOut->TrackUnusedRegisters();
 }
 
-void RiverSaveTranslator::MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short familyFlag, const RiverInstruction &rIn) {
+void RiverSaveTranslator::MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short familyFlag, const RiverInstruction &rIn, DWORD index) {
 	if (mem.type == 0) {
-		MakeSaveReg(rOut, mem.base, familyFlag);
+		MakeSaveReg(rOut, mem.base, familyFlag, index);
 	} else {
 		rOut->opCode = 0xFF; // PUSH (ext + 6)
 		rOut->modifiers = 0;
 		rOut->family = RIVER_FAMILY_RIVER | familyFlag | ((rIn.specifiers & RIVER_SPEC_MODIFIES_xSP) ? RIVER_FAMILY_FLAG_ORIG_xSP : 0);
 		rOut->subOpCode = 0x06;
+		rOut->instructionAddress = 0;
+		rOut->index = index;
 
 		rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
 		rOut->operands[0].asAddress = codegen->CloneAddress(mem, 0); // FIXME: needs te kind of address to be cloned
@@ -80,7 +87,7 @@ void RiverSaveTranslator::MakeSaveMem(RiverInstruction *rOut, const RiverAddress
 	}
 }
 
-void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags, const RiverInstruction &rIn) {
+void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags, const RiverInstruction &rIn, DWORD index) {
 	if (mem.type == 0) {
 		__asm int 3;
 	}
@@ -100,7 +107,7 @@ void RiverSaveTranslator::MakeSaveMemOffset(RiverInstruction *rOut, const RiverA
 		}
 
 		tMem.disp.d32 += offset;
-		MakeSaveMem(rOut, tMem, auxFlags, rIn);
+		MakeSaveMem(rOut, tMem, auxFlags, rIn, index);
 	}
 }
 
@@ -111,15 +118,15 @@ void RiverSaveTranslator::MakeSaveOp(RiverInstruction *rOut, unsigned char opTyp
 		__asm int 3;
 		break;
 	case RIVER_OPTYPE_REG:
-		MakeSaveReg(rOut, op.asRegister, 0);
+		MakeSaveReg(rOut, op.asRegister, 0, rIn.index);
 		break;
 	case RIVER_OPTYPE_MEM:
-		MakeSaveMem(rOut, *op.asAddress, 0, rIn);
+		MakeSaveMem(rOut, *op.asAddress, 0, rIn, rIn.index);
 		break;
 	}
 }
 
-void RiverSaveTranslator::MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstruction &rIn) {
+void RiverSaveTranslator::MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD index) {
 	RiverAddress32 rTmp;
 
 	rTmp.scaleAndSegment = 0;
@@ -127,15 +134,18 @@ void RiverSaveTranslator::MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstr
 	rTmp.base.versioned = codegen->GetPrevReg(RIVER_REG_xSP); // Here lies the original xSP
 	rTmp.index.versioned = RIVER_REG_NONE;
 	rTmp.disp.d8 = 0xFC;
+	rOut->instructionAddress = 0;
+	rOut->index = index;
+
 
 	rTmp.modRM = 0x70; // actually save xAX (because xSP is used for other stuff)
 
-	MakeSaveMem(rOut, rTmp, RIVER_FAMILY_FLAG_ORIG_xSP, rIn);
+	MakeSaveMem(rOut, rTmp, RIVER_FAMILY_FLAG_ORIG_xSP, rIn, index);
 }
 
 void RiverSaveTranslator::SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	if (RIVER_SPEC_MODIFIES_FLG & rIn.specifiers) {
-		MakeSaveFlags(rOut);
+		MakeSaveFlags(rOut, rIn.index);
 		instrCount++;
 		rOut++;
 	}
@@ -170,22 +180,22 @@ void RiverSaveTranslator::TranslateSaveCPUID(RiverInstruction *rOut, const River
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xAX;
-	MakeSaveReg(rOut, tmpReg, 0);
+	MakeSaveReg(rOut, tmpReg, 0, rIn.index);
 	instrCount++;
 	rOut++;
 
 	tmpReg.name = RIVER_REG_xCX;
-	MakeSaveReg(rOut, tmpReg, 0);
+	MakeSaveReg(rOut, tmpReg, 0, rIn.index);
 	instrCount++;
 	rOut++;
 
 	tmpReg.name = RIVER_REG_xDX;
-	MakeSaveReg(rOut, tmpReg, 0);
+	MakeSaveReg(rOut, tmpReg, 0, rIn.index);
 	instrCount++;
 	rOut++;
 
 	tmpReg.name = RIVER_REG_xBX;
-	MakeSaveReg(rOut, tmpReg, 0);
+	MakeSaveReg(rOut, tmpReg, 0, rIn.index);
 	instrCount++;
 	rOut++;
 
@@ -197,25 +207,25 @@ void RiverSaveTranslator::TranslateSaveCPUID(RiverInstruction *rOut, const River
 void RiverSaveTranslator::TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
 	RiverRegister tmpReg; 
 
-	MakeSaveFlags(rOut);
+	MakeSaveFlags(rOut, rIn.index);
 	instrCount++;
 	rOut++;
 
 	tmpReg.name = RIVER_REG_xAX;
-	MakeSaveReg(rOut, tmpReg, 0);
+	MakeSaveReg(rOut, tmpReg, 0, rIn.index);
 	instrCount++;
 	rOut++;
 
 	tmpReg.name = RIVER_REG_xDX;
-	MakeSaveReg(rOut, tmpReg, 0);
+	MakeSaveReg(rOut, tmpReg, 0, rIn.index);
 	instrCount++;
 	rOut++;
 
-	MakeSaveMem(rOut, *(rIn.operands[0].asAddress), 0, rIn);
+	MakeSaveMem(rOut, *(rIn.operands[0].asAddress), 0, rIn, rIn.index);
 	instrCount++;
 	rOut++;
 
-	MakeSaveMemOffset(rOut, *(rIn.operands[0].asAddress), 0x04, 0, rIn);
+	MakeSaveMemOffset(rOut, *(rIn.operands[0].asAddress), 0x04, 0, rIn, rIn.index);
 	instrCount++;
 	rOut++;
 

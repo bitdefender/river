@@ -4,12 +4,10 @@
 void SymbopReverseTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
 	rev_memcpy(&rOut, &rIn, sizeof(rOut));
 
-	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[0])) {
-		rOut.operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);
-	}
-
-	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[1])) {
-		rOut.operands[1].asAddress = codegen->CloneAddress(*rIn.operands[1].asAddress, rIn.modifiers);
+	for (int i = 0; i < 4; ++i) {
+		if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[i])) {
+			rOut.operands[i].asAddress = codegen->CloneAddress(*rIn.operands[i].asAddress, rIn.modifiers);
+		}
 	}
 }
 

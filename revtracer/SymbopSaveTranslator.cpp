@@ -18,11 +18,12 @@ bool SymbopSaveTranslator::Init(RiverCodeGen *cg) {
 
 }
 
-void SymbopSaveTranslator::MakePushFlg(BYTE flags, RiverInstruction *&rOut, DWORD &instrCount) {
+void SymbopSaveTranslator::MakePushFlg(BYTE flags, RiverInstruction *&rOut, DWORD &instrCount, DWORD index) {
 	rOut->opCode = 0x9C;
 	rOut->subOpCode = 0;
 	rOut->modifiers = 0;
 	rOut->family = RIVER_FAMILY_RIVER_TRACK;
+	rOut->index = index;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
 	rOut->operands[0].asImm8 = flags;
@@ -33,11 +34,12 @@ void SymbopSaveTranslator::MakePushFlg(BYTE flags, RiverInstruction *&rOut, DWOR
 	instrCount++;
 }
 
-void SymbopSaveTranslator::MakePushReg(RiverRegister reg, RiverInstruction *&rOut, DWORD &instrCount) {
+void SymbopSaveTranslator::MakePushReg(RiverRegister reg, RiverInstruction *&rOut, DWORD &instrCount, DWORD index) {
 	rOut->opCode = 0x50;
 	rOut->subOpCode = 0;
 	rOut->modifiers = 0;
 	rOut->family = RIVER_FAMILY_RIVER_TRACK;
+	rOut->index = index;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_REG | RIVER_OPSIZE_32;
 	rOut->operands[0].asRegister.versioned = reg.versioned;
@@ -48,11 +50,12 @@ void SymbopSaveTranslator::MakePushReg(RiverRegister reg, RiverInstruction *&rOu
 	instrCount++;
 }
 
-void SymbopSaveTranslator::MakePushMem(const RiverInstruction &rIn, RiverInstruction *&rOut, DWORD &instrCount) {
+void SymbopSaveTranslator::MakePushMem(const RiverInstruction &rIn, RiverInstruction *&rOut, DWORD &instrCount, DWORD index) {
 	rOut->opCode = 0xFF;
 	rOut->subOpCode = 6;
 	rOut->modifiers = 0;
 	rOut->family = RIVER_FAMILY_RIVER_TRACK;
+	rOut->index = index;
 
 	rOut->opTypes[0] = RIVER_OPTYPE_MEM | RIVER_OPSIZE_32;
 	rOut->operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);
@@ -73,10 +76,10 @@ bool SymbopSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstructi
 
 	switch (rIn.opCode) {
 		case 0x9D : //markflags
-			MakePushFlg(rIn.operands[0].asImm8, rOut, instrCount);
+			MakePushFlg(rIn.operands[0].asImm8, rOut, instrCount, rIn.index);
 			break;
 		case 0x58 : //markreg
-			MakePushReg(rIn.operands[0].asRegister, rOut, instrCount);
+			MakePushReg(rIn.operands[0].asRegister, rOut, instrCount, rIn.index);
 			break;
 	}
 
@@ -86,7 +89,7 @@ bool SymbopSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstructi
 
 	switch (rIn.opCode) {
 		case 0x8F: //markmem
-			MakePushMem(rIn, rOut, instrCount);
+			MakePushMem(rIn, rOut, instrCount, rIn.index);
 			break;
 	}
 

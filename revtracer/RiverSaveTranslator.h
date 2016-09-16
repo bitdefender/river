@@ -23,14 +23,13 @@ public :
 
 private :
 	/* Translation helpers */
-	void MakeSaveFlags(RiverInstruction *rOut);
-	void MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short familyFlag);
-	void MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short auxFlags, const RiverInstruction &rIn);
-	void MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags, const RiverInstruction &rIn);
-	void MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short auxFlags);
-	void MakeSubNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, unsigned short auxFlags);
+	void MakeSaveFlags(RiverInstruction *rOut, rev::DWORD index);
+	void MakeSaveReg(RiverInstruction *rOut, const RiverRegister &reg, unsigned short familyFlag, rev::DWORD index);
+	void MakeSaveMem(RiverInstruction *rOut, const RiverAddress &mem, unsigned short auxFlags, const RiverInstruction &rIn, rev::DWORD index);
+	void MakeSaveMemOffset(RiverInstruction *rOut, const RiverAddress &mem, int offset, unsigned short auxFlags, const RiverInstruction &rIn, rev::DWORD index);
+	void MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD index);
+
 	void MakeSaveOp(RiverInstruction *rOut, unsigned char opType, const RiverOperand &op, const RiverInstruction &rIn);
-	void MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstruction &rIn);
 
 	void SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
 
@@ -45,7 +44,7 @@ private :
 			RiverRegister tmpReg;
 
 			tmpReg.name = RIVER_REG_xCX;
-			MakeSaveReg(rOut, tmpReg, 0);
+			MakeSaveReg(rOut, tmpReg, 0, rIn.index);
 			instrCount++;
 			rOut++;
 		}

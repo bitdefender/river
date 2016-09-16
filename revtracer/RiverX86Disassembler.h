@@ -41,7 +41,7 @@ private:
 public :
 	bool Init(RiverCodeGen *cg);
 
-	bool Translate(rev::BYTE *&px86, RiverInstruction &rOut, rev::DWORD &flags);
+	bool Translate(rev::BYTE *&px86, RiverInstruction &rOut, rev::DWORD &flags, rev::DWORD index);
 private :
 	/* opcodes disassemblers */
 	void DisassembleUnkInstr(rev::BYTE *&px86, RiverInstruction &ri, rev::DWORD &flags);

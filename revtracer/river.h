@@ -215,7 +215,8 @@ struct RiverInstruction {
 	union RiverOperand operands[4];
 
 	rev::DWORD instructionAddress; // relevant only for native and meta instructions
-	rev::DWORD assembledOffset;
+	rev::DWORD assembledOffset;		// used for reverse lookup
+	rev::DWORD index;				// instruction index, native instruction have consecutive indices, other instructions inherit the original instruction index
 
 	inline void PromoteModifiers() {
 		for (int i = 0; i < 4; ++i) {

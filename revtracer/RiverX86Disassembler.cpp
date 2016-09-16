@@ -80,7 +80,7 @@ bool RiverX86Disassembler::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD &flags) {
+bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD &flags, DWORD index) {
 	DWORD dwTable = 0;
 	
 	rOut.modifiers = 0;
@@ -91,7 +91,9 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 	rOut.instructionAddress = (DWORD)px86;
 	rOut.modFlags = 0;
 	rOut.testFlags = 0;
-
+	rOut.assembledOffset = 0;
+	rOut.index = index;
+	
 	flags = 0;
 	do {
 		dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
