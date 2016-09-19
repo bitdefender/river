@@ -2,16 +2,13 @@
 #define _INPROCESS_EXECUTION_CONTROLLER_H_
 
 #include "CommonExecutionController.h"
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #include "../revtracer/revtracer.h"
 
-#ifdef _LINUX
-#include <pthread.h>
-typedef pthread_t THREAD_T;
-#else
-typedef HANDLE THREAD_T;
-#endif
+#include "Common.h"
 
 class InprocessExecutionController : public CommonExecutionController {
 private :
@@ -22,7 +19,7 @@ public :
 	virtual bool SetPath();
 	virtual bool SetCmdLine();
 
-	virtual void *GetProcessHandle();
+	virtual THREAD_T GetProcessHandle();
 
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);

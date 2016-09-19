@@ -3,7 +3,8 @@
 #include "Common.h"
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 
-#ifdef _LINUX
+#ifdef __linux__
+#include <string.h>
 #define USE_MANUAL_LOADING
 #endif
 
@@ -55,7 +56,7 @@ typedef void *MODULE_PTR;
 #define UNLOAD_MODULE(module)
 #endif
 
-#ifdef _LINUX
+#ifdef __linux__
 #define CREATE_THREAD(tid, func, params, ret) do { ret = pthread_create((&tid), nullptr, (func), (params)); ret = (0 == ret); } while(false)
 #define JOIN_THREAD(tid, ret) do { ret = pthread_join(tid, nullptr); ret = (0 == ret); } while (false)
 #else
@@ -73,8 +74,8 @@ bool InprocessExecutionController::SetCmdLine() {
 	return false;
 }
 
-void *InprocessExecutionController::GetProcessHandle() {
-	return GetCurrentProcess();
+THREAD_T InprocessExecutionController::GetProcessHandle() {
+	return GET_CURRENT_PROC();
 }
 
 bool InprocessExecutionController::GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) {
@@ -90,10 +91,18 @@ bool InprocessExecutionController::ReadProcessMemory(unsigned int base, unsigned
 	return true;
 }
 
+#ifdef __linux__
+void *ThreadProc(void *p) {
+	InprocessExecutionController *_this = (InprocessExecutionController *)p;
+	_this->ControlThread();
+  return nullptr;
+}
+#else
 DWORD __stdcall ThreadProc(LPVOID p) {
 	InprocessExecutionController *_this = (InprocessExecutionController *)p;
 	return _this->ControlThread();
 }
+#endif
 
 //unsigned int BranchHandlerFunc(void *context, void *userContext, void *nextInstruction);
 void SyscallControlFunc(void *context, void *userContext);
@@ -175,13 +184,11 @@ bool InprocessExecutionController::Execute() {
 	int ret;
 	CREATE_THREAD(hThread, ThreadProc, this, ret);
 
-	return ret;
+	return TRUE == ret;
 }
 
 
 DWORD InprocessExecutionController::ControlThread() {
-	HMODULE hRevTracer = GetModuleHandleW(L"revtracer.dll");
-
 	revtracerInitialize();
 	revtraceExecute(0, nullptr);
 
@@ -193,7 +200,7 @@ DWORD InprocessExecutionController::ControlThread() {
 bool InprocessExecutionController::WaitForTermination() {
 	int ret;
 	JOIN_THREAD(hThread, ret);
-	return ret;
+	return TRUE == ret;
 }
 
 

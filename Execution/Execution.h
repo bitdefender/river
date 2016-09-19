@@ -30,6 +30,12 @@
 	#endif
 #endif
 
+#ifdef __linux__
+typedef pid_t THREAD_T;
+#else
+typedef HANDLE THREAD_T;
+#endif
+
 #define EXECUTION_INPROCESS						0x00000000
 #define EXECUTION_EXTERNAL						0x00000001
 
@@ -115,7 +121,7 @@ public:
 	virtual bool Execute() = 0;
 	virtual bool WaitForTermination() = 0;
 
-	virtual void *GetProcessHandle() = 0;
+	virtual THREAD_T GetProcessHandle() = 0;
 
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) = 0;
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount) = 0;

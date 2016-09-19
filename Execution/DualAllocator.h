@@ -1,7 +1,9 @@
 #ifndef _DUAL_ALLOCATOR_H_
 #define _DUAL_ALLOCATOR_H_
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <vector>
 
 typedef void *FileView;

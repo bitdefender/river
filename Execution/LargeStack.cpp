@@ -27,7 +27,9 @@
 //      B must be prev
 
 #include "LargeStack.h"
-#include "Common.h"
+#ifdef __linux__
+#include <string.h>
+#endif
 
 #define LOG_MIN_CHUNK_SIZE 12
 #define MIN_CHUNK_SIZE (1 << LOG_MIN_CHUNK_SIZE)
@@ -54,23 +56,15 @@ namespace rev {
 		offsets[1] = 1;
 		offsets[2] = 0;
 
-		hVirtualStack = CreateFileA(
-			fName,
-			GENERIC_READ | GENERIC_WRITE,
-			FILE_SHARE_READ,
-			NULL,
-			CREATE_ALWAYS,
-			FILE_ATTRIBUTE_NORMAL,
-			NULL
-		);
+		hVirtualStack = OPEN_FILE_RW(fName);
 
-		if (INVALID_HANDLE_VALUE == hVirtualStack) {
+		if (FAIL_OPEN_FILE(hVirtualStack)) {
 			DEBUG_BREAK;
 		}
 	}
 
 	LargeStack::~LargeStack() {
-		CloseHandle(hVirtualStack);
+		CLOSE_FILE(hVirtualStack);
 	}
 
 	DWORD LargeStack::CurrentRegion() const {
@@ -84,7 +78,9 @@ namespace rev {
 	bool LargeStack::VirtualPush(DWORD *buffer) {
 		::DWORD dwWr;
 		
-		return TRUE == WriteFile(hVirtualStack, buffer, chunkSize << 1, &dwWr, NULL);
+		BOOL ret;
+		WRITE_FILE(hVirtualStack, buffer, chunkSize << 1, dwWr, ret);
+		return TRUE == ret;
 	}
 
 	bool LargeStack::VirtualPop(DWORD *buffer) {
@@ -93,13 +89,17 @@ namespace rev {
 
 		liPos.QuadPart = ~(LONGLONG)(chunkSize << 1) + 1;
 
-		SetFilePointerEx(hVirtualStack, liPos, &liPos, FILE_END);
+		LSEEK(hVirtualStack, liPos, SEEK_END_FILE);
 
-		ReadFile(hVirtualStack, buffer, chunkSize << 1, &dwRd, NULL);
+		BOOL ret;
+		READ_FILE(hVirtualStack, buffer, chunkSize << 1, dwRd, ret);
 
+#ifdef __linux__
+    ftruncate(hVirtualStack, liPos.QuadPart);
+#else
 		SetFilePointerEx(hVirtualStack, liPos, &liPos, FILE_BEGIN);
-
 		SetEndOfFile(hVirtualStack);
+#endif
 
 		return true;
 	}

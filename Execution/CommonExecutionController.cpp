@@ -1,12 +1,18 @@
 #include "CommonExecutionController.h"
 #include "../revtracer/DebugPrintFlags.h"
+#include "Common.h"
 
+#ifdef __linux__
+#include <stdarg.h>
+#include <stdio.h>
+#else
 #include <Windows.h>
-
 #include <Psapi.h>
 #include <tlhelp32.h>
 #include <Winternl.h>
+#endif
 
+#include "Common.h"
 
 class DefaultObserver : public ExecutionObserver {
 public :
@@ -132,7 +138,7 @@ bool CommonExecutionController::UpdateLayout() {
 	ULONG retLen;
 	_VM_COUNTERS_ ctrs;
 
-	HANDLE hProcess = GetProcessHandle();
+	THREAD_T hProcess = GetProcessHandle();
 
 	NtQueryInformationProcess(
 		hProcess,
@@ -230,7 +236,7 @@ int GeneratePrefix(char *buff, int size, ...) {
 	va_list va;
 
 	va_start(va, size);
-	int sz = vsnprintf_s(
+	int sz = VSNPRINTF_S(
 		buff,
 		size,
 		size - 1,
@@ -242,15 +248,7 @@ int GeneratePrefix(char *buff, int size, ...) {
 	return sz;
 }
 
-HANDLE hDbg = CreateFileW(
-	L"execution.log",
-	GENERIC_WRITE,
-	FILE_SHARE_READ,
-	NULL,
-	CREATE_ALWAYS,
-	0,
-	NULL
-);
+FILE_T hDbg = OPEN_FILE_W("execution.log");
 
 void vDebugPrintf(const DWORD printMask, const char *fmt, va_list args) {
 	DWORD dwWr;
@@ -301,15 +299,17 @@ void vDebugPrintf(const DWORD printMask, const char *fmt, va_list args) {
 		);
 		//debugLog.Write(pfxBuff, sz);
 
-		WriteFile(hDbg, pfxBuff, sz, &dwWr, NULL);
+		BOOL ret;
+		WRITE_FILE(hDbg, pfxBuff, sz, dwWr, ret);
 	}
 
-	int sz = vsnprintf_s(tmpBuff, sizeof(tmpBuff) - 1, sizeof(tmpBuff) - 1, fmt, args);
+	int sz = VSNPRINTF_S(tmpBuff, sizeof(tmpBuff) - 1, sizeof(tmpBuff) - 1, fmt, args);
 	
 	if (sz) {
 		//debugLog.Write(tmpBuff, sz);
 
-		WriteFile(hDbg, tmpBuff, sz, &dwWr, NULL);
+		BOOL ret;
+		WRITE_FILE(hDbg, tmpBuff, sz, dwWr, ret);
 		lastChar = tmpBuff[sz - 1];
 	}
 }

@@ -4,7 +4,6 @@
 #include "Loader/Mem.Mapper.h"
 
 #include "RiverStructs.h"
-#include "Common.h"
 
 //#define DUMP_BLOCKS
 
@@ -527,7 +526,7 @@ DWORD WINAPI ControlThreadFunc(void *ptr) {
 	return ctr->ControlThread();
 }
 
-void *ExternExecutionController::GetProcessHandle() {
+THREAD_T ExternExecutionController::GetProcessHandle() {
 	return hProcess;
 }
 
@@ -624,36 +623,20 @@ DWORD ExternExecutionController::ControlThread() {
 	DWORD exitCode;
 
 	//HANDLE hDbg = 0;
-	HANDLE hOffs = 0;
+	FILE_T hOffs = 0;
 
 	do {
 
-		hDbg = CreateFileA(
-			"debug.log",
-			GENERIC_WRITE,
-			FILE_SHARE_READ,
-			NULL,
-			CREATE_ALWAYS,
-			0,
-			NULL
-		);
+		hDbg = OPEN_FILE_W("debug.log");
 
-		if (INVALID_HANDLE_VALUE == hDbg) {
+		if (FAIL_OPEN_FILE(hDbg)) {
 			//TerminateProcess(hProcess, 0);
 			break;
 		}
 
-		hOffs = CreateFileA(
-			"bbs1.txt",
-			GENERIC_WRITE,
-			FILE_SHARE_READ,
-			NULL,
-			CREATE_ALWAYS,
-			0,
-			NULL
-		);
+		hOffs = OPEN_FILE_W("bbs1.txt");
 
-		if (INVALID_HANDLE_VALUE == hOffs) {
+		if (FAIL_OPEN_FILE(hOffs)) {
 			break;
 		}
 
@@ -677,7 +660,8 @@ DWORD ExternExecutionController::ControlThread() {
 				DWORD written;
 				debugLog->Read(debugBuffer, sizeof(debugBuffer)-1, read);
 
-				WriteFile(hDbg, debugBuffer, read, &written, NULL);
+				BOOL ret;
+				WRITE_FILE(hDbg, debugBuffer, read, written, ret);
 			}
 
 			if (STILL_ACTIVE != exitCode) {

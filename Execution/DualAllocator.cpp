@@ -1,5 +1,5 @@
-#include "DualAllocator.h"
 #include "Common.h"
+#include "DualAllocator.h"
 
 DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const wchar_t *shmName, DWORD granularity) {
 	hMapping = CreateFileMappingW(
