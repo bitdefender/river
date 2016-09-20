@@ -3,7 +3,7 @@
 
 #include "river.h"
 #include "cb.h"
-#include "runtime.h"
+#include "Runtime.h"
 
 #include "RiverX86Disassembler.h"
 
