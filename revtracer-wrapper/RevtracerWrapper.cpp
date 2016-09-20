@@ -32,6 +32,7 @@ namespace revwrapper {
 	typedef long (*ConvertToSystemErrorHandler)(long status);
 	typedef void(*TerminateProcessHandler)(int status);
 	typedef void (*FreeMemoryHandler)(void *ptr);
+	typedef ssize_t (*WriteFileHandler)(int fd, const void *buf, size_t count);
 	#else
 	#ifndef NT_SUCCESS
 		#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
@@ -89,6 +90,133 @@ namespace revwrapper {
 		PULONG RegionSize,
 		ULONG FreeType
 	);
+
+	void *GetTEB() {
+		DWORD r;
+		__asm mov eax, dword ptr fs : [0x18];
+		__asm mov r, eax
+		return (void *)r;
+	}
+
+	void *GetPEB(void *teb) {
+		return (void *)*((DWORD *)teb + 0x0C);
+	}
+
+	typedef struct _RTL_USER_PROCESS_PARAMETERS
+	{
+		ULONG MaximumLength;
+		ULONG Length;
+		ULONG Flags;
+		ULONG DebugFlags;
+		PVOID ConsoleHandle;
+		ULONG ConsoleFlags;
+		PVOID StandardInput;
+		PVOID StandardOutput;
+		PVOID StandardError;
+	} RTL_USER_PROCESS_PARAMETERS, *PRTL_USER_PROCESS_PARAMETERS;
+
+	typedef struct _IO_STATUS_BLOCK {
+		union {
+			NTSTATUS Status;
+			PVOID    Pointer;
+		};
+		ULONG_PTR Information;
+	} IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
+
+	PRTL_USER_PROCESS_PARAMETERS GetUserProcessParameters(void *peb) {
+		return (PRTL_USER_PROCESS_PARAMETERS)(*((DWORD *)peb + 0x10));
+	}
+
+	typedef NTSTATUS(__stdcall *WriteFileHandler)(
+		HANDLE FileHandle,
+		HANDLE Event,
+		PVOID ApcRoutine,
+		PVOID ApcContext,
+		PIO_STATUS_BLOCK IoStatusBlock,
+		PVOID Buffer,
+		ULONG Length,
+		PVOID ByteOffset,
+		PVOID Key
+	);
+
+	typedef NTSTATUS(__stdcall *NtWaitForSingleObjectFunc)(
+		HANDLE Handle,
+		BOOL Alertable,
+		PVOID Timeout
+	);
+
+#define STATUS_PENDING 0x103
+
+	BOOL Kernel32WriteFile(
+		HANDLE hFile,
+		PVOID lpBuffer,
+		DWORD nNumberOfBytesToWrite,
+		LPDWORD lpNumberOfBytesWritten
+	) {
+		IO_STATUS_BLOCK ioStatus;
+
+		ioStatus.Status = 0;
+		ioStatus.Information = 0;
+		
+		if (lpNumberOfBytesWritten) {
+			*lpNumberOfBytesWritten = 0;
+		}
+
+		PRTL_USER_PROCESS_PARAMETERS upp = GetUserProcessParameters(GetPEB(GetTEB()));
+		HANDLE hIntFile = hFile;
+		switch ((DWORD)hFile) {
+			case 0xFFFFFFF4: 
+				hIntFile = upp->StandardError;
+				break;
+			case 0xFFFFFFF5:
+				hIntFile = upp->StandardOutput;
+				break;
+			case 0xFFFFFFF6:
+				hIntFile = upp->StandardInput;
+				break;
+		};
+
+		ADDR_TYPE proc = GetWriteFileHandler();
+		NTSTATUS ret = ((WriteFileHandler)proc) (
+			hIntFile, 
+			NULL, 
+			NULL, 
+			NULL, 
+			&ioStatus, 
+			lpBuffer, 
+			nNumberOfBytesToWrite, 
+			NULL, 
+			NULL
+		);
+
+		proc = LOAD_PROC(libhandler, "NtWaitForSingleObject");
+		if (ret == STATUS_PENDING) {
+			ret = ((NtWaitForSingleObjectFunc)proc)(
+				hIntFile, 
+				FALSE, 
+				NULL
+			);
+			if (ret < 0) {
+				if ((ret & 0xC0000000) == 0x80000000) {
+					*lpNumberOfBytesWritten = ioStatus.Information;
+				}
+				//DefaultSetLastError(ret);
+				return FALSE;
+			}
+			ret = ioStatus.Status;
+		}
+
+		if (ret >= 0) {
+			*lpNumberOfBytesWritten = ioStatus.Information;
+			return TRUE;
+		}
+		if ((ret & 0xC0000000) == 0x80000000) {
+			*lpNumberOfBytesWritten = ioStatus.Information;
+		}
+		//DefaultSetLastError(ret);
+		return FALSE;
+	}
+
 	#endif
 
 	//Library API implementation
@@ -125,6 +253,17 @@ namespace revwrapper {
 	DLL_PUBLIC extern int CallFormattedPrintHandler(char * buffer, size_t sizeOfBuffer, size_t count, const char * format, va_list argptr)
 	{
 		return 0;
+	}
+
+	DLL_PUBLIC extern bool CallWriteFile(void * handle, int fd, void * buffer, size_t size, unsigned long * written)
+	{
+		#ifdef __linux__
+		ADDR_TYPE proc = GetWriteFileHandler();
+		*written = ((WriteFileHandler)proc)(fd, buffer, size);
+		return (0 <= written);
+		#else
+		return Kernel32WriteFile(handle, buffer, size, written);
+		#endif
 	}
 
 	DLL_PUBLIC extern long CallConvertToSystemErrorHandler(long status) {
@@ -185,6 +324,14 @@ namespace revwrapper {
 		return LOAD_PROC(libhandler, "vsnprintf");
 		#else
 		return LOAD_PROC(libhandler, "_vsnprintf_s");
+		#endif
+	}
+	DLL_LOCAL ADDR_TYPE GetWriteFileHandler(void)
+	{
+		#ifdef __linux__
+		return LOAD_PROC(libhandler, "write");
+		#else
+		return LOAD_PROC(libhandler, "NtWriteFile");
 		#endif
 	}
 }; //namespace revwrapper

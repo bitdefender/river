@@ -44,6 +44,7 @@ namespace revwrapper {
 	DLL_LOCAL ADDR_TYPE GetTerminateProcessHandler(void);
 	DLL_LOCAL ADDR_TYPE GetFreeMemoryHandler(void);
 	DLL_LOCAL ADDR_TYPE GetFormattedPrintHandler(void);
+	DLL_LOCAL ADDR_TYPE GetWriteFileHandler(void);
 
 #ifdef _LINUX
 		DLL_LOCAL long ConvertToSystemError(long);
@@ -63,6 +64,12 @@ namespace revwrapper {
 			size_t count,
 			const char *format,
 			va_list argptr);
+		DLL_PUBLIC extern bool CallWriteFile(
+			void *handle,
+			int fd,
+			void *buffer,
+			size_t size,
+			unsigned long *written);
 	}
 }; //namespace revwrapper
 

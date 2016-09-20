@@ -3,6 +3,7 @@
 
 #include "DebugPrintFlags.h"
 #include "BasicTypes.h"
+#include "common.h"
 
 #define TRACER_FEATURE_REVERSIBLE				0x00000001
 #define TRACER_FEATURE_TRACKING					0x00000002
@@ -61,6 +62,9 @@ namespace rev {
 	typedef void(*MarkCallbackFunc)(DWORD oldValue, DWORD newValue, DWORD address, DWORD segment);
 
 	typedef void(__stdcall *SymbolicHandlerFunc)(void *context, void *offset, void *instr);
+
+	//Revtracer Wrapper API functions type
+	typedef bool (*WriteFileCall)(void *handle, int fd, void *buffer, size_t size, unsigned long *written);
 
 	struct LowLevelRevtracerAPI {
 		/* Low level ntdll.dll functions */
