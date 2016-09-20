@@ -373,6 +373,7 @@ namespace rev {
 	}
 
 	__declspec(naked) void RevtracerPerform() {
+#ifdef _MSC_VER
 		__asm {
 			xchg esp, shadowStack;
 			pushad;
@@ -384,6 +385,24 @@ namespace rev {
 
 			jmp dword ptr[revtracerConfig.entryPoint];
 		}
+#else
+    __asm__ (
+        "xchgl $shadowStack, %esp    \n\t"
+        "pushal                      \n\t"
+        "pushfl                      \n\t"
+        "call TracerInitialization   \n\t"
+        "popfl                       \n\t"
+        "popal                       \n\t"
+        "xchgl $shadowStack, %esp    \n\t"
+
+        "jmp *%0"
+        : /* output regs/vars */
+
+        : "r" (revtracerConfig.entryPoint)
+
+        : /* clobber list */
+        );
+#endif
 	}
 
 
