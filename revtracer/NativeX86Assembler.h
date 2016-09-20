@@ -2,6 +2,7 @@
 #define _NATIVE_X86_ASSEMBLER_H
 
 #include "GenericX86Assembler.h"
+#include "X86AssemblerFuncs.h"
 
 class NativeX86Assembler : public GenericX86Assembler {
 private :
