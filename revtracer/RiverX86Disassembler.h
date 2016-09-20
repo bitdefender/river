@@ -213,29 +213,7 @@ private :
 		ri.opTypes[opIdx] |= opFlg;
 	}
 
-	template <rev::BYTE opIdx, rev::BYTE opFlg, rev::BYTE base, rev::BYTE disp8, DisassembleOperandsFunc cont> void DisassembleConstMemOperand(rev::BYTE *&px86, RiverInstruction &ri) {
-		(this->*cont)(px86, ri);
-
-		RiverAddress32 *rAddr = (RiverAddress32 *)codegen->AllocAddr(ri.modifiers); //new RiverAddress;
-		
-		rAddr->scaleAndSegment = 0;
-		rAddr->type = RIVER_ADDR_BASE | RIVER_ADDR_DIRTY;
-		rAddr->type |= (disp8 != 0) ? RIVER_ADDR_DISP8 : 0;
-		
-		rev::BYTE opType = RIVER_OPTYPE_MEM | opFlg;
-		if (RIVER_MODIFIER_O8 & ri.modifiers) {
-			opType |= RIVER_OPSIZE_8;
-		}
-		else if (RIVER_MODIFIER_O16 & ri.modifiers) {
-			opType |= RIVER_OPSIZE_16;
-		}
-
-		rAddr->base.versioned = codegen->GetCurrentReg(base);
-		rAddr->disp.d8 = disp8;
-
-		ri.opTypes[opIdx] = opType;
-		ri.operands[opIdx].asAddress = rAddr;
-	}
+	template <rev::BYTE opIdx, rev::BYTE opFlg, rev::BYTE base, rev::BYTE disp8, DisassembleOperandsFunc cont> void DisassembleConstMemOperand(rev::BYTE *&px86, RiverInstruction &ri);
 };
 
 #endif
