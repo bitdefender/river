@@ -164,7 +164,7 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(rev::UINT_PTR a) {
 		pWalk = pWalk->pNext;
 		if (++arr > 0x800) {
 			cbLock.Unlock();
-			__asm int 3
+			DEBUG_BREAK;
 		}
 	}
 

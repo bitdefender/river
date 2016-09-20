@@ -33,5 +33,6 @@
 { __asm int 3 }
 #else
 #define DEBUG_BREAK asm volatile("int $0x3")
+typedef unsigned int size_t;
 #endif
 #endif
