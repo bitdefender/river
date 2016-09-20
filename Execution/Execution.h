@@ -33,7 +33,7 @@
 #ifdef __linux__
 typedef pid_t THREAD_T;
 #else
-typedef HANDLE THREAD_T;
+typedef void* THREAD_T;
 #endif
 
 #define EXECUTION_INPROCESS						0x00000000

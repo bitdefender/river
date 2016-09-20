@@ -67,7 +67,7 @@ typedef pid_t THREAD_T;
 #else
 #include <Windows.h>
 typedef HANDLE FILE_T;
-typedef HANDLE THREAD_T;
+typedef void* THREAD_T;
 
 #define SEEK_BEGIN_FILE FILE_BEGIN
 #define SEEK_END_FILE FILE_END
