@@ -208,8 +208,14 @@ namespace rev {
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Added detour from 0x%08x to 0x%08x\n", orig, det);
 	}
 
+  void *AddressOfReturnAddress(void) {
+    int addr;
+    __asm__ ("lea 4(%%ebp), %0" : : "r" (addr));
+    return (void*)addr;
+  }
+
 	void TracerInitialization() { // parameter is not initialized (only used to get the 
-		UINT_PTR rgs = (UINT_PTR)_AddressOfReturnAddress() + sizeof(void *);
+		UINT_PTR rgs = (UINT_PTR)AddressOfReturnAddress() + sizeof(void *);
 		
 		Initialize();
 
@@ -251,31 +257,31 @@ namespace rev {
 
 	__declspec(naked) void RevtracerPerform() {
 #ifdef _MSC_VER
-		__asm {
-			xchg esp, shadowStack;
-			pushad;
-			pushfd;
-			call TracerInitialization;
-			popfd;
-			popad;
-			xchg esp, shadowStack;
+    __asm {
+      xchg esp, shadowStack;
+      pushad;
+      pushfd;
+      call TracerInitialization;
+      popfd;
+      popad;
+      xchg esp, shadowStack;
 
-			jmp dword ptr[revtracerConfig.entryPoint];
-		}
+      jmp dword ptr[revtracerConfig.entryPoint];
+    }
 #else
     __asm__ (
-        "xchgl %1, %%esp    \n\t"
+        "xchgl %1, %%esp             \n\t"
         "pushal                      \n\t"
         "pushfl                      \n\t"
-        "call TracerInitialization   \n\t"
+        "call %P2                    \n\t"
         "popfl                       \n\t"
         "popal                       \n\t"
-        "xchgl %1, %%esp    \n\t"
+        "xchgl %1, %%esp             \n\t"
         "jmp *%0" : : "r" (revtracerConfig.entryPoint),
-        "r" (shadowStack)
+        "r" (shadowStack), "i" (TracerInitialization)
         );
 #endif
-	}
+  }
 
 
 
