@@ -255,33 +255,33 @@ namespace rev {
 		}
 	}
 
-	__declspec(naked) void RevtracerPerform() {
+	NAKED  void RevtracerPerform() {
 #ifdef _MSC_VER
-    __asm {
-      xchg esp, shadowStack;
-      pushad;
-      pushfd;
-      call TracerInitialization;
-      popfd;
-      popad;
-      xchg esp, shadowStack;
+		__asm {
+			xchg esp, shadowStack;
+			pushad;
+			pushfd;
+			call TracerInitialization;
+			popfd;
+			popad;
+			xchg esp, shadowStack;
 
-      jmp dword ptr[revtracerConfig.entryPoint];
-    }
+			jmp dword ptr[revtracerConfig.entryPoint];
+		}
 #else
-    __asm__ (
-        "xchgl %1, %%esp             \n\t"
-        "pushal                      \n\t"
-        "pushfl                      \n\t"
-        "call %P2                    \n\t"
-        "popfl                       \n\t"
-        "popal                       \n\t"
-        "xchgl %1, %%esp             \n\t"
-        "jmp *%0" : : "r" (revtracerConfig.entryPoint),
-        "r" (shadowStack), "i" (TracerInitialization)
-        );
+		__asm__ (
+				"xchgl %1, %%esp             \n\t"
+				"pushal                      \n\t"
+				"pushfl                      \n\t"
+				"call %P2                    \n\t"
+				"popfl                       \n\t"
+				"popal                       \n\t"
+				"xchgl %1, %%esp             \n\t"
+				"jmp *%0" : : "r" (revtracerConfig.entryPoint),
+				"r" (shadowStack), "i" (TracerInitialization)
+				);
 #endif
-  }
+	}
 
 
 
