@@ -5,7 +5,7 @@ CPP_FILES := AddressContainer.cpp api.cpp callgates.cpp cb.cpp crc32.cpp crtStub
 OBJ_FILES := $(addprefix ,$(notdir $(CPP_FILES:.cpp=.o)))
 LD_FLAGS :=
 CC_FLAGS_CROSS =-D_cdecl="" -D_stdcall=""
-CC_FLAGS += -m32 -std=c++11 -fcheck-new $(CC_FLAGS_CROSS)
+CC_FLAGS += -m32 -std=c++11 -fcheck-new -D_BUILDING_REVTRACER_DLL $(CC_FLAGS_CROSS)
 
 all: $(lib_revtracer)
 
