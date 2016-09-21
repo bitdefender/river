@@ -21,10 +21,10 @@ typedef void* HANDLE;
 typedef int BOOL;
 
 typedef unsigned short USHORT;
-typedef uint8_t BYTE;
+typedef unsigned char BYTE;
 typedef unsigned short WORD;
-typedef uint32_t DWORD;
-typedef int32_t LONG;
+typedef unsigned long DWORD;
+typedef long LONG;
 typedef int64_t LONGLONG;
 typedef unsigned long long QWORD;
 typedef unsigned int UINT_PTR;
@@ -59,7 +59,7 @@ typedef union _LARGE_INTEGER {
 #define LSEEK(fd, off, flag) lseek((fd), (off.QuadPart), (flag))
 
 #include <pthread.h>
-typedef pid_t THREAD_T;
+typedef pthread_t THREAD_T;
 
 #include <unistd.h>
 #define GET_CURRENT_PROC() getpid()

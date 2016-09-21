@@ -31,7 +31,7 @@
 #endif
 
 #ifdef __linux__
-typedef pid_t THREAD_T;
+typedef pthread_t THREAD_T;
 #else
 typedef void* THREAD_T;
 #endif
