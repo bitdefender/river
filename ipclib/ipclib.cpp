@@ -1,6 +1,7 @@
 #include "ipclib.h"
 
 #include "../revtracer/DebugPrintFlags.h"
+#include "common.h"
 
 namespace ipc {
 	typedef long NTSTATUS;
@@ -125,7 +126,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_MEMORY_ALLOC) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		void *ptr = ((LdrMapMemory)ipcAPI.ldrMapMemory)(
@@ -136,7 +137,7 @@ namespace ipc {
 		);
 
 		if (ptr != ipcData.data.asMemoryAllocReply.pointer) {
-			__asm int 3;
+			DEBUG_BREAK;
 			return NULL;
 		}
 
@@ -151,7 +152,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_MEMORY_FREE) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 
@@ -162,7 +163,7 @@ namespace ipc {
 		
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_TAKE_SNAPSHOT) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asTakeSnapshotReply;
@@ -175,7 +176,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_RESTORE_SNAPSHOT) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asRestoreSnapshotReply;
@@ -189,7 +190,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_INITIALIZE_CONTEXT) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 
@@ -201,7 +202,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_CLEANUP_CONTEXT) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 
@@ -215,7 +216,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_EXECUTION_BEGIN) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asExecutionBeginReply;
@@ -231,7 +232,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_EXECUTION_CONTORL) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asExecutionControlReply;
@@ -246,7 +247,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_EXECUTION_END) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asExecutionEndReply;
@@ -261,7 +262,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_BRANCH_HANDLER) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asBranchHandlerReply;
@@ -276,7 +277,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_SYSCALL_CONTROL) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 
