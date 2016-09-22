@@ -1,15 +1,8 @@
 #include "Common.h"
 #include "DualAllocator.h"
 
-DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const wchar_t *shmName, DWORD granularity) {
-	hMapping = CreateFileMappingW(
-		INVALID_HANDLE_VALUE,
-		NULL,
-		PAGE_EXECUTE_READWRITE,
-		0,
-		size,
-		shmName
-	);
+DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const char *shmName, DWORD granularity) {
+	hMapping = MAP_FILE_RWX(shmName, size);
 
 	dwSize = size;
 	dwUsed = 0;

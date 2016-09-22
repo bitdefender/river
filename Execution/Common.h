@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 typedef int FILE_T;
 typedef wchar_t WCHAR;
@@ -58,6 +59,13 @@ typedef union _LARGE_INTEGER {
 #define CLOSE_FILE(fd) close((fd))
 #define LSEEK(fd, off, flag) lseek((fd), (off.QuadPart), (flag))
 
+#define MAP_FILE_RWX(file, size)                                   \
+  ({ int fd = open((file), O_RDWR | O_CREAT | O_TRUNC, 0644);                                \
+   void *ret = mmap(0, (size), PROT_READ | PROT_WRITE | PROT_EXEC, \
+       MAP_SHARED, fd, 0);                                         \
+   ret;                                                            \
+   })
+
 #include <pthread.h>
 typedef pthread_t THREAD_T;
 
@@ -80,6 +88,8 @@ typedef void* THREAD_T;
 #define READ_FILE(fd, buf, size, read, ret) do { ret = ReadFile((fd), (buf), (size), &(read), nullptr); } while (false)
 #define CLOSE_FILE(fd) CloseHandle(fd)
 #define LSEEK(fd, off, flag) SetFilePointerEx((fd), (off), &(off), (flag))
+
+#define MAP_FILE_RWX(file, size) CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_EXECUTE_READWRITE, 0, (size), (file))
 
 #define GET_CURRENT_PROC() GetCurrentProcess()
 
