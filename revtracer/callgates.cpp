@@ -24,17 +24,17 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 	pEnv->exitAddr = (DWORD)s;
 }
 
-void *GetReturnAddress(void) {
-  int ret;
-  __asm__ ("mov 4(%%ebp), %0" : : "r" (ret));
-  return (void *)ret;
-}
+#ifdef _MSC_VER
+#define GET_RETURN_ADDR _ReturnAddress
+#else
+#define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : : "r" (addr)); addr; })
+#endif
 
 rev::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
 	RiverBasicBlock *pBlock;
 	DWORD ret;
 
-	Stopper (env, (BYTE *)GetReturnAddress());
+	Stopper (env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	//pBlock->address = (DWORD) f;
@@ -52,7 +52,7 @@ DWORD __declspec(noinline) call_cdecl_1(struct ExecutionEnvironment *env, _fn_cd
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
-	Stopper (env, (BYTE *)GetReturnAddress());
+	Stopper (env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -71,7 +71,7 @@ DWORD __declspec(noinline) call_cdecl_2(struct ExecutionEnvironment *env, _fn_cd
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GetReturnAddress());
+	Stopper(env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -90,7 +90,7 @@ DWORD __declspec(noinline) call_cdecl_3(struct ExecutionEnvironment *env, _fn_cd
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GetReturnAddress());
+	Stopper(env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -109,7 +109,7 @@ DWORD __declspec(noinline) call_cdecl_4(struct ExecutionEnvironment *env, _fn_cd
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GetReturnAddress());
+	Stopper(env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -127,7 +127,7 @@ DWORD __declspec(noinline) call_stdcall_0(struct ExecutionEnvironment *env, _fn_
 	RiverBasicBlock *pBlock;
 	DWORD ret;
 
-	Stopper(env, (BYTE *)GetReturnAddress());
+	Stopper(env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -145,7 +145,7 @@ DWORD __declspec(noinline) call_stdcall_1(struct ExecutionEnvironment *env, _fn_
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GetReturnAddress());
+	Stopper(env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -163,7 +163,7 @@ DWORD __declspec(noinline) call_stdcall_2(struct ExecutionEnvironment *env, _fn_
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GetReturnAddress());
+	Stopper(env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -181,7 +181,7 @@ DWORD __declspec(noinline) call_stdcall_3(struct ExecutionEnvironment *env, _fn_
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GetReturnAddress());
+	Stopper(env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -199,7 +199,7 @@ DWORD __declspec(noinline) call_stdcall_4(struct ExecutionEnvironment *env, _fn_
 	DWORD ret;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GetReturnAddress());
+	Stopper(env, (BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;

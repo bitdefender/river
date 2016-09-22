@@ -3,9 +3,9 @@
 
 #ifdef _MSC_VER
 #include <intrin.h>
-#define LOCK_INC(count_ptr) _InterlockedIncrement(count_ptr)
+#define LOCK_INC(count_ptr) _InterlockedIncrement(&(count_ptr))
 #else
-#define LOCK_INC(count_ptr)  asm volatile("lock; incl %0" : "=m"(count_ptr) : "m"(count_ptr))
+#define LOCK_INC(count_ptr)  ({ asm volatile("lock; incl %0" : "=m"(count_ptr) : "m"(count_ptr)); count_ptr; })
 #endif
 
 namespace ipc {
@@ -20,8 +20,8 @@ namespace ipc {
 	}
 
 	long ShmTokenRing::Use() {
-		LOCK_INC(userCount);
-		return userCount - 1;
+		long ret = LOCK_INC(userCount);
+		return ret - 1;
 	}
 
 	void NtDllNtYieldExecution();

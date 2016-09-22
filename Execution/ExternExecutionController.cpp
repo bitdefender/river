@@ -46,7 +46,7 @@ bool ExternExecutionController::InitializeAllocator() {
 
 	GetSystemInfo(&si);
 
-	shmAlloc = new DualAllocator(1 << 30, hProcess, L"Local\\MumuMem", si.dwAllocationGranularity);
+	shmAlloc = new DualAllocator(1 << 30, hProcess, "Local\\MumuMem", si.dwAllocationGranularity);
 	return NULL != shmAlloc;
 }
 

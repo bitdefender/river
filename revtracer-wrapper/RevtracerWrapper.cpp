@@ -145,7 +145,7 @@ namespace revwrapper {
 		PVOID Timeout
 	);
 
-#define STATUS_PENDING 0x103
+//#define STATUS_PENDING 0x103
 
 	BOOL Kernel32WriteFile(
 		HANDLE hFile,

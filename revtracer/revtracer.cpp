@@ -208,14 +208,14 @@ namespace rev {
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Added detour from 0x%08x to 0x%08x\n", orig, det);
 	}
 
-  void *AddressOfReturnAddress(void) {
-    int addr;
-    __asm__ ("lea 4(%%ebp), %0" : : "r" (addr));
-    return (void*)addr;
-  }
+#ifdef _MSC_VER
+#define ADDR_OF_RET_ADDR _AddressOfReturnAddress
+#else
+#define ADDR_OF_RET_ADDR() ({ int addr; __asm__ ("lea 4(%%ebp), %0" : : "r" (addr)); addr; })
+#endif
 
 	void TracerInitialization() { // parameter is not initialized (only used to get the 
-		UINT_PTR rgs = (UINT_PTR)AddressOfReturnAddress() + sizeof(void *);
+		UINT_PTR rgs = (UINT_PTR)ADDR_OF_RET_ADDR() + sizeof(void *);
 		
 		Initialize();
 

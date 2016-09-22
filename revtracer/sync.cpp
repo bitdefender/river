@@ -7,7 +7,7 @@
 #include <intrin.h>
 #define LOCK_XCHG(target, value) _InterlockedExchange(target, value)
 #else
-#define LOCK_XCHG(target, value) asm volatile("xchgl %0, %1" : "+m"(*target) : "r"(value) : "memory")
+#define LOCK_XCHG(target, value) ({ asm volatile("xchgl %0, %1" : "+m"(*target) : "r"(value) : "memory"); value; })
 #endif
 
 RiverMutex::RiverMutex() {
@@ -19,8 +19,7 @@ RiverMutex::~RiverMutex() {
 
 void RiverMutex::Lock() {
 	while (1) {
-    LOCK_XCHG(&mtx, 1);
-		if (0 == mtx) {
+		if (0 == LOCK_XCHG(&mtx, 1)) {
 			break;
 		}
 
