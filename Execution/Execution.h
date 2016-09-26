@@ -84,9 +84,12 @@ struct VirtualMemorySection {
 };
 
 struct ModuleInfo {
-	wchar_t Name[260];
+	char Name[260];
 	uint32_t ModuleBase;
 	uint32_t Size;
+#ifdef __linux__
+	bool anonymous;
+#endif
 };
 
 /*struct Registers {

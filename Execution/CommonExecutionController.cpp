@@ -5,6 +5,11 @@
 #ifdef __linux__
 #include <stdarg.h>
 #include <stdio.h>
+#include "../libproc/os-linux.h"
+
+#include <sys/time.h>
+#include <sys/resource.h>
+
 #else
 #include <Windows.h>
 #include <Psapi.h>
@@ -130,6 +135,77 @@ struct _VM_COUNTERS_ {
 	ULONG PeakPagefileUsage;
 };
 
+#ifdef __linux__
+
+long get_prss() {
+	struct rusage rusage;
+	getrusage( RUSAGE_SELF, &rusage );
+
+	return (size_t)(rusage.ru_maxrss * 1024L);
+}
+
+bool CommonExecutionController::UpdateLayout() {
+	if (updated) {
+		return true;
+	}
+
+	if ((virtualSize == get_prss()) && (commitedSize == get_rss())) {
+		return true;
+	}
+
+	virtualSize = get_prss();
+	commitedSize = get_rss();
+
+	sec.clear();
+	mod.clear();
+
+	struct map_iterator mi;
+	struct map_prot mp;
+	unsigned long hi;
+	unsigned long segbase, mapoff;
+
+
+	if (maps_init (&mi, getpid()) < 0) {
+		updated = false;
+		return false;
+	}
+
+
+	while (maps_next (&mi, &segbase, &hi, &mapoff, &mp)) {
+		VirtualMemorySection vms;
+		vms.BaseAddress = segbase;
+		vms.Protection = mp.prot;
+		vms.RegionSize = hi - segbase;
+		sec.push_back(vms);
+
+		ssize_t pathLen = strlen(mi.path);
+
+		if ((0 == mod.size()) ||
+				(0 != strcmp(mi.path, mod[mod.size() - 1].Name))) {
+			ModuleInfo minfo;
+
+			if (0 == pathLen) {
+				//handle anonymous mapping
+				minfo.anonymous = true;
+			} else {
+				minfo.anonymous = false;
+				strncpy(minfo.Name, mi.path, pathLen);
+			}
+
+			minfo.ModuleBase = segbase;
+			minfo.Size = hi - segbase;
+			mod.push_back(minfo);
+		} else {
+			ModuleInfo &mi = mod[mod.size() - 1];
+			mi.Size += hi - segbase;
+		}
+
+	}
+
+	updated = true;
+	return true;
+}
+#else
 bool CommonExecutionController::UpdateLayout() {
 	if (updated) {
 		return true;
@@ -210,6 +286,7 @@ bool CommonExecutionController::UpdateLayout() {
 	updated = true;
 	return true;
 }
+#endif
 
 bool CommonExecutionController::GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) {
 	if (!UpdateLayout()) {
