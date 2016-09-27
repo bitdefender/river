@@ -51,17 +51,27 @@ ExecutionEnvironment::ExecutionEnvironment(DWORD flags, unsigned int heapSize, u
 		heap.Destroy();
 		return;
 	}
-
-
 	rev_memset(pStack, 0, 0x100000);
+	runtimeContext.virtualStack = (DWORD)pStack + 0xFFFF0;
+
+
+	if (NULL == (eStack = (unsigned char *)revtracerAPI.memoryAllocFunc(0x10000))) {
+		revtracerAPI.memoryFreeFunc(pStack);
+		codeGen.Destroy();
+		revtracerAPI.memoryFreeFunc(executionBuffer);
+		blockCache.Destroy();
+		heap.Destroy();
+		return;
+	}
+	rev_memset(eStack, 0, 0x10000);
+	runtimeContext.exceptionStack = (DWORD)eStack + 0xFFF0;
 
 	runtimeContext.execBuff = (DWORD)executionBuffer + executionSize - 4; //TODO: make independant track buffer 
 	executionBase = runtimeContext.execBuff;
 
 	runtimeContext.trackStack = (DWORD)executionBuffer + executionSize + trackSize - 4;
 	runtimeContext.trackBuff = runtimeContext.trackBase = (DWORD)executionBuffer + executionSize + trackSize + 4096;
-	runtimeContext.virtualStack = (DWORD)pStack + 0xFFFF0;
-
+	
 	ac.Init();
 	//this is a major hack...
 	// remove after addres tracking is completely decoupled from the reversible tracking

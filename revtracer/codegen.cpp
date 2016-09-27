@@ -157,6 +157,57 @@ bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD 
 	return true;
 }
 
+void *RiverCodeGen::SerializeInstructions(RiverInstruction *rIn, unsigned int count) {
+	DWORD addrCount = 0, instrCount = 0;
+
+	for (DWORD i = 0; i < count; ++i) {
+		if ((RIVER_FAMILY(rIn[i].family) != RIVER_FAMILY_PREMETA) && (RIVER_FAMILY(rIn[i].family) != RIVER_FAMILY_POSTMETA)) {
+			instrCount++;
+			for (DWORD j = 0; j < 4; ++j) {
+				if (RIVER_OPTYPE(rIn[i].opTypes[j]) == RIVER_OPTYPE_MEM) {
+					addrCount++;
+				}
+			}
+		}
+	}
+
+	RiverAddress *serialAddress = nullptr;
+	RiverInstruction *serialInstr = nullptr;
+
+	unsigned int *serialBuffer = (unsigned int *)heap->Alloc(
+		8 
+		+ instrCount * sizeof(serialInstr[0])
+		+ addrCount * sizeof(serialAddress[0])
+	); // put head of buffer here
+
+	serialInstr = (RiverInstruction *)&serialBuffer[2];
+	serialAddress = (RiverAddress *)&serialInstr[instrCount];
+
+	serialBuffer[0] = instrCount;
+	serialBuffer[1] = addrCount;
+
+	addrCount = 0;
+	instrCount = 0;
+	for (DWORD i = 0; i < count; ++i) {
+		if ((RIVER_FAMILY(rIn[i].family) != RIVER_FAMILY_PREMETA) && (RIVER_FAMILY(rIn[i].family) != RIVER_FAMILY_POSTMETA)) {
+			rev_memcpy(&serialInstr[instrCount], &rIn[i], sizeof(serialInstr[i]));
+			for (DWORD j = 0; j < 4; ++j) {
+				rIn[i].instructionAddress = (DWORD)&serialInstr[instrCount];
+				if (RIVER_OPTYPE(serialInstr[instrCount].opTypes[j]) == RIVER_OPTYPE_MEM) {
+					rev_memcpy(&serialAddress[addrCount], serialInstr[instrCount].operands[j].asAddress, sizeof(serialAddress[0]));
+					serialInstr[instrCount].operands[j].asAddress = &serialAddress[addrCount];
+					addrCount++;
+				}
+			}
+			instrCount++;
+		} else {
+			rIn[i].instructionAddress = 0;
+		}
+	}
+
+	return serialBuffer;
+}
+
 DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, BYTE *&disasm, DWORD dwTranslationFlags) {
 	BYTE *pTmp = px86;
 	DWORD pFlags = 0;
@@ -184,38 +235,6 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, BYTE *&disasm
 
 		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags, instructionIndex);
 		instructionIndex++;
-
-		DWORD addrCount = 0;
-		
-		for (DWORD i = 0; i < instrCounts[currentBuffer]; ++i) {
-			for (DWORD j = 0; j < 4; ++j) {
-				if (RIVER_OPTYPE(instrBuffers[currentBuffer][i].opTypes[j]) == RIVER_OPTYPE_MEM) {
-					addrCount++;
-				}
-			}
-		}
-		RiverAddress *serialAddress = nullptr;
-		RiverInstruction *serialInstr = (RiverInstruction *)heap->Alloc(
-			instrCounts[currentBuffer] * sizeof(serialInstr[0])
-			+ addrCount * sizeof(serialAddress[0])
-		); // put head of buffer here
-		serialAddress = (RiverAddress *)&serialInstr[instrCounts[currentBuffer]];
-
-		addrCount = 0;
-		rev_memcpy(serialInstr, instrBuffers[currentBuffer], instrCounts[currentBuffer] * sizeof(serialInstr[0]));
-		for (DWORD i = 0; i < instrCounts[currentBuffer]; ++i) {
-			for (DWORD j = 0; j < 4; ++j) {
-				instrBuffers[currentBuffer][i].instructionAddress = (DWORD)&serialInstr[i];
-
-				if (RIVER_OPTYPE(serialInstr[i].opTypes[j]) == RIVER_OPTYPE_MEM) {
-					rev_memcpy(&serialAddress[addrCount], serialInstr[i].operands[j].asAddress, sizeof(serialAddress[0]));
-					serialInstr[i].operands[j].asAddress = &serialAddress[addrCount];
-					addrCount++;
-				}
-			}
-		}
-
-		disasm = (unsigned char *)serialInstr;
 
 		for (DWORD i = 0; i < instrCounts[currentBuffer]; ++i) {
 			if (RIVER_FAMILY_NATIVE == RIVER_FAMILY(instrBuffers[currentBuffer][i].family)) {
@@ -272,6 +291,8 @@ DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, BYTE *&disasm
 	} while (!(pFlags & RIVER_FLAG_BRANCH));
 
 	TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "===============================================================================\n");
+	disasm = (unsigned char *)SerializeInstructions(fwRiverInst, fwInstCount);
+
 	return pTmp - px86;
 }
 
@@ -453,6 +474,17 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 				codeBuffer.CopyToFixed(pCB->pRevTrackCode);
 			}
 		}
+
+		TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "= Processed river =============================================================\n");
+
+		DWORD cnt = ((DWORD *)pCB->pDisasmCode)[0];
+		RiverInstruction *rDis = (RiverInstruction *)&pCB->pDisasmCode[8];
+		for (DWORD i = 0; i < cnt; ++i) {
+			TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "%08x %04x %02x\t", rDis[i].instructionAddress, rDis[i].assembledOffset, rDis[i].assembledSize);
+
+			TRANSLATE_PRINT_INSTRUCTION(PRINT_INFO | PRINT_DISASSEMBLY, &rDis[i]);
+		}
+		TRANSLATE_PRINT(PRINT_INFO | PRINT_DISASSEMBLY, "===============================================================================\n");
 
 		return true;
 	}

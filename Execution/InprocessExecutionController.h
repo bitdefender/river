@@ -25,6 +25,10 @@ public :
 
 	virtual bool Execute();
 	virtual bool WaitForTermination();
+
+	virtual rev::ADDR_TYPE GetExceptingIp(rev::ADDR_TYPE hookAddr, void *cbCtx);
+	virtual void SetExceptingIp(rev::ADDR_TYPE hookAddr, rev::ADDR_TYPE newIp, rev::ADDR_TYPE *newStack, void *cbCtx);
+	virtual void ApplyHook(rev::ADDR_TYPE origAddr, rev::ADDR_TYPE hookedAddr, void *cbCtx);
 };
 
 #endif

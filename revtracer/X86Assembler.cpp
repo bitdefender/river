@@ -135,12 +135,15 @@ bool X86Assembler::TranslateNative(const RiverInstruction &ri, RelocableCodeBuff
 		__asm int 3;
 	}
 
-	if (casm == &nAsm) {
+	/*if (casm == &nAsm) {
 		MarkOriginalInstruction(px86.GetOffset());
+	}*/
+
+	if (outputType == (ASSEMBLER_DIR_FORWARD | ASSEMBLER_CODE_NATIVE)) {
+		((RiverInstruction *)rOut->instructionAddress)->assembledOffset = px86.GetOffset();
+		casm->Translate(*rOut, px86, pFlags, currentFamily, repReg, instrCounter, outputType);
+		((RiverInstruction *)rOut->instructionAddress)->assembledSize = px86.GetOffset() - ((RiverInstruction *)rOut->instructionAddress)->assembledOffset;
 	}
-
-	casm->Translate(*rOut, px86, pFlags, currentFamily, repReg, instrCounter, outputType);
-
 
 	return true;
 }
@@ -211,6 +214,7 @@ void X86Assembler::AssembleHook(RelocableCodeBuffer &px86, DWORD &instrCounter, 
 		0x60,										// 0x07 - pusha
 		0x68, 0x46, 0x02, 0x00, 0x00,				// 0x08 - push 0x00000246 - NEW FLAGS
 		0x9D,										// 0x0D - popf
+		//0x83, 0x0D, 0x00, 0x00, 0x00, 0x00, RIVER_RUNTIME_EXCEPTION_PFLAG,
 		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x0E - push <EIP>
 		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x13 - push <execution_environment>
 		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,			// 0x18 - call <dwExceptionHandler>
@@ -220,11 +224,11 @@ void X86Assembler::AssembleHook(RelocableCodeBuffer &px86, DWORD &instrCounter, 
 	};
 
 	rev_memcpy(px86.cursor, hookCode, sizeof(hookCode));
-	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
+	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->exceptionStack;
 	*(unsigned int *)(&(px86.cursor[0x0F])) = (unsigned int)address;
 	*(unsigned int *)(&(px86.cursor[0x14])) = (unsigned int)runtime;
 	*(unsigned int *)(&(px86.cursor[0x1A])) = (unsigned int)&dwExceptionHandler;
-	*(unsigned int *)(&(px86.cursor[0x22])) = (unsigned int)&runtime->virtualStack;
+	*(unsigned int *)(&(px86.cursor[0x22])) = (unsigned int)&runtime->exceptionStack;
 	px86.cursor += sizeof(hookCode);
 
 	instrCounter += 11;
@@ -273,6 +277,8 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, DWORD dwInstrCount, Reloca
 			TRANSLATE_PRINT(printMask, "%02x ", *pTmp);
 		}
 		TRANSLATE_PRINT(printMask, "\n");
+
+		outputType &= ~ASSEMBLER_CODE_HOOK;
 	}
 
 	for (DWORD i = 0; i < dwInstrCount; ++i) {

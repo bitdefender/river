@@ -17,10 +17,41 @@ extern "C" unsigned int buffer[] = {
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
 };
 
+#include <Windows.h>
+EXCEPTION_RECORD ex;
+typedef NTSTATUS(*RtlRaiseExceptionFunc)(PEXCEPTION_RECORD);
+RtlRaiseExceptionFunc rtlRaiseException = nullptr;
+
+void InitPayload() {
+	HMODULE hNtDll = GetModuleHandle(L"ntdll.dll");
+	rtlRaiseException = (RtlRaiseExceptionFunc)GetProcAddress(hNtDll, "RtlRaiseException");
+
+	ex.ExceptionAddress = 0;
+	ex.ExceptionCode = 0xC000000F;
+}
+
+#include <stdio.h>
+
 int Payload() {
+	/*__try {
+		//rtlRaiseException(&ex);
+		__asm mov eax, 0;
+		__asm mov dword ptr [eax], 0x00;
+	}
+	__except (1) {
+		return -1;
+	}
+	return 0;*/
+
 	int ret;
 
-	ret = Check(nullptr);
+	__try {
+		ret = Check(nullptr);
+	} __except (1) {
+		printf("Handled!\n");
+		ret = -1;
+	}
+
 	if (ret == 0xad6d) {
 		return 1;
 	}

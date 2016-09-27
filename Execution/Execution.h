@@ -117,6 +117,11 @@ public:
 	virtual void *GetMemoryInfo(void *ctx, void *ptr) = 0;
 	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) = 0;
 
+	// exception handling API
+	virtual rev::ADDR_TYPE GetExceptingIp(rev::ADDR_TYPE hookAddr, void *cbCtx) = 0;
+	virtual void SetExceptingIp(rev::ADDR_TYPE hookAddr, rev::ADDR_TYPE newIp, rev::ADDR_TYPE *newStack, void *cbCtx) = 0;
+	virtual void ApplyHook(rev::ADDR_TYPE origAddr, rev::ADDR_TYPE hookedAddr, void *cbCtx) = 0;
+
 };
 
 EXECUTION_LINKAGE ExecutionController *NewExecutionController(uint32_t type);

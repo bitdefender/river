@@ -34,6 +34,10 @@ DWORD __stdcall ThreadProc(LPVOID p) {
 //unsigned int BranchHandlerFunc(void *context, void *userContext, void *nextInstruction);
 void SyscallControlFunc(void *context, void *userContext);
 
+rev::ADDR_TYPE GetExceptingIp(void *context, void *userContext, rev::ADDR_TYPE hookAddress);
+void SetExceptingIp(void *context, void *userContext, rev::ADDR_TYPE hookAddress, rev::ADDR_TYPE newIp, rev::ADDR_TYPE *newStack);
+void ApplyHook(void *context, void *userContext, rev::ADDR_TYPE originalAddr, rev::ADDR_TYPE hookedAddr);
+
 
 bool InprocessExecutionController::Execute() {
 	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
@@ -46,6 +50,10 @@ bool InprocessExecutionController::Execute() {
 
 	api->branchHandler = BranchHandlerFunc;
 	api->syscallControl = SyscallControlFunc;
+	api->setExceptingIp = ::SetExceptingIp;
+	api->getExceptingIp = ::GetExceptingIp;
+	api->applyHook = ::ApplyHook;
+
 
 	if (nullptr != trackCb) {
 		api->trackCallback = trackCb;
@@ -81,6 +89,12 @@ bool InprocessExecutionController::Execute() {
 	revCfg->entryPoint = entryPoint;
 	revCfg->featureFlags = featureFlags;
 	revCfg->context = this;
+
+	revCfg->hooks[0].originalAddr = GetProcAddress(GetModuleHandle("ntdll.dll"), "KiUserExceptionDispatcher");
+	revCfg->hooks[0].detourAddr = nullptr;
+	revCfg->hooks[0].hookFlags = HOOK_NATIVE;
+	revCfg->hookCount = 1;
+
 	//revCfg->sCons = symbolicConstructor;
 
 
@@ -122,11 +136,58 @@ bool InprocessExecutionController::WaitForTermination() {
 	return true;
 }
 
+#include <Windows.h>
+#include <intrin.h>
+rev::ADDR_TYPE InprocessExecutionController::GetExceptingIp(rev::ADDR_TYPE hookAddr, void *cbCtx) {
+	rev::ExecutionRegs regs;
+	
+	GetCurrentRegisters(cbCtx, &regs);
+	EXCEPTION_RECORD *exCtx = *(EXCEPTION_RECORD **)(regs.esp + 0);
+	return (rev::ADDR_TYPE)exCtx->ExceptionAddress;
+}
 
-/*void InprocessExecutionController::GetCurrentRegisters(Registers &registers) {
-	RemoteRuntime *ree = (RemoteRuntime *)revCfg->pRuntime;
+void CopyException(DWORD &dstSp, DWORD &srcSp, rev::ADDR_TYPE newIp) {
+	PCONTEXT pCtx = (PCONTEXT)((DWORD *)srcSp)[1];
+	DWORD copySize = pCtx->Esp - srcSp;
 
-	memcpy(&registers, (Registers *)ree->registers, sizeof(registers));
-	registers.esp = ree->virtualStack;
-}*/
+	dstSp -= copySize;
+	memcpy((void *)dstSp, (void *)srcSp, copySize);
+	((DWORD *)dstSp)[0] += dstSp - srcSp;
+	((DWORD *)dstSp)[1] += dstSp - srcSp;
+	srcSp += copySize;
+
+
+	// we can switch stacks now
+	pCtx = (PCONTEXT)((DWORD *)dstSp)[1];
+	pCtx->Esp = dstSp + copySize;
+	pCtx->Eip = (DWORD)newIp;
+}
+
+void InprocessExecutionController::SetExceptingIp(rev::ADDR_TYPE hookAddr, rev::ADDR_TYPE newIp, rev::ADDR_TYPE *newStack, void *cbCtx) {
+	rev::ExecutionRegs regs;
+
+	GetCurrentRegisters(cbCtx, &regs);
+
+	CopyException((DWORD &)*newStack, regs.esp, newIp);
+	//(*(PCONTEXT *)((DWORD)newStack + 4))->Eip = (DWORD)newIp;
+	//(*(CONTEXT **)(regs.esp + 4))->Esp = (DWORD)newStack;
+	(*(EXCEPTION_RECORD **)(*newStack))->ExceptionAddress = (PVOID)newIp;
+}
+
+void InprocessExecutionController::ApplyHook(rev::ADDR_TYPE origAddr, rev::ADDR_TYPE hookedAddr, void *cbCtx) {
+	union _TMP {
+		LONG64 asLongLong;
+		BYTE asBytes[8];
+	} llPatch, llOrig, *llKiUsr = (_TMP *)origAddr;
+	DWORD oldProtect;
+
+	llPatch.asLongLong = llOrig.asLongLong = llKiUsr->asLongLong;
+	llPatch.asBytes[0] = 0xe9;
+	*(DWORD *)&llPatch.asBytes[1] = (BYTE *)hookedAddr - ((BYTE *)origAddr + 5);
+
+	VirtualProtect(origAddr, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
+	InterlockedCompareExchange64((volatile LONG64 *)origAddr, llPatch.asLongLong, llOrig.asLongLong);
+	VirtualProtect(origAddr, 5, oldProtect, &oldProtect);
+	FlushInstructionCache(GetCurrentProcess(), origAddr, 5);
+}
 

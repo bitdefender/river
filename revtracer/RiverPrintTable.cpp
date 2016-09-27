@@ -206,7 +206,7 @@ const char PrintMnemonicTable00[][10] = {
 	/*0x50*/"push", "push", "push", "push", "push", "push", "push", "push", "pop", "pop", "pop", "pop", "pop", "pop", "pop", "pop",
 	/*0x60*/"", "", "", "", "", "", "", "", "push", "imul", "push", "imul", "", "", "", "",
 	/*0x70*/"jo", "jno", "jc", "jnc", "jz", "jnz", "jbe", "jnbe", "js", "jns", "jp", "jnp", "jl", "jnl", "jle", "jnle",
-	/*0x80*/"\1", "\1", "\1", "\1", "test", "test", "xchg", "xchg", "mov", "mov", "mov", "mov", "", "lea", "", "pop",
+	/*0x80*/"\1", "\1", "\1", "\1", "test", "test", "xchg", "xchg", "mov", "mov", "mov", "mov", "mov", "lea", "", "pop",
 	/*0x90*/"nop", "xchg", "xchg", "xchg", "xchg", "xchg", "xchg", "xchg", "", "cdq", "", "", "pushf", "popf", "", "",
 	/*0xA0*/"mov", "mov", "mov", "mov", "movs", "movs", "cmps", "cmps", "test", "test", "stos", "stos", "", "", "scas", "scas",
 	/*0xB0*/"mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov",

@@ -97,19 +97,32 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 	instrCounter++;
 
 	if (saveVal) {
-		const BYTE saveVal[] = {
-			0x83, 0xE0, 0xFC,					// 0x00 - and eax, 0xFC
-			0xFF, 0x70, 0x04,					// 0x03 - push [eax + 0x04]
-			0xFF, 0x30							// 0x06 - push [eax]
-		};
+		const BYTE andRegVal[] = { 0x9C, 0x83, 0xE0, 0xFC, 0x9D };
+		const BYTE pushEax4[] = { 0xFF, 0x70, 0x04 };
+		const BYTE pushEax[] = { 0xFF, 0x30 };
+		const BYTE segmentPrefix[] = { 0x00, 0x26, 0x2E, 0x36, 0x3E, 0x64, 0x65 };
 
-		rev_memcpy(px86.cursor, saveVal, sizeof(saveVal));
+		rev_memcpy(px86.cursor, andRegVal, sizeof(andRegVal));
+		px86.cursor[2] += cReg;
+		px86.cursor += sizeof(andRegVal);
+
+		if (addr->HasSegment()) {
+			px86.cursor[0] = segmentPrefix[addr->GetSegment()];
+			px86.cursor += 1;
+		}
+		rev_memcpy(px86.cursor, pushEax4, sizeof(pushEax4));
 		px86.cursor[1] += cReg;
-		px86.cursor[4] += cReg;
-		px86.cursor[7] += cReg;
+		px86.cursor += sizeof(pushEax4);
 
-		px86.cursor += sizeof(saveVal);
-		instrCounter += 3;
+		if (addr->HasSegment()) {
+			px86.cursor[0] = segmentPrefix[addr->GetSegment()];
+			px86.cursor += 1;
+		}
+		rev_memcpy(px86.cursor, pushEax, sizeof(pushEax));
+		px86.cursor[1] += cReg;
+		px86.cursor += sizeof(pushEax);
+
+		instrCounter += 5;
 	}
 
 	rev_memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));

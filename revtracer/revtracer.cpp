@@ -324,15 +324,15 @@ namespace rev {
 
 	void DefaultSyscallControlFunc(void *context, void *userContext) { }
 
-	void DefaultApplyHook(ADDR_TYPE originalAddr, ADDR_TYPE hookedAddr) {
+	void DefaultApplyHook(void *context, void *userContext, ADDR_TYPE originalAddr, ADDR_TYPE hookedAddr) {
 		__asm int 3;
 	}
 
-	ADDR_TYPE DefaultGetExceptingIp(void *context, ADDR_TYPE hookAddress) {
+	ADDR_TYPE DefaultGetExceptingIp(void *context, void *userContext, ADDR_TYPE hookAddress) {
 		return hookAddress; // not sure what else to place here
 	}
 
-	void DefaultSetExceptingIp(void *context, ADDR_TYPE hookAddress, ADDR_TYPE newIp) {	}
+	void DefaultSetExceptingIp(void *context, void *userContext, ADDR_TYPE hookAddress, ADDR_TYPE newIp, ADDR_TYPE *newStack) {	}
 
 	void DefaultTrackCallback(DWORD value, DWORD address, DWORD segSel) { }
 	void DefaultMarkCallback(DWORD oldValue, DWORD newValue, DWORD address, DWORD segSel) { }
@@ -365,7 +365,7 @@ namespace rev {
 	void GetCurrentRegisters(void *ctx, ExecutionRegs *regs) {
 		struct ExecutionEnvironment *pCtx = (struct ExecutionEnvironment *)ctx;
 		rev_memcpy(regs, (struct ExecutionEnvironment *)pCtx->runtimeContext.registers, sizeof(*regs));
-		regs->esp = pCtx->runtimeContext.virtualStack;
+		regs->esp = (pCtx->runtimeContext.execFlags & RIVER_RUNTIME_EXCEPTION_FLAG) ? pCtx->runtimeContext.exceptionStack : pCtx->runtimeContext.virtualStack;
 	}
 
 	void *GetMemoryInfo(void *ctx, ADDR_TYPE addr) {
@@ -433,7 +433,7 @@ namespace rev {
 
 		if (flags & HOOK_NATIVE) {
 			pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags | TRANSLATION_HOOK);
-			revtracerAPI.applyHook(orig, pBlock->pFwCode);
+			revtracerAPI.applyHook(pEnv, pEnv->userContext, orig, pBlock->pFwCode);
 		} else {
 			pBlock->address = (DWORD)det;
 			pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
@@ -587,6 +587,11 @@ namespace rev {
 		DWORD ret;
 		//if (EXECUTION_ADVANCE == revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
 		if (EXECUTION_ADVANCE == revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
+			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
+			for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
+				CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr, revtracerConfig.hooks[i].hookFlags);
+			}
+
 			ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
 			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
 		}

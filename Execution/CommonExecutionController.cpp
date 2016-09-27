@@ -365,3 +365,18 @@ void *CommonExecutionController::GetMemoryInfo(void *ctx, void *ptr) {
 void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) {
 	mmv(ctx, addr, value);
 }
+
+rev::ADDR_TYPE GetExceptingIp(void *context, void *userContext, rev::ADDR_TYPE hookAddress) {
+	CommonExecutionController *ctrl = (CommonExecutionController *)userContext;
+	return ctrl->GetExceptingIp(hookAddress, context);
+}
+
+void SetExceptingIp(void *context, void *userContext, rev::ADDR_TYPE hookAddress, rev::ADDR_TYPE newIp, rev::ADDR_TYPE *newStack) {
+	CommonExecutionController *ctrl = (CommonExecutionController *)userContext;
+	ctrl->SetExceptingIp(hookAddress, newIp, newStack, context);
+}
+
+void ApplyHook(void *context, void *userContext, rev::ADDR_TYPE originalAddr, rev::ADDR_TYPE hookedAddr) {
+	CommonExecutionController *ctrl = (CommonExecutionController *)userContext;
+	ctrl->ApplyHook(originalAddr, hookedAddr, context);
+}

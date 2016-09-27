@@ -6,6 +6,8 @@
 ExecutionController *ctrl = NULL;
 HANDLE hEvent;
 
+void *ntRaiseException;
+
 class CustomObserver : public ExecutionObserver {
 public :
 	FILE *fBlocks;
@@ -24,13 +26,22 @@ public :
 		//static bool b = true;
 		rev::ExecutionRegs rgs;
 
+		ctrl->GetCurrentRegisters(ctx, &rgs);
+		if (address == ntRaiseException) {
+			DWORD *stack = (DWORD *)rgs.esp;
+			EXCEPTION_RECORD *ex = (EXCEPTION_RECORD *)stack[1];
+			CONTEXT *ctx = (CONTEXT *)stack[2];
+			BOOLEAN handle = (BOOLEAN)stack[3];
+
+			printf("NtRaiseException; retAddr %08p\n", stack[0]);
+		}
+
 		/*if (0xE39A == (address & 0xFFFF)) {
 		__asm int 3;
 		}*/
 
 		/*if (b) {*/
-		ctrl->GetCurrentRegisters(ctx, &rgs);
-
+		
 		const char module[] = "";
 		fprintf(fBlocks, "%-15s+%08X EAX:%08x ECX:%08x EDX:%08x EBX:%08x ESP:%08x EBP:%08x ESI:%08x EDI:%08x\n",
 			module,
@@ -60,10 +71,15 @@ void *ExceptionHandler(unsigned int trEip, unsigned int &oEip) {
 }
 
 extern int Payload();
+extern void InitPayload();
 
 int main() {
 
-	ApplyExceptionHook(ExceptionHandler);
+	//InitPayload();
+	//Payload();
+
+	HMODULE hNtDll = GetModuleHandle(L"ntdll.dll");
+	ntRaiseException = GetProcAddress(hNtDll, "NtRaiseException");
 
 	fopen_s(&observer.fBlocks, "e.t.txt", "wt");
 

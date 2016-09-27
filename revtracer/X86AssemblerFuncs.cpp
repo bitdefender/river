@@ -96,6 +96,11 @@ void AssembleModRMRegOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
 	AssembleModRMOp(0, ri, px86, ri.operands[1].asRegister.name);
 }
 
+void AssembleModRMSregOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
+	AssembleModRMOp(0, ri, px86, ri.operands[1].asRegister.name - RIVER_REG_SEGMENT);
+}
+
+
 void AssembleSubOpModRMOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
 	AssembleModRMOp(0, ri, px86, ri.subOpCode);
 }

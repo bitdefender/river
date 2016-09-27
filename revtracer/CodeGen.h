@@ -45,6 +45,7 @@ private :
 	SymbopSaveTranslator symbopSaveTranslator;
 	SymbopReverseTranslator symbopReverseTranslator;
 
+	void *SerializeInstructions(RiverInstruction *rIn, unsigned int count);
 	rev::DWORD TranslateBasicBlock(rev::BYTE *px86, rev::DWORD &dwInst, rev::BYTE *&disasm, rev::DWORD dwTranslationFlags);
 public :
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];

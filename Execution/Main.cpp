@@ -5,10 +5,14 @@
 
 EXECUTION_LINKAGE ExecutionController *NewExecutionController(uint32_t type) {
 	switch (type) {
+#ifndef _DISABLE_EXTERN_EXECUTION
 		case EXECUTION_EXTERNAL:
 			return new ExternExecutionController();
+#endif
+#ifndef _DISABLE_INPROCESS_EXECUTION
 		case EXECUTION_INPROCESS:
 			return new InprocessExecutionController();
+#endif
 		default:
 			return nullptr;
 	};

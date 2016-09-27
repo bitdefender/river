@@ -148,11 +148,95 @@ extern "C" {
 
 	void __stdcall ExceptionHandler(struct ExecutionEnvironment *pEnv, ADDR_TYPE a) {
 		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "ExceptionHandler!!!\n");
+		pEnv->runtimeContext.execFlags |= RIVER_RUNTIME_EXCEPTION_FLAG;
 
-		ADDR_TYPE exceptionIp = revtracerAPI.getExceptingIp(pEnv, a);
-
+		ADDR_TYPE exceptionIp = revtracerAPI.getExceptingIp(pEnv, pEnv->userContext, a);
 		ADDR_TYPE originalIp = exceptionIp; //TODO: get original IP
-		revtracerAPI.setExceptingIp(pEnv, a, originalIp);
+		RiverBasicBlock *last = pEnv->blockCache.FindBlock(pEnv->lastFwBlock);
+		DWORD off = (DWORD)exceptionIp - (DWORD)last->pFwCode;
+		DWORD instrCount = *(DWORD *)last->pDisasmCode;
+		RiverInstruction *disasm = (RiverInstruction *)&last->pDisasmCode[8];
+
+		RiverInstruction *eInstr = nullptr;
+		RiverInstruction *nInstr = nullptr;
+
+		// TODO: replace with binary search
+		for (int i = 0; i < instrCount; ++i) {
+			if ((disasm[i].assembledOffset <= off) && (disasm[i].assembledOffset + disasm[i].assembledSize > off)) {
+				// we have found it
+				eInstr = &disasm[i];
+				break;
+			}
+		}
+
+		if (nullptr != eInstr) {
+			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Found excepting instruction @%08x\n", eInstr->instructionAddress);
+			originalIp = (ADDR_TYPE)eInstr->instructionAddress;
+
+
+			for (int i = 0; i < instrCount; ++i) {
+				if ((RIVER_FAMILY(disasm[i].family) == RIVER_FAMILY_NATIVE) && (disasm[i].instructionAddress == eInstr->instructionAddress)) {
+					// we have found it
+					nInstr = &disasm[i];
+					break;
+				}
+			}
+
+			if (nullptr != eInstr) {
+				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Found native instruction ");
+				RiverPrintInstruction(PRINT_BRANCHING_INFO, nInstr);
+			}
+
+			UINT_PTR *origStack;
+			if (RIVER_FAMILY_NATIVE != RIVER_FAMILY(eInstr->family)) {
+				switch (RIVER_FAMILY(eInstr->family)) {
+				case RIVER_FAMILY_PRETRACK:
+					origStack = &pEnv->runtimeContext.trackBuff;
+					break;
+				case RIVER_FAMILY_RIVER:
+					origStack = &pEnv->runtimeContext.execBuff;
+					break;
+				}
+
+				if (RIVER_FAMILY_FLAG_ORIG_xSP & eInstr->family) {
+					__asm int 3;
+				}
+			}
+			revtracerAPI.setExceptingIp(pEnv, pEnv->userContext, a, originalIp, (ADDR_TYPE *)origStack);
+
+
+			// swap stacks back to their original states
+			if (RIVER_FAMILY_NATIVE != RIVER_FAMILY(eInstr->family)) {
+				UINT_PTR *swStack = nullptr;
+				DWORD tmp;
+				switch (RIVER_FAMILY(eInstr->family)) {
+				case RIVER_FAMILY_PRETRACK:
+					swStack = &pEnv->runtimeContext.trackBuff;
+					break;
+				case RIVER_FAMILY_RIVER:
+					swStack = &pEnv->runtimeContext.execBuff;
+					break;
+				}
+
+				if (RIVER_FAMILY_FLAG_ORIG_xSP & eInstr->family) {
+					// swith the unused register (that contains the original esp value) with the stack, effectively restoring the register
+					rev::BYTE reg = eInstr->GetUnusedRegister();
+
+					DWORD *regs = (DWORD *)pEnv->runtimeContext.registers;
+
+					tmp = regs[7 - reg];
+					regs[7 - reg] = *swStack;
+					*swStack = tmp;
+				}
+
+				// switch the exception stack with the initial stack, ensuring that exiting this function will restore the native stack
+				tmp = (DWORD)pEnv->runtimeContext.exceptionStack;
+				pEnv->runtimeContext.exceptionStack = *swStack;
+				*swStack = tmp;
+			}
+
+			pEnv->runtimeContext.execFlags &= ~RIVER_RUNTIME_EXCEPTION_FLAG;
+		}
 	}
 
 };

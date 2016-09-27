@@ -17,7 +17,7 @@ struct ExecutionEnvironment {
 	
 	unsigned int /*heapSize,*/ historySize /*, logHashSize*/, outBufferSize;
 
-	unsigned char *pStack; // = NULL;
+	unsigned char *pStack, *eStack; // = NULL;
 
 	RiverHeap heap;
 

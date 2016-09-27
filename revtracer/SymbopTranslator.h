@@ -70,6 +70,7 @@ private :
 
 	/* Translators */
 	void TranslateUnk(const RiverInstruction &rIn, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount, rev::DWORD dwTranslationFlags);
+	void TranslateNone(const RiverInstruction &rIn, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount, rev::DWORD dwTranslationFlags);
 	void TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, rev::DWORD &instrCount, RiverInstruction *&rTrackOut, rev::DWORD &trackCount, rev::DWORD dwTranslationFlags);
 };
 

@@ -161,6 +161,7 @@ private :
 	void DisassembleNoOp(rev::BYTE *&px86, RiverInstruction &ri);
 	void DisassembleRegModRM(rev::BYTE *&px86, RiverInstruction &ri);
 	void DisassembleModRMReg(rev::BYTE *&px86, RiverInstruction &ri);
+	void DisassembleModRMSreg(rev::BYTE *&px86, RiverInstruction &ri);
 	void DisassembleModRMImm8(rev::BYTE *&px86, RiverInstruction &ri);
 	void DisassembleModRMImm32(rev::BYTE *&px86, RiverInstruction &ri);
 	void DisassembleSubOpModRM(rev::BYTE *&px86, RiverInstruction &ri);

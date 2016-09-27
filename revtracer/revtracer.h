@@ -40,9 +40,9 @@ namespace rev {
 	typedef void(*TrackCallbackFunc)(DWORD value, DWORD address, DWORD segment);
 	typedef void(*MarkCallbackFunc)(DWORD oldValue, DWORD newValue, DWORD address, DWORD segment);
 
-	typedef ADDR_TYPE(*GetExceptingIpFunc)(void *context, ADDR_TYPE hookAddress);
-	typedef void (*SetExceptingIpFunc)(void *context, ADDR_TYPE hookAddress, ADDR_TYPE newIp);
-	typedef void(*ApplyHookFunc)(ADDR_TYPE originalAddr, ADDR_TYPE hookedAddr);
+	typedef ADDR_TYPE(*GetExceptingIpFunc)(void *context, void *userContext, ADDR_TYPE hookAddress);
+	typedef void (*SetExceptingIpFunc)(void *context, void *userContext, ADDR_TYPE hookAddress, ADDR_TYPE newIp, ADDR_TYPE *newStack);
+	typedef void(*ApplyHookFunc)(void *context, void *userContext, ADDR_TYPE originalAddr, ADDR_TYPE hookedAddr);
 
 	typedef void(__stdcall *SymbolicHandlerFunc)(void *context, void *offset, void *instr);
 
@@ -136,16 +136,16 @@ namespace rev {
 	};
 
 	struct ExecutionRegs {
-		DWORD edi;
-		DWORD esi;
-		DWORD ebp;
-		DWORD esp;
+		DWORD edi;			// + 0x00
+		DWORD esi;			// + 0x04
+		DWORD ebp;			// + 0x08
+		DWORD esp;			// + 0x0C
 
-		DWORD ebx;
-		DWORD edx;
-		DWORD ecx;
-		DWORD eax;
-		DWORD eflags;
+		DWORD ebx;			// + 0x10
+		DWORD edx;			// + 0x14
+		DWORD ecx;			// + 0x18
+		DWORD eax;			// + 0x1C
+		DWORD eflags;		// + 0x20
 	};
 
 	extern "C" {

@@ -3,6 +3,8 @@
 
 #include "revtracer.h"
 
+#define RIVER_RUNTIME_EXCEPTION_FLAG		0x01
+
 /* River runtime context */
 /* TODO: make the runtime threadsafe */
 struct RiverRuntime {
@@ -19,6 +21,8 @@ struct RiverRuntime {
 	rev::DWORD taintedRegisters[8];			// + 0x40
 
 	rev::UINT_PTR trackStack;				// + 0x60
+	rev::UINT_PTR exceptionStack;			// + 0x64
+	rev::UINT_PTR execFlags;				// + 0x68
 };
 
 #endif

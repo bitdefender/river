@@ -95,6 +95,7 @@ private :
 
 	void AssembleRegModRMOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 	void AssembleModRMRegOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
+	void AssembleModRMSregOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 	void AssembleSubOpModRMOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 	void AssembleSubOpModRMImm8Op(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 	void AssembleSubOpModRMImm32Op(const RiverInstruction &ri, RelocableCodeBuffer &px86);

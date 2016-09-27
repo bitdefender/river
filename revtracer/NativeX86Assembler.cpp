@@ -594,6 +594,10 @@ void NativeX86Assembler::AssembleModRMRegOp(const RiverInstruction &ri, Relocabl
 	::AssembleModRMRegOp(ri, px86);
 }
 
+void NativeX86Assembler::AssembleModRMSregOp(const RiverInstruction & ri, RelocableCodeBuffer & px86) {
+	::AssembleModRMSregOp(ri, px86);
+}
+
 void NativeX86Assembler::AssembleSubOpModRMOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
 	::AssembleSubOpModRMOp(ri, px86);
 }
@@ -712,7 +716,7 @@ NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assembleOpcodes[2][0x
 		/*0x80*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr,
 		/*0x84*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr,
 		/*0x88*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr,
-		/*0x8C*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr,
+		/*0x8C*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr,
 
 		/*0x90*/ &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr,
 		/*0x94*/ &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr,
@@ -876,7 +880,7 @@ NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assembleOperands[2]
 		/*0x80*/ &NativeX86Assembler::AssembleSubOpModRMImm8Op, &NativeX86Assembler::AssembleSubOpModRMImm32Op, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleSubOpModRMImm8Op,
 		/*0x84*/ &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp,
 		/*0x88*/ &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp,
-		/*0x8C*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleModRMOp<0>,
+		/*0x8C*/ &NativeX86Assembler::AssembleModRMSregOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleModRMOp<0>,
 
 		/*0x90*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp,
 		/*0x94*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp,
