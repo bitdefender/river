@@ -234,7 +234,7 @@ bool CommonExecutionController::UpdateLayout() {
 	sec.clear();
 	mod.clear();
 
-	wchar_t mf[MAX_PATH];
+	char mf[MAX_PATH];
 
 	for (DWORD dwAddr = 0; dwAddr < 0x7FFF0000;) {
 		MEMORY_BASIC_INFORMATION32 mbi;
@@ -251,22 +251,22 @@ bool CommonExecutionController::UpdateLayout() {
 		vms.Type = mbi.Type;
 		sec.push_back(vms);
 
-		DWORD dwSz = GetMappedFileNameW(hProcess, (LPVOID)dwAddr, mf, (sizeof(mf) / sizeof(mf[0])) - 1);
+		DWORD dwSz = GetMappedFileName(hProcess, (LPVOID)dwAddr, mf, (sizeof(mf) / sizeof(mf[0])) - 1);
 		if (0 != dwSz) {
-			wchar_t *module = mf;
+			char *module = mf;
 			for (DWORD i = 1; i < dwSz; ++i) {
 				if (mf[i - 1] == '\\') {
 					module = &mf[i];
 				}
 			}
 
-			for (wchar_t *t = module; *t != L'\0'; ++t) {
+			for (char *t = module; *t != '\0'; ++t) {
 				*t = tolower(*t);
 			}
 
-			if ((0 == mod.size()) || (0 != wcscmp(module, mod[mod.size() - 1].Name))) {
+			if ((0 == mod.size()) || (0 != strcmp(module, mod[mod.size() - 1].Name))) {
 				ModuleInfo mi;
-				wcscpy_s(mi.Name, module);
+				strcpy_s(mi.Name, module);
 				mi.ModuleBase = dwAddr;
 				mi.Size = mbi.RegionSize;
 
