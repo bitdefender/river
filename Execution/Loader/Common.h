@@ -10,12 +10,14 @@
 
 #ifdef __linux__
 #include <stdlib.h>
-#include <iconv.h>
 #include <wchar.h>
 #include <string.h>
-int wchar_to_utf8(const wchar_t *src, char *dst) {
+#include <iconv.h>
+#include <dlfcn.h>
+
+int wchar_to_utf8(const wchar_t *src, char *dst, ssize_t dst_len) {
 	int len = wcslen(src);
-	if (sizeof(dst) < (len + 1))
+	if (dst_len < len)
 		return -1;
 	memset(dst, 0, len + 1);
 
@@ -23,7 +25,7 @@ int wchar_to_utf8(const wchar_t *src, char *dst) {
 	char *iconv_out = (char *)dst;
 
 	size_t iconv_in_bytes = (len + 1) * sizeof(wchar_t);
-	size_t iconv_out_bytes = sizeof(dst);
+	size_t iconv_out_bytes = dst_len;
 
 	iconv_t cd = iconv_open("UTF-8", "WCHAR_T");
 	if ((iconv_t) -1 == cd)
@@ -37,13 +39,20 @@ int wchar_to_utf8(const wchar_t *src, char *dst) {
 	return 0;
 }
 
+void *w_dlopen(const wchar_t *filename, int flags) {
+	char path_utf8[wcslen(filename) + 1];
+	if (wchar_to_utf8((filename), path_utf8, wcslen(filename) + 1) < 0)
+		return nullptr;
+	return dlopen(path_utf8, flags);
+}
+
 FILE *w_fopen(const wchar_t *path, const wchar_t *mode) {
 	char path_utf8[wcslen(path) + 1];
 	char  mode_utf8[wcslen(mode) + 1];
 
-	if (wchar_to_utf8((path), path_utf8) < 0)
+	if (wchar_to_utf8((path), path_utf8, wcslen(path) + 1) < 0)
 		return nullptr;
-	if (wchar_to_utf8((mode), mode_utf8) < 0)
+	if (wchar_to_utf8((mode), mode_utf8, wcslen(mode) + 1) < 0)
 		return nullptr;
 
 	return fopen(path_utf8, mode_utf8);
