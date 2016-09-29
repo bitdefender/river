@@ -6,9 +6,13 @@ OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LD_PATHS:= -L$(shell pwd)/../Execution
 LD_FLAGS:= -lexecution -lpthread -ldl
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
-CC_FLAGS += -m32 -std=c++11 $(CC_FLAGS_CROSS)
+CC_FLAGS += -g -m32 -std=c++11 $(CC_FLAGS_CROSS)
+prefix := /usr/local
 
 all: $(inprocess_test)
+
+install: $(inprocess_test)
+	install -m 0755 $(inprocess_test) -t $(prefix)/bin -D
 
 $(inprocess_test): $(OBJ_FILES)
 	$(CXX) $(LD_PATHS) $(CC_FLAGS) -o $@ $^ $(LD_FLAGS)
