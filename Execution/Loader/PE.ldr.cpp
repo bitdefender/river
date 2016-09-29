@@ -3,11 +3,16 @@
 using namespace std;
 
 //#include "..\extern.h"
+#include "Common.h"
 
 #define DONOTPRINT
 
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
+#endif
+
+#ifdef __linux__
+#include <string.h>
 #endif
 
 #include "PE.ldr.h"
@@ -169,10 +174,9 @@ bool FloatingPE::Relocate(DWORD newAddr) {
 					*((QWORD *)RVA(reloc->VirtualAddress + off)) += (long)offset;
 					break;
 				default :
-					//DEBUG_BREAK;
-					__debugbreak();
+					DEBUG_BREAK;
 			}
-        }
+		}
 		//dbg_log("\n");
 		reloc = (IMAGE_BASE_RELOCATION *)((unsigned char *)reloc + reloc->SizeOfBlock);
     }
@@ -443,7 +447,7 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 FloatingPE::FloatingPE(const wchar_t *moduleName) {
 	FILE *fModule; // = _wfopen_s(moduleName, L"rb");
 
-	if (0 != _wfopen_s(&fModule, moduleName, L"rb")) {
+	if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
 		isValid = false;
 		return;
 	}
@@ -455,7 +459,7 @@ FloatingPE::FloatingPE(const wchar_t *moduleName) {
 FloatingPE::FloatingPE(const char *moduleName) {
 	FILE *fModule; // = fopen(moduleName, "rb");
 
-	if (0 != fopen_s(&fModule, moduleName, "rb")) {
+	if (0 != FOPEN(fModule, moduleName, "rb")) {
 		isValid = false;
 		return;
 	}
@@ -490,8 +494,12 @@ bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
 		}
 	}
 	
-
-	baseAddr = (DWORD)mapr.CreateSection((void *)(baseAddr), maxAddr, PAGE_READWRITE);
+#ifdef _WIN32
+	int prot = 0x4; //PAGE_READWRITE
+#else
+	int prot = 0x1 | 0x2; //PROT_READ | PROT_WRITE
+#endif
+	baseAddr = (DWORD)mapr.CreateSection((void *)(baseAddr), maxAddr, prot);
 	if (0 == baseAddr) {
 		return false;
 	}

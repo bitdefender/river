@@ -1,13 +1,16 @@
 #ifdef _WINDOWS
 #include <Windows.h>
-#elif defined(_LINUX)
-// linux include
+#elif defined(__linux__)
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <string.h>
+#include <dlfcn.h>
 #endif
 
 #include "Inproc.Mapper.h"
 
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 // virtual memory functions
 #define VIRTUAL_ALLOC(addr, size, protect) VirtualAlloc((addr), (size), MEM_RESERVE | MEM_COMMIT, (protect))
@@ -18,16 +21,17 @@
 #define GET_MODULE_HANDLE(name) GetModuleHandleA((name))
 #define GET_PROC_ADDRESS_BY_NAME(module, name) GetProcAddress((module), (name))
 #define GET_PROC_ADDRESS_BY_ORDINAL(module, name) GetProcAddress((module), (LPCSTR)(name))
-#elif defined(_LINUX)
+#elif defined(__linux__)
 
 // virtual memory functions
-#define VIRTUAL_ALLOC(addr, size, protect) 
-#define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect)
+#define VIRTUAL_ALLOC(addr, size, protect) ({ addr = mmap(nullptr, (size), (protect), MAP_SHARED | MAP_ANONYMOUS, 0, 0); addr; })
+#define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect) (0 == mprotect((addr), (size), (newProtect)))
 
 // module functions
 #define MODULE_PTR void *
-#define GET_MODULE_HANDLE(name)
-#define GET_PROC_ADDRESS_BY_NAME(module, name)
+#define GET_MODULE_HANDLE(name) dlopen((name), RTLD_LAZY)
+#define GET_PROC_ADDRESS_BY_NAME(module, name) dlsym((module), (name))
+// function ordinals not present in linux
 #define GET_PROC_ADDRESS_BY_ORDINAL(module, name)
 #endif
 
@@ -62,6 +66,10 @@ DWORD InprocMapper::FindImport(const char *moduleName, const unsigned int funcOr
 	if (NULL == hModule) {
 		return 0xFFFFFFFF;
 	}
-
+#ifdef __linux__
+  // TODO to be fixed. why do we need this facility?
+  return 0;
+#else
 	return (DWORD)GET_PROC_ADDRESS_BY_ORDINAL(hModule, funcOrdinal);
+#endif
 }
