@@ -1,9 +1,12 @@
 #include "../Execution/Execution.h"
-
+#ifdef _WIN32
 #include <Windows.h>
+#endif
+
+#include "../Execution/Common.h"
 
 ExecutionController *ctrl = NULL;
-HANDLE hEvent;
+EVENT_T hEvent;
 
 class CustomObserver : public ExecutionObserver {
 public :
@@ -11,7 +14,7 @@ public :
 
 	virtual void TerminationNotification(void *ctx) {
 		printf("Process Terminated\n");
-		SetEvent(hEvent);
+		SIGNAL_EVENT(hEvent);
 	}
 
 	virtual unsigned int ExecutionBegin(void *ctx, void *address) {
@@ -57,20 +60,20 @@ extern int Payload();
 
 int main() {
 
-	fopen_s(&observer.fBlocks, "e.t.txt", "wt");
+	FOPEN(observer.fBlocks, "e.t.txt", "wt");
 
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);
-	ctrl->SetEntryPoint(Payload);
-	
+	ctrl->SetEntryPoint((void*)Payload);
+
 	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING);
 
 	ctrl->SetExecutionObserver(&observer);
-	
-	hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+	CREATE_EVENT(hEvent);
 
 	ctrl->Execute();
 
-	WaitForSingleObject(hEvent, INFINITE);
+	WAIT_FOR_SINGLE_OBJECT(hEvent);
 
 	DeleteExecutionController(ctrl);
 	ctrl = NULL;

@@ -58,6 +58,7 @@ typedef union _LARGE_INTEGER {
 #define READ_FILE(fd, buf, size, b_read, ret) do { b_read = read((fd), (buf), (size)); ret = (b_read >= 0); } while (false)
 #define CLOSE_FILE(fd) close((fd))
 #define LSEEK(fd, off, flag) lseek((fd), (off.QuadPart), (flag))
+#define FOPEN(res, path, mode) ({ res = fopen((path), (mode)); })
 
 #define MAP_FILE_RWX(file, size)                                   \
   ({ int fd = open((file), O_RDWR | O_CREAT | O_TRUNC, 0644);                                \
@@ -68,6 +69,33 @@ typedef union _LARGE_INTEGER {
 
 #include <pthread.h>
 typedef pthread_t THREAD_T;
+struct event_t {
+  pthread_cond_t cond;
+  pthread_mutex_t mutex;
+  int exited;
+};
+
+typedef struct event_t EVENT_T;
+#define CREATE_EVENT(event) \
+  ({ pthread_cond_init(&((event).cond), nullptr); \
+   pthread_mutex_init(&(event).mutex, nullptr); \
+   (event).exited = false; \
+   })
+
+#define SIGNAL_EVENT(event) \
+  ({ pthread_mutex_lock(&(event).mutex); \
+   (event).exited = true; \
+   pthread_cond_signal(&(event).cond); \
+   pthread_mutex_unlock(&(event).mutex); \
+   })
+
+#define WAIT_FOR_SINGLE_OBJECT(event) \
+  ({ pthread_mutex_lock(&(event).mutex); \
+   while (!(event).exited) { \
+   pthread_cond_wait(&(event).cond, &(event).mutex); \
+   } \
+   pthread_mutex_unlock(&(event).mutex); \
+   })
 
 #include <unistd.h>
 #define GET_CURRENT_PROC() getpid()
@@ -76,6 +104,11 @@ typedef pthread_t THREAD_T;
 #include <Windows.h>
 typedef HANDLE FILE_T;
 typedef void* THREAD_T;
+typedef void* EVENT_T;
+
+#define CREATE_EVENT(handle) do { handle = CreateEvent(nullptr, false, false, nullptr); } while (false)
+#define SIGNAL_EVENT(handle) SetEvent((handle))
+#define WAIT_FOR_SINGLE_OBJECT(handle) WaitForSingleObject((handle), INFINITE)
 
 #define SEEK_BEGIN_FILE FILE_BEGIN
 #define SEEK_END_FILE FILE_END
@@ -88,6 +121,7 @@ typedef void* THREAD_T;
 #define READ_FILE(fd, buf, size, read, ret) do { ret = ReadFile((fd), (buf), (size), &(read), nullptr); } while (false)
 #define CLOSE_FILE(fd) CloseHandle(fd)
 #define LSEEK(fd, off, flag) SetFilePointerEx((fd), (off), &(off), (flag))
+#define FOPEN(res, path, mode) fopen_s(&(res), (path), (mode))
 
 #define MAP_FILE_RWX(file, size) CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_EXECUTE_READWRITE, 0, (size), (file))
 

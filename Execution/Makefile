@@ -1,11 +1,13 @@
-lib_execution := execution.so
+lib_execution := libexecution.so
 CC := gcc
 CXX := g++
-CPP_FILES := ../ipclib/ShmTokenRing.cpp ../revtracer/cb.cpp ../revtracer/crc32.cpp ../revtracer/sync.cpp CommonExecutionController.cpp InprocessExecutionController.cpp CommonExecutionController2.cpp LargeStack.cpp Main.cpp
+LOADER_FILES := Loader/PE.ldr.cpp Loader/Inproc.Mapper.cpp
+EXTERNAL_FILES := ../revtracer/sync.cpp ../revtracer/crc32.cpp ../revtracer/cb.cpp
+CPP_FILES := $(LOADER_FILES) LargeStack.cpp CommonExecutionController2.cpp InprocessExecutionController.cpp CommonExecutionController.cpp Main.cpp $(EXTERNAL_FILES)
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LD_FLAGS :=
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
-CC_FLAGS += -m32 -std=c++11 -D_EXECUTION_EXPORTS $(CC_FLAGS_CROSS)
+CC_FLAGS += -m32 -std=c++11 -D_EXECUTION_EXPORTS -DBLOCK_CACHE_READ_ONLY -DINPROCESS_EXECUTION_ONLY $(CC_FLAGS_CROSS)
 
 all: $(lib_execution)
 
