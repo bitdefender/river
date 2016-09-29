@@ -13,9 +13,11 @@ int Check(unsigned int *ptr) {
 	return hash;
 }
 
-extern "C" unsigned int buffer[] = {
-	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
-};
+extern "C" {
+	unsigned int buffer[] = {
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
+	};
+}
 
 int Payload() {
 	int ret;

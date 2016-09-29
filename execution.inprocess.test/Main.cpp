@@ -34,7 +34,7 @@ public :
 		ctrl->GetCurrentRegisters(ctx, &rgs);
 
 		const char module[] = "";
-		fprintf(fBlocks, "%-15s+%08X EAX:%08x ECX:%08x EDX:%08x EBX:%08x ESP:%08x EBP:%08x ESI:%08x EDI:%08x\n",
+		fprintf(fBlocks, "%-15s+%08lX EAX:%08lx ECX:%08lx EDX:%08lx EBX:%08lx ESP:%08lx EBP:%08lx ESI:%08lx EDI:%08lx\n",
 			module,
 			(DWORD)address,
 			rgs.eax,
