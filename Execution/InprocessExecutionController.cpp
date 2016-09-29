@@ -116,12 +116,22 @@ ExecuteFunc revtraceExecute = nullptr;
 bool InprocessExecutionController::Execute() {
 	MODULE_PTR hRevTracerModule, hRevWrapperModule;
 	BASE_PTR hRevTracerBase, hRevWrapperBase;
+#ifdef _WIN32
+	wchar_t revWrapperPath[] = L"revtracer-wrapper.dll";
+#else
+	wchar_t revWrapperPath[] = L"revtracer-wrapper.so";
+#endif
 
 	LOAD_LIBRARYW(L"revtracer.dll", hRevTracerModule, hRevTracerBase);
-	LOAD_LIBRARYW(L"revtracer-wrapper.dll", hRevWrapperModule, hRevWrapperBase);
+	LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
 
 	rev::RevtracerAPI *api = (rev::RevtracerAPI *)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "revtracerAPI");
 	revCfg = (rev::RevtracerConfig *)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "revtracerConfig");
+
+	if (nullptr == api) {
+		DEBUG_BREAK;
+		return false;
+	}
 
 	api->dbgPrintFunc = ::DebugPrintf;
 
