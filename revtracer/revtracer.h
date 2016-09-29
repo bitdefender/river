@@ -154,6 +154,7 @@ namespace rev {
 		DLL_LINKAGE void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
 		DLL_LINKAGE void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
 		DLL_LINKAGE void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
+		DLL_LINKAGE ADDR_TYPE ControlTransfer(void *ctx, ADDR_TYPE newAddr);
 
 		/* In process API *********************************/
 

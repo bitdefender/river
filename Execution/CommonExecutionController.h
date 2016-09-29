@@ -12,6 +12,7 @@ void InitSegments(void *hThread, rev::DWORD *segments);
 
 typedef void(*GetCurrentRegistersFunc)(void *ctx, rev::ExecutionRegs *regs);
 typedef void *(*GetMemoryInfoFunc)(void *ctx, void *ptr);
+typedef rev::ADDR_TYPE(*ControlTransferFunc)(void *ctx, rev::ADDR_TYPE newAddr);
 typedef void (*SetSymbolicExecutorFunc)(rev::SymbolicExecutorConstructor);
 
 typedef void (*MarkMemoryValueFunc)(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value);
@@ -53,6 +54,7 @@ protected:
 	GetCurrentRegistersFunc gcr;
 	GetMemoryInfoFunc gmi;
 	MarkMemoryValueFunc mmv;
+	ControlTransferFunc ctf;
 
 	//rev::SymExeConstructorFunc symbolicConstructor;
 	rev::TrackCallbackFunc trackCb;
@@ -74,9 +76,11 @@ public :
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx);
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx);
 	virtual unsigned int ExecutionEnd(void *cbCtx);
+	virtual unsigned int ExecutionSyscall(void *cbCtx);
 
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers);
 	virtual void *GetMemoryInfo(void *ctx, void *ptr);
+	virtual rev::ADDR_TYPE ControlTransfer(void *ctx, rev::ADDR_TYPE newAddress);
 
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...);
 

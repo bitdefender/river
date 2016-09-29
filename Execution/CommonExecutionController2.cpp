@@ -87,6 +87,9 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 }
 
 void SyscallControlFunc(void *context, void *userContext) {
-	// *_this = (InprocessExecutionController *)context;
+	ExecutionEnvironment *pEnv = (ExecutionEnvironment *)context;
+	ExecutionController *exec = (ExecutionController *)userContext;
+
+	exec->ExecutionSyscall(pEnv);
 }
 

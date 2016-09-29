@@ -251,7 +251,8 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 
 	if (!LoadExportedName(fRevTracer, pRevtracerBase, "GetCurrentRegisters", gcr) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "GetMemoryInfo", gmi) ||
-		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryValue", mmv)
+		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryValue", mmv) ||
+		!LoadExportedName(fRevTracer, pRevtracerBase, "ControlTransfer", ctf)
 	) {
 		__asm int 3;
 		return false;

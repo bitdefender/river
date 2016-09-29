@@ -602,4 +602,10 @@ namespace rev {
 		MarkAddr((ExecutionEnvironment *)ctx, (DWORD)addr, value, 0x2B);
 	}
 
+	
+	extern "C" ADDR_TYPE TransferHandler(ExecutionEnvironment *pEnv, ADDR_TYPE newAddr);
+	ADDR_TYPE ControlTransfer(void *pEnv, ADDR_TYPE newAddr) {
+		return TransferHandler((ExecutionEnvironment *)pEnv, newAddr);
+	}
+
 };

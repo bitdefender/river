@@ -79,6 +79,7 @@ bool InprocessExecutionController::Execute() {
 	gcr = (GetCurrentRegistersFunc)GetProcAddress(hRevTracer, "GetCurrentRegisters");
 	gmi = (GetMemoryInfoFunc)GetProcAddress(hRevTracer, "GetMemoryInfo");
 	mmv = (MarkMemoryValueFunc)GetProcAddress(hRevTracer, "MarkMemoryValue");
+	ctf = (ControlTransferFunc)GetProcAddress(hRevTracer, "ControlTransfer");
 	
 	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv)) {
 		__asm int 3;

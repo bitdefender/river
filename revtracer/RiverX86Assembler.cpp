@@ -32,11 +32,6 @@ extern const BYTE specAssemblerTbl[2][0x100];
 #define FLAG_SKIP_METAOP			0x10
 #define FLAG_GENERATE_RIVER			0x20
 
-
-extern DWORD dwSysHandler; // = 0; // &SysHandler
-extern DWORD dwSysEndHandler; // = 0; // &SysEndHandler
-extern DWORD dwBranchHandler; // = 0; // &BranchHandler
-
 void RiverX86Assembler::SwitchToRiver(BYTE *&px86, DWORD &instrCounter) {
 	static const unsigned char code[] = { 0x87, 0x25, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg esp, large ds:<dwVirtualStack>}
 

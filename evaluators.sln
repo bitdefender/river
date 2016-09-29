@@ -77,6 +77,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "symbolic", "symbolic", "{B1
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExceptionTest", "ExceptionTest\ExceptionTest.vcxproj", "{826206F3-08A4-4DA8-80C3-F848AB2AC2CE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SyscallNumbers", "SyscallNumbers\SyscallNumbers.vcxproj", "{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -301,6 +303,20 @@ Global
 		{826206F3-08A4-4DA8-80C3-F848AB2AC2CE}.Release|Win32.Build.0 = Release|Win32
 		{826206F3-08A4-4DA8-80C3-F848AB2AC2CE}.Release|x64.ActiveCfg = Release|x64
 		{826206F3-08A4-4DA8-80C3-F848AB2AC2CE}.Release|x64.Build.0 = Release|x64
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Debug|Win32.Build.0 = Debug|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Debug|x64.ActiveCfg = Debug|x64
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Debug|x64.Build.0 = Debug|x64
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Release|Any CPU.ActiveCfg = Release|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Release|Win32.ActiveCfg = Release|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Release|Win32.Build.0 = Release|Win32
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Release|x64.ActiveCfg = Release|x64
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -320,5 +336,6 @@ Global
 		{3F22D7DF-8353-409A-8A65-3E1987E439C8} = {CBA07A98-2DF0-454F-BE31-64BEE468F2A1}
 		{56939285-B2AF-42A9-ADEB-E21411F84C55} = {B11D91D9-062D-44FC-81E3-835F08207CD3}
 		{826206F3-08A4-4DA8-80C3-F848AB2AC2CE} = {C5303C5C-335C-41A1-8B57-C5AC2142989B}
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8} = {C5303C5C-335C-41A1-8B57-C5AC2142989B}
 	EndGlobalSection
 EndGlobal

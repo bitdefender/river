@@ -48,6 +48,29 @@ extern "C" {
 		DWORD ExitStatus
 	);
 
+	ADDR_TYPE TransferHandler(ExecutionEnvironment *pEnv, ADDR_TYPE a) {
+		PushToExecutionBuffer(pEnv, pEnv->lastFwBlock);
+
+		RiverBasicBlock *pCB = pEnv->blockCache.FindBlock((rev::UINT_PTR)a);
+
+		pCB = pEnv->blockCache.FindBlock((rev::UINT_PTR)a);
+		if (pCB) {
+			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Block found\n");
+		}
+		else {
+			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Not Found\n");
+			pCB = pEnv->blockCache.NewBlock((rev::UINT_PTR)a);
+
+			pEnv->codeGen.Translate(pCB, pEnv->generationFlags);
+		}
+
+		pCB->MarkForward();
+		pEnv->lastFwBlock = pCB->address;
+		pEnv->bForward = 1;
+
+		return (ADDR_TYPE)pCB->pFwCode;
+	}
+
 	void __stdcall BranchHandler(ExecutionEnvironment *pEnv, ADDR_TYPE a) {
 		//ExecutionRegs *currentRegs = (ExecutionRegs *)((&a) + 1);
 
@@ -142,8 +165,60 @@ extern "C" {
 		
 	}
 
+	#define SIZE_OF_80387_REGISTERS      80
+	#define MAXIMUM_SUPPORTED_EXTENSION     512
+
+	typedef struct _FLOATING_SAVE_AREA {
+		DWORD   ControlWord;
+		DWORD   StatusWord;
+		DWORD   TagWord;
+		DWORD   ErrorOffset;
+		DWORD   ErrorSelector;
+		DWORD   DataOffset;
+		DWORD   DataSelector;
+		BYTE    RegisterArea[SIZE_OF_80387_REGISTERS];
+		DWORD   Spare0;
+	} FLOATING_SAVE_AREA;
+
+	typedef struct _CONTEXT {
+		DWORD ContextFlags;
+
+		DWORD   Dr0;
+		DWORD   Dr1;
+		DWORD   Dr2;
+		DWORD   Dr3;
+		DWORD   Dr6;
+		DWORD   Dr7;
+
+		FLOATING_SAVE_AREA FloatSave;
+
+		DWORD   SegGs;
+		DWORD   SegFs;
+		DWORD   SegEs;
+		DWORD   SegDs;
+
+		DWORD   Edi;
+		DWORD   Esi;
+		DWORD   Ebx;
+		DWORD   Edx;
+		DWORD   Ecx;
+		DWORD   Eax;
+
+		DWORD   Ebp;
+		DWORD   Eip;
+		DWORD   SegCs;              // MUST BE SANITIZED
+		DWORD   EFlags;             // MUST BE SANITIZED
+		DWORD   Esp;
+		DWORD   SegSs;
+
+		BYTE    ExtendedRegisters[MAXIMUM_SUPPORTED_EXTENSION];
+	} CONTEXT;
+
+
+
 	void __stdcall SysHandler(struct ExecutionEnvironment *pEnv) {
 		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "SysHandler!!!\n");
+		revtracerAPI.syscallControl(pEnv, pEnv->userContext);
 	}
 
 	void __stdcall ExceptionHandler(struct ExecutionEnvironment *pEnv, ADDR_TYPE a) {

@@ -48,7 +48,6 @@ int Payload() {
 	__try {
 		ret = Check(nullptr);
 	} __except (1) {
-		printf("Handled!\n");
 		ret = -1;
 	}
 

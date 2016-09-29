@@ -48,6 +48,10 @@ public :
 		return EXECUTION_TERMINATE;
 	}
 
+	unsigned int ExecutionSyscall(void *ctx) {
+		return 0;
+	}
+
 	void TerminationNotification(void *ctx) { }
 } defaultObserver;
 
@@ -134,6 +138,10 @@ unsigned int CommonExecutionController::ExecutionControl(void *address, void *cb
 unsigned int CommonExecutionController::ExecutionEnd(void *cbCtx) {
 	execState = SUSPENDED_AT_TERMINATION;
 	return observer->ExecutionEnd(cbCtx);
+}
+
+unsigned int CommonExecutionController::ExecutionSyscall(void *cbCtx) {
+	return observer->ExecutionSyscall(cbCtx);
 }
 
 struct _VM_COUNTERS_ {
@@ -364,6 +372,10 @@ void *CommonExecutionController::GetMemoryInfo(void *ctx, void *ptr) {
 
 void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) {
 	mmv(ctx, addr, value);
+}
+
+rev::ADDR_TYPE CommonExecutionController::ControlTransfer(void *ctx, rev::ADDR_TYPE newAddr) {
+	return ctf(ctx, newAddr);
 }
 
 rev::ADDR_TYPE GetExceptingIp(void *context, void *userContext, rev::ADDR_TYPE hookAddress) {

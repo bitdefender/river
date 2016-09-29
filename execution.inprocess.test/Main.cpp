@@ -63,6 +63,24 @@ public :
 	virtual unsigned int ExecutionEnd(void *ctx) {
 		return EXECUTION_TERMINATE;
 	}
+
+	virtual unsigned int ExecutionSyscall(void *ctx) {
+
+		rev::ExecutionRegs rgs;
+
+		ctrl->GetCurrentRegisters(ctx, &rgs);
+
+		// for now, things are very dirty
+		// develop some kind of plugin for patching control altering syscalls
+		if (rgs.eax == 0x43) {
+			DWORD *stack = (DWORD *)rgs.esp;
+			CONTEXT *context = (CONTEXT *)stack[2];
+
+			context->Eip = (DWORD)ctrl->ControlTransfer(ctx, (rev::ADDR_TYPE)context->Eip);
+		}
+
+		return 0;
+	}
 } observer;
 
 void *ExceptionHandler(unsigned int trEip, unsigned int &oEip) {

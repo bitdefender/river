@@ -82,6 +82,7 @@ public :
 	virtual unsigned int ExecutionBegin(void *ctx, void *address) = 0;
 	virtual unsigned int ExecutionControl(void *ctx, void *address) = 0;
 	virtual unsigned int ExecutionEnd(void *ctx) = 0;
+	virtual unsigned int ExecutionSyscall(void *ctx) = 0;
 
 	virtual void TerminationNotification(void *ctx) = 0;
 };
@@ -109,6 +110,7 @@ public:
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionEnd(void *cbCtx) = 0;
+	virtual unsigned int ExecutionSyscall(void *cbCtx) = 0;
 
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
 
@@ -116,6 +118,7 @@ public:
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers) = 0;
 	virtual void *GetMemoryInfo(void *ctx, void *ptr) = 0;
 	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) = 0;
+	virtual rev::ADDR_TYPE ControlTransfer(void *ctx, rev::ADDR_TYPE newAddress) = 0;
 
 	// exception handling API
 	virtual rev::ADDR_TYPE GetExceptingIp(rev::ADDR_TYPE hookAddr, void *cbCtx) = 0;
