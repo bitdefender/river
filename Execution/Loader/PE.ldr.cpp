@@ -13,6 +13,7 @@ using namespace std;
 
 #ifdef __linux__
 #include <string.h>
+#include <wchar.h>
 #endif
 
 #include "PE.ldr.h"
@@ -183,6 +184,12 @@ bool FloatingPE::Relocate(DWORD newAddr) {
 
 
     return true;
+}
+
+void *FloatingPE::GetExport(const char *funcName) const {
+	if (!isELF)
+		return nullptr;
+	return dlsym(elfHandler, funcName);
 }
 
 bool FloatingPE::GetExport(const char *funcName, DWORD &funcRVA) const {
@@ -444,8 +451,28 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 	return true;
 }
 
+bool FloatingPE::LoadELF(const wchar_t *moduleName) {
+	elfHandler = w_dlopen(moduleName, RTLD_LAZY);
+	return nullptr != elfHandler;
+}
+
+bool FloatingPE::IsELF(const wchar_t *moduleName) {
+	const wchar_t *dot = wcschr(moduleName, L'.');
+	if (dot && !wcscmp(dot, L".so"))
+		return true;
+	return false;
+}
+
 FloatingPE::FloatingPE(const wchar_t *moduleName) {
 	FILE *fModule; // = _wfopen_s(moduleName, L"rb");
+
+	if (IsELF(moduleName)) {
+		isELF = true;
+		isValid = LoadELF(moduleName);
+		return;
+	}
+
+	isELF = false;
 
 	if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
 		isValid = false;
@@ -470,6 +497,11 @@ FloatingPE::FloatingPE(const char *moduleName) {
 
 
 FloatingPE::~FloatingPE() {
+	if (isELF) {
+		dlclose(elfHandler);
+		return;
+	}
+
 	//TODO: regular cleanup
 	for (int i = 0; i < peHdr.NumberOfSections; ++i) {
 		sections[i].Unload();
@@ -478,6 +510,8 @@ FloatingPE::~FloatingPE() {
 
 bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
 	
+	if (isELF)
+		return true;
 	
 	FixImports(mapr);
     

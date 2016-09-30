@@ -36,6 +36,10 @@ void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &bas
 }
 
 void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName) {
+
+  if (module->IsELF())
+    return module->GetExport(funcName);
+
 	DWORD rva;
 	if (!module->GetExport(funcName, rva)) {
 		return nullptr;
