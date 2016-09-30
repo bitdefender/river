@@ -123,7 +123,7 @@ bool InprocessExecutionController::Execute() {
 #ifdef _WIN32
 	wchar_t revWrapperPath[] = L"revtracer-wrapper.dll";
 #else
-	wchar_t revWrapperPath[] = L"revtracer-wrapper.so";
+	wchar_t revWrapperPath[] = L"librevtracerwrapper.so";
 #endif
 
 	LOAD_LIBRARYW(L"revtracer.dll", hRevTracerModule, hRevTracerBase);
@@ -154,11 +154,18 @@ bool InprocessExecutionController::Execute() {
 		api->symbolicHandler = symbCb;
 	}
 
+#ifdef _WIN32
 	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "RevtracerWrapperInit");
+	if (!initHandler) {
+		DEBUG_BREAK;
+		return false;
+	}
+
 	if (nullptr == ((GetHandlerCallback)initHandler)()) {
 		DEBUG_BREAK;
 		return false;
 	}
+#endif
 
 	api->lowLevel.ntAllocateVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallAllocateMemoryHandler");
 

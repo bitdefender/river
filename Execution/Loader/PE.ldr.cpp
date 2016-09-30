@@ -452,7 +452,7 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 }
 
 bool FloatingPE::LoadELF(const wchar_t *moduleName) {
-	elfHandler = w_dlopen(moduleName, RTLD_LAZY);
+	elfHandler = w_dlopen(moduleName, RTLD_NOW);
 	return nullptr != elfHandler;
 }
 
@@ -544,6 +544,7 @@ bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
 	//#define IMAGE_SCN_MEM_EXECUTE                0x20000000  // Section is executable.
 	//#define IMAGE_SCN_MEM_READ                   0x40000000  // Section is readable.
 	//#define IMAGE_SCN_MEM_WRITE                  0x80000000  // Section is writeable.
+#ifdef _WIN32
 	static const DWORD pVec[] = {
 		PAGE_NOACCESS,
 		PAGE_EXECUTE,
@@ -555,6 +556,19 @@ bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
 		PAGE_READWRITE,
 		PAGE_EXECUTE_READWRITE
 	};
+#else
+	static const DWORD pVec[] = {
+		0x0,
+		0x4,
+		0x1,
+		0x1 | 0x4,
+
+		0x2 | 0x4, // should be write only
+		0x1 | 0x2 | 0x4, // should be execute write
+		0x2 | 0x4,
+		0x1 | 0x2 | 0x4
+	};
+#endif
 
     for (unsigned int i = 0; i < sections.size(); ++i) {
 		if (sections[i].header.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) {

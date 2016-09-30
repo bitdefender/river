@@ -1,9 +1,10 @@
-lib_revwrapper := revtracer-wrapper.so
+lib_revwrapper := librevtracerwrapper.so
 CC := gcc
 CXX := g++
 CPP_FILES := $(wildcard *.cpp)
 OBJ_FILES := $(addprefix ,$(notdir $(CPP_FILES:.cpp=.o)))
 LD_FLAGS := -ldl
+CC_LIB := -fPIC
 CC_FLAGS += -m32 -std=c++11 $(CC_FLAGS_CROSS)
 prefix := /usr/local
 
@@ -16,7 +17,7 @@ $(lib_revwrapper): $(OBJ_FILES)
 	$(CXX) $(CC_FLAGS) $(LD_FLAGS) -shared -o $@ $^
 
 %.o: %.cpp
-	   $(CXX) $(CC_FLAGS) -c -o $@ $<
+	   $(CXX) $(CC_FLAGS) -c $(CC_LIB) -o $@ $<
 
 .PHONY: clean
 clean:
