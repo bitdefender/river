@@ -67,6 +67,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "execution.inprocess.test", "execution.inprocess.test\execution.inprocess.test.vcxproj", "{F79ED47A-7A0D-49BC-B4D7-68BD24D5858C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{668C607E-2E3B-435D-9390-56BDB152C363} = {668C607E-2E3B-435D-9390-56BDB152C363}
+		{B9540CEF-26EA-4EB1-B841-8F8A5446CAD8} = {B9540CEF-26EA-4EB1-B841-8F8A5446CAD8}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "revtracer-wrapper", "revtracer-wrapper\revtracer-wrapper.vcxproj", "{3F22D7DF-8353-409A-8A65-3E1987E439C8}"

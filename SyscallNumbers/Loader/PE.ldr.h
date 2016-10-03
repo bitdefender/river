@@ -137,7 +137,7 @@ public :
 	void Unload();
 };
 
-typedef void (*ExportVerb)(const char *funcName, const DWORD rva, const unsigned char *body);
+//typedef void (*ExportVerb)(const char *funcName, const DWORD ord, const DWORD rva, const unsigned char *body);
 
 class FloatingPE {
 private :
@@ -161,7 +161,7 @@ public :
 	bool FixImports(AbstractPEMapper &mapper);
 
 	bool GetExport(const char *funcName, DWORD &funcRVA) const;
-	void ForAllExports(std::function<void (const char *, const DWORD, const unsigned char *)> verb) const;
+	void ForAllExports(std::function<void (const char *, const DWORD, const DWORD, const unsigned char *)> verb) const;
 	DWORD GetRequiredSize() const;
 	DWORD GetSectionCount() const;
 	const PESection *GetSection(DWORD dwIdx) const;

@@ -1,4 +1,5 @@
 #include "../Execution/Execution.h"
+#include "../SyscallNumbers/SyscallNumber.h"
 #include "Hook.h"
 
 #include <Windows.h>
@@ -70,9 +71,9 @@ public :
 
 		ctrl->GetCurrentRegisters(ctx, &rgs);
 
-		// for now, things are very dirty
-		// develop some kind of plugin for patching control altering syscalls
-		if (rgs.eax == 0x43) {
+		const char *syscallName = syscall::GetName(rgs.eax);
+
+		if ((nullptr != syscallName) && (0 == strcmp("NtContinue", syscallName))) {
 			DWORD *stack = (DWORD *)rgs.esp;
 			CONTEXT *context = (CONTEXT *)stack[2];
 
@@ -83,11 +84,6 @@ public :
 	}
 } observer;
 
-void *ExceptionHandler(unsigned int trEip, unsigned int &oEip) {
-	oEip = trEip;
-	return nullptr;
-}
-
 extern int Payload();
 extern void InitPayload();
 
@@ -95,6 +91,8 @@ int main() {
 
 	//InitPayload();
 	//Payload();
+
+	syscall::Init();
 
 	HMODULE hNtDll = GetModuleHandle(L"ntdll.dll");
 	ntRaiseException = GetProcAddress(hNtDll, "NtRaiseException");
@@ -118,7 +116,6 @@ int main() {
 	ctrl = NULL;
 
 	fclose(observer.fBlocks);
-	system("pause");
-
+	
 	return 0;
 }

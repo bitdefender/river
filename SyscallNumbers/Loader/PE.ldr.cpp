@@ -228,7 +228,7 @@ bool FloatingPE::GetExport(const char *funcName, DWORD &funcRVA) const {
 	return true;
 }
 
-void FloatingPE::ForAllExports(std::function<void(const char *, const DWORD, const unsigned char *)> verb) const {
+void FloatingPE::ForAllExports(std::function<void(const char *, const DWORD, const DWORD, const unsigned char *)> verb) const {
 	DWORD exportRVA = 0;
 
 	switch (peHdr.Machine) {
@@ -255,13 +255,14 @@ void FloatingPE::ForAllExports(std::function<void(const char *, const DWORD, con
 	DWORD *names = (DWORD *)RVA(exprt->AddressOfNames);
 	WORD *ordinals = (WORD *)RVA(exprt->AddressOfNameOrdinals);
 	DWORD *exportTable = (DWORD *)RVA(exprt->AddressOfFunctions);
-
-
+	
 	for (DWORD i = 0; i < exprt->NumberOfNames; ++i) {
-		char *name = (char *)RVA(names[i]);
-		WORD ordinal = ordinals[i] + (WORD)exprt->Base;
-
-		verb(name, exportTable[ordinal], (const unsigned char *)RVA(exportTable[ordinal]));
+		verb(
+			(char *)RVA(names[i]),
+			ordinals[i] + (WORD)exprt->Base, 
+			exportTable[ordinals[i]],
+			(const unsigned char *)RVA(exportTable[ordinals[i]])
+		);
 	}
 }
 
