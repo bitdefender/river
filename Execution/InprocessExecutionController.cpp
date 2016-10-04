@@ -148,6 +148,10 @@ rev::ADDR_TYPE InprocessExecutionController::GetExceptingIp(rev::ADDR_TYPE hookA
 }
 
 void CopyException(DWORD &dstSp, DWORD &srcSp, rev::ADDR_TYPE newIp) {
+	if (dstSp == srcSp) {
+		return;
+	}
+
 	PCONTEXT pCtx = (PCONTEXT)((DWORD *)srcSp)[1];
 	DWORD copySize = pCtx->Esp - srcSp;
 

@@ -165,57 +165,6 @@ extern "C" {
 		
 	}
 
-	#define SIZE_OF_80387_REGISTERS      80
-	#define MAXIMUM_SUPPORTED_EXTENSION     512
-
-	typedef struct _FLOATING_SAVE_AREA {
-		DWORD   ControlWord;
-		DWORD   StatusWord;
-		DWORD   TagWord;
-		DWORD   ErrorOffset;
-		DWORD   ErrorSelector;
-		DWORD   DataOffset;
-		DWORD   DataSelector;
-		BYTE    RegisterArea[SIZE_OF_80387_REGISTERS];
-		DWORD   Spare0;
-	} FLOATING_SAVE_AREA;
-
-	typedef struct _CONTEXT {
-		DWORD ContextFlags;
-
-		DWORD   Dr0;
-		DWORD   Dr1;
-		DWORD   Dr2;
-		DWORD   Dr3;
-		DWORD   Dr6;
-		DWORD   Dr7;
-
-		FLOATING_SAVE_AREA FloatSave;
-
-		DWORD   SegGs;
-		DWORD   SegFs;
-		DWORD   SegEs;
-		DWORD   SegDs;
-
-		DWORD   Edi;
-		DWORD   Esi;
-		DWORD   Ebx;
-		DWORD   Edx;
-		DWORD   Ecx;
-		DWORD   Eax;
-
-		DWORD   Ebp;
-		DWORD   Eip;
-		DWORD   SegCs;              // MUST BE SANITIZED
-		DWORD   EFlags;             // MUST BE SANITIZED
-		DWORD   Esp;
-		DWORD   SegSs;
-
-		BYTE    ExtendedRegisters[MAXIMUM_SUPPORTED_EXTENSION];
-	} CONTEXT;
-
-
-
 	void __stdcall SysHandler(struct ExecutionEnvironment *pEnv) {
 		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "SysHandler!!!\n");
 		revtracerAPI.syscallControl(pEnv, pEnv->userContext);
@@ -262,7 +211,7 @@ extern "C" {
 				RiverPrintInstruction(PRINT_BRANCHING_INFO, nInstr);
 			}
 
-			UINT_PTR *origStack;
+			UINT_PTR *origStack = &pEnv->runtimeContext.exceptionStack;
 			if (RIVER_FAMILY_NATIVE != RIVER_FAMILY(eInstr->family)) {
 				switch (RIVER_FAMILY(eInstr->family)) {
 				case RIVER_FAMILY_PRETRACK:
@@ -311,6 +260,26 @@ extern "C" {
 			}
 
 			pEnv->runtimeContext.execFlags &= ~RIVER_RUNTIME_EXCEPTION_FLAG;
+
+			if (revtracerConfig.featureFlags) {
+				__asm int 3;
+
+				// we do have to build a separate basic block (for handling reversibility and tracking
+				for (RiverInstruction *i = disasm; i < eInstr; ++i) {
+
+				}
+
+
+				if (revtracerConfig.featureFlags & TRACER_FEATURE_REVERSIBLE) {
+					// do some reversing magic here
+					
+
+				}
+
+				if (revtracerConfig.featureFlags & TRACER_FEATURE_TRACKING) {
+					// do some tracking magic here
+				}
+			}
 		}
 	}
 

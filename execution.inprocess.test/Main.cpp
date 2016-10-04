@@ -102,7 +102,7 @@ int main() {
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);
 	ctrl->SetEntryPoint(Payload);
 	
-	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING);
+	ctrl->SetExecutionFeatures(0 /*EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING*/);
 
 	ctrl->SetExecutionObserver(&observer);
 	
