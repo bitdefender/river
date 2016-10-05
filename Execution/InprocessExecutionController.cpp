@@ -13,13 +13,13 @@ void *InprocessExecutionController::GetProcessHandle() {
 	return GetCurrentProcess();
 }
 
-bool InprocessExecutionController::GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) {
+/*bool InprocessExecutionController::GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) {
 	return false;
 }
 
 bool InprocessExecutionController::GetModules(ModuleInfo *& modules, int & moduleCount) {
 	return false;
-}
+}*/
 
 bool InprocessExecutionController::ReadProcessMemory(unsigned int base, unsigned int size, unsigned char * buff) {
 	memcpy(buff, (LPCVOID)base, size);
