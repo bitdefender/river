@@ -7,7 +7,7 @@ CPP_FILES := $(LOADER_FILES) LargeStack.cpp CommonExecutionController2.cpp Inpro
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LD_FLAGS :=
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
-CC_FLAGS += -g -m32 -std=c++11 -D_EXECUTION_EXPORTS -DBLOCK_CACHE_READ_ONLY -DINPROCESS_EXECUTION_ONLY $(CC_FLAGS_CROSS)
+CC_FLAGS += -g -m32 -O0 -fomit-frame-pointer -fstack-protector -std=c++11 -D_EXECUTION_EXPORTS -DBLOCK_CACHE_READ_ONLY -DINPROCESS_EXECUTION_ONLY $(CC_FLAGS_CROSS)
 prefix := /usr/local
 
 all: $(lib_execution)
@@ -16,7 +16,7 @@ install: $(lib_execution)
 	install -m 0755 $(lib_execution) -t $(prefix)/lib -D
 
 $(lib_execution): $(OBJ_FILES)
-	$(CXX) $(CC_FLAGS) $(LD_FLAGS) -shared -o $@ $^
+	$(CXX) $(CC_FLAGS) $(LD_FLAGS) -fPIC -shared -o $@ $^
 
 %.o: %.cpp
 	   $(CXX) $(CC_FLAGS) -c -o $@ $<

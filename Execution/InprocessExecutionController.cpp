@@ -199,12 +199,12 @@ bool InprocessExecutionController::Execute() {
 
 	revtracerInitialize = (InitializeFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "Initialize");
 	revtraceExecute = (ExecuteFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "Execute");
-	UNLOAD_MODULE(hRevTracerModule);
-	UNLOAD_MODULE(hRevWrapperModule);
 
 	int ret;
 	CREATE_THREAD(hThread, ThreadProc, this, ret);
 
+	//UNLOAD_MODULE(hRevTracerModule);
+	//UNLOAD_MODULE(hRevWrapperModule);
 	return TRUE == ret;
 }
 
