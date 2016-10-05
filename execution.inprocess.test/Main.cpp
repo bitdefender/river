@@ -11,6 +11,8 @@ EVENT_T hEvent;
 class CustomObserver : public ExecutionObserver {
 public :
 	FILE *fBlocks;
+	ModuleInfo *mInfo;
+	int mCount;
 
 	virtual void TerminationNotification(void *ctx) {
 		printf("Process Terminated\n");
@@ -19,53 +21,62 @@ public :
 
 	virtual unsigned int ExecutionBegin(void *ctx, void *address) {
 		printf("Process starting\n");
+		ctrl->GetModules(mInfo, mCount);
 		return EXECUTION_ADVANCE;
 	}
 
 	virtual unsigned int ExecutionControl(void *ctx, void *address) {
-		//static bool b = true;
-		rev::ExecutionRegs rgs;
+		const wchar_t unkmod[MAX_PATH] = L"???";
+		unsigned int offset = (DWORD)address;
+		int foundModule = -1;
 
-		/*if (0xE39A == (address & 0xFFFF)) {
-		__asm int 3;
-		}*/
+		for (int i = 0; i < mCount; ++i) {
+			if ((mInfo[i].ModuleBase <= (DWORD)address) && ((DWORD)address < mInfo[i].ModuleBase + mInfo[i].Size)) {
+				offset -= mInfo[i].ModuleBase;
+				foundModule = i;
+				break;
+			}
+		}
 
-		/*if (b) {*/
-		ctrl->GetCurrentRegisters(ctx, &rgs);
 
 		const char module[] = "";
-		fprintf(fBlocks, "%-15s+%08lX EAX:%08lx ECX:%08lx EDX:%08lx EBX:%08lx ESP:%08lx EBP:%08lx ESI:%08lx EDI:%08lx\n",
-			module,
-			(DWORD)address,
-			rgs.eax,
-			rgs.ecx,
-			rgs.edx,
-			rgs.ebx,
-			rgs.esp,
-			rgs.ebp,
-			rgs.esi,
-			rgs.edi
+		fprintf(fBlocks, "%-15ws + %08X\n",
+			(-1 == foundModule) ? unkmod : mInfo[foundModule].Name,
+			(DWORD)offset
 		);
-		/*}*/
-
 		return EXECUTION_ADVANCE;
 	}
 
 	virtual unsigned int ExecutionEnd(void *ctx) {
+		fflush(fBlocks);
 		return EXECUTION_TERMINATE;
 	}
 } observer;
 
-extern int Payload();
+#define MAX_BUFF 4096
+__declspec (dllimport) char payloadBuffer[];
+__declspec (dllimport) int Payload();
 
 int main() {
 
-	FOPEN(observer.fBlocks, "e.t.txt", "wt");
+	char *buff = payloadBuffer;
+	unsigned int bSize = MAX_BUFF;
+	do {
+		fgets(buff, bSize, stdin);
+		while (*buff) {
+			buff++;
+			bSize--;
+		}
+	} while (!feof(stdin));
+	//Payload();
+
+
+	fopen_s(&observer.fBlocks, "e.t.txt", "wt");
 
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);
-	ctrl->SetEntryPoint((void*)Payload);
-
-	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING);
+	ctrl->SetEntryPoint(Payload);
+	
+	ctrl->SetExecutionFeatures(0);
 
 	ctrl->SetExecutionObserver(&observer);
 

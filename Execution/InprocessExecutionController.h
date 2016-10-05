@@ -21,8 +21,8 @@ public :
 
 	virtual THREAD_T GetProcessHandle();
 
-	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
-	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);
+	/*virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
+	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);*/
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
 
 	DWORD ControlThread();

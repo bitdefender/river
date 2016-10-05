@@ -354,11 +354,11 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
 		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, pCB->dwSize);
 
-		revtracerAPI.dbgPrintFunc(PRINT_DEBUG, "## this: %08x\n", this);
+		//revtracerAPI.dbgPrintFunc(PRINT_DEBUG, "## this: %08x\n", this);
 
 		if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
 			// generate the reverse basic block representations
-			revtracerAPI.dbgPrintFunc(PRINT_DEBUG, "##Rev: %08x %d instructions\n", fwRiverInst, fwInstCount);
+			//revtracerAPI.dbgPrintFunc(PRINT_DEBUG, "##Rev: %08x %d instructions\n", fwRiverInst, fwInstCount);
 			for (DWORD i = 0; i < fwInstCount; ++i) {
 				//TranslateReverse(this, &fwRiverInst[fwInstCount - 1 - i], &bkRiverInst[i], &tmp);
 				revTranslator.Translate(fwRiverInst[fwInstCount - 1 - i], bkRiverInst[i]);

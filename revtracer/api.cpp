@@ -130,9 +130,9 @@ extern "C" {
 
 			pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
 		} else if (EXECUTION_TERMINATE == dwDirection) {
-			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++ Tainted addresses +++ \n");
+			//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++ Tainted addresses +++ \n");
 			pEnv->ac.PrintAddreses();
-			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++++++++++++++++++++++++ \n");
+			//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++++++++++++++++++++++++ \n");
 			((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
 		}
 		
