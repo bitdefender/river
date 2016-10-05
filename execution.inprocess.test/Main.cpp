@@ -70,6 +70,11 @@ int main() {
 	} while (!feof(stdin));
 	//Payload();
 
+	/* dirty hack: patch _isa_available on the loaded dll */
+	HMODULE hPayload = GetModuleHandle(L"ParserPayload.dll");
+	*(DWORD *)((BYTE *)hPayload + 0x00117288) = 0x00000001;
+	*(DWORD *)((BYTE *)hPayload + 0x001796E8) = 0x00000000;
+
 
 	fopen_s(&observer.fBlocks, "e.t.txt", "wt");
 
