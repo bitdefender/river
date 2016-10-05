@@ -27,7 +27,7 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 #ifdef _MSC_VER
 #define GET_RETURN_ADDR _ReturnAddress
 #else
-#define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : : "r" (addr)); addr; })
+#define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : "=r" (addr)); addr; })
 #endif
 
 rev::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
