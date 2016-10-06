@@ -139,8 +139,10 @@ public :
 class FloatingPE {
 private :
 	bool isValid;
+#ifdef __linux__
 	bool isELF;
 	void *elfHandler;
+#endif
 
 	ImageDosHeader dosHdr;
 	ImagePeHeader peHdr;
@@ -172,10 +174,11 @@ public :
 	bool IsValid() const {
 		return isValid;
 	}
-
+#ifdef __linux__
 	bool IsELF() const {
 		return isELF;
 	}
+#endif
 };
 
 #endif

@@ -186,11 +186,13 @@ bool FloatingPE::Relocate(DWORD newAddr) {
     return true;
 }
 
+#ifdef __linux__
 void *FloatingPE::GetExport(const char *funcName) const {
 	if (!isELF)
 		return nullptr;
 	return dlsym(elfHandler, funcName);
 }
+#endif
 
 bool FloatingPE::GetExport(const char *funcName, DWORD &funcRVA) const {
 	DWORD exportRVA = 0;
@@ -451,6 +453,7 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 	return true;
 }
 
+#ifdef __linux__
 bool FloatingPE::LoadELF(const wchar_t *moduleName) {
 	elfHandler = w_dlopen(moduleName, RTLD_NOW);
 	return nullptr != elfHandler;
@@ -462,10 +465,12 @@ bool FloatingPE::IsELF(const wchar_t *moduleName) {
 		return true;
 	return false;
 }
+#endif
 
 FloatingPE::FloatingPE(const wchar_t *moduleName) {
 	FILE *fModule; // = _wfopen_s(moduleName, L"rb");
 
+#ifdef __linux__
 	if (IsELF(moduleName)) {
 		isELF = true;
 		isValid = LoadELF(moduleName);
@@ -473,7 +478,7 @@ FloatingPE::FloatingPE(const wchar_t *moduleName) {
 	}
 
 	isELF = false;
-
+#endif
 	if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
 		isValid = false;
 		return;
@@ -497,10 +502,12 @@ FloatingPE::FloatingPE(const char *moduleName) {
 
 
 FloatingPE::~FloatingPE() {
+#ifdef __linux__
 	if (isELF) {
 		dlclose(elfHandler);
 		return;
 	}
+#endif
 
 	//TODO: regular cleanup
 	for (int i = 0; i < peHdr.NumberOfSections; ++i) {
@@ -509,9 +516,11 @@ FloatingPE::~FloatingPE() {
 }
 
 bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
-	
+
+#ifdef __linux__
 	if (isELF)
 		return true;
+#endif
 	
 	FixImports(mapr);
     
