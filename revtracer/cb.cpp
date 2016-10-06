@@ -48,14 +48,14 @@ RiverBasicBlock *RiverBasicBlockCache::NewBlock(rev::UINT_PTR a) {
 	rev_memset(pNew, 0, sizeof(*pNew));
 	pNew->address = a;
 
-	cbLock.Lock();
+	//cbLock.Lock();
 
 	rev::DWORD dwHash = HashFunc(logHashSize, pNew->address); // & 0xFFFF;
 
 	pNew->pNext = hashTable[dwHash];
 	hashTable[dwHash] = pNew;
 
-	cbLock.Unlock();
+	//cbLock.Unlock();
 
 	return pNew;
 }
@@ -133,42 +133,42 @@ RiverBasicBlock *RiverBasicBlockCache::FindBlock(rev::UINT_PTR a) {
 	int arr = 0;
 	unsigned long hash = HashFunc(logHashSize, a);
 
-	cbLock.Lock();
+	//cbLock.Lock();
 
 	pWalk = hashTable[hash];
 
 	while (pWalk) {
 		if (pWalk->address == a) {
 			if (RIVER_BASIC_BLOCK_DETOUR & pWalk->dwFlags) { // do not crc check this block as it is a detour
-				cbLock.Unlock();
+				//cbLock.Unlock();
 				return pWalk;
 			}
 
 #ifndef BLOCK_CACHE_READ_ONLY
 			if (pWalk->dwCRC == (unsigned long) crc32 (0xEDB88320, (rev::BYTE *) a, pWalk->dwSize)) {
-				cbLock.Unlock();
+				//cbLock.Unlock();
 				return pWalk;
 			} else {
 				//	_asm int 3
 				//	dbg1 ("___SMC___ at address %08X.\n", a);
 
-				cbLock.Unlock();
+				//cbLock.Unlock();
 				return NULL;
 			}
 #else
-			cbLock.Unlock();
+			//cbLock.Unlock();
 			return pWalk;
 #endif
 		}
 
 		pWalk = pWalk->pNext;
 		if (++arr > 0x800) {
-			cbLock.Unlock();
+			//cbLock.Unlock();
 			DEBUG_BREAK;
 		}
 	}
 
-	cbLock.Unlock();
+	//cbLock.Unlock();
 
 	return NULL;
 }
