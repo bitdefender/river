@@ -3,6 +3,7 @@
 
 #include "DebugPrintFlags.h"
 #include "BasicTypes.h"
+#include "common.h"
 
 #define TRACER_FEATURE_REVERSIBLE				0x00000001
 #define TRACER_FEATURE_TRACKING					0x00000002
@@ -11,11 +12,34 @@
 
 namespace rev {
 
-#ifdef _BUILDING_REVTRACER_DLL
-#define DLL_LINKAGE __declspec(dllexport)
+#if defined _WIN32 || defined __CYGWIN__
+	#ifdef _BUILDING_REVTRACER_DLL
+		#ifdef _MSC_VER
+			#define DLL_PUBLIC __declspec(dllexport)
+			#define NAKED  __declspec(naked)
+		#else
+			#define DLL_PUBLIC __attribute__ ((dllexport))
+			#define NAKED
+		#endif
+	#else
+		#ifdef _MSC_VER
+			#define DLL_PUBLIC __declspec(dllimport)
+		#else
+			#define DLL_PUBLIC __attribute__ ((dllimport))
+		#endif
+	#endif
+	#define DLL_LOCAL
 #else
-#define DLL_LINKAGE __declspec(dllimport)
+	#if __GNUC__ >= 4
+		#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+		#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+	  #define NAKED  __attribute__ ((naked))
+	#else
+		#define DLL_PUBLIC
+		#define DLL_LOCAL
+	#endif
 #endif
+
 
 	typedef void *ADDR_TYPE;
 
@@ -41,6 +65,9 @@ namespace rev {
 	typedef void(*MarkCallbackFunc)(DWORD oldValue, DWORD newValue, DWORD address, DWORD segment);
 
 	typedef void(__stdcall *SymbolicHandlerFunc)(void *context, void *offset, void *instr);
+
+	//Revtracer Wrapper API functions type
+	typedef bool (*WriteFileCall)(void *handle, int fd, void *buffer, size_t size, unsigned long *written);
 
 	struct LowLevelRevtracerAPI {
 		/* Low level ntdll.dll functions */
@@ -133,33 +160,33 @@ namespace rev {
 	extern "C" {
 
 		/* Execution context callbacks ********************/
-		DLL_LINKAGE void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
-		DLL_LINKAGE void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
-		DLL_LINKAGE void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
+		DLL_PUBLIC void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
+		DLL_PUBLIC void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
+		DLL_PUBLIC void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
 
 		/* In process API *********************************/
 
-		DLL_LINKAGE extern RevtracerAPI revtracerAPI;
-		DLL_LINKAGE extern RevtracerConfig revtracerConfig;
+		DLL_PUBLIC extern RevtracerAPI revtracerAPI;
+		DLL_PUBLIC extern RevtracerConfig revtracerConfig;
 		/* Can be used as an EP for in process execution  */
-		DLL_LINKAGE void RevtracerPerform();
+		DLL_PUBLIC void RevtracerPerform();
 
 
 		/* DLL API ****************************************/
 
-		DLL_LINKAGE void SetDbgPrint(DbgPrintFunc);
-		DLL_LINKAGE void SetMemoryMgmt(MemoryAllocFunc alc, MemoryFreeFunc fre);
-		DLL_LINKAGE void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs);
-		DLL_LINKAGE void SetLowLevelAPI(LowLevelRevtracerAPI *llApi);
-		DLL_LINKAGE void SetContextMgmt(InitializeContextFunc initCtx, CleanupContextFunc cleanCtx);
-		DLL_LINKAGE void SetControlMgmt(BranchHandlerFunc branchCtl, SyscallControlFunc syscallCtl);
+		DLL_PUBLIC void SetDbgPrint(DbgPrintFunc);
+		DLL_PUBLIC void SetMemoryMgmt(MemoryAllocFunc alc, MemoryFreeFunc fre);
+		DLL_PUBLIC void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs);
+		DLL_PUBLIC void SetLowLevelAPI(LowLevelRevtracerAPI *llApi);
+		DLL_PUBLIC void SetContextMgmt(InitializeContextFunc initCtx, CleanupContextFunc cleanCtx);
+		DLL_PUBLIC void SetControlMgmt(BranchHandlerFunc branchCtl, SyscallControlFunc syscallCtl);
 
 
-		DLL_LINKAGE void SetContext(ADDR_TYPE ctx);
-		DLL_LINKAGE void SetEntryPoint(ADDR_TYPE ep);
+		DLL_PUBLIC void SetContext(ADDR_TYPE ctx);
+		DLL_PUBLIC void SetEntryPoint(ADDR_TYPE ep);
 
-		DLL_LINKAGE void Initialize();
-		DLL_LINKAGE void Execute(int argc, char *argv[]);
+		DLL_PUBLIC void Initialize();
+		DLL_PUBLIC void Execute(int argc, char *argv[]);
 	};
 
 };

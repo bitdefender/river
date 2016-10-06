@@ -3,7 +3,7 @@
 using namespace rev;
 
 void AssembleUnkInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void AssembleDefaultInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
@@ -72,7 +72,7 @@ void AssembleMoffs(unsigned int opIdx, const RiverInstruction &ri, RelocableCode
 /* =========================================== */
 
 void AssembleUnknownOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void AssembleNoOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {

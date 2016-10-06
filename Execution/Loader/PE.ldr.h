@@ -139,6 +139,10 @@ public :
 class FloatingPE {
 private :
 	bool isValid;
+#ifdef __linux__
+	bool isELF;
+	void *elfHandler;
+#endif
 
 	ImageDosHeader dosHdr;
 	ImagePeHeader peHdr;
@@ -148,6 +152,8 @@ private :
 
 	void *RVA(DWORD rva) const;
 	bool LoadPE(FILE *fModule);
+	bool LoadELF(const wchar_t *moduleName);
+	bool IsELF(const wchar_t *moduleName);
 
 public :
 	FloatingPE(const char *moduleName);
@@ -158,6 +164,7 @@ public :
 	bool FixImports(AbstractPEMapper &mapper);
 
 	bool GetExport(const char *funcName, DWORD &funcRVA) const;
+	void * GetExport(const char *funcName) const;
 	DWORD GetRequiredSize() const;
 	DWORD GetSectionCount() const;
 	const PESection *GetSection(DWORD dwIdx) const;
@@ -167,6 +174,11 @@ public :
 	bool IsValid() const {
 		return isValid;
 	}
+#ifdef __linux__
+	bool IsELF() const {
+		return isELF;
+	}
+#endif
 };
 
 #endif

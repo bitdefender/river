@@ -10,7 +10,7 @@ class RiverMetaTranslator {
 private: 
 	RiverCodeGen *codegen;
 
-	void RiverMetaTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
+	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
 
 	typedef void(RiverMetaTranslator::*TranslateOpcodeFunc)(RiverInstruction *rOut, const RiverInstruction &rIn, rev::DWORD &instrCount);
 

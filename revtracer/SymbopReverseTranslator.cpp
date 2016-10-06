@@ -21,7 +21,7 @@ bool SymbopReverseTranslator::Init(RiverCodeGen *cg) {
 void SymbopReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstruction &rOut) {
 	if ((RIVER_FAMILY_RIVER_TRACK != RIVER_FAMILY(rIn.family)) &&
 		(RIVER_FAMILY_TRACK != RIVER_FAMILY(rIn.family))) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	if (RIVER_FAMILY_RIVER_TRACK == RIVER_FAMILY(rIn.family)) {
@@ -36,7 +36,7 @@ void SymbopReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstru
 				if (6 == rIn.subOpCode) {
 					TranslatePushMem(rOut, rIn);
 				} else {
-					__asm int 3;
+					DEBUG_BREAK;
 				}
 
 				break;
@@ -44,7 +44,7 @@ void SymbopReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstru
 			case 0x9D :
 			case 0x58 :
 			case 0x8F :
-				__asm int 3;
+				DEBUG_BREAK;
 				break;
 			default :
 				CopyInstruction(rOut, rIn);

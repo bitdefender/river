@@ -283,28 +283,23 @@ void GetSerializableInstruction(const RiverInstruction &rI, RiverInstruction &rO
 	}
 }
 
-namespace rev {
-	BOOL Kernel32WriteFile(
-		HANDLE hFile,
-		void *lpBuffer,
-		DWORD nNumberOfBytesToWrite,
-		DWORD *lpNumberOfBytesWritten
-		);
-};
-
 bool SerializeInstructions(const RiverInstruction *code, int count) {
 	RiverInstruction tmp;
 	DWORD dwWr;
+	BOOL ret;
 	for (int i = 0; i < count; ++i) {
 		GetSerializableInstruction(code[i], tmp);
-		if (0 == rev::Kernel32WriteFile(revtracerConfig.hBlocks, &tmp, sizeof(tmp), &dwWr)) {
+		ret = ((rev::WriteFileCall)revtracerAPI.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, 0, &tmp, sizeof(tmp), &dwWr);
+		if (0 == ret) {
 			//debug print something
 			return false;
 		}
 
 		for (int j = 0; j < 4; ++j) {
 			if (RIVER_OPTYPE(code[i].opTypes[j]) == RIVER_OPTYPE_MEM) {
-				if (0 == rev::Kernel32WriteFile(revtracerConfig.hBlocks, &code[i].operands[j].asAddress->type, sizeof(*code[i].operands[j].asAddress) - sizeof(void *), &dwWr)) {
+				ret = ((rev::WriteFileCall)revtracerAPI.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, 0,
+					&code[i].operands[j].asAddress->type, sizeof(*code[i].operands[j].asAddress) - sizeof(void *), &dwWr);
+				if (0 == ret) {
 					//debug print something
 					return false;
 				}
@@ -321,8 +316,10 @@ bool SaveToStream(
 ) {
 	/*DWORD header[4] = { 'BBVR', dwFwOpCount, dwBkOpCount, dwTrOpCount };
 	DWORD dwWr;
+	BOOL ret;
 
-	if (0 == Kernel32WriteFile(revtracerConfig.hBlocks, header, sizeof(header), &dwWr)) {
+	ret = ((rev::WriteFileCall)revtracerAPI.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, header, sizeof(header), &dwWr);
+	if (0 == ret) {
 		//debug print something
 		return false;
 	}

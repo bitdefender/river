@@ -1,4 +1,5 @@
 #include "http_parser.h"
+#include "Common.h"
 
 #include <malloc.h>
 #include <assert.h>
@@ -326,12 +327,13 @@ void test_simple(const char *buf) {
 	parser_free();
 }
 
-__declspec (dllexport) char payloadBuffer[4096];
-__declspec (dllexport) int Payload() {
+DLL_PUBLIC char payloadBuffer[4096];
+DLL_PUBLIC int Payload() {
 	test_simple(payloadBuffer);
 	return 0;
 }
 
+#ifdef _WIN32
 #include <Windows.h>
 BOOL WINAPI DllMain(
 	_In_ HINSTANCE hinstDLL,
@@ -340,3 +342,4 @@ BOOL WINAPI DllMain(
 ) {
 	return TRUE;
 }
+#endif

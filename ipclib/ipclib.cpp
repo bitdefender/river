@@ -1,6 +1,7 @@
 #include "ipclib.h"
 
 #include "../revtracer/DebugPrintFlags.h"
+#include "common.h"
 
 namespace ipc {
 	typedef long NTSTATUS;
@@ -18,11 +19,11 @@ namespace ipc {
 	RingBuffer<(1 << 20)> debugLog;
 	ShmTokenRing ipcToken;
 
-	DLL_LINKAGE IpcAPI ipcAPI = {
+	DLL_PUBLIC IpcAPI ipcAPI = {
 		NULL
 	};
 
-	DLL_LINKAGE IpcData ipcData;
+	DLL_PUBLIC IpcData ipcData;
 
 	typedef int (*_vsnprintf_sFunc)(
 		char *buffer,
@@ -48,7 +49,7 @@ namespace ipc {
 		return sz;
 	}
 
-	DLL_LINKAGE void DebugPrint(DWORD printMask, const char *fmt, ...) {
+	DLL_PUBLIC void DebugPrint(DWORD printMask, const char *fmt, ...) {
 		va_list va;
 		char tmpBuff[512];
 
@@ -117,7 +118,7 @@ namespace ipc {
 #define FILE_MAP_EXECUTE	SECTION_MAP_EXECUTE
 
 	typedef void *(*LdrMapMemory)(DWORD desiredAccess, DWORD offset, size_t size, void *address);
-	DLL_LINKAGE void *MemoryAllocFunc(DWORD dwSize) {
+	DLL_PUBLIC void *MemoryAllocFunc(DWORD dwSize) {
 		ipcData.type = REQUEST_MEMORY_ALLOC;
 		ipcData.data.asMemoryAllocRequest = dwSize;
 		ipcToken.Release(INPROC_TOKEN_USER);
@@ -125,7 +126,7 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_MEMORY_ALLOC) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		void *ptr = ((LdrMapMemory)ipcAPI.ldrMapMemory)(
@@ -136,14 +137,14 @@ namespace ipc {
 		);
 
 		if (ptr != ipcData.data.asMemoryAllocReply.pointer) {
-			__asm int 3;
+			DEBUG_BREAK;
 			return NULL;
 		}
 
 		return ptr;
 	}
 
-	DLL_LINKAGE void MemoryFreeFunc(void *ptr) {
+	DLL_PUBLIC void MemoryFreeFunc(void *ptr) {
 		ipcData.type = REQUEST_MEMORY_FREE;
 		ipcData.data.asMemoryFreeRequest = ptr;
 		ipcToken.Release(INPROC_TOKEN_USER);
@@ -151,37 +152,37 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_MEMORY_FREE) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 
-	DLL_LINKAGE QWORD TakeSnapshot() {
+	DLL_PUBLIC QWORD TakeSnapshot() {
 		ipcData.type = REQUEST_TAKE_SNAPSHOT;
 		ipcToken.Release(INPROC_TOKEN_USER);
 		// remote execution here
 		
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_TAKE_SNAPSHOT) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asTakeSnapshotReply;
 	}
 
-	DLL_LINKAGE QWORD RestoreSnapshot() {
+	DLL_PUBLIC QWORD RestoreSnapshot() {
 		ipcData.type = REQUEST_RESTORE_SNAPSHOT;
 		ipcToken.Release(INPROC_TOKEN_USER);
 		// remote execution here
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_RESTORE_SNAPSHOT) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asRestoreSnapshotReply;
 	}
 
-	DLL_LINKAGE void InitializeContextFunc(void *context) {
+	DLL_PUBLIC void InitializeContextFunc(void *context) {
 		ipcData.type = REQUEST_INITIALIZE_CONTEXT;
 		ipcData.data.asInitializeContextRequest = context;
 		ipcToken.Release(INPROC_TOKEN_USER);
@@ -189,11 +190,11 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_INITIALIZE_CONTEXT) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 
-	DLL_LINKAGE void CleanupContextFunc(void *context) {
+	DLL_PUBLIC void CleanupContextFunc(void *context) {
 		ipcData.type = REQUEST_CLEANUP_CONTEXT;
 		ipcData.data.asCleanupContextRequest = context;
 		ipcToken.Release(INPROC_TOKEN_USER);
@@ -201,11 +202,11 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_CLEANUP_CONTEXT) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 
-	/*DLL_LINKAGE DWORD ExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
+	/*DLL_PUBLIC DWORD ExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
 		ipcData.type = REQUEST_EXECUTION_BEGIN;
 		ipcData.data.asExecutionBeginRequest.context = context;
 		ipcData.data.asExecutionBeginRequest.nextInstruction = nextInstruction;
@@ -215,13 +216,13 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_EXECUTION_BEGIN) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asExecutionBeginReply;
 	}
 
-	DLL_LINKAGE DWORD ExecutionControlFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
+	DLL_PUBLIC DWORD ExecutionControlFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
 		ipcData.type = REQUEST_EXECUTION_CONTORL;
 		ipcData.data.asExecutionControlRequest.context = context;
 		ipcData.data.asExecutionControlRequest.nextInstruction = nextInstruction;
@@ -231,13 +232,13 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_EXECUTION_CONTORL) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asExecutionControlReply;
 	}
 
-	DLL_LINKAGE DWORD ExecutionEndFunc(void *context, void *cbCtx) {
+	DLL_PUBLIC DWORD ExecutionEndFunc(void *context, void *cbCtx) {
 		ipcData.type = REQUEST_EXECUTION_END;
 		ipcData.data.asExecutionEndRequest.context = context;
 		ipcData.data.asExecutionEndRequest.cbCtx = cbCtx;
@@ -246,13 +247,13 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_EXECUTION_END) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asExecutionEndReply;
 	}*/
 
-	DLL_LINKAGE DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction) {
+	DLL_PUBLIC DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction) {
 		ipcData.type = REQUEST_BRANCH_HANDLER;
 		ipcData.data.asBranchHandlerRequest.executionEnv = context;
 		ipcData.data.asBranchHandlerRequest.userContext = userContext;
@@ -261,13 +262,13 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_BRANCH_HANDLER) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		return ipcData.data.asBranchHandlerReply;
 	}
 
-	DLL_LINKAGE void SyscallControlFunc(void *context, void *userContext) {
+	DLL_PUBLIC void SyscallControlFunc(void *context, void *userContext) {
 		ipcData.type = REQUEST_SYSCALL_CONTROL;
 		ipcData.data.asSyscallControlRequest.context = context;
 		ipcData.data.asSyscallControlRequest.userContext = userContext;
@@ -276,11 +277,11 @@ namespace ipc {
 
 		ipcToken.Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_SYSCALL_CONTROL) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 	}
 
-	DLL_LINKAGE void Initialize() {
+	DLL_PUBLIC void Initialize() {
 		debugLog.Init();
 		ipcToken.Init(2);
 	}
@@ -323,7 +324,7 @@ namespace ipc {
 #define PF_ARM_FMAC_INSTRUCTIONS_AVAILABLE  27   
 #define PF_RDRAND_INSTRUCTION_AVAILABLE     28   
 
-	DLL_LINKAGE BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature) {
+	DLL_PUBLIC BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature) {
 		BOOL result;
 
 		if (ProcessorFeature >= 0x40) {

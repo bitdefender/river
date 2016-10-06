@@ -123,7 +123,7 @@ bool RiverTrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableC
 			if (6 == ri.subOpCode) {
 				AssemblePushMem(ri.operands[0].asAddress, ri.operands[1].asImm8, px86, pFlags, instrCounter);
 			} else {
-				__asm int 3
+				DEBUG_BREAK;
 			}
 			break;
 
@@ -136,7 +136,7 @@ bool RiverTrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableC
 			break;*/
 
 		default :
-			__asm int 3;
+			DEBUG_BREAK;
 
 	}
 

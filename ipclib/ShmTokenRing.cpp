@@ -1,8 +1,12 @@
 #include "ShmTokenRing.h"
 #include "ipclib.h"
 
-
+#ifdef _MSC_VER
 #include <intrin.h>
+#define LOCK_INC(count_ptr) _InterlockedIncrement(&(count_ptr))
+#else
+#define LOCK_INC(count_ptr)  ({ asm volatile("lock; incl %0" : "=m"(count_ptr) : "m"(count_ptr)); count_ptr; })
+#endif
 
 namespace ipc {
 	void ShmTokenRing::Init() {
@@ -16,7 +20,7 @@ namespace ipc {
 	}
 
 	long ShmTokenRing::Use() {
-		long ret = _InterlockedIncrement(&userCount);
+		long ret = LOCK_INC(userCount);
 		return ret - 1;
 	}
 

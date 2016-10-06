@@ -157,7 +157,7 @@ void RiverMetaTranslator::Translate(const RiverInstruction &rIn, RiverInstructio
 }
 
 void RiverMetaTranslator::TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void RiverMetaTranslator::TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {

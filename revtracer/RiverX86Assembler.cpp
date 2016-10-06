@@ -73,7 +73,7 @@ bool RiverX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffe
 	*/
 
 	if (1 == dwTable) {
-		__asm int 3;
+		DEBUG_BREAK;
 	} else {
 		switch (ri.opCode) {
 			case 0x50:
@@ -103,11 +103,11 @@ bool RiverX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffe
 					AssembleDefaultInstr(ri, px86, pFlags, instrCounter);
 					AssembleModRMOp(0, ri, px86, 6);
 				} else {
-					__asm int 3;
+					DEBUG_BREAK;
 				}
 				break;
 			default :
-				__asm int 3;
+				DEBUG_BREAK;
 		}
 	}
 	return true;

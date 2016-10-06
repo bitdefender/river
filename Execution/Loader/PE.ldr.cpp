@@ -3,11 +3,17 @@
 using namespace std;
 
 //#include "..\extern.h"
+#include "Common.h"
 
 #define DONOTPRINT
 
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
+#endif
+
+#ifdef __linux__
+#include <string.h>
+#include <wchar.h>
 #endif
 
 #include "PE.ldr.h"
@@ -169,10 +175,9 @@ bool FloatingPE::Relocate(DWORD newAddr) {
 					*((QWORD *)RVA(reloc->VirtualAddress + off)) += (long)offset;
 					break;
 				default :
-					//__asm int 3;
-					__debugbreak();
+					DEBUG_BREAK;
 			}
-        }
+		}
 		//dbg_log("\n");
 		reloc = (IMAGE_BASE_RELOCATION *)((unsigned char *)reloc + reloc->SizeOfBlock);
     }
@@ -180,6 +185,14 @@ bool FloatingPE::Relocate(DWORD newAddr) {
 
     return true;
 }
+
+#ifdef __linux__
+void *FloatingPE::GetExport(const char *funcName) const {
+	if (!isELF)
+		return nullptr;
+	return dlsym(elfHandler, funcName);
+}
+#endif
 
 bool FloatingPE::GetExport(const char *funcName, DWORD &funcRVA) const {
 	DWORD exportRVA = 0;
@@ -440,10 +453,33 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 	return true;
 }
 
+#ifdef __linux__
+bool FloatingPE::LoadELF(const wchar_t *moduleName) {
+	elfHandler = w_dlopen(moduleName, RTLD_NOW);
+	return nullptr != elfHandler;
+}
+
+bool FloatingPE::IsELF(const wchar_t *moduleName) {
+	const wchar_t *dot = wcschr(moduleName, L'.');
+	if (dot && !wcscmp(dot, L".so"))
+		return true;
+	return false;
+}
+#endif
+
 FloatingPE::FloatingPE(const wchar_t *moduleName) {
 	FILE *fModule; // = _wfopen_s(moduleName, L"rb");
 
-	if (0 != _wfopen_s(&fModule, moduleName, L"rb")) {
+#ifdef __linux__
+	if (IsELF(moduleName)) {
+		isELF = true;
+		isValid = LoadELF(moduleName);
+		return;
+	}
+
+	isELF = false;
+#endif
+	if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
 		isValid = false;
 		return;
 	}
@@ -455,7 +491,7 @@ FloatingPE::FloatingPE(const wchar_t *moduleName) {
 FloatingPE::FloatingPE(const char *moduleName) {
 	FILE *fModule; // = fopen(moduleName, "rb");
 
-	if (0 != fopen_s(&fModule, moduleName, "rb")) {
+	if (0 != FOPEN(fModule, moduleName, "rb")) {
 		isValid = false;
 		return;
 	}
@@ -466,6 +502,13 @@ FloatingPE::FloatingPE(const char *moduleName) {
 
 
 FloatingPE::~FloatingPE() {
+#ifdef __linux__
+	if (isELF) {
+		dlclose(elfHandler);
+		return;
+	}
+#endif
+
 	//TODO: regular cleanup
 	for (int i = 0; i < peHdr.NumberOfSections; ++i) {
 		sections[i].Unload();
@@ -473,7 +516,11 @@ FloatingPE::~FloatingPE() {
 }
 
 bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
-	
+
+#ifdef __linux__
+	if (isELF)
+		return true;
+#endif
 	
 	FixImports(mapr);
     
@@ -490,8 +537,12 @@ bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
 		}
 	}
 	
-
-	baseAddr = (DWORD)mapr.CreateSection((void *)(baseAddr), maxAddr, PAGE_READWRITE);
+#ifdef _WIN32
+	int prot = 0x4; //PAGE_READWRITE
+#else
+	int prot = 0x1 | 0x2; //PROT_READ | PROT_WRITE
+#endif
+	baseAddr = (DWORD)mapr.CreateSection((void *)(baseAddr), maxAddr, prot);
 	if (0 == baseAddr) {
 		return false;
 	}
@@ -502,6 +553,7 @@ bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
 	//#define IMAGE_SCN_MEM_EXECUTE                0x20000000  // Section is executable.
 	//#define IMAGE_SCN_MEM_READ                   0x40000000  // Section is readable.
 	//#define IMAGE_SCN_MEM_WRITE                  0x80000000  // Section is writeable.
+#ifdef _WIN32
 	static const DWORD pVec[] = {
 		PAGE_NOACCESS,
 		PAGE_EXECUTE,
@@ -513,6 +565,19 @@ bool FloatingPE::MapPE(AbstractPEMapper &mapr, DWORD &baseAddr) {
 		PAGE_READWRITE,
 		PAGE_EXECUTE_READWRITE
 	};
+#else
+	static const DWORD pVec[] = {
+		0x0,
+		0x4,
+		0x1,
+		0x1 | 0x4,
+
+		0x2 | 0x4, // should be write only
+		0x1 | 0x2 | 0x4, // should be execute write
+		0x2 | 0x4,
+		0x1 | 0x2 | 0x4
+	};
+#endif
 
     for (unsigned int i = 0; i < sections.size(); ++i) {
 		if (sections[i].header.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) {
@@ -540,7 +605,7 @@ bool PESection::Load(FILE *fModule) {
 
     fseek(fModule, header.PointerToRawData, SEEK_SET);
     if (header.SizeOfRawData != fread(data, 1, header.SizeOfRawData, fModule)) {
-        dbg_log("read error, in section %s\n", header.Name);
+        //dbg_log("read error, in section %s\n", header.Name);
         return false;
     }
 

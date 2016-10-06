@@ -1,6 +1,8 @@
 #ifndef _RIVER_STRUCTS_H
 #define _RIVER_STRUCTS_H
 
+#include "Common.h"
+
 struct RemoteRuntime {
 	UINT_PTR virtualStack;				// + 0x00 - mandatory first member (used in vm-rm transitions)
 	UINT_PTR returnRegister;			// + 0x04 - ax/eax/rax value

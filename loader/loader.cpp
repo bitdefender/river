@@ -211,7 +211,7 @@ namespace ldr {
 	DWORD shadowStack = (DWORD)&(miniStack[510]);
 	HANDLE hMap = NULL;
 
-	DLL_LINKAGE void *MapMemory(DWORD desiredAccess, DWORD offset, SIZE_T size, LPVOID address) {
+	DLL_PUBLIC void *MapMemory(DWORD desiredAccess, DWORD offset, SIZE_T size, LPVOID address) {
 		return Kernel32MapViewOfFileEx(
 			hMap,
 			desiredAccess,

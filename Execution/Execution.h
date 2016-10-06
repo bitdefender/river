@@ -5,10 +5,35 @@
 
 #include "../revtracer/revtracer.h"
 
-#ifdef _EXECUTION_EXPORTS
-#define EXECUTION_LINKAGE __declspec(dllexport)
+#if defined _WIN32 || defined __CYGWIN__
+	#ifdef _EXECUTION_EXPORTS
+		#ifdef __GNUC__
+			#define DLL_PUBLIC_EXECUTION __attribute__ ((dllexport))
+		#else
+			#define DLL_PUBLIC_EXECUTION __declspec(dllexport)
+		#endif
+	#else
+		#ifdef __GNUC__
+			#define DLL_PUBLIC_EXECUTION __attribute__ ((dllimport))
+		#else
+			#define DLL_PUBLIC_EXECUTION __declspec(dllimport)
+		#endif
+	#endif
+	#define DLL_LOCAL
 #else
-#define EXECUTION_LINKAGE __declspec(dllimport)
+	#if __GNUC__ >= 4
+		#define DLL_PUBLIC_EXECUTION __attribute__ ((visibility ("default")))
+		#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+	#else
+		#define DLL_PUBLIC_EXECUTION
+		#define DLL_LOCAL
+	#endif
+#endif
+
+#ifdef __linux__
+typedef pthread_t THREAD_T;
+#else
+typedef void* THREAD_T;
 #endif
 
 #define EXECUTION_INPROCESS						0x00000000
@@ -59,9 +84,12 @@ struct VirtualMemorySection {
 };
 
 struct ModuleInfo {
-	wchar_t Name[260];
+	char Name[260];
 	uint32_t ModuleBase;
 	uint32_t Size;
+#ifdef __linux__
+	bool anonymous;
+#endif
 };
 
 /*struct Registers {
@@ -96,7 +124,7 @@ public:
 	virtual bool Execute() = 0;
 	virtual bool WaitForTermination() = 0;
 
-	virtual void *GetProcessHandle() = 0;
+	virtual THREAD_T GetProcessHandle() = 0;
 
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) = 0;
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount) = 0;
@@ -119,7 +147,7 @@ public:
 
 };
 
-EXECUTION_LINKAGE ExecutionController *NewExecutionController(uint32_t type);
-EXECUTION_LINKAGE void DeleteExecutionController(ExecutionController *);
+DLL_PUBLIC_EXECUTION extern ExecutionController *NewExecutionController(uint32_t type);
+DLL_PUBLIC_EXECUTION extern void DeleteExecutionController(ExecutionController *);
 
 #endif

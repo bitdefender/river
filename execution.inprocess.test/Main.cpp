@@ -1,9 +1,12 @@
 #include "../Execution/Execution.h"
-
+#ifdef _WIN32
 #include <Windows.h>
+#endif
+
+#include "../Execution/Common.h"
 
 ExecutionController *ctrl = NULL;
-HANDLE hEvent;
+EVENT_T hEvent;
 
 class CustomObserver : public ExecutionObserver {
 public :
@@ -13,7 +16,7 @@ public :
 
 	virtual void TerminationNotification(void *ctx) {
 		printf("Process Terminated\n");
-		SetEvent(hEvent);
+		SIGNAL_EVENT(hEvent);
 	}
 
 	virtual unsigned int ExecutionBegin(void *ctx, void *address) {
@@ -23,7 +26,7 @@ public :
 	}
 
 	virtual unsigned int ExecutionControl(void *ctx, void *address) {
-		const wchar_t unkmod[MAX_PATH] = L"???";
+		const char unkmod[MAX_PATH] = "???";
 		unsigned int offset = (DWORD)address;
 		int foundModule = -1;
 
@@ -37,7 +40,7 @@ public :
 
 
 		const char module[] = "";
-		fprintf(fBlocks, "%-15ws + %08X\n",
+		fprintf(fBlocks, "%-15s + %08X\n",
 			(-1 == foundModule) ? unkmod : mInfo[foundModule].Name,
 			(DWORD)offset
 		);
@@ -51,8 +54,14 @@ public :
 } observer;
 
 #define MAX_BUFF 4096
-__declspec (dllimport) char payloadBuffer[];
-__declspec (dllimport) int Payload();
+#ifdef _WIN32
+#define IMPORT __declspec(dllimport)
+#else
+#define IMPORT extern
+#endif
+
+IMPORT char payloadBuffer[];
+IMPORT int Payload();
 
 int main() {
 
@@ -67,26 +76,28 @@ int main() {
 	} while (!feof(stdin));
 	//Payload();
 
+#ifdef _WIN32
 	/* dirty hack: patch _isa_available on the loaded dll */
 	HMODULE hPayload = GetModuleHandle(L"ParserPayload.dll");
 	*(DWORD *)((BYTE *)hPayload + 0x00117288) = 0x00000001;
 	*(DWORD *)((BYTE *)hPayload + 0x001796E8) = 0x00000000;
+#endif
 
 
-	fopen_s(&observer.fBlocks, "e.t.txt", "wt");
+	FOPEN(observer.fBlocks, "e.t.txt", "wt");
 
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);
-	ctrl->SetEntryPoint(Payload);
+	ctrl->SetEntryPoint((void*)Payload);
 	
 	ctrl->SetExecutionFeatures(0);
 
 	ctrl->SetExecutionObserver(&observer);
-	
-	hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+	CREATE_EVENT(hEvent);
 
 	ctrl->Execute();
 
-	WaitForSingleObject(hEvent, INFINITE);
+	WAIT_FOR_SINGLE_OBJECT(hEvent);
 
 	DeleteExecutionController(ctrl);
 	ctrl = NULL;

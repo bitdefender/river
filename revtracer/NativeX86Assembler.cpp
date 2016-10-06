@@ -303,12 +303,12 @@ void NativeX86Assembler::AssembleCallInstr(const RiverInstruction &ri, Relocable
 }
 
 void NativeX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
-	static const char pGetAddrCode[] = {
+	static const unsigned char pGetAddrCode[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,				// 0x00 - [<dwEaxSave>], eax
 		0x8B										// 0x05 - mov ...
 	};
 
-	static const char pBranchFFCall[] = {
+	static const unsigned char pBranchFFCall[] = {
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x00 - xchg esp, large [<dwVirtualStack>]
 		0x9C, 										// 0x06 - pushf
 		0x60,										// 0x07 - pusha
@@ -345,7 +345,7 @@ void NativeX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, Relocab
 }
 
 void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
-	static const char pSaveEdxCode[] = {
+	static const unsigned char pSaveEdxCode[] = {
 		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x00 - mov [<eaxSave>], eax
 		0x8B, 0x02,										// 0x05 - mov eax, [edx]
 		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x07 - mov [<espSave>], eax
@@ -378,7 +378,7 @@ void NativeX86Assembler::AssembleSyscall(const RiverInstruction &ri, RelocableCo
 }
 
 void NativeX86Assembler::AssembleFarJump2(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
-	static const char pBranchFarJmp[] = {
+	static const unsigned char pBranchFarJmp[] = {
 		0x8F, 0x05, 0x00, 0x00, 0x00, 0x00,			// 0x00 - pop [<eaxSave>]
 		0xEB, 0x07,									// 0x06 - jmp $+7
 		0xEA, 0x00, 0x00, 0x00, 0x00, 0x33, 0x00,   // 0x08 - jmpf 0x33:12345678 - the actual syscall
@@ -426,7 +426,7 @@ void NativeX86Assembler::AssembleFFCallInstr(const RiverInstruction &ri, Relocab
 	//0x8B										// 0x05 - mov ...
 	};*/
 
-	static const char pBranchFFCall[] = {
+	static const unsigned char pBranchFFCall[] = {
 		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x00 - push <retAddr>
 		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x05 - xchg esp, large [<dwVirtualStack>]
 		0x9C, 										// 0x0B - pushf

@@ -10,11 +10,16 @@
 #include "../ipclib/ipclib.h"
 #include "../revtracer/revtracer.h"
 
+#include "Common.h"
+
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 class ExternExecutionController : public CommonExecutionController {
 private:
-	HANDLE hProcess, hMainThread, hControlThread, hDbg;
+	HANDLE hProcess, hMainThread, hControlThread;
+	FILE_T hDbg;
 	DWORD pid, mainTid;
 
 	DualAllocator *shmAlloc;
@@ -61,7 +66,7 @@ public:
 
 	DWORD ControlThread();
 
-	virtual void *GetProcessHandle();
+	virtual THREAD_T GetProcessHandle();
 
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
 

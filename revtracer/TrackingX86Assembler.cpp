@@ -167,7 +167,7 @@ DWORD TrackingX86Assembler::GetOperandTrackSize(const RiverInstruction &ri, BYTE
 			}
 			return 2;
 		default :
-			__asm int 3;
+			DEBUG_BREAK;
 			return 0;
 	}
 }
@@ -264,7 +264,7 @@ bool TrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 				if (6 == ri.subOpCode) {
 					AssembleTrackMemory(ri.operands[0].asAddress, ri.operands[1].asImm8, px86, pFlags, instrCounter);
 				} else {
-					__asm int 3;
+					DEBUG_BREAK;
 				}
 				break;
 
@@ -272,7 +272,7 @@ bool TrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 				AssembleSymbolicCall(ri.operands[0].asImm32, ri.operands[1].asImm8, px86, pFlags, instrCounter);
 				break;
 			default :
-				__asm int 3;
+				DEBUG_BREAK;
 		}
 
 		return true;

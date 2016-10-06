@@ -31,7 +31,7 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 		cReg = RIVER_REG_xBX;
 	}
 	else {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	rev_memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
@@ -145,11 +145,11 @@ bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 				instrCounter++;
 				break;
 			} else {
-				__asm int 3;
+				DEBUG_BREAK;
 			}*/
 
 		default :
-			__asm int 3;
+			DEBUG_BREAK;
 	}
 
 	return true;

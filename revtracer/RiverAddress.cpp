@@ -204,7 +204,7 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 			if (type & RIVER_ADDR_BASE) {
 				bs = base.name;
 			} else {
-				__asm int 3;
+				DEBUG_BREAK;
 				bs = 4;
 			}
 

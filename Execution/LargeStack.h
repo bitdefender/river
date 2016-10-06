@@ -1,7 +1,11 @@
 #ifndef _LARGE_STACK_H_
 #define _LARGE_STACK_H_
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
+
+#include "Common.h"
 
 namespace rev {
 	typedef unsigned int DWORD;
@@ -16,7 +20,7 @@ namespace rev {
 
 		DWORD offsets[3];
 
-		HANDLE hVirtualStack;
+		FILE_T hVirtualStack;
 
 		DWORD CurrentRegion() const;
 

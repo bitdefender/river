@@ -46,7 +46,7 @@ bool ExternExecutionController::InitializeAllocator() {
 
 	GetSystemInfo(&si);
 
-	shmAlloc = new DualAllocator(1 << 30, hProcess, L"Local\\MumuMem", si.dwAllocationGranularity);
+	shmAlloc = new DualAllocator(1 << 30, hProcess, "Local\\MumuMem", si.dwAllocationGranularity);
 	return NULL != shmAlloc;
 }
 
@@ -109,12 +109,12 @@ bool ExternExecutionController::MapLoader() {
 
 		pLoaderBase = GetFreeRegion(hProcess, fLoader->GetRequiredSize());
 		if (!fLoader->IsValid()) {
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 		}
 
 		if (!fLoader->MapPE(mLoader, (DWORD &)pLoaderBase)) {
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 		}
 
@@ -144,12 +144,12 @@ bool ExternExecutionController::MapLoader() {
 			!LoadExportedName(fLoader, pLoaderBase, "MapMemory", pLdrMapMemory) ||
 			!LoadExportedName(fLoader, pLoaderBase, "LoaderPerform", pLoaderPerform)
 		) {
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 		}
 
 		if (FALSE == WriteProcessMemory(hProcess, ldrAPIPtr, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
-			__asm int 3;
+			DEBUG_BREAK;
 			break;
 		}
 
@@ -198,9 +198,6 @@ bool ExternExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 		!LoadExportedName(fIpcLib, pIpcBase, "RestoreSnapshot", tmpRevApi.restoreSnapshot) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "InitializeContextFunc", tmpRevApi.initializeContext) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "CleanupContextFunc", tmpRevApi.cleanupContext) ||
-		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionBeginFunc", tmpRevApi.executionBegin) ||
-		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionControlFunc", tmpRevApi.executionControl) ||
-		//!LoadExportedName(fIpcLib, pIpcBase, "ExecutionEndFunc", tmpRevApi.executionEnd) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "BranchHandlerFunc", tmpRevApi.branchHandler) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "IsProcessorFeaturePresent", pIPFPFunc)
@@ -253,7 +250,7 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 		!LoadExportedName(fRevTracer, pRevtracerBase, "GetMemoryInfo", gmi) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryValue", mmv)
 	) {
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	} 
 
@@ -502,7 +499,7 @@ DWORD WINAPI ControlThreadFunc(void *ptr) {
 	return ctr->ControlThread();
 }
 
-void *ExternExecutionController::GetProcessHandle() {
+THREAD_T ExternExecutionController::GetProcessHandle() {
 	return hProcess;
 }
 
@@ -516,7 +513,7 @@ bool ExternExecutionController::Execute() {
 	memset(&processInfo, 0, sizeof(processInfo));
 
 	if ((execState != INITIALIZED) && (execState != TERMINATED) && (execState != ERR)) {
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
@@ -535,7 +532,7 @@ bool ExternExecutionController::Execute() {
 
 	if (FALSE == bRet) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
@@ -544,31 +541,31 @@ bool ExternExecutionController::Execute() {
 
 	if (!InitializeAllocator()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
 	if (!MapLoader()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
 	if (!MapTracer()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
 	if (!WriteLoaderConfig()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
 	if (!SwitchEntryPoint()) {
 		execState = ERR;
-		__asm int 3;
+		DEBUG_BREAK;
 		return false;
 	}
 
@@ -592,43 +589,27 @@ bool ExternExecutionController::WaitForTermination() {
 	return true;
 }
 
-DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller);
+//DWORD BranchHandler(void *context, rev::ADDR_TYPE a, void *controller);
 
 DWORD ExternExecutionController::ControlThread() {
 	bool bRunning = true;
 	DWORD exitCode;
 
 	//HANDLE hDbg = 0;
-	HANDLE hOffs = 0;
+	FILE_T hOffs = 0;
 
 	do {
 
-		hDbg = CreateFileA(
-			"debug.log",
-			GENERIC_WRITE,
-			FILE_SHARE_READ,
-			NULL,
-			CREATE_ALWAYS,
-			0,
-			NULL
-		);
+		hDbg = OPEN_FILE_W("debug.log");
 
-		if (INVALID_HANDLE_VALUE == hDbg) {
+		if (FAIL_OPEN_FILE(hDbg)) {
 			//TerminateProcess(hProcess, 0);
 			break;
 		}
 
-		hOffs = CreateFileA(
-			"bbs1.txt",
-			GENERIC_WRITE,
-			FILE_SHARE_READ,
-			NULL,
-			CREATE_ALWAYS,
-			0,
-			NULL
-		);
+		hOffs = OPEN_FILE_W("bbs1.txt");
 
-		if (INVALID_HANDLE_VALUE == hOffs) {
+		if (FAIL_OPEN_FILE(hOffs)) {
 			break;
 		}
 
@@ -652,7 +633,8 @@ DWORD ExternExecutionController::ControlThread() {
 				DWORD written;
 				debugLog->Read(debugBuffer, sizeof(debugBuffer)-1, read);
 
-				WriteFile(hDbg, debugBuffer, read, &written, NULL);
+				BOOL ret;
+				WRITE_FILE(hDbg, debugBuffer, read, written, ret);
 			}
 
 			if (STILL_ACTIVE != exitCode) {
@@ -666,10 +648,9 @@ DWORD ExternExecutionController::ControlThread() {
 			case REPLY_RESTORE_SNAPSHOT:
 			case REPLY_INITIALIZE_CONTEXT:
 			case REPLY_CLEANUP_CONTEXT:
-			//case REPLY_EXECUTION_CONTORL:
 			case REPLY_SYSCALL_CONTROL:
 			case REPLY_BRANCH_HANDLER:
-				__asm int 3;
+				DEBUG_BREAK;
 				break;
 
 			case REQUEST_MEMORY_ALLOC: {
@@ -696,7 +677,7 @@ DWORD ExternExecutionController::ControlThread() {
 				break;
 
 			default:
-				__asm int 3;
+				DEBUG_BREAK;
 				break;
 			}
 

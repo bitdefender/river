@@ -68,7 +68,7 @@ void SymbopSaveTranslator::MakePushMem(const RiverInstruction &rIn, RiverInstruc
 
 bool SymbopSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
 	if (RIVER_FAMILY_TRACK != RIVER_FAMILY(rIn.family)) {
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	switch (rIn.opCode) {

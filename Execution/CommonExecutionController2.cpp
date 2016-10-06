@@ -3,7 +3,6 @@
 #include "../revtracer/execenv.h"
 #include "../revtracer/DebugPrintFlags.h"
 
-
 #include "Execution.h"
 
 #define PRINT_RUNTIME_TRACKING	PRINT_INFO | PRINT_RUNTIME | PRINT_TRACKING
@@ -78,7 +77,7 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 			}
 			else {
 				exec->DebugPrintf(PRINT_BRANCHING_ERROR, "No reverse block found!");
-				__asm int 3;
+				DEBUG_BREAK;
 			}
 		}
 	}

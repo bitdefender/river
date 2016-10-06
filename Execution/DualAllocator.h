@@ -1,7 +1,9 @@
 #ifndef _DUAL_ALLOCATOR_H_
 #define _DUAL_ALLOCATOR_H_
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <vector>
 
 typedef void *FileView;
@@ -16,7 +18,7 @@ private:
 	std::vector<FileView> mappedViews;
 	HANDLE hProcess[2];
 public:
-	DualAllocator(DWORD size, HANDLE remoteProcess, const wchar_t *shmName, DWORD granularity);
+	DualAllocator(DWORD size, HANDLE remoteProcess, const char *shmName, DWORD granularity);
 	~DualAllocator();
 
 	HANDLE CloneTo(HANDLE process);
