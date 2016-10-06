@@ -4,10 +4,10 @@ makefile_dir := $(patsubst %/,%,$(dir $(mkfile_path)))
 inprocess_test := inprocess_test
 CC := gcc
 CXX := g++
-CPP_FILES := Main.cpp Payload.cpp
+CPP_FILES := Main.cpp
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
-LD_PATHS:= -L$(makefile_dir)/../Execution
-LD_FLAGS:= -lexecution -lpthread -ldl
+LD_PATHS:= -L$(makefile_dir)/../Execution -L$(makefile_dir)/../ParserPayload
+LD_FLAGS:= -lexecution -lpthread -lhttp-parser -ldl
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
 CC_FLAGS += -g -m32 -O0 -fno-stack-protector -std=c++11 $(CC_FLAGS_CROSS)
 prefix := /usr/local
