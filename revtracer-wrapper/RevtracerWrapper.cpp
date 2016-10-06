@@ -28,10 +28,11 @@ namespace revwrapper {
 
 	//Platform specific functions and types
 	#ifdef __linux__
-	typedef void* (*AllocateMemoryHandler)(size_t size);
+	typedef void* (*AllocateMemoryHandler)(void *addr,
+			size_t length, int prot, int flags,int fd, off_t offset);
 	typedef long (*ConvertToSystemErrorHandler)(long status);
 	typedef void(*TerminateProcessHandler)(int status);
-	typedef void (*FreeMemoryHandler)(void *ptr);
+	typedef int (*FreeMemoryHandler)(void *addr, size_t length);
 	typedef ssize_t (*WriteFileHandler)(int fd, const void *buf, size_t count);
 	#else
 	#ifndef NT_SUCCESS
@@ -232,13 +233,13 @@ namespace revwrapper {
 	{
 		#ifdef __linux__
 		ADDR_TYPE proc = GetAllocateMemoryHandler();
-		return ((AllocateMemoryHandler)proc)(dwSize);
+		return ((AllocateMemoryHandler)proc)(NULL, dwSize, 0x7, 0x21, 0, 0); // RWX shared anonymous
 		#else
 		return Kernel32VirtualAlloc(NULL, dwSize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 		#endif
 	}
 
-	DLL_PUBLIC extern void CallFreeMemoryHandler(void *address)
+	DLL_PUBLIC extern void CallFreeMemoryHandler(void *address, unsigned long dwSize)
 	{ }
 
 	DLL_PUBLIC extern void CallTerminateProcessHandler(void) {
@@ -285,7 +286,7 @@ namespace revwrapper {
 
 	DLL_LOCAL ADDR_TYPE GetAllocateMemoryHandler(void) {
 		#ifdef __linux__
-		return LOAD_PROC(libhandler, "malloc");
+		return LOAD_PROC(libhandler, "mmap");
 		#else
 		return LOAD_PROC(libhandler, "NtAllocateVirtualMemory");
 		#endif
@@ -312,7 +313,7 @@ namespace revwrapper {
 	DLL_LOCAL ADDR_TYPE GetFreeMemoryHandler(void)
 	{
 		#ifdef __linux__
-		return LOAD_PROC(libhandler, "free");
+		return LOAD_PROC(libhandler, "munmap");
 		#else
 		return LOAD_PROC(libhandler, "NtFreeVirtualMemory");
 		#endif
