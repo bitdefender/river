@@ -266,7 +266,6 @@ static inline int maps_next (struct map_iterator *mi,
 		cp = scan_char (cp, &dash);
 		cp = scan_hex (cp, high);
 		cp = scan_string (cp, perm, sizeof (perm));
-		printf("%s\n", perm);
 		mp->prot = ((perm[0] == 'r') & PROT_READ) |
 			(((perm[1] == 'w') << 1) & PROT_WRITE) |
 			(((perm[2] == 'x') << 2) & PROT_EXEC);
