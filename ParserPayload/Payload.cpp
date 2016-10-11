@@ -326,11 +326,13 @@ void test_simple(const char *buf) {
 	parser_free();
 }
 
-__declspec (dllexport) char payloadBuffer[4096];
-__declspec (dllexport) int Payload() {
-	test_simple(payloadBuffer);
-	return 0;
-}
+extern "C" {
+	__declspec (dllexport) char payloadBuffer[4096];
+	__declspec (dllexport) int Payload() {
+		test_simple(payloadBuffer);
+		return 0;
+	}
+};
 
 #include <Windows.h>
 BOOL WINAPI DllMain(
