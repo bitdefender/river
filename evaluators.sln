@@ -76,6 +76,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SymbolicEnvironment", "Symb
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParserPayload", "ParserPayload\ParserPayload.vcxproj", "{ADD1CFC1-2FAE-4591-902B-EDA0B98B64D6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_tools", "_tools", "{ED971C36-E74F-4830-8067-E1779C85A13C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tracer.simple", "tracer.simple\tracer.simple.vcxproj", "{0D05443D-36CB-44EE-9E5E-0784062E3ECF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -300,6 +304,20 @@ Global
 		{ADD1CFC1-2FAE-4591-902B-EDA0B98B64D6}.Release|Win32.Build.0 = Release|Win32
 		{ADD1CFC1-2FAE-4591-902B-EDA0B98B64D6}.Release|x64.ActiveCfg = Release|x64
 		{ADD1CFC1-2FAE-4591-902B-EDA0B98B64D6}.Release|x64.Build.0 = Release|x64
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Debug|Win32.Build.0 = Debug|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Debug|x64.ActiveCfg = Debug|x64
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Debug|x64.Build.0 = Debug|x64
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Release|Any CPU.ActiveCfg = Release|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Release|Win32.ActiveCfg = Release|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Release|Win32.Build.0 = Release|Win32
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Release|x64.ActiveCfg = Release|x64
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -317,5 +335,6 @@ Global
 		{F79ED47A-7A0D-49BC-B4D7-68BD24D5858C} = {CBA07A98-2DF0-454F-BE31-64BEE468F2A1}
 		{3F22D7DF-8353-409A-8A65-3E1987E439C8} = {CBA07A98-2DF0-454F-BE31-64BEE468F2A1}
 		{ADD1CFC1-2FAE-4591-902B-EDA0B98B64D6} = {C5303C5C-335C-41A1-8B57-C5AC2142989B}
+		{0D05443D-36CB-44EE-9E5E-0784062E3ECF} = {ED971C36-E74F-4830-8067-E1779C85A13C}
 	EndGlobalSection
 EndGlobal
