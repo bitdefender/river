@@ -702,7 +702,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0xA0 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0xA1 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0xA2 */ &RiverMetaTranslator::TranslateDefault,
-		/* 0xA3 */ &RiverMetaTranslator::TranslateUnk,
+		/* 0xA3 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xA4 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xA5 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0xA6 */ &RiverMetaTranslator::TranslateUnk,
