@@ -123,10 +123,6 @@ public :
 	}
 } observer;
 
-/*#define MAX_BUFF 4096
-__declspec (dllimport) char payloadBuffer[];
-__declspec (dllimport) int Payload();*/
-
 #define MAX_BUFF 4096
 typedef int(*PayloadFunc)();
 char *payloadBuffer = nullptr;
@@ -138,6 +134,24 @@ int main(unsigned int argc, const char *argv[]) {
 	opt.overview = "River simple tracer.";
 	opt.syntax = "tracer.simple [OPTIONS]";
 	opt.example = "tracer.simple -o<outfile>\n";
+
+	opt.add(
+		"",
+		0,
+		0,
+		0,
+		"Use inprocess execution.",
+		"--inprocess"
+	);
+
+	opt.add(
+		"",
+		0,
+		0,
+		0,
+		"Use extern execution.",
+		"--extern"
+	);
 
 	opt.add(
 		"", // Default.
@@ -182,7 +196,23 @@ int main(unsigned int argc, const char *argv[]) {
 
 	opt.parse(argc, argv);
 
-	ctrl = NewExecutionController(EXECUTION_INPROCESS);
+	uint32_t executionType = EXECUTION_INPROCESS;
+
+	if (opt.isSet("--inprocess") && opt.isSet("--extern")) {
+		std::cout << "Conflicting options --inprocess and --extern" << std::endl;
+		return 0;
+	}
+
+	if (opt.isSet("--extern")) {
+		executionType = EXECUTION_EXTERNAL;
+	}
+
+	if (executionType != EXECUTION_INPROCESS) {
+		std::cout << "Only inprocess execution supported for now! Sorry!" << std::endl;
+		return 0;
+	}
+
+	ctrl = NewExecutionController(executionType);
 
 	if (opt.isSet("-h")) {
 		std::string usage;
