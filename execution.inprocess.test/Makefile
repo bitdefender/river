@@ -9,7 +9,7 @@ OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LD_PATHS:= -L$(makefile_dir)/../Execution -L$(makefile_dir)/../ParserPayload
 LD_FLAGS:= -lexecution -lpthread -lhttp-parser -ldl
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
-CC_FLAGS += -g -m32 -O0 -fno-stack-protector -std=c++11 $(CC_FLAGS_CROSS)
+CC_FLAGS += -g -m32 -march=i386 -fno-stack-protector -std=c++11 $(CC_FLAGS_CROSS)
 prefix := /usr/local
 
 all: $(inprocess_test)

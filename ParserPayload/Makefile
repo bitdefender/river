@@ -2,8 +2,8 @@ lib_http_parser := libhttp-parser.so
 CC := gcc
 CXX := g++
 OBJ_FILES := http_parser.o Payload.o
-CC_FLAGS += -m32 -O0
-CXX_FLAGS += -m32 -O0 -std=c++11 -D_PAYLOAD_EXPORTS
+CC_FLAGS += -g -m32 -march=i386  -mno-sse
+CXX_FLAGS += -g -m32 -march=i386 -std=c++11  -mno-sse -D_PAYLOAD_EXPORTS
 prefix := /usr/local
 
 all: $(lib_http_parser)

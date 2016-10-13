@@ -4,6 +4,8 @@
 #endif
 
 #include "../Execution/Common.h"
+#include "../libproc/os-linux.h"
+#include <stdio.h>
 
 ExecutionController *ctrl = NULL;
 EVENT_T hEvent;
@@ -63,7 +65,52 @@ public :
 IMPORT char payloadBuffer[];
 IMPORT int Payload();
 
+#ifdef __linux__
+void patch__rtld_global_ro(void) {
+
+	struct map_iterator mi;
+	struct map_prot mp;
+	unsigned long hi;
+	unsigned long segbase, mapoff;
+
+
+	if (maps_init (&mi, getpid()) < 0) {
+		return;
+	}
+
+
+	bool found = false;
+	while (maps_next (&mi, &segbase, &hi, &mapoff, &mp)) {
+		if (0 != strstr(mi.path, "/lib/i386-linux-gnu/ld-2.23.so")) {
+			if (!found) {
+				found = true;
+				continue;
+			}
+			ssize_t len = hi - segbase;
+			mprotect((void *)segbase, len, PROT_READ | PROT_WRITE);
+			void *_rtld_global_ro = (void *)segbase + 0xd00;
+			off_t sse_flag = 64;
+
+			void *_rtld_global_ro_sse = _rtld_global_ro + sse_flag;
+
+			//*((unsigned int*)_rtld_global_ro_sse) &= 0xfffeffff;
+			*((unsigned int*)_rtld_global_ro_sse) &= 0xfffffdff;
+			mprotect((void *)segbase, len, PROT_READ);
+			//printf("%d\n", memcmp((void*)segbase, (void*)hi, len));
+			maps_close(&mi);
+			return;
+		}
+	}
+
+	maps_close(&mi);
+}
+#endif
+
+
 int main() {
+#ifdef __linux__
+	patch__rtld_global_ro();
+#endif
 
 	char *buff = payloadBuffer;
 	unsigned int bSize = MAX_BUFF;

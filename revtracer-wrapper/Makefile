@@ -4,8 +4,7 @@ CXX := g++
 CPP_FILES := $(wildcard *.cpp)
 OBJ_FILES := $(addprefix ,$(notdir $(CPP_FILES:.cpp=.o)))
 LD_FLAGS := -ldl
-CC_LIB := -fPIC
-CC_FLAGS += -m32 -std=c++11 $(CC_FLAGS_CROSS)
+CC_FLAGS += -m32 -march=i386 -std=c++11 $(CC_FLAGS_CROSS)
 prefix := /usr/local
 
 all: $(lib_revwrapper)

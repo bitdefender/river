@@ -59,7 +59,7 @@ static struct message messages[5];
 static int num_messages;
 static http_parser_settings *current_pause_parser;
 
-/*void my_memset(void *buffer, unsigned int value, unsigned int size) {
+void my_memset(void *buffer, unsigned int value, unsigned int size) {
 	for (unsigned int i = 0; i < size; ++i) {
 		((char *)buffer)[i] = value;
 	}
@@ -85,7 +85,7 @@ int my_strnlen(const char *str, int n) {
 		}
 	}
 	return n;
-}*/
+}
 
 void parser_init(enum http_parser_type type) {
 	num_messages = 0;
@@ -93,7 +93,7 @@ void parser_init(enum http_parser_type type) {
 	parser = (http_parser *)malloc(sizeof(*parser));
 	http_parser_init(parser, type);
 
-	/*my_*/memset(&messages, 0, sizeof(messages));
+	my_memset(&messages, 0, sizeof(messages));
 }
 
 void parser_free() {
@@ -108,13 +108,13 @@ size_t strlncat(char *dst, size_t len, const char *src, size_t n) {
 	size_t rlen;
 	size_t ncpy;
 
-	slen = /*my_*/strnlen(src, n);
-	dlen = /*my_*/strnlen(dst, len);
+	slen = my_strnlen(src, n);
+	dlen = my_strnlen(dst, len);
 
 	if (dlen < len) {
 		rlen = len - dlen;
 		ncpy = slen < rlen ? slen : (rlen - 1);
-		/*my_*/memcpy(dst + dlen, src, ncpy);
+		my_memcpy(dst + dlen, src, ncpy);
 		dst[dlen + ncpy] = '\0';
 	}
 
@@ -130,11 +130,11 @@ size_t strlncpy(char *dst, size_t len, const char *src, size_t n) {
 	size_t slen;
 	size_t ncpy;
 
-	slen = /*my_*/strnlen(src, n);
+	slen = my_strnlen(src, n);
 
 	if (len > 0) {
 		ncpy = slen < len ? slen : (len - 1);
-		/*my_*/memcpy(dst, src, ncpy);
+		my_memcpy(dst, src, ncpy);
 		dst[ncpy] = '\0';
 	}
 
@@ -320,7 +320,7 @@ void test_simple(const char *buf) {
 
 	enum http_errno err;
 
-	parse(buf, /*my_*/strlen(buf));
+	parse(buf, my_strlen(buf));
 	err = HTTP_PARSER_ERRNO(parser);
 	parse(NULL, 0);
 
