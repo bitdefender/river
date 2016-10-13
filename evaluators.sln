@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tracer", "tracer\tracer.vcxproj", "{D661AE67-57C6-49FD-A256-E998F11290B4}"
 EndProject
@@ -79,6 +79,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_tools", "_tools", "{ED971C36-E74F-4830-8067-E1779C85A13C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tracer.simple", "tracer.simple\tracer.simple.vcxproj", "{0D05443D-36CB-44EE-9E5E-0784062E3ECF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{668C607E-2E3B-435D-9390-56BDB152C363} = {668C607E-2E3B-435D-9390-56BDB152C363}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

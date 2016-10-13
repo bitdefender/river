@@ -18,10 +18,10 @@ public :
 		printf("Process Terminated\n");
 	}
 
-	unsigned int GetModuleOffset(const std::wstring &module) const {
-		const wchar_t *m = module.c_str();
+	unsigned int GetModuleOffset(const std::string &module) const {
+		const char *m = module.c_str();
 		for (int i = 0; i < mCount; ++i) {
-			if (0 == wcscmp(mInfo[i].Name, m)) {
+			if (0 == strcmp(mInfo[i].Name, m)) {
 				return mInfo[i].ModuleBase;
 			}
 		}
@@ -29,8 +29,8 @@ public :
 		return 0;
 	}
 
-	bool PatchLibrary(std::wifstream &fPatch) {
-		std::wstring line;
+	bool PatchLibrary(std::ifstream &fPatch) {
+		std::string line;
 		while (std::getline(fPatch, line)) {
 			bool bForce = false;
 			int nStart = 0;
@@ -78,7 +78,7 @@ public :
 		ctrl->GetModules(mInfo, mCount);
 
 		if (!patchFile.empty()) {
-			std::wifstream fPatch;
+			std::ifstream fPatch;
 
 			fPatch.open(patchFile);
 			
@@ -96,7 +96,7 @@ public :
 	}
 
 	virtual unsigned int ExecutionControl(void *ctx, void *address) {
-		const wchar_t unkmod[MAX_PATH] = L"???";
+		const char unkmod[MAX_PATH] = "???";
 		unsigned int offset = (DWORD)address;
 		int foundModule = -1;
 
@@ -110,7 +110,7 @@ public :
 
 
 		const char module[] = "";
-		fprintf(fBlocks, "%-15ws + %08X\n",
+		fprintf(fBlocks, "%-15s + %08X\n",
 			(-1 == foundModule) ? unkmod : mInfo[foundModule].Name,
 			(DWORD)offset
 		);
