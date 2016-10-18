@@ -3,14 +3,20 @@
 
 #include "Types.h"
 
-class AbstractPEMapper {
-public:
-	virtual void *CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect) = 0;
-	virtual bool ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect) = 0;
-	virtual bool WriteBytes(void *lpAddress, void *lpBuffer, size_t nSize) = 0;
+namespace ldr {
+#define PAGE_PROTECTION_READ			0x4
+#define PAGE_PROTECTION_WRITE			0x2
+#define PAGE_PROTECTION_EXECUTE			0x1
 
-	virtual DWORD FindImport(const char *moduleName, const char *funcName) = 0;
-	virtual DWORD FindImport(const char *moduleName, const unsigned int funcOrdinal) = 0;
+	class AbstractPEMapper {
+	public:
+		virtual void *CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect) = 0;
+		virtual bool ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect) = 0;
+		virtual bool WriteBytes(void *lpAddress, void *lpBuffer, size_t nSize) = 0;
+
+		virtual DWORD FindImport(const char *moduleName, const char *funcName) = 0;
+		virtual DWORD FindImport(const char *moduleName, const unsigned int funcOrdinal) = 0;
+	};
 };
 
 #endif

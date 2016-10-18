@@ -3,11 +3,13 @@
 
 #include "Abstract.Mapper.h"
 
-class AbstractBinary {
-public :
-	virtual bool IsValid() const = 0;
-	virtual bool Map(AbstractPEMapper &mapr, DWORD &baseAddr) = 0;
-};
+namespace ldr {
+	class AbstractBinary {
+	public:
+		virtual bool IsValid() const = 0;
+		virtual bool Map(AbstractPEMapper &mapr, DWORD &baseAddr) = 0;
+	};
+}; //namespace ldr
 
 #endif
 

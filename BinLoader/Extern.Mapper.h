@@ -5,23 +5,25 @@
 
 #include "Abstract.Mapper.h"
 
-class ExternMapper : public AbstractPEMapper {
-private :
-	HANDLE hProc;
-	bool ownProcess;
+namespace ldr {
+	class ExternMapper : public AbstractPEMapper {
+	private:
+		HANDLE hProc;
+		bool ownProcess;
 
-	HMODULE RemoteFindModule(const char *module);
-public:
-	ExternMapper(unsigned int pid);
-	ExternMapper(HANDLE process);
-	virtual ~ExternMapper();
+		HMODULE RemoteFindModule(const char *module);
+	public:
+		ExternMapper(unsigned int pid);
+		ExternMapper(HANDLE process);
+		virtual ~ExternMapper();
 
-	virtual void *CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect);
-	virtual bool ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect);
-	virtual bool WriteBytes(void *lpAddress, void *lpBuffer, size_t nSize);
+		virtual void *CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect);
+		virtual bool ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect);
+		virtual bool WriteBytes(void *lpAddress, void *lpBuffer, size_t nSize);
 
-	virtual DWORD FindImport(const char *moduleName, const char *funcName);
-	virtual DWORD FindImport(const char *moduleName, const unsigned int funcOrdinal);
+		virtual DWORD FindImport(const char *moduleName, const char *funcName);
+		virtual DWORD FindImport(const char *moduleName, const unsigned int funcOrdinal);
+	};
 };
 
 #endif
