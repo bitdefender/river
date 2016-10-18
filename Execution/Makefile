@@ -7,7 +7,7 @@ CPP_FILES := $(LOADER_FILES) LargeStack.cpp CommonExecutionController2.cpp Inpro
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LD_FLAGS :=
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
-CC_FLAGS += -g -m32 -march=i386 -fstack-protector -std=c++11 \
+CC_FLAGS += -m32 -march=i386 -fstack-protector -std=c++11 \
 						-D_EXECUTION_EXPORTS -DBLOCK_CACHE_READ_ONLY \
 						-DINPROCESS_EXECUTION_ONLY $(CC_FLAGS_CROSS)
 prefix := /usr/local
