@@ -58,7 +58,7 @@ struct message {
 static struct message messages[5];
 static int num_messages;
 static http_parser_settings *current_pause_parser;
-
+/*
 void my_memset(void *buffer, unsigned int value, unsigned int size) {
 	for (unsigned int i = 0; i < size; ++i) {
 		((char *)buffer)[i] = value;
@@ -85,7 +85,19 @@ int my_strnlen(const char *str, int n) {
 		}
 	}
 	return n;
-}
+}*/
+
+#ifdef __linux__
+typedef void *(*my_memset_t) (void *s, int c, size_t n);
+typedef void *(*my_memcpy_t) (void *dest, const void *src, size_t n);
+typedef size_t (*my_strlen_t) (const char *s);
+typedef size_t (*my_strnlen_t) (const char *s, size_t maxlen);
+
+my_memset_t my_memset;
+my_memcpy_t my_memcpy;
+my_strlen_t my_strlen;
+my_strnlen_t my_strnlen;
+#endif
 
 void parser_init(enum http_parser_type type) {
 	num_messages = 0;
@@ -343,5 +355,14 @@ BOOL WINAPI DllMain(
 	_In_ LPVOID    lpvReserved
 ) {
 	return TRUE;
+}
+#else
+#include <dlfcn.h>
+__attribute__((constructor)) void somain(void) {
+	void * libhandler = dlopen(("libc.so"), RTLD_LAZY);
+	my_strlen = (my_strlen_t) dlsym(libhandler, "strlen");
+	my_strnlen = (my_strnlen_t) dlsym(libhandler, "strnlen");
+	my_memset = (my_memset_t) dlsym(libhandler, "memset");
+	my_memcpy = (my_memcpy_t) dlsym(libhandler, "memcpy");
 }
 #endif

@@ -13,6 +13,7 @@ void *patch__rtld_global_ro(void) {
 	void *_rtld_global_ro_sse = _rtld_global_ro + sse_flag;
 
 	*((unsigned int*)_rtld_global_ro_sse) &= 0xfffffdff;
+	*((unsigned int*)_rtld_global_ro_sse + 1) &= 0xfbffffff;
 	mprotect((void *)_rtld_global_ro - 0xd00, 0x1000, PROT_READ);
 
 	return (void*)patch__rtld_global_ro;

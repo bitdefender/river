@@ -66,7 +66,9 @@ IMPORT char payloadBuffer[];
 IMPORT int Payload();
 
 int main(int argc, char **argv) {
+#ifdef __linux__
 	patch__rtld_global_ro();
+#endif
 	char *buff = payloadBuffer;
 	unsigned int bSize = MAX_BUFF;
 	do {

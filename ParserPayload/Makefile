@@ -13,7 +13,7 @@ install: $(lib_http_parser)
 	install -m 0755 $(lib_http_parser) -t $(prefix)/lib -D
 
 $(lib_http_parser): $(OBJ_FILES)
-	$(CXX) $(CC_FLAGS) $(LD_FLAGS) -shared -o $@ $^
+	$(CXX) $(CC_FLAGS) $(LD_FLAGS) -nostdlib -shared -o $@ $^
 
 Payload.o: Payload.cpp
 	   $(CXX) $(CXX_FLAGS) -c $<

@@ -8,7 +8,7 @@ CXX := g++
 CPP_FILES := Main.cpp
 OBJ_FILES := Main.o
 LD_PATHS:= -L$(makefile_dir)/../Execution -L$(makefile_dir)/../ParserPayload -L$(makefile_dir)
-LD_FLAGS:= -ldisablesse -lexecution -lpthread -lhttp-parser -ldl
+LD_FLAGS:= -lexecution -lpthread -lhttp-parser -ldisablesse -ldl
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
 NO_SSE := -mno-mmx -mno-sse -march=i386
 CXX_FLAGS += -m32 $(NO_SSE) -std=c++11 $(CC_FLAGS_CROSS)
