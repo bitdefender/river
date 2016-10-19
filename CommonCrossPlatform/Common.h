@@ -59,7 +59,7 @@ typedef union _LARGE_INTEGER {
 #define CLOSE_FILE(fd) close((fd))
 #define LSEEK(fd, off, flag) lseek((fd), (off.QuadPart), (flag))
 #define FOPEN(res, path, mode) ({ res = fopen((path), (mode)); })
-#define SPRINTF(string, format) sprintf((string), (format))
+#define SPRINTF(buffer, format, ...) sprintf((buffer), (format), ##__VA_ARGS__)
 
 #define MAP_FILE_RWX(file, size)                                   \
   ({ int fd = open((file), O_RDWR | O_CREAT | O_TRUNC, 0644);                                \
@@ -101,6 +101,12 @@ typedef struct event_t EVENT_T;
 #include <unistd.h>
 #define GET_CURRENT_PROC() getpid()
 
+// manual dynamic loading
+#define GET_LIB_HANDLER(libname) dlopen((libname), RTLD_LAZY)
+#define CLOSE_LIB(libhandler) dlclose((libhandler))
+#define LOAD_PROC(libhandler, szProc) dlsym((libhandler), (szProc))
+
+
 #else
 #include <Windows.h>
 typedef HANDLE FILE_T;
@@ -123,11 +129,16 @@ typedef void* EVENT_T;
 #define CLOSE_FILE(fd) CloseHandle(fd)
 #define LSEEK(fd, off, flag) SetFilePointerEx((fd), (off), &(off), (flag))
 #define FOPEN(res, path, mode) fopen_s(&(res), (path), (mode))
-#define SPRINTF(string, format) sprintf_s((string), (format))
+#define SPRINTF(buffer, format, ...) sprintf_s((buffer), (format), ##__VA_ARGS__)
 
 #define MAP_FILE_RWX(file, size) CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_EXECUTE_READWRITE, 0, (size), (file))
 
 #define GET_CURRENT_PROC() GetCurrentProcess()
+
+// manual dynamic loading
+#define GET_LIB_HANDLER(libname) GetModuleHandleW((libname))
+#define CLOSE_LIB
+#define LOAD_PROC(libhandler, szProc) GetProcAddress((libhandler), (szProc))
 
 #endif
 

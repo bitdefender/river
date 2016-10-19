@@ -3,18 +3,9 @@
 #endif
 
 #include "RevtracerWrapper.h"
+#include "../CommonCrossPlatform/Common.h"
 
 namespace revwrapper {
-
-	#ifdef __linux__
-	#define GET_LIB_HANDLER(libname) dlopen((libname), RTLD_LAZY)
-	#define CLOSE_LIB(libhandler) dlclose((libhandler))
-	#define LOAD_PROC(libhandler, szProc) dlsym((libhandler), (szProc))
-	#else
-	#define GET_LIB_HANDLER(libname) GetModuleHandleW((libname))
-	#define CLOSE_LIB
-	#define LOAD_PROC(libhandler, szProc) GetProcAddress((libhandler), (szProc))
-	#endif
 
 	#ifdef __linux__
 	__attribute__((constructor)) void somain(void) {
