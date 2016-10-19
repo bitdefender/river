@@ -40,7 +40,7 @@ public :
 
 
 		const char module[] = "";
-		fprintf(fBlocks, "%-15s + %08X\n",
+		fprintf(fBlocks, "%-15s + %08lX\n",
 			(-1 == foundModule) ? unkmod : mInfo[foundModule].Name,
 			(DWORD)offset
 		);

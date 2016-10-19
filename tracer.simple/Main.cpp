@@ -1,9 +1,12 @@
 #include "ezOptionParser.h"
 #include "../Execution/Execution.h"
 
+#ifdef _WIN32
 #include <Windows.h>
-
 #define LIB_EXT ".dll"
+#else
+#define LIB_EXT ".so"
+#endif
 
 ExecutionController *ctrl = NULL;
 
@@ -110,7 +113,7 @@ public :
 
 
 		const char module[] = "";
-		fprintf(fBlocks, "%-15s + %08X\n",
+		fprintf(fBlocks, "%-15s + %08lX\n",
 			(-1 == foundModule) ? unkmod : mInfo[foundModule].Name,
 			(DWORD)offset
 		);
@@ -128,7 +131,7 @@ typedef int(*PayloadFunc)();
 char *payloadBuffer = nullptr;
 PayloadFunc Payload = nullptr;
 
-int main(unsigned int argc, const char *argv[]) {
+int main(int argc, const char *argv[]) {
 	ez::ezOptionParser opt;
 
 	opt.overview = "River simple tracer.";
@@ -224,14 +227,14 @@ int main(unsigned int argc, const char *argv[]) {
 	std::string fModule;
 	opt.get("-p")->getString(fModule);
 	std::cout << "Using payload " << fModule << std::endl;
-	HMODULE hModule = LoadLibrary(fModule.c_str());
+	lib_t hModule = GET_LIB_HANDLER(fModule.c_str());
 	if (nullptr == hModule) {
 		std::cout << "Payload not found" << std::endl;
 		return 0;
 	}
 
-	payloadBuffer = (char *)GetProcAddress(hModule, "payloadBuffer");
-	Payload = (PayloadFunc)GetProcAddress(hModule, "Payload");
+	payloadBuffer = (char *)LOAD_PROC(hModule, "payloadBuffer");
+	Payload = (PayloadFunc)LOAD_PROC(hModule, "Payload");
 
 	if ((nullptr == payloadBuffer) || (nullptr == Payload)) {
 		std::cout << "Payload imports not found" << std::endl;
@@ -253,13 +256,13 @@ int main(unsigned int argc, const char *argv[]) {
 		}
 	} while (!feof(stdin));
 
-	fopen_s(&observer.fBlocks, fName.c_str(), "wt");
+	FOPEN(observer.fBlocks, fName.c_str(), "wt");
 		
 	if (opt.isSet("-m")) {
 		opt.get("-m")->getString(observer.patchFile);
 	}
 
-	ctrl->SetEntryPoint(Payload);
+	ctrl->SetEntryPoint((void*)Payload);
 	
 	ctrl->SetExecutionFeatures(0);
 

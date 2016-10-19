@@ -102,6 +102,8 @@ typedef struct event_t EVENT_T;
 #define GET_CURRENT_PROC() getpid()
 
 // manual dynamic loading
+#include <dlfcn.h>
+typedef void* lib_t;
 #define GET_LIB_HANDLER(libname) dlopen((libname), RTLD_LAZY)
 #define CLOSE_LIB(libhandler) dlclose((libhandler))
 #define LOAD_PROC(libhandler, szProc) dlsym((libhandler), (szProc))
@@ -136,6 +138,7 @@ typedef void* EVENT_T;
 #define GET_CURRENT_PROC() GetCurrentProcess()
 
 // manual dynamic loading
+typedef HMODULE lib_t;
 #define GET_LIB_HANDLER(libname) GetModuleHandleW((libname))
 #define CLOSE_LIB
 #define LOAD_PROC(libhandler, szProc) GetProcAddress((libhandler), (szProc))

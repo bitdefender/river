@@ -31,6 +31,8 @@ Bruce Shankle added a crash fix in description printing.
 #include <sstream>
 #include <cstring>
 
+#include "../CommonCrossPlatform/Common.h"
+
 namespace ez {
 #define DEBUGLINE() printf("%s:%d\n", __FILE__, __LINE__);
 
@@ -2126,7 +2128,7 @@ namespace ez {
 
 		out += "First Args:\n";
 		for (i = 0; i < (long int)firstArgs.size(); ++i) {
-			sprintf_s(tmp, "%d: %s\n", i + 1, firstArgs[i]->c_str());
+			SPRINTF(tmp, "%d: %s\n", i + 1, firstArgs[i]->c_str());
 			out += tmp;
 		}
 
@@ -2147,49 +2149,49 @@ namespace ez {
 			out += "\n";
 			// The flag names:
 			for (j = 0; j < (long int)g->flags.size() - 1; ++j) {
-				sprintf_s(tmp, "%s, ", g->flags[j]->c_str());
+				SPRINTF(tmp, "%s, ", g->flags[j]->c_str());
 				out += tmp;
 			}
-			sprintf_s(tmp, "%s:\n", g->flags.back()->c_str());
+			SPRINTF(tmp, "%s:\n", g->flags.back()->c_str());
 			out += tmp;
 
 			if (g->isSet) {
 				if (g->expectArgs) {
 					if (g->args.empty()) {
-						sprintf_s(tmp, "%s (default)\n", g->defaults.c_str());
+						SPRINTF(tmp, "%s (default)\n", g->defaults.c_str());
 						out += tmp;
 					}
 					else {
 						for (k = 0; k < (long int)g->args.size(); ++k) {
 							for (j = 0; j < (long int)g->args[k]->size() - 1; ++j) {
-								sprintf_s(tmp, "%s%c", g->args[k]->at(j)->c_str(), g->delim);
+								SPRINTF(tmp, "%s%c", g->args[k]->at(j)->c_str(), g->delim);
 								out += tmp;
 							}
-							sprintf_s(tmp, "%s\n", g->args[k]->back()->c_str());
+							SPRINTF(tmp, "%s\n", g->args[k]->back()->c_str());
 							out += tmp;
 						}
 					}
 				}
 				else { // Set but no args expected.
-					sprintf_s(tmp, "Set\n");
+					SPRINTF(tmp, "Set\n");
 					out += tmp;
 				}
 			}
 			else {
-				sprintf_s(tmp, "Not set\n");
+				SPRINTF(tmp, "Not set\n");
 				out += tmp;
 			}
 		}
 
 		out += "\nLast Args:\n";
 		for (i = 0; i < (long int)lastArgs.size(); ++i) {
-			sprintf_s(tmp, "%d: %s\n", i + 1, lastArgs[i]->c_str());
+			SPRINTF(tmp, "%d: %s\n", i + 1, lastArgs[i]->c_str());
 			out += tmp;
 		}
 
 		out += "\nUnknown Args:\n";
 		for (i = 0; i < (long int)unknownArgs.size(); ++i) {
-			sprintf_s(tmp, "%d: %s\n", i + 1, unknownArgs[i]->c_str());
+			SPRINTF(tmp, "%d: %s\n", i + 1, unknownArgs[i]->c_str());
 			out += tmp;
 		}
 	};
