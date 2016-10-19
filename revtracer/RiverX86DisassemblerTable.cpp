@@ -102,7 +102,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 			/*0xD8*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0xDC*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
-			/*0xE0*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+			/*0xE0*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleRelJmpInstr<2>,
 			/*0xE4*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0xE8*/ &RiverX86Disassembler::DisassembleRelJmpInstr<5>, &RiverX86Disassembler::DisassembleRelJmpInstr<5>, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>,
 			/*0xEC*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
@@ -495,7 +495,7 @@ RiverX86Disassembler::DisassembleOperandsFunc RiverX86Disassembler::disassembleO
 		/*0xE0*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0xE1*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0xE2*/ &RiverX86Disassembler::DisassembleUnkOp,
-		/*0xE3*/ &RiverX86Disassembler::DisassembleUnkOp,
+		/*0xE3*/ &RiverX86Disassembler::DisassembleConstRegOperand<2, RIVER_OPFLAG_IMPLICIT, RIVER_REG_xCX, &RiverX86Disassembler::DisassembleImm8>,
 		/*0xE4*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0xE5*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0xE6*/ &RiverX86Disassembler::DisassembleUnkOp,
