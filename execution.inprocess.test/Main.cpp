@@ -1,8 +1,6 @@
 #include "../Execution/Execution.h"
 #ifdef _WIN32
 #include <Windows.h>
-#else
-#include "DisableSSEHelper.h"
 #endif
 
 #include "../CommonCrossPlatform/Common.h"
@@ -64,6 +62,9 @@ public :
 
 IMPORT char payloadBuffer[];
 IMPORT int Payload();
+#ifdef __linux__
+extern "C"  void patch__rtld_global_ro();
+#endif
 
 int main(int argc, char **argv) {
 #ifdef __linux__

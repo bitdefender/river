@@ -1,10 +1,10 @@
- #include <sys/mman.h>
+#include <sys/mman.h>
 
 #define DEBUG_BREAK asm volatile("int $0x3")
 
 extern unsigned int get_rtld_global_ro_addr(void);
 
-void *patch__rtld_global_ro(void) {
+void patch__rtld_global_ro() {
 
 	void *_rtld_global_ro =  (void*)get_rtld_global_ro_addr();
 	off_t sse_flag = 0x64;
@@ -15,8 +15,6 @@ void *patch__rtld_global_ro(void) {
 	*((unsigned int*)_rtld_global_ro_sse) &= 0xfffffdff;
 	*((unsigned int*)_rtld_global_ro_sse + 1) &= 0xfbffffff;
 	mprotect((void *)_rtld_global_ro - 0xd00, 0x1000, PROT_READ);
-
-	return (void*)patch__rtld_global_ro;
 }
 
 __attribute__((constructor)) void somain(void) {
