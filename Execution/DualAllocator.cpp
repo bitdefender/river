@@ -1,4 +1,4 @@
-#include "Common.h"
+#include "../CommonCrossPlatform/Common.h"
 #include "DualAllocator.h"
 
 DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const char *shmName, DWORD granularity) {

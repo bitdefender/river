@@ -10,7 +10,7 @@
 #include "../ipclib/ipclib.h"
 #include "../revtracer/revtracer.h"
 
-#include "Common.h"
+#include "../CommonCrossPlatform/Common.h"
 
 #ifdef _WIN32
 #include <Windows.h>

@@ -1,7 +1,7 @@
 #ifndef _RIVER_STRUCTS_H
 #define _RIVER_STRUCTS_H
 
-#include "Common.h"
+#include "../CommonCrossPlatform/Common.h"
 
 struct RemoteRuntime {
 	UINT_PTR virtualStack;				// + 0x00 - mandatory first member (used in vm-rm transitions)

@@ -5,7 +5,7 @@
 #include "DisableSSEHelper.h"
 #endif
 
-#include "../Execution/Common.h"
+#include "../CommonCrossPlatform/Common.h"
 
 ExecutionController *ctrl = NULL;
 EVENT_T hEvent;

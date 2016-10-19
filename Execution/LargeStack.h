@@ -5,7 +5,7 @@
 #include <Windows.h>
 #endif
 
-#include "Common.h"
+#include "../CommonCrossPlatform/Common.h"
 
 namespace rev {
 	typedef unsigned int DWORD;

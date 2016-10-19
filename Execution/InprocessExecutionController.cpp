@@ -1,6 +1,6 @@
 #include "InprocessExecutionController.h"
 #include "RiverStructs.h"
-#include "Common.h"
+#include "../CommonCrossPlatform/Common.h"
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 
 #ifdef __linux__

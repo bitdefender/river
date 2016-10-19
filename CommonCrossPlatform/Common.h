@@ -1,5 +1,5 @@
-#ifndef _COMMON_EXECUTION_H
-#define _COMMON_EXECUTION_H
+#ifndef _COMMON_UTIL_H
+#define _COMMON_UTIL_H
 
 #ifdef _MSC_VER
 #define DEBUG_BREAK __asm \
@@ -59,6 +59,7 @@ typedef union _LARGE_INTEGER {
 #define CLOSE_FILE(fd) close((fd))
 #define LSEEK(fd, off, flag) lseek((fd), (off.QuadPart), (flag))
 #define FOPEN(res, path, mode) ({ res = fopen((path), (mode)); })
+#define SPRINTF(string, format) sprintf((string), (format))
 
 #define MAP_FILE_RWX(file, size)                                   \
   ({ int fd = open((file), O_RDWR | O_CREAT | O_TRUNC, 0644);                                \
@@ -122,6 +123,7 @@ typedef void* EVENT_T;
 #define CLOSE_FILE(fd) CloseHandle(fd)
 #define LSEEK(fd, off, flag) SetFilePointerEx((fd), (off), &(off), (flag))
 #define FOPEN(res, path, mode) fopen_s(&(res), (path), (mode))
+#define SPRINTF(string, format) sprintf_s((string), (format))
 
 #define MAP_FILE_RWX(file, size) CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_EXECUTE_READWRITE, 0, (size), (file))
 

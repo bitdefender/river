@@ -1,6 +1,6 @@
 #include "CommonExecutionController.h"
 #include "../revtracer/DebugPrintFlags.h"
-#include "Common.h"
+#include "../CommonCrossPlatform/Common.h"
 
 #ifdef __linux__
 #include <stdarg.h>
@@ -46,7 +46,6 @@ void InitSegments(void *hThread, rev::DWORD *segments) {
 }
 #endif
 
-#include "Common.h"
 
 class DefaultObserver : public ExecutionObserver {
 public :
