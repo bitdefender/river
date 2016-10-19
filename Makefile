@@ -1,4 +1,4 @@
-DIRS := revtracer-wrapper revtracer Execution ParserPayload DisableSSE execution.inprocess.test tracer.simple
+DIRS := revtracer-wrapper revtracer Execution ParserPayload DisableSSE tracer.simple
 prefix := /usr/local
 
 all:

@@ -339,11 +339,13 @@ void test_simple(const char *buf) {
 	parser_free();
 }
 
+extern "C" {
 DLL_PUBLIC char payloadBuffer[4096];
 DLL_PUBLIC int Payload() {
 	test_simple(payloadBuffer);
 	return 0;
 }
+};
 
 #ifdef _WIN32
 #include <Windows.h>
