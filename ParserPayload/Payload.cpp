@@ -58,6 +58,13 @@ struct message {
 static struct message messages[5];
 static int num_messages;
 static http_parser_settings *current_pause_parser;
+
+#ifdef _WIN32
+#define my_memset memset
+#define my_memcpy memcpy
+#define my_strlen strlen
+#define my_strnlen strnlen
+#endif
 /*
 void my_memset(void *buffer, unsigned int value, unsigned int size) {
 	for (unsigned int i = 0; i < size; ++i) {
@@ -339,12 +346,16 @@ void test_simple(const char *buf) {
 	parser_free();
 }
 
+#ifdef __linux__
 extern "C" {
+#endif
 DLL_PUBLIC char payloadBuffer[4096];
 DLL_PUBLIC int Payload() {
 	test_simple(payloadBuffer);
 	return 0;
+#ifdef __linux__
 }
+#endif
 };
 
 #ifdef _WIN32
