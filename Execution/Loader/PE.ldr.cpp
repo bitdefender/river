@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <vector>
+#include <string.h>
 using namespace std;
 
 //#include "..\extern.h"
@@ -12,11 +13,18 @@ using namespace std;
 #endif
 
 #ifdef __linux__
-#include <string.h>
 #include <wchar.h>
+#include <stdlib.h> //getenv
+#include <dirent.h>
+#define MAX_PATH_NAME 4096
+#define FOPEN(res, path, mode) ({ res = fopen((path), (mode)); })
+#else
+#define MAX_PATH_NAME 260
+#define FOPEN(res, path, mode) fopen_s(&(res), (path), (mode))
 #endif
 
 #include "PE.ldr.h"
+
 
 //#include "common/debug-log.h"
 //#define dbg_log DbgPrint
@@ -454,35 +462,117 @@ bool FloatingPE::LoadPE(FILE *fModule) {
 }
 
 #ifdef __linux__
-bool FloatingPE::LoadELF(const wchar_t *moduleName) {
-	elfHandler = w_dlopen(moduleName, RTLD_NOW);
+bool FloatingPE::LoadELF(const char *moduleName) {
+	elfHandler = dlopen(moduleName, RTLD_NOW);
 	return nullptr != elfHandler;
 }
 
-bool FloatingPE::IsELF(const wchar_t *moduleName) {
-	const wchar_t *dot = wcschr(moduleName, L'.');
-	if (dot && !wcscmp(dot, L".so"))
-		return true;
+bool FloatingPE::IsELF(const char *moduleName) {
+	const char *dot = strchr(moduleName, '.');
+	while (dot != nullptr) {
+		if (!strcmp(dot, ".so"))
+			return true;
+		dot = strchr(dot + 1, '.');
+	}
+	return false;
+}
+
+bool FindModuleInDir(const char *moduleName, char *dirname, char *path) {
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(dirname);
+	if (d)
+	{
+		while ((dir = readdir(d)) != NULL)
+		{
+			if (!strcmp(moduleName, dir->d_name)) {
+				strcpy(path, dirname);
+				path[strlen(path)] = '/';
+				strcat(path, moduleName);
+
+				closedir(d);
+				return true;
+			}
+		}
+		closedir(d);
+	}
+
 	return false;
 }
 #endif
+
+bool FloatingPE::FindInLdLibraryPath(const char *moduleName, char *path) {
+	memset(path, 0, MAX_PATH_NAME);
+#ifdef __linux__
+	const char* env = getenv("LD_LIBRARY_PATH");
+	if (!env)
+		return false;
+
+	// iterate thourgh it
+	const char *it = env;
+	const char *start = it;
+	while (1) {
+		if ((*it == ':') || (*it == '\0')) {
+			//process from start to it - 1
+			ssize_t len = it - 1 - start + 1;
+			if (!len)
+				continue;
+			char dirname[MAX_PATH_NAME];
+			memset(dirname, 0, MAX_PATH_NAME);
+			strncpy(dirname, start, len);
+			if (FindModuleInDir(moduleName, dirname, path)) {
+				return true;
+			}
+			if (!*it)
+				break;
+			start = it + 1;
+		}
+		it++;
+	}
+
+	return false;
+
+#else
+    strcpy_s(path, strlen(moduleName), moduleName);
+    return true;
+#endif
+}
 
 FloatingPE::FloatingPE(const wchar_t *moduleName) {
 	FILE *fModule; // = _wfopen_s(moduleName, L"rb");
 
 #ifdef __linux__
-	if (IsELF(moduleName)) {
+
+	char utf8_modulename[MAX_PATH_NAME];
+	wchar_to_utf8(moduleName, utf8_modulename, MAX_PATH_NAME);
+
+	char path[MAX_PATH_NAME];
+	if (!FindInLdLibraryPath(utf8_modulename, path)) {
+		printf("Could not find %s. Set LD_LIBRARY_PATH accordingly\n",
+				utf8_modulename);
+		isValid = false;
+		return;
+	}
+
+	if (IsELF(path)) {
 		isELF = true;
-		isValid = LoadELF(moduleName);
+		isValid = LoadELF(path);
 		return;
 	}
 
 	isELF = false;
-#endif
+	FOPEN(fModule, path, "rb");
+	if (!fModule) {
+		isValid = false;
+		return;
+	}
+#else
 	if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
 		isValid = false;
 		return;
 	}
+#endif
 
 	isValid = LoadPE(fModule);
 	fclose(fModule);
@@ -491,10 +581,20 @@ FloatingPE::FloatingPE(const wchar_t *moduleName) {
 FloatingPE::FloatingPE(const char *moduleName) {
 	FILE *fModule; // = fopen(moduleName, "rb");
 
-	if (0 != FOPEN(fModule, moduleName, "rb")) {
+	char path[MAX_PATH_NAME];
+	if (!FindInLdLibraryPath(moduleName, path)) {
+		printf("Could not find %s. Set LD_LIBRARY_PATH accordingly\n",
+				moduleName);
 		isValid = false;
 		return;
 	}
+
+	FOPEN(fModule, path, "rb");
+	if (!fModule) {
+		isValid = false;
+		return;
+	}
+
 
 	isValid = LoadPE(fModule);
 	fclose(fModule);

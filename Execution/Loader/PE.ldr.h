@@ -152,8 +152,9 @@ private :
 
 	void *RVA(DWORD rva) const;
 	bool LoadPE(FILE *fModule);
-	bool LoadELF(const wchar_t *moduleName);
-	bool IsELF(const wchar_t *moduleName);
+	bool LoadELF(const char *moduleName);
+	bool IsELF(const char *moduleName);
+	bool FindInLdLibraryPath(const char *moduleName, char *path);
 
 public :
 	FloatingPE(const char *moduleName);

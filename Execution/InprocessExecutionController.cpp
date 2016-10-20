@@ -129,6 +129,11 @@ bool InprocessExecutionController::Execute() {
 	LOAD_LIBRARYW(L"revtracer.dll", hRevTracerModule, hRevTracerBase);
 	LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
 
+	if (nullptr == hRevTracerModule || nullptr == hRevWrapperModule) {
+		DEBUG_BREAK;
+		return false;
+	}
+
 	rev::RevtracerAPI *api = (rev::RevtracerAPI *)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "revtracerAPI");
 	revCfg = (rev::RevtracerConfig *)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "revtracerConfig");
 

@@ -58,11 +58,9 @@ FILE *w_fopen(const wchar_t *path, const wchar_t *mode) {
 	return fopen(path_utf8, mode_utf8);
 }
 
-#define FOPEN(res, path, mode) ({ res = fopen((path), (mode)); })
 #define W_FOPEN(res, path, mode) ({ res = w_fopen((path), (mode)); nullptr == res; })
 
 #else
-#define FOPEN(res, path, mode) fopen_s(&(res), (path), (mode))
 #define W_FOPEN(res, path, mode) _wfopen_s(&(res), (path), (mode))
 #endif
 
