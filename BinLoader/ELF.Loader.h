@@ -10,6 +10,7 @@
 #undef _CRT_SECURE_NO_WARNINGS
 
 #include <vector>
+#include <string>
 
 namespace ldr {
 	struct ElfIdent {
@@ -75,11 +76,27 @@ namespace ldr {
 		DWORD sh_entsize;
 	};
 
+
+	class ELFSymbolVersioning {
+	public:
+		DWORD index;
+		std::string version;
+		std::string module;
+
+		ELFSymbolVersioning(DWORD idx, std::string v, std::string m) :
+			index(idx), version(v), module(m) {}
+	};
+
 	class ELFSection {
 	public:
 		Elf32Shdr header;
 		unsigned char *data;
 
+		ELFSection *versions, *verneed;
+		std::vector<ELFSymbolVersioning> sVers;
+		std::vector<ELFSymbolVersioning *> idxSVers;
+
+		ELFSection();
 		bool Load(FILE *fModule);
 		void Unload();
 	};
@@ -108,17 +125,31 @@ namespace ldr {
 
 		std::vector<ELFProgramHeader> pHeaders;
 		std::vector<ELFSection> sections;
+		std::vector<std::string> libraries;
+		DWORD moduleBase;
+		void *rel, *rela;
+		DWORD relSz, relaSz, relEnt, relaEnt;
 
 		ELFSection *names;
 
 		bool isValid;
 
+		void *RVA(DWORD rva) const;
+
 		bool LoadELF(FILE *fModule);
 
-		void MapSections(AbstractPEMapper &mapr, DWORD base, DWORD originalBase, DWORD startSeg, DWORD stopSeg);
+		bool PrintSymbols() const;
+
+		bool RelocateSection(void *r, DWORD count, const ELFSection &symb, const ELFSection &names, DWORD offset);
+
+		bool ParseVerNeed(ELFSection &s);
+		bool ParseDynamic(const ELFSection &section);
+
+		bool Relocate(DWORD newBase);
+		void MapSections(AbstractPEMapper &mapr, DWORD startSeg, DWORD stopSeg);
 	public:
 		FloatingELF32(const char *moduleName);
-		//FloatingELF32(const wchar_t *moduleName);
+		FloatingELF32(const wchar_t *moduleName);
 		~FloatingELF32();
 
 		bool FixImports(AbstractPEMapper &mapper);

@@ -8,7 +8,7 @@ namespace ldr {
 #define PAGE_PROTECTION_WRITE			0x2
 #define PAGE_PROTECTION_EXECUTE			0x1
 
-	class AbstractPEMapper {
+	class AbstractMapper {
 	public:
 		virtual void *CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect) = 0;
 		virtual bool ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect) = 0;

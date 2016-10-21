@@ -9,6 +9,9 @@ namespace ldr {
 		virtual bool IsValid() const = 0;
 		virtual bool Map(AbstractPEMapper &mapr, DWORD &baseAddr) = 0;
 	};
+
+	AbstractBinary *LoadBinary(const char *module);
+	AbstractBinary *LoadBinary(const wchar_t *module);
 }; //namespace ldr
 
 #endif

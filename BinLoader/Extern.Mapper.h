@@ -6,7 +6,7 @@
 #include "Abstract.Mapper.h"
 
 namespace ldr {
-	class ExternMapper : public AbstractPEMapper {
+	class ExternMapper : public AbstractMapper {
 	private:
 		HANDLE hProc;
 		bool ownProcess;

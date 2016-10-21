@@ -26,11 +26,6 @@ namespace ldr {
 #define VIRTUAL_ALLOC(addr, size, protect) VirtualAlloc((addr), (size), MEM_RESERVE | MEM_COMMIT, (protect))
 #define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect) (TRUE == VirtualProtect((addr), (size), (newProtect), &(oldProtect)))
 
-// module functions
-#define MODULE_PTR HMODULE
-#define GET_MODULE_HANDLE(name) GetModuleHandleA((name))
-#define GET_PROC_ADDRESS_BY_NAME(module, name) GetProcAddress((module), (name))
-#define GET_PROC_ADDRESS_BY_ORDINAL(module, name) GetProcAddress((module), (LPCSTR)(name))
 #elif defined(__linux__)
 	static const DWORD PageProtections[8] = {
 		PROT_NONE,							// 0 ---
@@ -46,12 +41,6 @@ namespace ldr {
 #define VIRTUAL_ALLOC(addr, size, protect) ({ addr = mmap(nullptr, (size), (protect), MAP_SHARED | MAP_ANONYMOUS, 0, 0); addr; })
 #define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect) (0 == mprotect((addr), (size), (newProtect)))
 
-// module functions
-#define MODULE_PTR void *
-#define GET_MODULE_HANDLE(name) dlopen((name), RTLD_LAZY)
-#define GET_PROC_ADDRESS_BY_NAME(module, name) dlsym((module), (name))
-// function ordinals not present in linux
-#define GET_PROC_ADDRESS_BY_ORDINAL(module, name) 0xFFFFFFFF
 #endif
 
 	void *InprocMapper::CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect) {
@@ -67,24 +56,4 @@ namespace ldr {
 		memcpy(lpAddress, lpBuffer, nSize);
 		return true;
 	}
-
-	DWORD InprocMapper::FindImport(const char *moduleName, const char *funcName) {
-		MODULE_PTR hModule = GET_MODULE_HANDLE(moduleName);
-
-		if (NULL == hModule) {
-			return 0xFFFFFFFF;
-		}
-
-		return (DWORD)GET_PROC_ADDRESS_BY_NAME(hModule, funcName);
-	}
-
-	DWORD InprocMapper::FindImport(const char *moduleName, const unsigned int funcOrdinal) {
-		MODULE_PTR hModule = GET_MODULE_HANDLE(moduleName);
-
-		if (NULL == hModule) {
-			return 0xFFFFFFFF;
-		}
-		return (DWORD)GET_PROC_ADDRESS_BY_ORDINAL(hModule, funcOrdinal);
-	}
-
 };

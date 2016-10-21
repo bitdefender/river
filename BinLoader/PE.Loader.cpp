@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <vector>
+
+#include "Common.h"
 using namespace std;
 
 //#include "..\extern.h"
@@ -482,9 +484,9 @@ namespace ldr {
 	}
 
 	FloatingPE::FloatingPE(const wchar_t *moduleName) {
-		FILE *fModule; // = _wfopen_s(moduleName, L"rb");
+		FILE *fModule = nullptr; // = _wfopen_s(moduleName, L"rb");
 
-		if (0 != _wfopen_s(&fModule, moduleName, L"rb")) {
+		if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
 			isValid = false;
 			return;
 		}
@@ -494,9 +496,9 @@ namespace ldr {
 	}
 
 	FloatingPE::FloatingPE(const char *moduleName) {
-		FILE *fModule; // = fopen(moduleName, "rb");
+		FILE *fModule = nullptr; // = fopen(moduleName, "rb");
 
-		if (0 != fopen_s(&fModule, moduleName, "rb")) {
+		if (0 != FOPEN(fModule, moduleName, "rb")) {
 			isValid = false;
 			return;
 		}
