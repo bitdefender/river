@@ -83,8 +83,10 @@ struct VirtualMemorySection {
 	uint32_t Type; // image, mapped, private
 };
 
+#define MAX_PATH 260
+
 struct ModuleInfo {
-	char Name[260];
+	char Name[MAX_PATH];
 	uint32_t ModuleBase;
 	uint32_t Size;
 #ifdef __linux__

@@ -217,6 +217,7 @@ bool CommonExecutionController::UpdateLayout() {
 				minfo.anonymous = true;
 			} else {
 				minfo.anonymous = false;
+				memset(minfo.Name, 0, MAX_PATH);
 				strncpy(minfo.Name, mi.path, pathLen);
 			}
 
