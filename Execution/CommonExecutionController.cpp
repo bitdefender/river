@@ -442,6 +442,10 @@ void *CommonExecutionController::GetMemoryInfo(void *ctx, void *ptr) {
 	return gmi(ctx, ptr);
 }
 
+unsigned int CommonExecutionController::GetLastBasicBlockCost(void *ctx) {
+	return glbbc(ctx);
+}
+
 void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) {
 	mmv(ctx, addr, value);
 }

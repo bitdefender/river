@@ -346,16 +346,12 @@ void test_simple(const char *buf) {
 	parser_free();
 }
 
-#ifdef __linux__
 extern "C" {
-#endif
-DLL_PUBLIC char payloadBuffer[4096];
-DLL_PUBLIC int Payload() {
-	test_simple(payloadBuffer);
-	return 0;
-#ifdef __linux__
-}
-#endif
+	DLL_PUBLIC char payloadBuffer[4096];
+	DLL_PUBLIC int Payload() {
+		test_simple(payloadBuffer);
+		return 0;
+	}
 };
 
 #ifdef _WIN32

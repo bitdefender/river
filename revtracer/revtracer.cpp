@@ -152,6 +152,16 @@ namespace rev {
 		return (void *)ret;
 	}
 
+	DWORD GetLastBasicBlockCost(void *ctx) {
+		struct ExecutionEnvironment *pEnv = (struct ExecutionEnvironment *)ctx;
+
+		RiverBasicBlock *pCB = pEnv->blockCache.FindBlock(pEnv->lastFwBlock);
+		if (nullptr != pCB) {
+			return pCB->dwOrigOpCount;
+		}
+		return 0;
+	}
+
 
 	/* Inproc API *************************************************************************/
 

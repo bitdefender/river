@@ -162,6 +162,7 @@ namespace rev {
 		/* Execution context callbacks ********************/
 		DLL_PUBLIC void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
 		DLL_PUBLIC void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
+		DLL_PUBLIC DWORD GetLastBasicBlockCost(void *ctx);
 		DLL_PUBLIC void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
 
 		/* In process API *********************************/

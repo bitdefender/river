@@ -1,6 +1,8 @@
 #include "../Execution/Execution.h"
 #ifdef _WIN32
 #include <Windows.h>
+#elif defined(__linux__)
+#include "../libproc/os-linux.h"
 #endif
 
 #include "../CommonCrossPlatform/Common.h"
@@ -40,9 +42,10 @@ public :
 
 
 		const char module[] = "";
-		fprintf(fBlocks, "%-15s + %08lX\n",
+		fprintf(fBlocks, "%-15s + %08lX (%4d)\n",
 			(-1 == foundModule) ? unkmod : mInfo[foundModule].Name,
-			(DWORD)offset
+			(DWORD)offset,
+			ctrl->GetLastBasicBlockCost(ctx)
 		);
 		return EXECUTION_ADVANCE;
 	}
@@ -60,8 +63,10 @@ public :
 #define IMPORT extern
 #endif
 
-IMPORT char payloadBuffer[];
-IMPORT int Payload();
+extern "C" {
+	IMPORT char payloadBuffer[];
+	IMPORT int Payload();
+};
 #ifdef __linux__
 extern "C"  void patch__rtld_global_ro();
 #endif
@@ -85,7 +90,7 @@ int main(int argc, char **argv) {
 	/* dirty hack: patch _isa_available on the loaded dll */
 	HMODULE hPayload = GetModuleHandle(L"ParserPayload.dll");
 	*(DWORD *)((BYTE *)hPayload + 0x00117288) = 0x00000001;
-	*(DWORD *)((BYTE *)hPayload + 0x001796E8) = 0x00000000;
+	*(DWORD *)((BYTE *)hPayload + 0x001796E0) = 0x00000000;
 #endif
 
 

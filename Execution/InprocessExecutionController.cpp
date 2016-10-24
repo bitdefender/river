@@ -129,7 +129,7 @@ bool InprocessExecutionController::Execute() {
 	LOAD_LIBRARYW(L"revtracer.dll", hRevTracerModule, hRevTracerBase);
 	LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
 
-	if (nullptr == hRevTracerModule || nullptr == hRevWrapperModule) {
+	if (nullptr == hRevTracerBase || nullptr == hRevWrapperBase) {
 		DEBUG_BREAK;
 		return false;
 	}
@@ -187,6 +187,7 @@ bool InprocessExecutionController::Execute() {
 	gcr = (GetCurrentRegistersFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetCurrentRegisters");
 	gmi = (GetMemoryInfoFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetMemoryInfo");
 	mmv = (MarkMemoryValueFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "MarkMemoryValue");
+	glbbc = (GetLastBasicBlockCostFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetLastBasicBlockCost");
 
 	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv)) {
 		DEBUG_BREAK;
