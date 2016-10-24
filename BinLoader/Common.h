@@ -14,7 +14,7 @@ int wchar_to_utf8(const wchar_t *src, char *dst, ssize_t dst_len);
 void *w_dlopen(const wchar_t *filename, int flags);
 FILE *w_fopen(const wchar_t *path, const wchar_t *mode);
 
-#define FOPEN(res, path, mode) ({ res = fopen((path), (mode)); })
+#define FOPEN(res, path, mode) ( res = fopen((path), (mode)), res == nullptr)
 #define W_FOPEN(res, path, mode) ({ res = w_fopen((path), (mode)); nullptr == res; })
 
 #else

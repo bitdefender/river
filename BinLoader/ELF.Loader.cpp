@@ -252,7 +252,7 @@ namespace ldr {
 		}
 
 		if (ELF_MAGIC != ident.e_magic) {
-			dbg_log("ident.e_magic not valid %08x != %08x\n", ELF_MAGIC, ident.e_magic);
+			dbg_log("ident.e_magic not valid %08x != %08lx\n", ELF_MAGIC, ident.e_magic);
 			return false;
 		}
 
@@ -271,7 +271,7 @@ namespace ldr {
 			return false;
 		}
 
-		//dbg_log("Base: %08x\n", header.)
+		//dbg_log("Base: %08lx\n", header.)
 
 		moduleBase = 0xFFFFF000;
 		pHeaders.resize(header.e_phnum);
@@ -294,7 +294,7 @@ namespace ldr {
 			}
 		
 
-			dbg_log("%08x %08x %08x %08x %08x %08x %08x %08x\n",
+			dbg_log("%08lx %08lx %08lx %08lx %08lx %08lx %08lx %08lx\n",
 				pHeaders[i].header.p_type,
 				pHeaders[i].header.p_offset,
 				pHeaders[i].header.p_vaddr,
@@ -344,7 +344,7 @@ namespace ldr {
 
 		/*dbg_log("\nName                     Type     Flags    Addr     Offset   Size     Link     Info     AddrAlgn EntSize\n");
 		for (int i = 0; i < header.e_shnum; ++i) {
-			dbg_log("%24s %08x %08x %08x %08x %08x %08x %08x %08x %08x\n",
+			dbg_log("%24s %08lx %08lx %08lx %08lx %08lx %08lx %08lx %08lx %08lx\n",
 				&sections[header.e_shstrndx].data[sections[i].header.sh_name],
 				sections[i].header.sh_type,
 				sections[i].header.sh_flags,
@@ -473,7 +473,7 @@ namespace ldr {
 	bool FloatingELF32::RelocateSection(void *r, DWORD count, const ELFSection &symb, const ELFSection &names, DWORD offset) {
 		Elf32Rel *rels = (Elf32Rel *)r;
 			for (DWORD i = 0; i < count; ++i) {
-			dbg_log("Off: 0x%08x, Sym: 0x%06x, Typ: 0x%02x ", rels[i].r_offset, ELF32RSYM(rels[i].r_info), ELF32RTYPE(rels[i].r_info));
+			dbg_log("Off: 0x%08lx, Sym: 0x%06lx, Typ: 0x%02x ", rels[i].r_offset, ELF32RSYM(rels[i].r_info), ELF32RTYPE(rels[i].r_info));
 			DWORD *addr = (DWORD *)RVA(rels[i].r_offset);
 			DWORD oldAddr;
 			Elf32Sym *s;
@@ -486,7 +486,7 @@ namespace ldr {
 					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;
 					*addr = offset + s->st_value;
-					dbg_log("$ 0x%08x => 0x%08x; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
+					dbg_log("$ 0x%08lx => 0x%08lx; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
 					//set *addr
 					break;
 				case R_386_PC32:
@@ -498,13 +498,13 @@ namespace ldr {
 				case R_386_RELATIVE :
 					oldAddr = *addr;
 					*addr += offset;
-					dbg_log("$ 0x%08x => 0x%08x", oldAddr, *addr);
+					dbg_log("$ 0x%08lx => 0x%08lx", oldAddr, *addr);
 					break;
 				case R_386_GLOB_DAT :
 					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;
 					*addr = s->st_value;
-					dbg_log("$ 0x%08x => 0x%08x; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
+					dbg_log("$ 0x%08lx => 0x%08lx; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
 					//set *addr
 					break;
 			};
@@ -568,7 +568,7 @@ namespace ldr {
 					else {
 						mapr.WriteBytes((void *)(cpStart), &i->data[cpStart - i->header.sh_addr], cpStop - cpStart);
 					}
-					dbg_log("%s[%d:%d] ", &sections[header.e_shstrndx].data[i->header.sh_name], cpStart - i->header.sh_addr, cpStop - i->header.sh_addr);
+					dbg_log("%s[%lu:%lu] ", &sections[header.e_shstrndx].data[i->header.sh_name], cpStart - i->header.sh_addr, cpStop - i->header.sh_addr);
 				}
 			}
 		}
@@ -677,7 +677,7 @@ namespace ldr {
 			}
 		}
 
-		dbg_log("Base: 0x%08x; Size: 0x%08x\n", moduleBase, oNA - moduleBase);
+		dbg_log("Base: 0x%08lx; Size: 0x%08lx\n", moduleBase, oNA - moduleBase);
 
 		FixImports(impr);
 

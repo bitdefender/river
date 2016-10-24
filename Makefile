@@ -1,4 +1,4 @@
-DIRS := revtracer-wrapper revtracer Execution ParserPayload libxml-payload DisableSSE
+DIRS := revtracer-wrapper revtracer Execution ParserPayload BinLoader execution.inprocess.test libxml-payload DisableSSE
 prefix := /usr/local
 
 all:
