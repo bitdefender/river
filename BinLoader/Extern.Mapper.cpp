@@ -81,16 +81,16 @@ namespace ldr {
 		}
 	}
 
-	void *ExternMapper::CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect) {
+	void *ExternMapper::CreateSection(void *lpAddress, SIZE_T dwSize, DWORD flProtect) {
 		return VirtualAllocEx(hProc, lpAddress, dwSize, MEM_RESERVE | MEM_COMMIT, flProtect);
 	}
 
-	bool ExternMapper::ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect) {
+	bool ExternMapper::ChangeProtect(void *lpAddress, SIZE_T dwSize, DWORD flProtect) {
 		DWORD oldProtect;
 		return TRUE == VirtualProtectEx(hProc, lpAddress, dwSize, flProtect, &oldProtect);
 	}
 
-	bool ExternMapper::WriteBytes(void *lpAddress, void *lpBuffer, size_t nSize) {
+	bool ExternMapper::WriteBytes(void *lpAddress, void *lpBuffer, SIZE_T nSize) {
 		return TRUE == WriteProcessMemory(hProc, lpAddress, lpBuffer, nSize, NULL);
 	}
 

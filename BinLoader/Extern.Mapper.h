@@ -17,9 +17,9 @@ namespace ldr {
 		ExternMapper(HANDLE process);
 		virtual ~ExternMapper();
 
-		virtual void *CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect);
-		virtual bool ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect);
-		virtual bool WriteBytes(void *lpAddress, void *lpBuffer, size_t nSize);
+		virtual void *CreateSection(void *lpAddress, SIZE_T dwSize, DWORD flProtect);
+		virtual bool ChangeProtect(void *lpAddress, SIZE_T dwSize, DWORD flProtect);
+		virtual bool WriteBytes(void *lpAddress, void *lpBuffer, SIZE_T nSize);
 
 		virtual DWORD FindImport(const char *moduleName, const char *funcName);
 		virtual DWORD FindImport(const char *moduleName, const unsigned int funcOrdinal);

@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+
 #include <vector>
 
 #include "Common.h"
@@ -174,7 +176,7 @@ namespace ldr {
 					break;
 				default:
 					//__asm int 3;
-					__debugbreak();
+					DEBUG_BREAK;
 				}
 			}
 			//dbg_log("\n");
@@ -295,7 +297,7 @@ namespace ldr {
 	}
 
 
-	bool FloatingPE::FixImports(AbstractPEMapper &mapper) {
+	bool FloatingPE::FixImports(AbstractImporter &impr) {
 		DWORD importRVA = 0;
 
 
@@ -329,12 +331,12 @@ namespace ldr {
 			while (*funcs != 0) {
 				if (0x80000000 & *funcs) {
 					dbg_log("Import by ordinal %d\n", *funcs & 0x7FFF);
-					*iat = mapper.FindImport(name, *funcs & 0x7FFF);
+					*iat = impr.FindImport(name, *funcs & 0x7FFF);
 				}
 				else {
 					char *funcName = (char *)RVA(*funcs + 2);
 					dbg_log("Import by name %s\n", funcName);
-					*iat = mapper.FindImport(name, funcName);
+					*iat = impr.FindImport(name, funcName);
 				}
 
 				funcs += 1;
@@ -344,6 +346,23 @@ namespace ldr {
 			import += 1;
 		}
 
+		return true;
+	}
+
+	bool ldr::FloatingPE::CanLoad(FILE * fMod) {
+		ImageDosHeader dosHdr;
+
+		fseek(fMod, 0, SEEK_SET);
+
+		if (1 != fread(&dosHdr, sizeof(dosHdr), 1, fMod)) {
+			return false;
+		}
+
+		if (dosHdr.e_magic != DOS_MAGIC) {
+			return false;
+		}
+
+		// the file seems to be a PE
 		return true;
 	}
 
@@ -515,10 +534,10 @@ namespace ldr {
 		}
 	}
 
-	bool FloatingPE::Map(AbstractPEMapper &mapr, DWORD &baseAddr) {
+	bool FloatingPE::Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr) {
 
 
-		FixImports(mapr);
+		FixImports(impr);
 
 
 		DWORD maxAddr = 0;

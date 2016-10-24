@@ -14,24 +14,4 @@ namespace ldr {
 		memcpy(lpAddress, lpBuffer, nSize);
 		return true;
 	}
-
-	DWORD MemMapper::FindImport(const char *moduleName, const char *funcName) {
-		HMODULE hModule = GetModuleHandleA(moduleName);
-
-		if (NULL == hModule) {
-			return 0xFFFFFFFF;
-		}
-
-		return (DWORD)GetProcAddress(hModule, funcName);
-	}
-
-	DWORD MemMapper::FindImport(const char *moduleName, const unsigned int funcOrdinal) {
-		HMODULE hModule = GetModuleHandleA(moduleName);
-
-		if (NULL == hModule) {
-			return 0xFFFFFFFF;
-		}
-
-		return (DWORD)GetProcAddress(hModule, (LPCSTR)funcOrdinal);
-	}
 };

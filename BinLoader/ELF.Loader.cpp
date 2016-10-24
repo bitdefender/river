@@ -1,6 +1,8 @@
 #include "Common.h"
 #include "ELF.Loader.h"
 
+#include <string.h>
+
 //#define DONOTPRINT
 
 #ifdef DONOTPRINT
@@ -167,57 +169,78 @@ namespace ldr {
 #define ELF32STBIND(i) ((i)>>4)
 #define ELF32STTYPE(i) ((i)&0xf
 
-struct Elf32Rel{
-	DWORD r_offset;
-	DWORD r_info;
-};
+	struct Elf32Rel{
+		DWORD r_offset;
+		DWORD r_info;
+	};
 
-struct Elf32Rela {
-	DWORD r_offset;
-	DWORD r_info;
-	LONG r_addend;
-};
+	struct Elf32Rela {
+		DWORD r_offset;
+		DWORD r_info;
+		LONG r_addend;
+	};
 
-struct Elf32Sym {
-	DWORD st_name;
-	DWORD st_value;
-	DWORD st_size;
-	unsigned char st_info;
-	unsigned char st_other;
-	WORD st_shndx;
-};
+	struct Elf32Sym {
+		DWORD st_name;
+		DWORD st_value;
+		DWORD st_size;
+		unsigned char st_info;
+		unsigned char st_other;
+		WORD st_shndx;
+	};
 
-struct Elf32Dyn {
-	LONG d_tag;
-	DWORD d_un;
-};
+	struct Elf32Dyn {
+		LONG d_tag;
+		DWORD d_un;
+	};
 
-struct ELF32VerNeed {
-	WORD vn_version;
-	WORD vn_cnt;
-	DWORD vn_file;
-	DWORD vn_aux;
-	DWORD vn_next;
-};
+	struct ELF32VerNeed {
+		WORD vn_version;
+		WORD vn_cnt;
+		DWORD vn_file;
+		DWORD vn_aux;
+		DWORD vn_next;
+	};
 
-struct Elf32VerAux {
-	DWORD vna_hash;
-	WORD vna_flags;
-	WORD vna_other;
-	DWORD vna_name;
-	DWORD vna_next;
-};
+	struct Elf32VerAux {
+		DWORD vna_hash;
+		WORD vna_flags;
+		WORD vna_other;
+		DWORD vna_name;
+		DWORD vna_next;
+	};
 
-void *FloatingELF32::RVA(DWORD rva) const {
-	for (auto i = sections.begin(); i != sections.end(); ++i) {
-		if ((i->header.sh_addr <= rva) && (i->header.sh_addr + i->header.sh_size > rva)) {
-			return &i->data[rva - i->header.sh_addr];
+	void *FloatingELF32::RVA(DWORD rva) const {
+		for (auto i = sections.begin(); i != sections.end(); ++i) {
+			if ((i->header.sh_addr <= rva) && (i->header.sh_addr + i->header.sh_size > rva)) {
+				return &i->data[rva - i->header.sh_addr];
+			}
 		}
+		return nullptr;
 	}
-	return nullptr;
-}
 
-bool FloatingELF32::LoadELF(FILE *fModule) {
+	bool FloatingELF32::CanLoad(FILE *fMod) {
+		ElfIdent ident;
+
+		fseek(fMod, 0, SEEK_SET);
+
+		if (1 != fread(&ident, sizeof(ident), 1, fMod)) {
+			return false;
+		}
+
+		if (ELF_MAGIC != ident.e_magic) {
+			return false;
+		}
+
+		if ((ELFCLASS32 != ident.e_class) || (ELFDATA2LSB != ident.e_data)) {
+			return false;
+		}
+
+		// the file seems to be a falid ELF32 module
+		return true;
+	}
+
+	bool FloatingELF32::LoadELF(FILE *fModule) {
 		if (NULL == fModule) {
 			dbg_log("File open error!\n");
 			return false;
@@ -296,6 +319,7 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 			}
 		}
 
+		dbg_log("Here!\n");
 		for (int i = 0; i < header.e_shnum; ++i) {
 			if (!sections[i].Load(fModule)) {
 				return false;
@@ -303,19 +327,22 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 
 			switch (sections[i].header.sh_type) {
 				case SHT_DYNAMIC :
+					dbg_log("Dynamic section\n");
 					ParseDynamic(sections[i]);
 					break;
 				case SHT_VERSYM :
+					dbg_log("Versym section\n");
 					sections[sections[i].header.sh_link].versions = &sections[i];
 					break;
 				case SHT_VERNEED :
+					dbg_log("Verneed section\n");
 					sections[sections[i].header.sh_info].verneed = &sections[i];
 					ParseVerNeed(sections[i]);
 					break;
 			}
 		}
 
-		dbg_log("\nName                     Type     Flags    Addr     Offset   Size     Link     Info     AddrAlgn EntSize\n");
+		/*dbg_log("\nName                     Type     Flags    Addr     Offset   Size     Link     Info     AddrAlgn EntSize\n");
 		for (int i = 0; i < header.e_shnum; ++i) {
 			dbg_log("%24s %08x %08x %08x %08x %08x %08x %08x %08x %08x\n",
 				&sections[header.e_shstrndx].data[sections[i].header.sh_name],
@@ -329,7 +356,7 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 				sections[i].header.sh_addralign,
 				sections[i].header.sh_entsize
 			);
-		}
+		}*/
 
 		return true;
 	}
@@ -364,7 +391,20 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 		}
 	}
 
-	bool FloatingELF32::FixImports(AbstractPEMapper &mapper) {
+	DWORD FloatingELF32::Import(AbstractImporter &impr, const char *name) {
+		DWORD ret;
+		for (auto l = libraries.begin(); l != libraries.end(); ++l) {
+			ret = impr.FindImport(l->c_str(), name);
+
+			if (IMPORT_NOT_FOUND != ret) {
+				return ret;
+			}
+		}
+
+		return 0;
+	}
+
+	bool FloatingELF32::FixImports(AbstractImporter &impr) {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if ((SHT_DYNSYM == i->header.sh_type) || (SHT_SYMTAB == i->header.sh_type)) {
 				Elf32Sym *symb = (Elf32Sym *)i->data;
@@ -383,18 +423,21 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 									"@@%s",
 									vers->version.c_str()
 								);
+
+								symb->st_value = impr.FindImport(vers->module.c_str(), (char *)&sections[i->header.sh_link].data[symb[j].st_name], vers->version.c_str());
+							} else {
+								symb->st_value = Import(impr, (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
 							}
-
-							mapper.FindImport(vers->module.c_str(), (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
 						} else {
-
+							symb->st_value = Import(impr, (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
 						}
 						dbg_log("\n");
 					}
 				}
 			}
 		}
-		//return false;
+		
+		return false;
 	}
 
 	bool FloatingELF32::PrintSymbols() const {
@@ -502,7 +545,7 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 		return true;
 	}
 
-	void FloatingELF32::MapSections(AbstractPEMapper &mapr, DWORD startSeg, DWORD stopSeg) {
+	void FloatingELF32::MapSections(AbstractMapper &mapr, DWORD startSeg, DWORD stopSeg) {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if (SHF_ALLOC & i->header.sh_flags) {
 				DWORD cpStart = i->header.sh_addr;
@@ -618,7 +661,7 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 		return true;
 	}
 
-	bool FloatingELF32::Map(AbstractPEMapper &mapr, DWORD &baseAddr) {
+	bool FloatingELF32::Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr) {
 		DWORD oNA = 0;
 
 		for (auto i = pHeaders.begin(); i != pHeaders.end(); ++i) {
@@ -635,6 +678,8 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 		}
 
 		dbg_log("Base: 0x%08x; Size: 0x%08x\n", moduleBase, oNA - moduleBase);
+
+		FixImports(impr);
 
 		baseAddr = (DWORD)mapr.CreateSection((void *)(baseAddr), oNA - moduleBase, PAGE_PROTECTION_READ | PAGE_PROTECTION_WRITE);
 		if (0 == baseAddr) {
@@ -663,10 +708,6 @@ bool FloatingELF32::LoadELF(FILE *fModule) {
 				mapr.ChangeProtect((void *)(i->header.p_vaddr), stopSegment - startSegment, prot[i->header.p_flags]);
 			}
 		}
-
-		PrintSymbols();
-
-
 		return false;
 	}
 

@@ -146,15 +146,18 @@ namespace ldr {
 		bool ParseDynamic(const ELFSection &section);
 
 		bool Relocate(DWORD newBase);
-		void MapSections(AbstractPEMapper &mapr, DWORD startSeg, DWORD stopSeg);
+		void MapSections(AbstractMapper &mapr, DWORD startSeg, DWORD stopSeg);
+
+		DWORD Import(AbstractImporter &impr, const char * name);
+		bool FixImports(AbstractImporter &impr);
 	public:
+		static bool CanLoad(FILE *fMod);
+
 		FloatingELF32(const char *moduleName);
 		FloatingELF32(const wchar_t *moduleName);
 		~FloatingELF32();
 
-		bool FixImports(AbstractPEMapper &mapper);
-
-		virtual bool Map(AbstractPEMapper &mapr, DWORD &baseAddr);
+		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr);
 
 		virtual bool IsValid() const {
 			return isValid;

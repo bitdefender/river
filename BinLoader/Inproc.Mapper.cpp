@@ -43,16 +43,16 @@ namespace ldr {
 
 #endif
 
-	void *InprocMapper::CreateSection(void *lpAddress, size_t dwSize, DWORD flProtect) {
+	void *InprocMapper::CreateSection(void *lpAddress, SIZE_T dwSize, DWORD flProtect) {
 		return VIRTUAL_ALLOC(lpAddress, dwSize, PageProtections[flProtect]);
 	}
 
-	bool InprocMapper::ChangeProtect(void *lpAddress, size_t dwSize, DWORD flProtect) {
+	bool InprocMapper::ChangeProtect(void *lpAddress, SIZE_T dwSize, DWORD flProtect) {
 		DWORD oldProtect;
 		return VIRTUAL_PROTECT(lpAddress, dwSize, PageProtections[flProtect], oldProtect);
 	}
 
-	bool InprocMapper::WriteBytes(void *lpAddress, void *lpBuffer, size_t nSize) {
+	bool InprocMapper::WriteBytes(void *lpAddress, void *lpBuffer, SIZE_T nSize) {
 		memcpy(lpAddress, lpBuffer, nSize);
 		return true;
 	}

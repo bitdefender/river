@@ -154,12 +154,14 @@ namespace ldr {
 		bool LoadPE(FILE *fModule);
 
 	public:
+		static bool CanLoad(FILE *fMod);
+
 		FloatingPE(const char *moduleName);
 		FloatingPE(const wchar_t *moduleName);
 		~FloatingPE();
 
 		bool Relocate(DWORD newAddr);
-		bool FixImports(AbstractPEMapper &mapper);
+		bool FixImports(AbstractImporter &impr);
 
 		bool GetExport(const char *funcName, DWORD &funcRVA) const;
 		void ForAllExports(std::function<void(const char *, const DWORD, const DWORD, const unsigned char *)> verb) const;
@@ -167,7 +169,7 @@ namespace ldr {
 		DWORD GetSectionCount() const;
 		const PESection *GetSection(DWORD dwIdx) const;
 
-		virtual bool Map(AbstractPEMapper &mapr, DWORD &baseAddr);
+		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr);
 
 		virtual bool IsValid() const {
 			return isValid;
