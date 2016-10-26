@@ -749,7 +749,7 @@ namespace ldr {
 				mapr.ChangeProtect((void *)(i->header.p_vaddr), stopSegment - startSegment, prot[i->header.p_flags]);
 			}
 		}
-		return false;
+		return true;
 	}
 
 }; //namespace ldr
