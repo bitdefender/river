@@ -8,7 +8,7 @@ IMPORTER_FILES := Inproc.Native.Importer.cpp
 CPP_FILES := Common.cpp $(LOADER_FILES) $(MAPPER_FILES) $(IMPORTER_FILES)
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LD_FLAGS := -ldl
-CXX_FLAGS += -m32 -std=c++11
+CXX_FLAGS += -g -m32 -std=c++11
 prefix := /usr/local
 
 all: $(lib_binloader)
@@ -27,4 +27,4 @@ $(lib_binloader): $(OBJ_FILES)
 
 .PHONY: clean
 clean:
-	$(RM) $(lib_binloader) $(OBJ_FILES)
+	$(RM) $(lib_binloader) $(OBJ_FILES) *.o main

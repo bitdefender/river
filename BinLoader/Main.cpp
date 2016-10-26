@@ -3,11 +3,13 @@
 #include "Abstract.Importer.h"
 #include "Inproc.Mapper.h"
 #include "Inproc.Native.Importer.h"
+#include <string.h>
 
-typedef void* (*handler)(unsigned long);
+#define DEBUG_BREAK asm volatile("int $0x3")
+typedef int (*handler)();
 
 int main() {
-	ldr::AbstractBinary *fElf = ldr::LoadBinary("librevtracerwrapper.so");
+	ldr::AbstractBinary *fElf = ldr::LoadBinary("libhttp-parser.so");
 	if (!fElf)
 		return -1;
 	ldr::InprocMapper mpr;
@@ -21,10 +23,19 @@ int main() {
 	fElf->Map(mpr, imp, baseAddr);
 	printf("Map done!\n");
 
-	void *func = (void*)imp.FindImport("librevtracerwrapper.so", "CallAllocateMemoryHandler");
+	unsigned long rva;
 
-	void *addr = ((handler)func) (1024);
-	printf("Allocated %d bytes @address %p\n", 1024, addr);
+	bool ok = fElf->GetExport("payloadBuffer", rva);
+
+	char *addr = (char*) (baseAddr + rva);
+	printf("Main: buffer Address is %p %lx\n", addr, rva);
+	strcpy(addr, "mumu");
+
+	ok = fElf->GetExport("Payload", rva);
+
+	void *func = (void*) (baseAddr + rva);
+
+	((handler)func) ();
 
 	delete fElf;
 

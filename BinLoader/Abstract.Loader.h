@@ -9,6 +9,7 @@ namespace ldr {
 	public:
 		virtual bool IsValid() const = 0;
 		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr) = 0;
+		virtual bool GetExport(const char *funcName, DWORD &funcRVA) const = 0;
 	};
 
 	AbstractBinary *LoadBinary(const char *module);

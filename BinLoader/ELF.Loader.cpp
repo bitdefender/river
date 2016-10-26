@@ -39,7 +39,7 @@
 namespace ldr {
 	ELFSection::ELFSection() {
 		data = nullptr;
-		versions = verneed = nullptr;
+		versions = nullptr;
 	}
 
 	bool ELFSection::Load(FILE *fModule) {
@@ -336,7 +336,7 @@ namespace ldr {
 					break;
 				case SHT_VERNEED :
 					dbg_log("Verneed section\n");
-					sections[sections[i].header.sh_info].verneed = &sections[i];
+					gnu_versions_r = &sections[i];
 					ParseVerNeed(sections[i]);
 					break;
 			}
@@ -393,6 +393,23 @@ namespace ldr {
 
 	DWORD FloatingELF32::Import(AbstractImporter &impr, const char *name) {
 		DWORD ret;
+		const char *at = strchr(name, '@');
+
+		if (at && at[1] == '@') {
+			// retrieve version
+			char funcname[100];
+			strncpy(funcname, name, at - name);
+			funcname[at - name] = '\0';
+
+			if  (nullptr != gnu_versions_r) {
+				for (auto v = gnu_versions_r->sVers.begin(); v != gnu_versions_r->sVers.end(); ++v) {
+					if (!strcmp(v->version.c_str(), at + 2)) {
+						return impr.FindImport(v->module.c_str(), funcname, at + 2);
+					}
+				}
+			}
+
+		}
 		for (auto l = libraries.begin(); l != libraries.end(); ++l) {
 			ret = impr.FindImport(l->c_str(), name);
 
@@ -404,7 +421,7 @@ namespace ldr {
 		return 0;
 	}
 
-	bool FloatingELF32::FixImports(AbstractImporter &impr) {
+	bool FloatingELF32::FixImports(AbstractImporter &impr, DWORD offset) {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if ((SHT_DYNSYM == i->header.sh_type) || (SHT_SYMTAB == i->header.sh_type)) {
 				Elf32Sym *symb = (Elf32Sym *)i->data;
@@ -416,21 +433,22 @@ namespace ldr {
 							(char *)&sections[i->header.sh_link].data[symb[j].st_name]
 						);
 
-						if (nullptr != i->versions) {
-							ELFSymbolVersioning *vers = i->verneed->idxSVers[((WORD *)i->versions->data)[j]];
+						if (nullptr != i->versions && nullptr != gnu_versions_r) {
+							ELFSymbolVersioning *vers = gnu_versions_r->idxSVers[((WORD *)i->versions->data)[j]];
 							if (nullptr != vers) {
 								dbg_log(
-									"@@%s",
+									"##%s",
 									vers->version.c_str()
 								);
 
-								symb->st_value = impr.FindImport(vers->module.c_str(), (char *)&sections[i->header.sh_link].data[symb[j].st_name], vers->version.c_str());
+								symb[j].st_value = impr.FindImport(vers->module.c_str(), (char *)&sections[i->header.sh_link].data[symb[j].st_name], vers->version.c_str());
 							} else {
-								symb->st_value = Import(impr, (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
+								symb[j].st_value = Import(impr, (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
 							}
 						} else {
-							symb->st_value = Import(impr, (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
+							symb[j].st_value = Import(impr, (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
 						}
+						symb[j].st_value -= offset;
 						dbg_log("\n");
 					}
 				}
@@ -452,8 +470,9 @@ namespace ldr {
 							(char *)&sections[i->header.sh_link].data[symb[j].st_name]
 						);
 
-						if (nullptr != i->versions) {
-							ELFSymbolVersioning *vers = i->verneed->idxSVers[((WORD *)i->versions->data)[j]];
+						if (nullptr != i->versions && nullptr != gnu_versions_r) {
+							ELFSymbolVersioning *vers = gnu_versions_r->idxSVers[((WORD *)i->versions->data)[j]];
+
 							if (nullptr != vers) {
 								dbg_log(
 									"@@%s",
@@ -468,6 +487,26 @@ namespace ldr {
 		}
 
 		return true;
+	}
+
+	bool FloatingELF32::GetExport(const char *funcName, DWORD &funcRVA) const {
+		for (auto i = sections.begin(); i != sections.end(); ++i) {
+			if (SHT_DYNSYM == i->header.sh_type) {
+				Elf32Sym *symb = (Elf32Sym *)i->data;
+				DWORD count = i->header.sh_size / sizeof(*symb);
+				for (DWORD j = 0; j < count; ++j) {
+					if ((STB_GLOBAL == ELF32STBIND(symb[j].st_info)) &&
+							(SHN_UNDEF != symb[j].st_shndx)) {
+						if (!strcmp(funcName, (char *)&sections[i->header.sh_link].data[symb[j].st_name])) {
+							//we found it
+							funcRVA = symb[j].st_value;
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	bool FloatingELF32::RelocateSection(void *r, DWORD count, const ELFSection &symb, const ELFSection &names, DWORD offset) {
@@ -485,14 +524,15 @@ namespace ldr {
 				case R_386_32 :
 					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;
-					*addr = offset + s->st_value;
+					*addr += offset + s->st_value;
 					dbg_log("$ 0x%08lx => 0x%08lx; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
 					//set *addr
 					break;
 				case R_386_PC32:
 					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;
-					dbg_log("$ %s", (char *)&names.data[s->st_name]);
+					*addr += s->st_value - rels[i].r_offset;
+					dbg_log("$ %s %lx %lx %lx %lx", (char *)&names.data[s->st_name], s->st_value, offset, rels[i].r_offset, *addr);
 					//set *addr
 					break;
 				case R_386_RELATIVE :
@@ -501,6 +541,7 @@ namespace ldr {
 					dbg_log("$ 0x%08lx => 0x%08lx", oldAddr, *addr);
 					break;
 				case R_386_GLOB_DAT :
+					// TODO : Probably bug source
 					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;
 					*addr = s->st_value;
@@ -679,12 +720,12 @@ namespace ldr {
 
 		dbg_log("Base: 0x%08lx; Size: 0x%08lx\n", moduleBase, oNA - moduleBase);
 
-		FixImports(impr);
-
 		baseAddr = (DWORD)mapr.CreateSection((void *)(baseAddr), oNA - moduleBase, PAGE_PROTECTION_READ | PAGE_PROTECTION_WRITE);
 		if (0 == baseAddr) {
 			return false;
 		}
+
+		FixImports(impr, baseAddr);
 
 		Relocate(baseAddr);
 

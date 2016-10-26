@@ -92,7 +92,7 @@ namespace ldr {
 		Elf32Shdr header;
 		unsigned char *data;
 
-		ELFSection *versions, *verneed;
+		ELFSection *versions;
 		std::vector<ELFSymbolVersioning> sVers;
 		std::vector<ELFSymbolVersioning *> idxSVers;
 
@@ -131,6 +131,7 @@ namespace ldr {
 		DWORD relSz, relaSz, relEnt, relaEnt;
 
 		ELFSection *names;
+		ELFSection *gnu_versions_r;
 
 		bool isValid;
 
@@ -149,7 +150,7 @@ namespace ldr {
 		void MapSections(AbstractMapper &mapr, DWORD startSeg, DWORD stopSeg);
 
 		DWORD Import(AbstractImporter &impr, const char * name);
-		bool FixImports(AbstractImporter &impr);
+		bool FixImports(AbstractImporter &impr, DWORD offset);
 	public:
 		static bool CanLoad(FILE *fMod);
 
@@ -158,6 +159,7 @@ namespace ldr {
 		~FloatingELF32();
 
 		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr);
+		virtual bool GetExport(const char *funcName, DWORD &funcRVA) const;
 
 		virtual bool IsValid() const {
 			return isValid;
