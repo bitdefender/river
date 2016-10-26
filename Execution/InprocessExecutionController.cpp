@@ -107,7 +107,6 @@ bool InprocessExecutionController::Execute() {
 		api->symbolicHandler = symbCb;
 	}
 
-#ifdef _WIN32
 	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "RevtracerWrapperInit");
 	if (!initHandler) {
 		DEBUG_BREAK;
@@ -118,7 +117,6 @@ bool InprocessExecutionController::Execute() {
 		DEBUG_BREAK;
 		return false;
 	}
-#endif
 
 	api->lowLevel.ntAllocateVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallAllocateMemoryHandler");
 
