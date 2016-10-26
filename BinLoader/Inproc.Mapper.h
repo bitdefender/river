@@ -1,6 +1,7 @@
 #ifndef _INPROC_MAPPER_H_
 #define _INPROC_MAPPER_H_
 
+#include <stdlib.h> //size_t
 #include "Abstract.Mapper.h"
 
 namespace ldr {
