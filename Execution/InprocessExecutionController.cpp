@@ -77,7 +77,7 @@ bool InprocessExecutionController::Execute() {
 	LOAD_LIBRARYW(L"revtracer.dll", hRevTracerModule, hRevTracerBase);
 	LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
 
-	if (nullptr == hRevTracerBase || nullptr == hRevWrapperBase) {
+	if (0 == hRevTracerBase || 0 == hRevWrapperBase) {
 		DEBUG_BREAK;
 		return false;
 	}
