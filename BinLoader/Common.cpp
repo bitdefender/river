@@ -50,3 +50,76 @@ FILE *w_fopen(const wchar_t *path, const wchar_t *mode) {
 	return fopen(path_utf8, mode_utf8);
 }
 #endif
+
+
+#ifdef __linux__
+#include <stdlib.h> //getenv
+#include <dirent.h>
+
+bool find_module(const char *moduleName, char *dirname, char *path) {
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(dirname);
+	if (d)
+	{
+		while ((dir = readdir(d)) != NULL)
+		{
+			if (!strcmp(moduleName, dir->d_name)) {
+				strcpy(path, dirname);
+				path[strlen(path)] = '/';
+				strcat(path, moduleName);
+
+				closedir(d);
+				return true;
+			}
+		}
+		closedir(d);
+	}
+
+	return false;
+}
+#endif
+
+bool find_in_env(const wchar_t *moduleName, char *path) {
+	char utf8ModuleName[MAX_PATH_NAME];
+	wchar_to_utf8(moduleName, utf8ModuleName, MAX_PATH_NAME);
+	return find_in_env(utf8ModuleName, path);
+}
+
+bool find_in_env(const char *moduleName, char *path) {
+	memset(path, 0, MAX_PATH_NAME);
+#ifdef __linux__
+	const char* env = getenv("LD_LIBRARY_PATH");
+	if (!env)
+		return false;
+
+	// iterate thourgh it
+	const char *it = env;
+	const char *start = it;
+	while (1) {
+		if ((*it == ':') || (*it == '\0')) {
+			//process from start to it - 1
+			ssize_t len = it - 1 - start + 1;
+			if (!len)
+				continue;
+			char dirname[MAX_PATH_NAME];
+			memset(dirname, 0, MAX_PATH_NAME);
+			strncpy(dirname, start, len);
+			if (find_module(moduleName, dirname, path)) {
+				return true;
+			}
+			if (!*it)
+				break;
+			start = it + 1;
+		}
+		it++;
+	}
+
+	return false;
+
+#else
+    strcpy_s(path, strlen(moduleName), moduleName);
+    return true;
+#endif
+}

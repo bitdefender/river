@@ -22,5 +22,8 @@ FILE *w_fopen(const wchar_t *path, const wchar_t *mode);
 #define W_FOPEN(res, path, mode) _wfopen_s(&(res), (path), (mode))
 #endif
 
+#define MAX_PATH_NAME 260
+bool find_in_env(const char *moduleName, char *path);
+bool find_in_env(const wchar_t *moduleName, char *path);
 
 #endif
