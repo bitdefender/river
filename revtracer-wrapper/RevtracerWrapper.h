@@ -52,9 +52,7 @@ namespace revwrapper {
 
 	extern "C" {
 		DLL_PUBLIC long revtracerLastError;
-#ifdef _WIN32
 		DLL_PUBLIC extern ADDR_TYPE RevtracerWrapperInit(void);
-#endif
 		DLL_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long);
 		DLL_PUBLIC extern void CallFreeMemoryHandler(void*);
 		DLL_PUBLIC extern void CallTerminateProcessHandler(void);

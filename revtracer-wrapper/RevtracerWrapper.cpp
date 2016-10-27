@@ -8,10 +8,16 @@
 namespace revwrapper {
 
 	#ifdef __linux__
-	__attribute__((constructor)) void somain(void) {
-		libhandler = GET_LIB_HANDLER("libc.so");
-	}
+	#define GET_LIB_HANDLER(libname) dlopen((libname), RTLD_LAZY)
+	#define CLOSE_LIB(libhandler) dlclose((libhandler))
+	#define LOAD_PROC(libhandler, szProc) dlsym((libhandler), (szProc))
 	#else
+	#define GET_LIB_HANDLER(libname) GetModuleHandleW((libname))
+	#define CLOSE_LIB
+	#define LOAD_PROC(libhandler, szProc) GetProcAddress((libhandler), (szProc))
+	#endif
+
+	#ifdef _WIN32
 	BOOL WINAPI DllMain(_In_ HINSTANCE hinstDLL, _In_ DWORD fdwReason, _In_ LPVOID lpvReserved) {
 		return TRUE;
 	}
@@ -212,13 +218,15 @@ namespace revwrapper {
 	#endif
 
 	//Library API implementation
-#ifdef _WIN32
 	DLL_PUBLIC extern ADDR_TYPE RevtracerWrapperInit(void)
 	{
+#ifdef _WIN32
 		libhandler = GET_LIB_HANDLER(L"ntdll.dll");
+#elif defined(__linux__)
+		libhandler = GET_LIB_HANDLER("libc.so");
+#endif
 		return libhandler;
 	}
-#endif
 
 	DLL_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long dwSize)
 	{

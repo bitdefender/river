@@ -2,62 +2,10 @@
 #include "RiverStructs.h"
 #include "../CommonCrossPlatform/Common.h"
 #include "../revtracer-wrapper/RevtracerWrapper.h"
+#include "../BinLoader/LoaderAPI.h"
 
 #ifdef __linux__
 #include <string.h>
-#define USE_MANUAL_LOADING
-#endif
-
-//#define USE_MANUAL_LOADING
-
-#ifdef USE_MANUAL_LOADING
-#include "Loader/PE.ldr.h"
-#include "Loader/Inproc.Mapper.h"
-typedef FloatingPE *MODULE_PTR;
-typedef DWORD BASE_PTR;
-
-// keep in mind that this funcion does NOT return the module base
-void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &base) {
-	FloatingPE *fPE = new FloatingPE(libName);
-	InprocMapper mpr;
-	base = 0;
-
-	if (!fPE->IsValid()) {
-		delete fPE;
-		return;
-	}
-
-	if (!fPE->MapPE(mpr, base)) {
-		delete fPE;
-		return;
-	}
-
-	module = fPE;
-}
-
-void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName) {
-
-  if (module->IsELF())
-    return module->GetExport(funcName);
-
-	DWORD rva;
-	if (!module->GetExport(funcName, rva)) {
-		return nullptr;
-	}
-
-	return (void *)(base + rva);
-}
-
-#define LOAD_LIBRARYW(libName, module, base) ManualLoadLibrary((libName), (module), (base))
-#define GET_PROC_ADDRESS(module, base, name) ManualGetProcAddress((module), (base), (name))
-#define UNLOAD_MODULE(module) delete (module)
-#else
-typedef HMODULE BASE_PTR;
-typedef void *MODULE_PTR;
-
-#define LOAD_LIBRARYW(libName, module, base) do { base = LoadLibraryW((libName)); module = nullptr; } while (false);
-#define GET_PROC_ADDRESS(module, base, name) GetProcAddress((base), (name))
-#define UNLOAD_MODULE(module)
 #endif
 
 #ifdef __linux__
@@ -129,7 +77,7 @@ bool InprocessExecutionController::Execute() {
 	LOAD_LIBRARYW(L"revtracer.dll", hRevTracerModule, hRevTracerBase);
 	LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
 
-	if (nullptr == hRevTracerBase || nullptr == hRevWrapperBase) {
+	if (0 == hRevTracerBase || 0 == hRevWrapperBase) {
 		DEBUG_BREAK;
 		return false;
 	}
@@ -159,7 +107,6 @@ bool InprocessExecutionController::Execute() {
 		api->symbolicHandler = symbCb;
 	}
 
-#ifdef _WIN32
 	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "RevtracerWrapperInit");
 	if (!initHandler) {
 		DEBUG_BREAK;
@@ -170,7 +117,6 @@ bool InprocessExecutionController::Execute() {
 		DEBUG_BREAK;
 		return false;
 	}
-#endif
 
 	api->lowLevel.ntAllocateVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallAllocateMemoryHandler");
 
