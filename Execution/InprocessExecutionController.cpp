@@ -2,7 +2,7 @@
 #include "RiverStructs.h"
 #include "../CommonCrossPlatform/Common.h"
 #include "../revtracer-wrapper/RevtracerWrapper.h"
-#include "LoaderAPI.h"
+#include "../BinLoader/LoaderAPI.h"
 
 #ifdef __linux__
 #include <string.h>
