@@ -1,13 +1,8 @@
 #ifndef _REVTRACER_WRAPPER_H
 #define _REVTRACER_WRAPPER_H
 
-#ifdef __linux__
-#include <stdarg.h>
-#include <stdlib.h>
-#include <dlfcn.h>
-typedef void* lib_t;
-#else
-typedef HMODULE lib_t;
+#ifdef __linux__ 
+
 #endif
 typedef void *ADDR_TYPE;
 
@@ -37,36 +32,34 @@ namespace revwrapper {
 		#endif
 	#endif
 
-	DLL_LOCAL lib_t libhandler;
-	DLL_LOCAL long SetLastError(long);
-	DLL_LOCAL ADDR_TYPE GetAllocateMemoryHandler(void);
-	DLL_LOCAL ADDR_TYPE GetConvertToSystemErrorHandler(void);
-	DLL_LOCAL ADDR_TYPE GetTerminateProcessHandler(void);
-	DLL_LOCAL ADDR_TYPE GetFreeMemoryHandler(void);
-	DLL_LOCAL ADDR_TYPE GetFormattedPrintHandler(void);
-	DLL_LOCAL ADDR_TYPE GetWriteFileHandler(void);
-
-#ifdef _LINUX
-		DLL_LOCAL long ConvertToSystemError(long);
-#endif
-
 	extern "C" {
-		DLL_PUBLIC long revtracerLastError;
-		DLL_PUBLIC extern ADDR_TYPE RevtracerWrapperInit(void);
+		/** Initializes the API-wrapper */
+		DLL_PUBLIC extern void InitRevtracerWrapper();
+
+		/** Allocates virtual memory */
 		DLL_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long);
+
+		/** Frees virtual memory */
 		DLL_PUBLIC extern void CallFreeMemoryHandler(void*);
+
+		/** Terminates the current process */
 		DLL_PUBLIC extern void CallTerminateProcessHandler(void);
+
+		/** Gets the address of the last executed basic block (before the process is terminated) */
+		DLL_PUBLIC extern void *CallGetTerminationCodeHandler(void);
+
+		/** Formatted print utility function */
 		DLL_PUBLIC extern int CallFormattedPrintHandler(
 			char *buffer,
-			size_t sizeOfBuffer,
-			size_t count,
+			unsigned int sizeOfBuffer,
 			const char *format,
-			va_list argptr);
+			char *argptr);
+
+		/** Write to file utility function (used only for basic block logging) */
 		DLL_PUBLIC extern bool CallWriteFile(
 			void *handle,
-			int fd,
 			void *buffer,
-			size_t size,
+			unsigned int size,
 			unsigned long *written);
 	}
 }; //namespace revwrapper

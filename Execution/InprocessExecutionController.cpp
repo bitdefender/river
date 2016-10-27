@@ -77,7 +77,8 @@ bool InprocessExecutionController::Execute() {
 	LOAD_LIBRARYW(L"revtracer.dll", hRevTracerModule, hRevTracerBase);
 	LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
 
-	if (0 == hRevTracerBase || 0 == hRevWrapperBase) {
+	if (((0 == hRevTracerModule) && (0 == hRevTracerBase)) || 
+            ((0 == hRevWrapperModule) && (0 == hRevWrapperBase))) {
 		DEBUG_BREAK;
 		return false;
 	}
@@ -107,7 +108,7 @@ bool InprocessExecutionController::Execute() {
 		api->symbolicHandler = symbCb;
 	}
 
-	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "RevtracerWrapperInit");
+	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "InitRevtracerWrapper");
 	if (!initHandler) {
 		DEBUG_BREAK;
 		return false;

@@ -319,7 +319,6 @@ namespace ldr {
 			}
 		}
 
-		dbg_log("Here!\n");
 		for (int i = 0; i < header.e_shnum; ++i) {
 			if (!sections[i].Load(fModule)) {
 				return false;

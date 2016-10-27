@@ -236,6 +236,7 @@ namespace rev {
 		pBlock->address = (DWORD)revtracerConfig.entryPoint;
 		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
 		
+		// TODO: replace with address of the actual terminate process
 		pEnv->exitAddr = (DWORD)revtracerAPI.lowLevel.ntTerminateProcess;
 
 		/*pEnv->runtimeContext.execBuff -= 4;

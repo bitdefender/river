@@ -120,9 +120,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="RevtracerWrapper.cpp" />
+    <ClCompile Include="Wrapper.Linux.cpp" />
+    <ClCompile Include="Wrapper.Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RevtracerWrapper.h" />
+    <ClInclude Include="Wrapper.Global.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -179,7 +179,7 @@ int main(int argc, const char *argv[]) {
 	);
 
 	opt.add(
-		"payload." LIB_EXT,
+		"payload" LIB_EXT,
 		0,
 		1,
 		0,
