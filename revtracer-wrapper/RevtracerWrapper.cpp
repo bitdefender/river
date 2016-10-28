@@ -14,6 +14,8 @@ FormatPrintFunc formatPrint;
 WriteFileFunc writeFile;
 ToErrnoFunc toErrno;
 
+YieldExecutionFunc yieldExecution;
+
 namespace revwrapper {
 	DLL_REVTRACER_WRAPPER_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long dwSize)
 	{
@@ -42,6 +44,11 @@ namespace revwrapper {
 
 	DLL_REVTRACER_WRAPPER_PUBLIC extern long CallConvertToSystemErrorHandler(long status) {
 		return toErrno(status);
+	}
+
+	// Used until we replace the ipclib spinlock with signals / events
+	DLL_PUBLIC extern long CallYieldExecution(void) {
+		return yieldExecution();
 	}
 
 }; //namespace revwrapper

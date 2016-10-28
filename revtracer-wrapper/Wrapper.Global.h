@@ -12,6 +12,8 @@ typedef int (*FormatPrintFunc)(char *buffer, size_t sizeOfBuffer, const char *fo
 typedef bool (*WriteFileFunc)(void *, void *, size_t, unsigned long *);
 typedef long (*ToErrnoFunc)(long);
 
+typedef long (*YieldExecutionFunc)(void);
+
 extern AllocateVirtualFunc allocateVirtual;
 extern FreeVirtualFunc freeVirtual;
 
@@ -22,5 +24,7 @@ extern FormatPrintFunc formatPrint;
 
 extern WriteFileFunc writeFile;
 extern ToErrnoFunc toErrno;
+
+extern YieldExecutionFunc yieldExecution;
 
 #endif

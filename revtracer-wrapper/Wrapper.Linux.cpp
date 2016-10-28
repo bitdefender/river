@@ -12,7 +12,8 @@
 
 typedef void* lib_t;
 
-DLL_LOCAL lib_t libhandler;
+DLL_LOCAL lib_t lcHandler;
+DLL_LOCAL lib_t lpthreadHandler;
 
 // ------------------- Memory allocation ----------------------
 typedef void* (*AllocateMemoryHandler)(
@@ -91,18 +92,31 @@ int LinFormatPrint(char *buffer, size_t sizeOfBuffer, const char *format, char *
 	return _formatPrint(buffer, sizeOfBuffer - 1, format, (va_list)argptr);
 }
 
+// ------------------- Yield execution ------------------------
+typedef int(*YieldExecutionHandler) (void);
+
+YieldExecutionHandler _yieldExecution;
+
+long LinYieldExecution(void) {
+	return (long) _yieldExecution();
+}
+
+
 namespace revwrapper {
 	extern "C" void InitRevtracerWrapper() {
-		libhandler = GET_LIB_HANDLER("libc.so");
+		lcHandler = GET_LIB_HANDLER("libc.so");
+		lpthreadHandler = GET_LIB_HANDLER("libpthread.so");
 		// get functionality from ntdll
-		_virtualAlloc = (AllocateMemoryHandler)LOAD_PROC(libhandler, "mmap");
-		_virtualFree = (FreeMemoryHandler)LOAD_PROC(libhandler, "munmap");
+		_virtualAlloc = (AllocateMemoryHandler)LOAD_PROC(lcHandler, "mmap");
+		_virtualFree = (FreeMemoryHandler)LOAD_PROC(lcHandler, "munmap");
 
-		_terminateProcess = (TerminateProcessHandler)LOAD_PROC(libhandler, "exit");
+		_terminateProcess = (TerminateProcessHandler)LOAD_PROC(lcHandler, "exit");
 
-		_writeFile = (WriteFileHandler)LOAD_PROC(libhandler, "write");
+		_writeFile = (WriteFileHandler)LOAD_PROC(lcHandler, "write");
 
-		_formatPrint = (FormatPrintHandler)LOAD_PROC(libhandler, "vsnprintf");
+		_formatPrint = (FormatPrintHandler)LOAD_PROC(lcHandler, "vsnprintf");
+
+		_yieldExecution = (YieldExecutionHandler)LOAD_PROC(lpthreadHandler, "pthread_yield");
 
 		// set global functionality
 		allocateVirtual = LinAllocateVirtual;
@@ -113,6 +127,8 @@ namespace revwrapper {
 
 		toErrno = LinToErrno;
 		formatPrint = LinFormatPrint;
+
+		yieldExecution = LinYieldExecution;
 	}
 };
 
