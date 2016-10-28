@@ -1,9 +1,6 @@
 #ifndef _REVTRACER_WRAPPER_H
 #define _REVTRACER_WRAPPER_H
 
-#ifdef __linux__ 
-
-#endif
 typedef void *ADDR_TYPE;
 
 namespace revwrapper {
@@ -61,6 +58,9 @@ namespace revwrapper {
 			void *buffer,
 			unsigned int size,
 			unsigned long *written);
+
+		/** Yield the CPU */
+		DLL_PUBLIC extern long CallYieldExecution(void);
 	}
 }; //namespace revwrapper
 
