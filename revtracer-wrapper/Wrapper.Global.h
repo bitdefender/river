@@ -15,6 +15,8 @@ typedef long (*ToErrnoFunc)(long);
 
 typedef long (*YieldExecutionFunc)(void);
 
+typedef void (*FlushInstructionCacheFunc)(void);
+
 
 extern AllocateVirtualFunc allocateVirtual;
 extern FreeVirtualFunc freeVirtual;
@@ -29,5 +31,7 @@ extern WriteFileFunc writeFile;
 extern ToErrnoFunc toErrno;
 
 extern YieldExecutionFunc yieldExecution;
+
+extern FlushInstructionCacheFunc flushInstructionCache;
 
 #endif
