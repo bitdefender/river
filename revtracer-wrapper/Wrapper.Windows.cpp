@@ -108,6 +108,24 @@ void WinFreeVirtual(void *address) {
 }
 
 // ------------------- Memory mapping -------------------------
+
+typedef enum _SECTION_INHERIT {
+		ViewShare = 1,
+		ViewUnmap = 2
+	} SECTION_INHERIT, *PSECTION_INHERIT;
+
+	typedef union _LARGE_INTEGER {
+		struct {
+			DWORD LowPart;
+			LONG HighPart;
+		};
+		struct {
+			DWORD LowPart;
+			LONG HighPart;
+		} u;
+		LONGLONG QuadPart;
+	} LARGE_INTEGER, *PLARGE_INTEGER;
+
 typedef NTSTATUS(*MapMemoryHandler) (
 		HANDLE          SectionHandle,
 		HANDLE          ProcessHandle,
@@ -371,6 +389,21 @@ int WinFormatPrint(char *buffer, size_t sizeOfBuffer, const char *format, char *
 	return _formatPrint(buffer, sizeOfBuffer, _TRUNCATE, format, (va_list)argptr);
 }
 
+// ------------------- Flush instruction cache ----------------
+
+typedef NTSTATUS(*FlushInstructionCacheHandler)(
+		HANDLE hProcess,
+		LPVOID address,
+		SIZE_T size
+	);
+
+FlushInstructionCacheHandler _flushInstructionCache;
+
+void WinFlushInstructionCache(void) {
+	_flushInstructionCache((HANDLE)0xFFFFFFFF, NULL, 0);
+}
+
+
 // ------------------- Initialization -------------------------
 
 namespace revwrapper {
@@ -391,6 +424,7 @@ namespace revwrapper {
 
 		_formatPrint = (FormatPrintHandler)LOAD_PROC(libhandler, "_vsnprintf_s");
 
+		_flushInstructionCache = (FlushInstructionCacheHandler)LOAD_PROC(libhandler, "NtFlushInstructionCache");
 
 		// set global functionality
 		allocateVirtual = WinAllocateVirtual;
@@ -402,6 +436,8 @@ namespace revwrapper {
 		writeFile = WinWriteFile;
 		toErrno = WinToErrno;
 		formatPrint = WinFormatPrint;
+
+		flushInstructionCache = WinFlushInstructionCache;
 	}
 }; // namespace revwrapper
 

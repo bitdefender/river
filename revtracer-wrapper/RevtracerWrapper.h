@@ -69,6 +69,9 @@ namespace revwrapper {
 
 		/** Yield the CPU */
 		DLL_PUBLIC extern long CallYieldExecution(void);
+
+		/** Flush contents of instruction cache */
+		DLL_PUBLIC extern void CallFlushInstructionCache(void);
 	}
 }; //namespace revwrapper
 

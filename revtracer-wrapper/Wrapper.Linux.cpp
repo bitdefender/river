@@ -109,6 +109,10 @@ long LinYieldExecution(void) {
 }
 
 
+// ------------------- Yield execution ------------------------
+void LinFlushInstructionCache(void) {
+}
+
 namespace revwrapper {
 	extern "C" void InitRevtracerWrapper() {
 		lcHandler = GET_LIB_HANDLER("libc.so");
@@ -137,6 +141,8 @@ namespace revwrapper {
 		formatPrint = LinFormatPrint;
 
 		yieldExecution = LinYieldExecution;
+
+		flushInstructionCache = LinFlushInstructionCache;
 	}
 };
 

@@ -5,6 +5,7 @@
 
 AllocateVirtualFunc allocateVirtual;
 FreeVirtualFunc freeVirtual;
+MapMemoryFunc mapMemory;
 
 TerminateProcessFunc terminateProcess;
 GetTerminationCodeFunc getTerminationCode;
@@ -16,7 +17,7 @@ ToErrnoFunc toErrno;
 
 YieldExecutionFunc yieldExecution;
 
-MapMemoryFunc mapMemory;
+FlushInstructionCacheFunc flushInstructionCache;
 
 namespace revwrapper {
 	DLL_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long dwSize)
@@ -55,6 +56,10 @@ namespace revwrapper {
 	// Used until we replace the ipclib spinlock with signals / events
 	DLL_PUBLIC extern long CallYieldExecution(void) {
 		return yieldExecution();
+	}
+
+	DLL_PUBLIC extern void CallFlushInstructionCache(void) {
+		flushInstructionCache();
 	}
 
 }; //namespace revwrapper
