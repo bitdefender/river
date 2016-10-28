@@ -16,6 +16,8 @@ ToErrnoFunc toErrno;
 
 YieldExecutionFunc yieldExecution;
 
+MapMemoryFunc mapMemory;
+
 namespace revwrapper {
 	DLL_REVTRACER_WRAPPER_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long dwSize)
 	{
@@ -24,6 +26,10 @@ namespace revwrapper {
 
 	DLL_REVTRACER_WRAPPER_PUBLIC extern void CallFreeMemoryHandler(void *address) {
 		return freeVirtual(address);
+	}
+
+	DLL_REVTRACER_WRAPPER_PUBLIC extern void *CallMapMemoryHandler(void *mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
+		return mapMemory(mapHandler, access, offset, size, address);
 	}
 
 	DLL_REVTRACER_WRAPPER_PUBLIC extern void CallTerminateProcessHandler(void) {
