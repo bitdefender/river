@@ -6,5 +6,6 @@
 int main () {
   revwrapper::InitRevtracerWrapper();
   long ret = revwrapper::CallYieldExecution();
-  printf("%ld\n", ret);
+  void *addr = revwrapper::CallMapMemoryHandler(NULL, 0, 0, 0, NULL);
+  printf("%ld %p\n", ret, addr);
 }

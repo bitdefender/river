@@ -54,6 +54,15 @@ void *WinAllocateVirtual(unsigned long size) {
 	return Kernel32VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 }
 
+// -------------------- Flush Memory Cache --------------------
+
+typedef BOOL(*RtlFlushSecureMemoryCacheHandler)(
+		PVOID 	MemoryCache,
+		SIZE_T 	MemoryLength
+	);
+
+RtlFlushSecureMemoryCacheHandler _flushMemoryCache;
+
 // ------------------- Memory deallocation --------------------
 typedef NTSTATUS(*FreeMemoryHandler)(
 	HANDLE ProcessHandle,
@@ -64,8 +73,122 @@ typedef NTSTATUS(*FreeMemoryHandler)(
 
 FreeMemoryHandler _virtualFree;
 
+BOOL Kernel32VirtualFreeEx(
+		HANDLE hProcess,
+		LPVOID lpAddress,
+		SIZE_T dwSize,
+		DWORD  dwFreeType
+	) {
+		NTSTATUS ret;
+
+		if ((unsigned __int16)(dwFreeType & 0x8000) && dwSize) {
+			return FALSE;
+		} else {
+			ret = ((FreeMemoryCall)_virtualFree)(hProcess,
+					&lpAddress, dwSize, dwFreeType);
+			if (ret >= 0) {
+				return TRUE;
+			}
+
+			if ((0xC0000045 == ret) && ((HANDLE)0xFFFFFFFF == hProcess)) {
+				if (FALSE == ((RtlFlushSecureMemoryCacheHandler)_flushMemoryCache)(lpAddress, dwSize)) {
+					return FALSE;
+				}
+				ret = ((FreeMemoryCall)_virtualFree)((hProcess,
+							&lpAddress, dwSize, dwFreeType);
+				return (ret >= 0) ? TRUE : FALSE;
+			} else {
+				return FALSE;
+			}
+		}
+	}
+
 void WinFreeVirtual(void *address) {
 	_virtualFree((HANDLE)0xFFFFFFFF, &address, 0, MEM_RELEASE);
+}
+
+// ------------------- Memory mapping -------------------------
+typedef NTSTATUS(*MapMemoryHandler) (
+		HANDLE          SectionHandle,
+		HANDLE          ProcessHandle,
+		PVOID           *BaseAddress,
+		ULONG_PTR       ZeroBits,
+		SIZE_T          CommitSize,
+		PLARGE_INTEGER  SectionOffset,
+		PSIZE_T         ViewSize,
+		SECTION_INHERIT InheritDisposition,
+		ULONG           AllocationType,
+		ULONG           Win32Protect
+	);
+
+MapMemoryHandler _mapMemory;
+
+LPVOID Kernel32MapViewOfFileEx(
+		HANDLE hFileMappingObject,
+		DWORD dwDesiredAccess,
+		DWORD dwFileOffsetHigh,
+		DWORD dwFileOffsetLow,
+		SIZE_T dwNumberOfBytesToMap,
+		LPVOID lpBaseAddress
+		) {
+	NTSTATUS Status;
+	LARGE_INTEGER SectionOffset;
+	SIZE_T ViewSize;
+	ULONG Protect;
+	LPVOID ViewBase;
+
+	/* Convert the offset */
+	SectionOffset.LowPart = dwFileOffsetLow;
+	SectionOffset.HighPart = dwFileOffsetHigh;
+
+	/* Save the size and base */
+	ViewBase = lpBaseAddress;
+	ViewSize = dwNumberOfBytesToMap;
+
+	/* Convert flags to NT Protection Attributes */
+	if (dwDesiredAccess == FILE_MAP_COPY) {
+		Protect = PAGE_WRITECOPY;
+	} else if (dwDesiredAccess & FILE_MAP_WRITE) {
+		Protect = (dwDesiredAccess & FILE_MAP_EXECUTE) ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE;
+	} else if (dwDesiredAccess & FILE_MAP_READ) {
+		Protect = (dwDesiredAccess & FILE_MAP_EXECUTE) ? PAGE_EXECUTE_READ : PAGE_READONLY;
+	} else {
+		Protect = PAGE_NOACCESS;
+	}
+
+	/* Map the section */
+	Status = _mapMemory(
+			hFileMappingObject,
+			(HANDLE)0xFFFFFFFF,
+			&ViewBase,
+			0,
+			0,
+			&SectionOffset,
+			&ViewSize,
+			ViewShare,
+			0,
+			Protect
+			);
+
+	if (!NT_SUCCESS(Status)) {
+		/* We failed */
+		__asm int 3;
+		return NULL;
+	}
+
+	/* Return the base */
+	return ViewBase;
+}
+
+void *WinMapMemory(void *mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
+	return Kernel32MapViewOfFileEx(
+			mapHandler,
+			access,
+			0,
+			offset,
+			size,
+			address
+			);
 }
 
 
@@ -257,6 +380,7 @@ namespace revwrapper {
 		// get functionality from ntdll
 		_virtualAlloc = (AllocateMemoryHandler)LOAD_PROC(libhandler, "NtAllocateVirtualMemory");
 		_virtualFree = (FreeMemoryHandler)LOAD_PROC(libhandler, "NtFreeVirtualMemory");
+		_mapMemory = (MapMemoryHandler)LOAD_PROC(libhandler, "NtMapViewOfSection");
 
 		_terminateProcess = (TerminateProcessHandler)LOAD_PROC(libhandler, "NtTerminateProcess");
 
@@ -271,6 +395,7 @@ namespace revwrapper {
 		// set global functionality
 		allocateVirtual = WinAllocateVirtual;
 		freeVirtual = WinFreeVirtual;
+		mapMemory = WinMapMemory;
 
 		terminateProcess = WinTerminateProcess;
 		getTerminationCode = WinGetTerminationCodeFunc;

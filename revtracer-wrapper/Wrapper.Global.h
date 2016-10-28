@@ -3,6 +3,7 @@
 
 typedef void *(*AllocateVirtualFunc)(unsigned long);
 typedef void (*FreeVirtualFunc)(void *);
+typedef void *(*MapMemoryFunc)(void *, unsigned long, unsigned long, unsigned long, void *);
 
 typedef void (*TerminateProcessFunc)(int);
 typedef void *(*GetTerminationCodeFunc)();
@@ -14,8 +15,10 @@ typedef long (*ToErrnoFunc)(long);
 
 typedef long (*YieldExecutionFunc)(void);
 
+
 extern AllocateVirtualFunc allocateVirtual;
 extern FreeVirtualFunc freeVirtual;
+extern MapMemoryFunc mapMemory;
 
 extern TerminateProcessFunc terminateProcess;
 extern GetTerminationCodeFunc getTerminationCode;

@@ -43,6 +43,13 @@ void LinFreeVirtual(void *address) {
 	// TODO: implement some size retrieval mechanism
 }
 
+// ------------------- Memory mapping ------------------------
+typedef AllocateMemoryHandler MapMemoryHandler;
+
+void *LinMapMemory(void *mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
+	return nullptr;
+}
+
 // ------------------- Process termination --------------------
 typedef void(*TerminateProcessHandler)(
 	int status
@@ -121,6 +128,7 @@ namespace revwrapper {
 		// set global functionality
 		allocateVirtual = LinAllocateVirtual;
 		freeVirtual = LinFreeVirtual;
+		mapMemory = LinMapMemory;
 
 		terminateProcess = LinTerminateProcess;
 		getTerminationCode = LinGetTerminationCodeFunc;
