@@ -389,6 +389,17 @@ int WinFormatPrint(char *buffer, size_t sizeOfBuffer, const char *format, char *
 	return _formatPrint(buffer, sizeOfBuffer, _TRUNCATE, format, (va_list)argptr);
 }
 
+// ------------------- Yield Execution ------------------------
+
+typedef long NTSTATUS;
+typedef NTSTATUS(*NtYieldExecutionHandler)();
+
+NtYieldExecutionHandler _ntYieldExecution;
+
+long WinYieldExecution(void) {
+	return _ntYieldExecution();
+}
+
 // ------------------- Flush instruction cache ----------------
 
 typedef NTSTATUS(*FlushInstructionCacheHandler)(
@@ -423,6 +434,8 @@ namespace revwrapper {
 		_systemError = (ConvertToSystemErrorHandler)LOAD_PROC(libhandler, "RtlNtStatusToDosError");
 
 		_formatPrint = (FormatPrintHandler)LOAD_PROC(libhandler, "_vsnprintf_s");
+
+		_ntYieldExecution = (NtYieldExecutionHandler)(libhandler, "NtYieldExecution");
 
 		_flushInstructionCache = (FlushInstructionCacheHandler)LOAD_PROC(libhandler, "NtFlushInstructionCache");
 
