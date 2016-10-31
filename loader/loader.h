@@ -99,7 +99,6 @@ namespace ldr {
 		ADDR_TYPE ntFlushInstructionCache;
 
 		ADDR_TYPE ntFreeVirtualMemory;
-		ADDR_TYPE rtlFlushSecureMemoryCache;
 
 		//ADDR_TYPE rtlInitUnicodeStringEx;
 		//ADDR_TYPE rtlFreeUnicodeString;

@@ -60,56 +60,14 @@ namespace ldr {
 	typedef wchar_t *PWSTR;
 	typedef const wchar_t *PCWSTR;
 	typedef unsigned long ULONG, *PULONG;
-	typedef enum _SECTION_INHERIT {
-		ViewShare = 1,
-		ViewUnmap = 2
-	} SECTION_INHERIT, *PSECTION_INHERIT;
 
-	typedef union _LARGE_INTEGER {
-		struct {
-			DWORD LowPart;
-			LONG HighPart;
-		};
-		struct {
-			DWORD LowPart;
-			LONG HighPart;
-		} u;
-		LONGLONG QuadPart;
-	} LARGE_INTEGER, *PLARGE_INTEGER;
-
-	typedef NTSTATUS(*NtMapViewOfSectionFunc) (
-		HANDLE          SectionHandle,
-		HANDLE          ProcessHandle,
-		PVOID           *BaseAddress,
-		ULONG_PTR       ZeroBits,
-		SIZE_T          CommitSize,
-		PLARGE_INTEGER  SectionOffset,
-		PSIZE_T         ViewSize,
-		SECTION_INHERIT InheritDisposition,
-		ULONG           AllocationType,
-		ULONG           Win32Protect
-	);
-
-	typedef NTSTATUS(*NtFlushInstructionCacheFunc)(
-		HANDLE hProcess,
-		LPVOID address,
-		SIZE_T size
-	);
-
-	typedef BOOL(*RtlFlushSecureMemoryCacheFunc)(
-		PVOID 	MemoryCache,
-		SIZE_T 	MemoryLength
-	);
 
 #define MEM_DECOMMIT	0x4000
 #define MEM_RELEASE		0x8000
 
-	typedef NTSTATUS (*NtFreeVirtualMemoryFunc)(
-		HANDLE ProcessHandle,
-		PVOID *BaseAddress,
-		PULONG RegionSize,
-		ULONG FreeType
-	);
+	typedef void (*FreeMemoryCall)(void *);
+	typedef void *(*MapMemoryCall)(void *, unsigned long, unsigned long, unsigned long, void *);
+	typedef void (*FlushInstructionCacheCall)(void);
 
 	LoaderConfig loaderConfig = {
 		NULL,
@@ -122,104 +80,12 @@ namespace ldr {
 		NULL
 	};
 
-	LPVOID Kernel32MapViewOfFileEx(
-		HANDLE hFileMappingObject,
-		DWORD dwDesiredAccess,
-		DWORD dwFileOffsetHigh,
-		DWORD dwFileOffsetLow,
-		SIZE_T dwNumberOfBytesToMap,
-		LPVOID lpBaseAddress
-	) {
-		NTSTATUS Status;
-		LARGE_INTEGER SectionOffset;
-		SIZE_T ViewSize;
-		ULONG Protect;
-		LPVOID ViewBase;
-
-		/* Convert the offset */
-		SectionOffset.LowPart = dwFileOffsetLow;
-		SectionOffset.HighPart = dwFileOffsetHigh;
-
-		/* Save the size and base */
-		ViewBase = lpBaseAddress;
-		ViewSize = dwNumberOfBytesToMap;
-
-		/* Convert flags to NT Protection Attributes */
-		if (dwDesiredAccess == FILE_MAP_COPY) {
-			Protect = PAGE_WRITECOPY;
-		} else if (dwDesiredAccess & FILE_MAP_WRITE) {
-			Protect = (dwDesiredAccess & FILE_MAP_EXECUTE) ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE;
-		} else if (dwDesiredAccess & FILE_MAP_READ) {
-			Protect = (dwDesiredAccess & FILE_MAP_EXECUTE) ? PAGE_EXECUTE_READ : PAGE_READONLY;
-		} else {
-			Protect = PAGE_NOACCESS;
-		}
-
-		/* Map the section */
-		Status = ((NtMapViewOfSectionFunc)loaderAPI.ntMapViewOfSection)(
-			hFileMappingObject,
-			(HANDLE)0xFFFFFFFF,
-			&ViewBase,
-			0,
-			0,
-			&SectionOffset,
-			&ViewSize,
-			ViewShare,
-			0,
-			Protect
-		);
-
-		if (!NT_SUCCESS(Status)) {
-			/* We failed */
-			__asm int 3;
-			return NULL;
-		}
-
-		/* Return the base */
-		return ViewBase;
-	}
-
-	BOOL Kernel32VirtualFreeEx(
-		HANDLE hProcess,
-		LPVOID lpAddress,
-		SIZE_T dwSize,
-		DWORD  dwFreeType
-	) {
-		NTSTATUS ret;
-
-		if ((unsigned __int16)(dwFreeType & 0x8000) && dwSize) {
-			return FALSE;
-		} else {
-			ret = ((NtFreeVirtualMemoryFunc)loaderAPI.ntFreeVirtualMemory)(hProcess, &lpAddress, (PULONG)&dwSize, dwFreeType);
-			if (ret >= 0) {
-				return TRUE;
-			}
-
-			if ((0xC0000045 == ret) && ((HANDLE)0xFFFFFFFF == hProcess)) {
-				if (FALSE == ((RtlFlushSecureMemoryCacheFunc)loaderAPI.rtlFlushSecureMemoryCache)(lpAddress, dwSize)) {
-					return FALSE;
-				}
-				ret = ((NtFreeVirtualMemoryFunc)loaderAPI.ntFreeVirtualMemory)((HANDLE)0xFFFFFFFF, &lpAddress, (PULONG)&dwSize, dwFreeType);
-				return (ret >= 0) ? TRUE : FALSE;
-			} else {
-				return FALSE;
-			}
-		}
-	}
-
 	DWORD miniStack[512];
 	DWORD shadowStack = (DWORD)&(miniStack[510]);
 	HANDLE hMap = NULL;
 
 	DLL_PUBLIC void *MapMemory(DWORD desiredAccess, DWORD offset, SIZE_T size, LPVOID address) {
-		return Kernel32MapViewOfFileEx(
-			hMap,
-			desiredAccess,
-			0,
-			offset,
-			size,
-			address
-		);
+		return ((MapMemoryCall)loaderAPI.ntMapViewOfSection)(hMap, desiredAccess, offset, size, address);
 	}
 
 	void SimulateDebugger() {
@@ -239,35 +105,23 @@ namespace ldr {
 
 		SimulateDebugger();
 
-		if (FALSE == Kernel32VirtualFreeEx(
-			(HANDLE)0xFFFFFFFF,
-			loaderConfig.shmBase,
-			0,
-			MEM_RELEASE
-		)) {
-			__asm int 3;
-		}
+		((FreeMemoryCall)loaderAPI.ntFreeVirtualMemory)(
+			loaderConfig.shmBase);
 
 		for (DWORD s = 0; s < loaderConfig.sectionCount; ++s) {
-			void *addr = Kernel32MapViewOfFileEx(
-				hMap,
+			void *addr = MapMemory(
 				loaderConfig.sections[s].desiredAccess,
-				0,
 				loaderConfig.sections[s].sectionOffset,
 				loaderConfig.sections[s].mappingSize,
 				loaderConfig.sections[s].mappingAddress
 			);
-			
+
 			if (addr != loaderConfig.sections[s].mappingAddress) {
 				__asm int 3;
 			}
 		}
 
-		((NtFlushInstructionCacheFunc)loaderAPI.ntFlushInstructionCache) (
-			(HANDLE)0xFFFFFFFF,
-			NULL,
-			0
-		);
+		((FlushInstructionCacheCall)loaderAPI.ntFlushInstructionCache)();
 	}
 
 	__declspec(naked) void LoaderPerform() {
