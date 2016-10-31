@@ -158,6 +158,8 @@ namespace ldr {
 		FloatingELF32(const wchar_t *moduleName);
 		~FloatingELF32();
 
+		DWORD GetRequiredSize() const;
+
 		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr);
 		virtual bool GetExport(const char *funcName, DWORD &funcRVA) const;
 

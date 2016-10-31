@@ -751,4 +751,19 @@ namespace ldr {
 		return true;
 	}
 
+	DWORD FloatingELF32::GetRequiredSize() const {
+		DWORD maxAddr = 0x0;
+		for (auto i = sections.begin(); i != sections.end(); ++i) {
+			if (i->header.sh_addr == 0)
+				continue;
+
+			unsigned int alignment = std::max((DWORD)0x1000, i->header.sh_addralign);
+			DWORD maxSec = ((i->header.sh_addr + i->header.sh_size) +
+					(alignment - 1)) & (~(alignment - 1));
+			if (maxSec > maxAddr)
+				maxAddr = maxSec;
+		}
+		return maxAddr;
+	}
+
 }; //namespace ldr
