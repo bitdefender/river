@@ -3,8 +3,9 @@
 
 #include "CommonExecutionController.h"
 
+#include "../BinLoader/Abstract.Loader.h"
+#include "../BinLoader/LoaderAPI.h"
 #include "DualAllocator.h"
-#include "Loader/PE.ldr.h"
 
 #include "../loader/loader.h"
 #include "../ipclib/ipclib.h"
@@ -14,6 +15,9 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+typedef DualAllocator* SHM_T;
+#elif defined(__linux__)
+typedef int SHM_T;
 #endif
 
 class ExternExecutionController : public CommonExecutionController {
@@ -22,7 +26,7 @@ private:
 	FILE_T hDbg;
 	DWORD pid, mainTid;
 
-	DualAllocator *shmAlloc;
+	SHM_T shmAlloc;
 
 	BYTE *pLoaderBase;
 	BYTE *pLoaderConfig;
@@ -34,6 +38,9 @@ private:
 	BYTE *pLdrMapMemory;
 
 	ldr::LoaderConfig loaderConfig;
+
+	MODULE_PTR hRevWrapperModule;
+	BASE_PTR hRevWrapperBase;
 
 	ipc::RingBuffer<(1 << 20)> *debugLog;
 	ipc::ShmTokenRing *ipcToken;
@@ -51,11 +58,13 @@ private:
 	bool MapTracer();
 	bool WriteLoaderConfig();
 
-	bool InitializeIpcLib(FloatingPE *fIpcLib);
-	bool InitializeRevtracer(FloatingPE *fRevTracer);
+	bool InitializeIpcLib(ldr::AbstractBinary *fIpcLib);
+	bool InitializeRevtracer(ldr::AbstractBinary *fRevTracer);
 
 	bool SwitchEntryPoint();
 	bool PatchProcess();
+
+	void ConvertWideStringPath(char *result, size_t len);
 public:
 	ExternExecutionController();
 
