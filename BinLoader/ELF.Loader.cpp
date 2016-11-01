@@ -390,6 +390,12 @@ namespace ldr {
 		}
 	}
 
+	DWORD FloatingELF32::GetEntryPoint() const {
+		if (!isValid)
+			return 0;
+		return header.e_entry;
+	}
+
 	DWORD FloatingELF32::Import(AbstractImporter &impr, const char *name) {
 		DWORD ret;
 		const char *at = strchr(name, '@');
