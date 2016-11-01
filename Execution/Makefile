@@ -3,12 +3,14 @@ CC := gcc
 CXX := g++
 EXTERNAL_FILES := ../revtracer/sync.cpp ../revtracer/crc32.cpp ../revtracer/cb.cpp
 INCLUDE_PATHS := -I../BinLoader
-CPP_FILES := $(LOADER_FILES) LargeStack.cpp CommonExecutionController2.cpp InprocessExecutionController.cpp CommonExecutionController.cpp Main.cpp $(EXTERNAL_FILES)
+INPROCESS_EXECUTION_CPP := LargeStack.cpp CommonExecutionController2.cpp InprocessExecutionController.cpp CommonExecutionController.cpp Main.cpp
+EXTERN_EXECUTION_CPP := ExternExecutionController.Linux.cpp #DualAllocator.cpp
+CPP_FILES := $(LOADER_FILES) $(EXTERN_EXECUTION_CPP) $(INPROCESS_EXECUTION_CPP) $(EXTERNAL_FILES)
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LIB_BINLOADER_PATH := ../BinLoader/libbinloader.a
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
 CC_FLAGS += -g -m32 -march=i386 -std=c++11 -D_EXECUTION_EXPORTS \
-						-DBLOCK_CACHE_READ_ONLY -DINPROCESS_EXECUTION_ONLY \
+						-DBLOCK_CACHE_READ_ONLY \
 						$(INCLUDE_PATHS) $(CC_FLAGS_CROSS)
 prefix := /usr/local
 
