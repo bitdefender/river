@@ -14,6 +14,7 @@ typedef DWORD BASE_PTR;
 
 void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &baseAddr);
 void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName);
+DWORD GetEntryPoint(const char *elfName);
 
 #elif defined(_WIN32)
 typedef HMODULE BASE_PTR;

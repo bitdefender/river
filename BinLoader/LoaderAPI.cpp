@@ -2,6 +2,7 @@
 #include "Abstract.Importer.h"
 #include "Inproc.Mapper.h"
 #include "Inproc.Native.Importer.h"
+#include "ELF.Loader.h"
 #include <stdio.h>
 
 #include "LoaderAPI.h"
@@ -32,6 +33,17 @@ void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcNam
 		return nullptr;
 	}
 	return (void *)(base + rva);
+}
+
+DWORD GetEntryPoint(const char *elfName) {
+	ldr::AbstractBinary *fExec = ldr::LoadBinary(elfName);
+	if (ldr::FloatingELF32* fElf = dynamic_cast<ldr::FloatingELF32*>(fExec)) {
+		delete fExec;
+		return fElf->GetEntryPoint();
+	}
+
+	delete fExec;
+	return 0;
 }
 
 #endif
