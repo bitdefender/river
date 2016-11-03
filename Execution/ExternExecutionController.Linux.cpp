@@ -5,6 +5,10 @@
 #include <sys/wait.h>
 #include <sys/user.h>
 #include <string.h>
+#include "../libproc/os-linux.h"
+
+// TODO seach for this lib in LD_LIBRARY_PATH
+#define LOADER_PATH "libloader.so"
 
 ExternExecutionController::ExternExecutionController() {
 	shmAlloc = -1;
@@ -15,11 +19,13 @@ bool ExternExecutionController::SetEntryPoint() {
 }
 
 bool ExternExecutionController::InitializeAllocator() {
-	shmAlloc = shm_open("/thug_life", O_CREAT | O_RDWR | O_EXCL, 0744);
-	if (shmAlloc) {
-		printf("Could not allocate shared memory chunk. Exiting.\n");
+	shmAlloc = shm_open("/thug_life", O_CREAT | O_RDWR | O_TRUNC | O_EXCL, 0644);
+	if (shmAlloc == -1) {
+		printf("Could not allocate shared memory chunk. Exiting. %d\n", errno);
+		strerror(errno);
 		return false;
 	}
+
 	return true;
 }
 
@@ -44,7 +50,7 @@ void getdata(pid_t child, long addr,
 	laddr = str;
 	while(i < j) {
 		data.val = ptrace(PTRACE_PEEKDATA, child,
-				addr + i * 4, NULL);
+				addr + i * 4, nullptr);
 		memcpy(laddr, data.chars, long_size);
 		++i;
 		laddr += long_size;
@@ -52,7 +58,7 @@ void getdata(pid_t child, long addr,
 	j = len % long_size;
 	if(j != 0) {
 		data.val = ptrace(PTRACE_PEEKDATA, child,
-				addr + i * 4, NULL);
+				addr + i * 4, nullptr);
 		memcpy(laddr, data.chars, j);
 	}
 	str[len] = '\0';
@@ -97,6 +103,33 @@ void DeleteBreakpoint(DWORD address, pid_t child, unsigned char *bkp) {
 	putdata(child, address, bkp, 3);
 }
 
+void MapSharedLibraries(unsigned long baseAddress) {
+}
+
+unsigned long GetLoaderAddress(pid_t pid) {
+	struct map_iterator mi;
+	struct map_prot mp;
+	unsigned long hi;
+	unsigned long segbase, mapoff;
+
+
+	if (maps_init (&mi, pid) < 0) {
+		printf("Cannot find maps for pid %d\n", pid);
+		return 0;
+	}
+
+	while (maps_next (&mi, &segbase, &hi, &mapoff, &mp)) {
+		if (nullptr != strstr(mi.path, LOADER_PATH)) {
+			printf("Found child mapping for ld_preload %p\n", (void*)segbase);
+			maps_close(&mi);
+			return segbase;
+		}
+
+	}
+	maps_close(&mi);
+	return 0;
+}
+
 bool ExternExecutionController::Execute() {
 
 	if (!InitializeAllocator()) {
@@ -118,10 +151,20 @@ bool ExternExecutionController::Execute() {
 	ConvertWideStringPath(arg, MAX_PATH);
 	entryPoint = GetEntryPoint(arg);
 
+	unsigned long shmAddress = 0x0;
 	child = fork();
 	if(child == 0) {
-		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-		execve(arg, (char**)&arg, NULL);
+		ptrace(PTRACE_TRACEME, 0, nullptr, nullptr);
+
+		char *const args[] = {arg, nullptr};
+		char env[MAX_PATH] = "LD_PRELOAD=";
+		strcat(env, LOADER_PATH);
+		char *const envs[] = {env, nullptr};
+		int ret = execve(arg, args, envs);
+
+		if (ret == -1) {
+			printf("Cannot start child process %s. Execve failed!\n", arg);
+		}
 	}
 
 	else {
@@ -133,9 +176,8 @@ bool ExternExecutionController::Execute() {
 
 		InsertBreakpoint(entryPoint, child, backup);
 
-		//continue
-		ptrace(PTRACE_CONT, child, NULL, NULL);
-		wait(NULL);
+		ptrace(PTRACE_CONT, child, nullptr, nullptr);
+		wait(nullptr);
 
 		ptrace(PTRACE_GETREGS, child, 0, &regs);
 		printf("Child should break at entry point. EIP = 0x%08lx\n", regs.eip);
@@ -143,8 +185,22 @@ bool ExternExecutionController::Execute() {
 
 		DeleteBreakpoint(entryPoint, child, backup);
 
-		//try to load .so in here
-		ptrace(PTRACE_CONT, child, NULL, NULL);
+
+		unsigned long symbolOffset = 0x2014;
+		unsigned long symbolAddress = GetLoaderAddress(child) + symbolOffset;
+		unsigned char sym_addr[4] = {0, 0, 0, 0};
+		getdata(child, symbolAddress, sym_addr, 4);
+
+		for (int i = 0; i < 4; ++i) {
+			((char*)&shmAddress)[i] = sym_addr[i];
+		}
+
+		shmAddress = (unsigned long)mmap((void*)shmAddress, 1 << 30, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, shmAlloc, 0);
+		printf("[Execution] Mapped shared memory at address %08lx", shmAddress);
+
+		MapSharedLibraries(shmAddress);
+
+		ptrace(PTRACE_CONT, child, nullptr, nullptr);
 		wait(&status);
 
 		if (WIFEXITED(status) ) {
@@ -153,13 +209,8 @@ bool ExternExecutionController::Execute() {
 		}
 		fflush(stdout);
 
-		ptrace (PTRACE_DETACH, child, NULL, NULL);
+		ptrace (PTRACE_DETACH, child, nullptr, nullptr);
 	}
 
-
-	// create child process and trace it
-	// create shared mem and map it in the child process
-	// map revtracer.dll and libipc.so in the child process
-	// continue in child process
 }
 #endif
