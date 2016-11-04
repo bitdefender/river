@@ -49,13 +49,13 @@ struct map_prot
 	uint32_t flags;
 };
 
-int maps_init(struct map_iterator *mi, pid_t pid);
+extern int maps_init(struct map_iterator *mi, pid_t pid);
 
-int maps_next (struct map_iterator *mi,
+extern int maps_next (struct map_iterator *mi,
 		unsigned long *low, unsigned long *high, unsigned long *offset,
 		struct map_prot *mp);
 
-void maps_close (struct map_iterator *mi);
+extern void maps_close (struct map_iterator *mi);
 
-long get_rss();
+extern long get_rss();
 #endif /* os_linux_h */
