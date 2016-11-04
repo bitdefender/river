@@ -84,8 +84,8 @@ BOOL Kernel32VirtualFreeEx(
 		if ((unsigned __int16)(dwFreeType & 0x8000) && dwSize) {
 			return FALSE;
 		} else {
-			ret = ((FreeMemoryCall)_virtualFree)(hProcess,
-					&lpAddress, dwSize, dwFreeType);
+			ret = ((FreeMemoryHandler)_virtualFree)(hProcess,
+					&lpAddress, (PULONG)dwSize, dwFreeType);
 			if (ret >= 0) {
 				return TRUE;
 			}
@@ -94,8 +94,8 @@ BOOL Kernel32VirtualFreeEx(
 				if (FALSE == ((RtlFlushSecureMemoryCacheHandler)_flushMemoryCache)(lpAddress, dwSize)) {
 					return FALSE;
 				}
-				ret = ((FreeMemoryCall)_virtualFree)((hProcess,
-							&lpAddress, dwSize, dwFreeType);
+				ret = ((FreeMemoryHandler)_virtualFree)(hProcess,
+							&lpAddress, (PULONG)dwSize, dwFreeType);
 				return (ret >= 0) ? TRUE : FALSE;
 			} else {
 				return FALSE;
@@ -113,18 +113,6 @@ typedef enum _SECTION_INHERIT {
 		ViewShare = 1,
 		ViewUnmap = 2
 	} SECTION_INHERIT, *PSECTION_INHERIT;
-
-	typedef union _LARGE_INTEGER {
-		struct {
-			DWORD LowPart;
-			LONG HighPart;
-		};
-		struct {
-			DWORD LowPart;
-			LONG HighPart;
-		} u;
-		LONGLONG QuadPart;
-	} LARGE_INTEGER, *PLARGE_INTEGER;
 
 typedef NTSTATUS(*MapMemoryHandler) (
 		HANDLE          SectionHandle,
@@ -435,7 +423,7 @@ namespace revwrapper {
 
 		_formatPrint = (FormatPrintHandler)LOAD_PROC(libhandler, "_vsnprintf_s");
 
-		_ntYieldExecution = (NtYieldExecutionHandler)(libhandler, "NtYieldExecution");
+		_ntYieldExecution = (NtYieldExecutionHandler)LOAD_PROC(libhandler, "NtYieldExecution");
 
 		_flushInstructionCache = (FlushInstructionCacheHandler)LOAD_PROC(libhandler, "NtFlushInstructionCache");
 
