@@ -22,7 +22,8 @@ typedef int SHM_T;
 
 class ExternExecutionController : public CommonExecutionController {
 private:
-	HANDLE hProcess, hMainThread, hControlThread;
+	HANDLE hProcess, hMainThread;
+	THREAD_T hControlThread;
 	FILE_T hDbg;
 	DWORD pid, mainTid;
 
