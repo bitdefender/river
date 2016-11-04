@@ -10,6 +10,18 @@
 // TODO seach for this lib in LD_LIBRARY_PATH
 #define LOADER_PATH "libloader.so"
 
+
+unsigned long ExternExecutionController::ControlThread() {
+	//TODO
+	return 0;
+}
+
+void *ControlThreadFunc(void *ptr) {
+	ExternExecutionController *ctr = (ExternExecutionController *)ptr;
+	ctr->ControlThread();
+	return nullptr;
+}
+
 ExternExecutionController::ExternExecutionController() {
 	shmAlloc = -1;
 }
@@ -17,6 +29,41 @@ ExternExecutionController::ExternExecutionController() {
 bool ExternExecutionController::SetEntryPoint() {
 	return false;
 }
+
+THREAD_T ExternExecutionController::GetProcessHandle() {
+	// N/A for the linux version
+	return -1;
+}
+
+
+bool ExternExecutionController::PatchProcess() {
+	return true;
+}
+
+
+bool ExternExecutionController::WaitForTermination() {
+	int ret;
+	JOIN_THREAD(hControlThread, ret);
+	return ret;
+}
+
+unsigned int ExternExecutionController::ExecutionBegin(void *address, void *cbCtx) {
+	if (!PatchProcess()) {
+		execState = ERR;
+		return EXECUTION_TERMINATE;
+	}
+	else {
+		execState = SUSPENDED_AT_START;
+		return observer->ExecutionBegin(cbCtx, address);
+	}
+}
+
+
+// reads the child process memory
+bool ExternExecutionController::ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) {
+	return true;
+}
+
 
 bool ExternExecutionController::InitializeAllocator() {
 	shmAlloc = shm_open("/thug_life", O_CREAT | O_RDWR | O_TRUNC | O_EXCL, 0644);
@@ -200,16 +247,24 @@ bool ExternExecutionController::Execute() {
 
 		MapSharedLibraries(shmAddress);
 
-		ptrace(PTRACE_CONT, child, nullptr, nullptr);
-		wait(&status);
+		// TODO give execution control to revtracer by setting the eip
 
-		if (WIFEXITED(status) ) {
-			int es = WEXITSTATUS(status);
-			printf("Exit status was %d\n", es);
-		}
-		fflush(stdout);
+		//wait(&status);
+		//ptrace(PTRACE_CONT, child, nullptr, nullptr);
+
+		//if (WIFEXITED(status) ) {
+		//	int es = WEXITSTATUS(status);
+		//	printf("Exit status was %d\n", es);
+		//}
+		//fflush(stdout);
 
 		ptrace (PTRACE_DETACH, child, nullptr, nullptr);
+
+		int ret;
+		CREATE_THREAD(hControlThread, ControlThreadFunc, this, ret);
+		execState = RUNNING;
+
+		return ret == TRUE;
 	}
 
 }
