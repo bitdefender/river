@@ -54,7 +54,7 @@ inline char *ltoa (char *buf, long val)
 	return buf + len;
 }
 
-inline int maps_init(struct map_iterator *mi, pid_t pid)
+int maps_init(struct map_iterator *mi, pid_t pid)
 {
 	char path[sizeof ("/proc/0123456789/maps")], *cp;
 
@@ -86,7 +86,7 @@ inline int maps_init(struct map_iterator *mi, pid_t pid)
 	return -1;
 }
 
-inline char *skip_whitespace (char *cp)
+char *skip_whitespace (char *cp)
 {
 	if (!cp)
 		return NULL;
@@ -96,7 +96,7 @@ inline char *skip_whitespace (char *cp)
 	return cp;
 }
 
-inline char *scan_hex (char *cp, unsigned long *valp)
+char *scan_hex (char *cp, unsigned long *valp)
 {
 	unsigned long num_digits = 0, digit, val = 0;
 
@@ -125,7 +125,7 @@ inline char *scan_hex (char *cp, unsigned long *valp)
 	return cp;
 }
 
-inline char *scan_dec (char *cp, unsigned long *valp)
+char *scan_dec (char *cp, unsigned long *valp)
 {
 	unsigned long num_digits = 0, digit, val = 0;
 
@@ -151,7 +151,7 @@ inline char *scan_dec (char *cp, unsigned long *valp)
 	return cp;
 }
 
-inline char *scan_char (char *cp, char *valp)
+char *scan_char (char *cp, char *valp)
 {
 	if (!cp)
 		return NULL;
@@ -166,7 +166,7 @@ inline char *scan_char (char *cp, char *valp)
 
 /* Scan a string delimited by white-space.  Fails on empty string or
    if string is doesn't fit in the specified buffer.  */
-inline char *scan_string (char *cp, char *valp, size_t buf_size)
+char *scan_string (char *cp, char *valp, size_t buf_size)
 {
 	size_t i = 0;
 
@@ -185,7 +185,7 @@ inline char *scan_string (char *cp, char *valp, size_t buf_size)
 	return cp;
 }
 
-inline int maps_next (struct map_iterator *mi,
+int maps_next (struct map_iterator *mi,
 		unsigned long *low, unsigned long *high, unsigned long *offset,
 		struct map_prot *mp)
 {
@@ -270,7 +270,7 @@ inline int maps_next (struct map_iterator *mi,
 	return 0;
 }
 
-inline void maps_close (struct map_iterator *mi)
+void maps_close (struct map_iterator *mi)
 {
 	if (mi->fd < 0)
 		return;
