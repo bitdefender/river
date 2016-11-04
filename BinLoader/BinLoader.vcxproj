@@ -129,7 +129,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common.cpp" />
-    <ClCompile Include="ELF.Loader.cpp" />
+    <ClCompile Include="ELF.Loader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Extern.Mapper.cpp" />
     <ClCompile Include="Inproc.Mapper.cpp" />
     <ClCompile Include="Inproc.Native.Importer.cpp" />
