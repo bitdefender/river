@@ -5,6 +5,7 @@
 
 #include "../BinLoader/Abstract.Loader.h"
 #include "../BinLoader/LoaderAPI.h"
+#include "../BinLoader/PE.Loader.h"
 #include "DualAllocator.h"
 
 #include "../loader/loader.h"
@@ -59,8 +60,8 @@ private:
 	bool MapTracer();
 	bool WriteLoaderConfig();
 
-	bool InitializeIpcLib(ldr::AbstractBinary *fIpcLib);
-	bool InitializeRevtracer(ldr::AbstractBinary *fRevTracer);
+	bool InitializeIpcLib(ldr::FloatingPE *fIpcLib);
+	bool InitializeRevtracer(ldr::FloatingPE *fRevTracer);
 
 	bool SwitchEntryPoint();
 	bool PatchProcess();

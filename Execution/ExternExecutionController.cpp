@@ -1,7 +1,9 @@
 #include "ExternExecutionController.h"
 
-#include "Loader/Extern.Mapper.h"
-#include "Loader/Mem.Mapper.h"
+#include "../BinLoader/Extern.Mapper.h"
+#include "../BinLoader/Mem.Mapper.h"
+#include "../BinLoader/PE.loader.h"
+#include "../BinLoader/Inproc.Native.Importer.h"
 
 #include "RiverStructs.h"
 
@@ -13,6 +15,7 @@
 
 typedef long NTSTATUS;
 typedef NTSTATUS(*NtYieldExecutionFunc)();
+typedef HANDLE(*GetHandlerCallback)(void);
 
 NtYieldExecutionFunc ntdllYieldExecution;
 
@@ -22,7 +25,7 @@ namespace ipc {
 	}
 };
 
-template <typename T> bool LoadExportedName(FloatingPE *fpe, BYTE *base, char *name, T *&ptr) {
+template <typename T> bool LoadExportedName(ldr::FloatingPE *fpe, BYTE *base, char *name, T *&ptr) {
 	DWORD rva;
 	if (!fpe->GetExport(name, rva)) {
 		return false;
@@ -101,8 +104,8 @@ BYTE *GetFreeRegion(HANDLE hProcess, DWORD size) {
 }
 
 bool ExternExecutionController::MapLoader() {
-	FloatingPE *fLoader = new FloatingPE("loader.dll");
-	ExternMapper mLoader(hProcess);
+	ldr::FloatingPE *fLoader = new ldr::FloatingPE("loader.dll");
+	ldr::ExternMapper mLoader(hProcess);
 	DWORD dwWritten;
 	bool bRet = false;
 	do {
@@ -113,26 +116,38 @@ bool ExternExecutionController::MapLoader() {
 			break;
 		}
 
-		if (!fLoader->MapPE(mLoader, (DWORD &)pLoaderBase)) {
+		if (!fLoader->Map(mLoader, mLoader, (DWORD &)pLoaderBase)) {
 			DEBUG_BREAK;
 			break;
 		}
 
 		FlushInstructionCache(hProcess, (LPVOID)pLoaderBase, fLoader->GetRequiredSize());
 
-		HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
+		wchar_t revWrapperPath[] = L"revtracer-wrapper.dll";
+
+		LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
+
+		HANDLE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "InitRevtracerWrapper");
+		if (!initHandler) {
+			DEBUG_BREAK;
+			return false;
+		}
+
+		if (nullptr == ((GetHandlerCallback)initHandler)()) {
+			DEBUG_BREAK;
+			return false;
+		}
+
 		ldr::LoaderAPI ldrAPI;
 
 		//ldrAPI.ntOpenSection = GetProcAddress(hNtDll, "NtOpenSection");
-		ldrAPI.ntMapViewOfSection = GetProcAddress(hNtDll, "NtMapViewOfSection");
+		ldrAPI.ntMapViewOfSection = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallMapMemoryHandler");
 
 		//ldrAPI.ntOpenDirectoryObject = GetProcAddress(hNtDll, "NtOpenDirectoryObject");
 		//ldrAPI.ntClose = GetProcAddress(hNtDll, "NtClose");
 
-		ldrAPI.ntFlushInstructionCache = GetProcAddress(hNtDll, "NtFlushInstructionCache");
-		ldrAPI.ntFreeVirtualMemory = GetProcAddress(hNtDll, "NtFreeVirtualMemory");
-
-		ldrAPI.rtlFlushSecureMemoryCache = GetProcAddress(hNtDll, "RtlFlushSecureMemoryCache");
+		ldrAPI.ntFlushInstructionCache = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFlushInstructionCache");
+		ldrAPI.ntFreeVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFreeMemoryHandler");
 
 		//ldrAPI.rtlInitUnicodeStringEx = GetProcAddress(hNtDll, "RtlInitUnicodeStringEx");
 		//ldrAPI.rtlFreeUnicodeString = GetProcAddress(hNtDll, "RtlFreeUnicodeString");
@@ -172,17 +187,17 @@ DWORD CharacteristicsToDesiredAccess(DWORD c) {
 	return r;
 }
 
-bool ExternExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
+bool ExternExecutionController::InitializeIpcLib(ldr::FloatingPE *fIpcLib) {
 	/* Imports */
 	ipc::IpcAPI *ipcAPI;
 	if (!LoadExportedName(fIpcLib, pIpcBase, "ipcAPI", ipcAPI)) {
 		return false;
 	}
 
-	HMODULE hNtDll = GetModuleHandle("ntdll.dll");
-	ipcAPI->ntYieldExecution = GetProcAddress(hNtDll, "NtYieldExecution");
+	ipcAPI->ntYieldExecution = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallYieldExecution");
 	ntdllYieldExecution = (NtYieldExecutionFunc)ipcAPI->ntYieldExecution;
-	ipcAPI->vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
+	ipcAPI->vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
+
 	ipcAPI->ldrMapMemory = pLdrMapMemory;
 
 
@@ -208,22 +223,21 @@ bool ExternExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 	return true;
 }
 
-bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
+bool ExternExecutionController::InitializeRevtracer(ldr::FloatingPE *fRevTracer) {
 	/* Imports */
-	HMODULE hNtDll = GetModuleHandle("ntdll.dll");
-	tmpRevApi.lowLevel.ntAllocateVirtualMemory = GetProcAddress(hNtDll, "NtAllocateVirtualMemory");
-	tmpRevApi.lowLevel.ntFreeVirtualMemory = GetProcAddress(hNtDll, "NtFreeVirtualMemory");
+	tmpRevApi.lowLevel.ntAllocateVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallAllocateMemoryHandler");
+	tmpRevApi.lowLevel.ntFreeVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFreeMemoryHandler");
 
-	tmpRevApi.lowLevel.ntQueryInformationThread = GetProcAddress(hNtDll, "NtQueryInformationThread");
-	tmpRevApi.lowLevel.ntTerminateProcess = GetProcAddress(hNtDll, "NtTerminateProcess");
+	tmpRevApi.lowLevel.ntQueryInformationThread = nullptr;
+	tmpRevApi.lowLevel.ntTerminateProcess = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallTerminateProcessHandler");
 
 #ifdef DUMP_BLOCKS
-	tmpRevApi.lowLevel.ntWriteFile = GetProcAddress(hNtDll, "NtWriteFile");
-	tmpRevApi.lowLevel.ntWaitForSingleObject = GetProcAddress(hNtDll, "NtWaitForSingleObject");
+	tmpRevApi.lowLevel.ntWriteFile = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallWriteFile");
+	tmpRevApi.lowLevel.ntWaitForSingleObject = nullptr;
 #endif
 
-	tmpRevApi.lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
-	tmpRevApi.lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
+	tmpRevApi.lowLevel.rtlNtStatusToDosError = nullptr;
+	tmpRevApi.lowLevel.vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
 
 	/*if (nullptr != trackCb) {
 		api->trackCallback = trackCb;
@@ -301,11 +315,12 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 }
 
 bool ExternExecutionController::MapTracer() {
-	FloatingPE *fIpcLib = new FloatingPE("ipclib.dll");
-	FloatingPE *fRevTracer = new FloatingPE("revtracer.dll");
+	ldr::FloatingPE *fIpcLib = new ldr::FloatingPE("ipclib.dll");
+	ldr::FloatingPE *fRevTracer = new ldr::FloatingPE("revtracer.dll");
 	bool bRet = false;
 	do {
-		MemMapper mMapper;
+		ldr::MemMapper mMapper;
+		ldr::InprocNativeImporter imp;
 
 		DWORD dwIpcLibSize = (fIpcLib->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwRevTracerSize = (fRevTracer->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
@@ -319,7 +334,8 @@ bool ExternExecutionController::MapTracer() {
 		DWORD ipcLibOffset = dwOffset;
 		DWORD revTracerOffset = dwOffset + dwIpcLibSize;
 
-		if (!fIpcLib->MapPE(mMapper, (DWORD &)pIpcBase) || !fRevTracer->MapPE(mMapper, (DWORD &)pRevtracerBase)) {
+		//TODO fix this map
+		if (!fIpcLib->Map(mMapper, imp, (DWORD &)pIpcBase) || !fRevTracer->Map(mMapper, imp, (DWORD &)pRevtracerBase)) {
 			break;
 		}
 
@@ -330,7 +346,7 @@ bool ExternExecutionController::MapTracer() {
 		DWORD sCount = 0;
 		DWORD dwIpcLibSections = fIpcLib->GetSectionCount();
 		for (DWORD i = 0; i < dwIpcLibSections; ++i) {
-			const PESection *sec = fIpcLib->GetSection(i);
+			const ldr::PESection *sec = fIpcLib->GetSection(i);
 
 			if (sec->header.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) {
 				continue;
@@ -345,7 +361,7 @@ bool ExternExecutionController::MapTracer() {
 
 		DWORD dwRevTracerSections = fRevTracer->GetSectionCount();
 		for (DWORD i = 0; i < dwRevTracerSections; ++i) {
-			const PESection *sec = fRevTracer->GetSection(i);
+			const ldr::PESection *sec = fRevTracer->GetSection(i);
 
 			if (sec->header.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) {
 				continue;
