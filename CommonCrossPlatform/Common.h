@@ -98,6 +98,9 @@ typedef struct event_t EVENT_T;
    pthread_mutex_unlock(&(event).mutex); \
    })
 
+#define CREATE_THREAD(tid, func, params, ret) do { ret = pthread_create((&tid), nullptr, (func), (params)); ret = (0 == ret); } while(false)
+#define JOIN_THREAD(tid, ret) do { ret = pthread_join(tid, nullptr); ret = (0 == ret); } while (false)
+
 #include <unistd.h>
 #define GET_CURRENT_PROC() getpid()
 
@@ -118,6 +121,9 @@ typedef void* EVENT_T;
 #define CREATE_EVENT(handle) do { handle = CreateEvent(nullptr, false, false, nullptr); } while (false)
 #define SIGNAL_EVENT(handle) SetEvent((handle))
 #define WAIT_FOR_SINGLE_OBJECT(handle) WaitForSingleObject((handle), INFINITE)
+
+#define CREATE_THREAD(tid, func, params, ret) do { tid = CreateThread(nullptr, 0, (func), (params), 0, nullptr); ret = (tid != nullptr); } while (false)
+#define JOIN_THREAD(tid, ret) do { ret = WaitForSingleObject(tid, INFINITE); ret = (WAIT_FAILED != ret); } while (false)
 
 #define SEEK_BEGIN_FILE FILE_BEGIN
 #define SEEK_END_FILE FILE_END
