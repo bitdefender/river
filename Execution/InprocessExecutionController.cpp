@@ -8,14 +8,6 @@
 #include <string.h>
 #endif
 
-#ifdef __linux__
-#define CREATE_THREAD(tid, func, params, ret) do { ret = pthread_create((&tid), nullptr, (func), (params)); ret = (0 == ret); } while(false)
-#define JOIN_THREAD(tid, ret) do { ret = pthread_join(tid, nullptr); ret = (0 == ret); } while (false)
-#else
-#define CREATE_THREAD(tid, func, params, ret) do { tid = CreateThread(nullptr, 0, (func), (params), 0, nullptr); ret = (tid != nullptr); } while (false)
-#define JOIN_THREAD(tid, ret) do { ret = WaitForSingleObject(tid, INFINITE); ret = (WAIT_FAILED != ret); } while (false)
-#endif
-
 typedef ADDR_TYPE(*GetHandlerCallback)(void);
 
 bool InprocessExecutionController::SetPath() {
