@@ -5,7 +5,7 @@
 
 namespace ipc {
 	typedef long NTSTATUS;
-	typedef NTSTATUS(*NtYieldExecutionFunc)();
+	typedef NTSTATUS(*CallYieldExecutionHandler)();
 
 	typedef char *va_list;
 #define _ADDRESSOF(v)   ( &reinterpret_cast<const char &>(v) )
@@ -287,7 +287,7 @@ namespace ipc {
 	}
 
 	void NtDllNtYieldExecution() {
-		((NtYieldExecutionFunc)ipcAPI.ntYieldExecution)();
+		((CallYieldExecutionHandler)ipcAPI.ntYieldExecution)();
 	}
 
 
