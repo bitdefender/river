@@ -2,19 +2,22 @@
 #include <Windows.h>
 #endif
 
-#ifndef INPROCESS_EXECUTION_ONLY
+#ifdef EXTERN_EXECUTION_ONLY
 #include "ExternExecutionController.h"
 #endif
+#ifdef INPROCESS_EXECUTION_ONLY
 #include "InprocessExecutionController.h"
+#endif
 
 DLL_PUBLIC_EXECUTION ExecutionController *NewExecutionController(uint32_t type) {
 	switch (type) {
-#ifndef INPROCESS_EXECUTION_ONLY
+#ifdef EXTERN_EXECUTION_ONLY
 		case EXECUTION_EXTERNAL:
 			return new ExternExecutionController();
-#endif
+#elif defined(INPROCESS_EXECUTION_ONLY)
 		case EXECUTION_INPROCESS:
 			return new InprocessExecutionController();
+#endif
 		default:
 			return nullptr;
 	};

@@ -1,7 +1,7 @@
 #ifndef _LOADER_API
 #define _LOADER_API
 
-#ifdef __linux__
+#if defined(__linux__) || defined(EXTERN_EXECUTION_ONLY)
 #include "Abstract.Loader.h"
 typedef unsigned long DWORD;
 typedef ldr::AbstractBinary *MODULE_PTR;
@@ -15,6 +15,9 @@ typedef DWORD BASE_PTR;
 void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &baseAddr);
 void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName);
 DWORD GetEntryPoint(const char *elfName);
+void CreateModule(const wchar_t *libname, MODULE_PTR &module);
+void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr);
+void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess);
 
 #elif defined(_WIN32)
 typedef HMODULE BASE_PTR;
