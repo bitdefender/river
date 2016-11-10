@@ -133,7 +133,10 @@ extern "C" {
 			//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++ Tainted addresses +++ \n");
 			pEnv->ac.PrintAddreses();
 			//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++++++++++++++++++++++++ \n");
-			((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
+			
+			//((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
+
+			pEnv->runtimeContext.jumpBuff = pEnv->exitAddr;
 		}
 		
 	}
