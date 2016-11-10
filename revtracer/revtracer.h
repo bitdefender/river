@@ -15,27 +15,27 @@ namespace rev {
 #if defined _WIN32 || defined __CYGWIN__
 	#ifdef _BUILDING_REVTRACER_DLL
 		#ifdef _MSC_VER
-			#define DLL_PUBLIC __declspec(dllexport)
+			#define DLL_REVTRACER_PUBLIC __declspec(dllexport)
 			#define NAKED  __declspec(naked)
 		#else
-			#define DLL_PUBLIC __attribute__ ((dllexport))
+			#define DLL_REVTRACER_PUBLIC __attribute__ ((dllexport))
 			#define NAKED
 		#endif
 	#else
 		#ifdef _MSC_VER
-			#define DLL_PUBLIC __declspec(dllimport)
+			#define DLL_REVTRACER_PUBLIC __declspec(dllimport)
 		#else
-			#define DLL_PUBLIC __attribute__ ((dllimport))
+			#define DLL_REVTRACER_PUBLIC __attribute__ ((dllimport))
 		#endif
 	#endif
 	#define DLL_LOCAL
 #else
 	#if __GNUC__ >= 4
-		#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+		#define DLL_REVTRACER_PUBLIC __attribute__ ((visibility ("default")))
 		#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 	  #define NAKED  __attribute__ ((naked))
 	#else
-		#define DLL_PUBLIC
+		#define DLL_REVTRACER_PUBLIC
 		#define DLL_LOCAL
 	#endif
 #endif
@@ -160,34 +160,33 @@ namespace rev {
 	extern "C" {
 
 		/* Execution context callbacks ********************/
-		DLL_PUBLIC void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
-		DLL_PUBLIC void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
-		DLL_PUBLIC DWORD GetLastBasicBlockCost(void *ctx);
-		DLL_PUBLIC void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
+		DLL_REVTRACER_PUBLIC void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
+		DLL_REVTRACER_PUBLIC void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
+		DLL_REVTRACER_PUBLIC DWORD GetLastBasicBlockCost(void *ctx);
+		DLL_REVTRACER_PUBLIC void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
 
 		/* In process API *********************************/
-
-		DLL_PUBLIC extern RevtracerAPI revtracerAPI;
-		DLL_PUBLIC extern RevtracerConfig revtracerConfig;
+		DLL_REVTRACER_PUBLIC extern RevtracerAPI revtracerAPI;
+		DLL_REVTRACER_PUBLIC extern RevtracerConfig revtracerConfig;
 		/* Can be used as an EP for in process execution  */
-		DLL_PUBLIC void RevtracerPerform();
+		DLL_REVTRACER_PUBLIC void RevtracerPerform();
 
 
 		/* DLL API ****************************************/
 
-		DLL_PUBLIC void SetDbgPrint(DbgPrintFunc);
-		DLL_PUBLIC void SetMemoryMgmt(MemoryAllocFunc alc, MemoryFreeFunc fre);
-		DLL_PUBLIC void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs);
-		DLL_PUBLIC void SetLowLevelAPI(LowLevelRevtracerAPI *llApi);
-		DLL_PUBLIC void SetContextMgmt(InitializeContextFunc initCtx, CleanupContextFunc cleanCtx);
-		DLL_PUBLIC void SetControlMgmt(BranchHandlerFunc branchCtl, SyscallControlFunc syscallCtl);
+		DLL_REVTRACER_PUBLIC void SetDbgPrint(DbgPrintFunc);
+		DLL_REVTRACER_PUBLIC void SetMemoryMgmt(MemoryAllocFunc alc, MemoryFreeFunc fre);
+		DLL_REVTRACER_PUBLIC void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs);
+		DLL_REVTRACER_PUBLIC void SetLowLevelAPI(LowLevelRevtracerAPI *llApi);
+		DLL_REVTRACER_PUBLIC void SetContextMgmt(InitializeContextFunc initCtx, CleanupContextFunc cleanCtx);
+		DLL_REVTRACER_PUBLIC void SetControlMgmt(BranchHandlerFunc branchCtl, SyscallControlFunc syscallCtl);
 
 
-		DLL_PUBLIC void SetContext(ADDR_TYPE ctx);
-		DLL_PUBLIC void SetEntryPoint(ADDR_TYPE ep);
+		DLL_REVTRACER_PUBLIC void SetContext(ADDR_TYPE ctx);
+		DLL_REVTRACER_PUBLIC void SetEntryPoint(ADDR_TYPE ep);
 
-		DLL_PUBLIC void Initialize();
-		DLL_PUBLIC void Execute(int argc, char *argv[]);
+		DLL_REVTRACER_PUBLIC void Initialize();
+		DLL_REVTRACER_PUBLIC void Execute(int argc, char *argv[]);
 	};
 
 };

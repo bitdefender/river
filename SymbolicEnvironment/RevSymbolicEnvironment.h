@@ -12,6 +12,9 @@ private :
 	rev::DWORD *opBase;
 	rev::DWORD addressOffsets[4], valueOffsets[4], flagOffset;
 
+	AddRefFunc addRefFunc;
+	DecRefFunc decRefFunc;
+
 	void *pEnv;
 
 	void GetOperandLayout(const RiverInstruction &rIn);
@@ -35,6 +38,7 @@ private :
 public :
 	RevSymbolicEnvironment(void *revEnv, ExecutionController *ctl);
 
+	virtual void SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef);
 	virtual bool SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer);
 
 	virtual void PushState(stk::LargeStack &stack);

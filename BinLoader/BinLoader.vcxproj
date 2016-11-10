@@ -125,10 +125,6 @@
     <ClInclude Include="Inproc.Native.Importer.h" />
     <ClInclude Include="Mem.Mapper.h" />
     <ClInclude Include="PE.Loader.h" />
-    <ClInclude Include="tmp\CLoad.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
@@ -137,16 +133,8 @@
     <ClCompile Include="Extern.Mapper.cpp" />
     <ClCompile Include="Inproc.Mapper.cpp" />
     <ClCompile Include="Inproc.Native.Importer.cpp" />
-    <ClCompile Include="Main.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Mem.Mapper.cpp" />
     <ClCompile Include="PE.Loader.cpp" />
-    <ClCompile Include="tmp\CLoad.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Unified.Loader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

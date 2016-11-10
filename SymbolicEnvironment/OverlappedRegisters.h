@@ -14,7 +14,7 @@ private :
 		static const rev::DWORD rOff[5], rSize[5], rParent[5], rMChild[5], rLChild[5];
 		static const rev::DWORD rSeed[4];
 		static rev::DWORD needConcat, needExtract;
-		sym::SymbolicExecutor *parent;
+		OverlappedRegistersEnvironment *parent;
 
 		// marks children as need extraction
 		void MarkNeedExtract(rev::DWORD node);
@@ -22,7 +22,7 @@ private :
 
 		void *Get(rev::DWORD node, rev::DWORD concreteValue);
 	public:
-		void SetParent(sym::SymbolicExecutor *p);
+		void SetParent(OverlappedRegistersEnvironment *p);
 
 		void *Get(RiverRegister &reg, rev::DWORD &concreteValue);
 		void Set(RiverRegister &reg, void *value);
@@ -41,6 +41,8 @@ protected :
 	virtual void _PopState(stk::LargeStack &stack);
 
 public :
+	OverlappedRegistersEnvironment();
+
 	virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue);
 	virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue);
 	virtual bool UnsetOperand(rev::BYTE opIdx);

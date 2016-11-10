@@ -11,9 +11,15 @@ static rev::BYTE GetFundamentalRegister(rev::BYTE reg) {
 	return reg;
 }
 
+void NoAddRef(void *) {}
+void NoDecRef(void *) {}
+
 RevSymbolicEnvironment::RevSymbolicEnvironment(void *revEnv, ExecutionController *ctl) {
 	ctrl = ctl;
 	pEnv = revEnv;
+
+	addRefFunc = NoAddRef;
+	decRefFunc = NoDecRef;
 }
 
 void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
@@ -77,7 +83,13 @@ template <rev::BYTE offset, rev::BYTE size> void *RevSymbolicEnvironment::GetSub
 }
 
 template <> void *RevSymbolicEnvironment::GetSubexpression<0, 4>(rev::DWORD address) {
-	return (void *)TrackAddr(pEnv, address, 0);
+	void *symExpr = (void *)TrackAddr(pEnv, address, 0);
+
+	if (nullptr != symExpr) {
+		addRefFunc(symExpr);
+	}
+
+	return symExpr;
 }
 
 void *RevSymbolicEnvironment::GetSubexpressionInvalid(rev::DWORD address) {
@@ -110,7 +122,9 @@ void *RevSymbolicEnvironment::GetExpression(rev::DWORD address, rev::DWORD size)
 		if (nullptr == ret) {
 			ret = tmp;
 		} else {
-			ret = exec->ConcatBits(ret, tmp);
+			void *newret = exec->ConcatBits(ret, tmp);
+			decRefFunc(ret);
+			ret = newret;
 		}
 
 		address += copy;
@@ -125,30 +139,55 @@ template<rev::BYTE offset, rev::BYTE size> void RevSymbolicEnvironment::SetSubex
 	rev::DWORD lSz = offset << 3;
 	rev::DWORD lLsb = (4 - offset) << 3;
 
-	void *ret = exec->ExtractBits(value, lLsb, lSz);
-	ret = exec->ConcatBits(ret, expr);
-	ret = exec->ConcatBits(ret, exec->ExtractBits(value, 0, rSz));
+	void *ret1 = exec->ExtractBits(value, lLsb, lSz);
+	void *ret2 = exec->ConcatBits(ret1, expr);
+	decRefFunc(ret1);
 
-	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
+	void *ret3 = exec->ExtractBits(value, 0, rSz);
+	void *ret4 = exec->ConcatBits(ret2, ret3);
+	decRefFunc(ret2);
+	decRefFunc(ret3);
+		
+	rev::DWORD r = MarkAddr(pEnv, address, (rev::DWORD)ret4, 0);
+	if (0 != r) {
+		decRefFunc((void *)r);
+	}
 }
 
 template<rev::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(void *expr, rev::DWORD address, void *value) {
 	rev::DWORD rSz = (4 - size) << 3;
-
-	void *ret = exec->ConcatBits(exec->ExtractBits(value, size << 3, rSz), expr);
+	void *ret1 = exec->ExtractBits(value, size << 3, rSz);
+	void *ret2 = exec->ConcatBits(ret1, expr);
 	
-	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
+	decRefFunc(ret1);
+	//addRefFunc(ret2);
+	rev::DWORD r = MarkAddr(pEnv, address, (rev::DWORD)ret2, 0);
+	if (0 != r) {
+		decRefFunc((void *)r);
+	}
 }
 
 template<rev::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOff0(void *expr, rev::DWORD address, void *value) {
-	void *ret = exec->ExtractBits(value, 0, (4 - size) << 3);
-	ret = exec->ConcatBits(expr, ret);
+	void *ret1 = exec->ExtractBits(value, 0, (4 - size) << 3);
+	void *ret2 = exec->ConcatBits(expr, ret1);
 
-	MarkAddr(pEnv, address, (rev::DWORD)ret, 0);
+	decRefFunc(ret1);
+
+	//addRefFunc(ret2);
+	rev::DWORD r = MarkAddr(pEnv, address, (rev::DWORD)ret2, 0);
+	if (0 != r) {
+		decRefFunc((void *)r);
+	}
 }
 
 template <> void RevSymbolicEnvironment::SetSubexpression<0, 4>(void *expr, rev::DWORD address, void *value) {
-	MarkAddr(pEnv, address, (rev::DWORD)expr, 0);
+	if (nullptr != expr) {
+		addRefFunc(expr);
+	}
+	rev::DWORD r = MarkAddr(pEnv, address, (rev::DWORD)expr, 0);
+	if (0 != r) {
+		decRefFunc((void *)r);
+	}
 }
 
 void RevSymbolicEnvironment::SetSubexpressionInvalid(void *expr, rev::DWORD address, void *value) {
@@ -185,11 +224,20 @@ void RevSymbolicEnvironment::SetExpression(void *exp, rev::DWORD address, rev::D
 
 
 		(this->*subExpsSet[fo][sz])(ext, address, val);
+		
+		if (ext != exp) {
+			decRefFunc(ext);
+		}
 		ptr++;
 
 		address += copy;
 		sz -= copy;
 	}
+}
+
+void RevSymbolicEnvironment::SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef) {
+	addRefFunc = addRef;
+	decRefFunc = decRef;
 }
 
 bool RevSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *rIn, void *context) {
@@ -312,18 +360,33 @@ bool RevSymbolicEnvironment::GetFlgValue(rev::BYTE flg, rev::BOOL &isTracked, re
 }
 
 bool RevSymbolicEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue) {
+	rev::DWORD tmp;
 	switch (RIVER_OPTYPE(current->opTypes[opIdx])) {
 	case RIVER_OPTYPE_NONE:
 	case RIVER_OPTYPE_IMM:
 		return false;
 
 	case RIVER_OPTYPE_REG:
+		tmp = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asRegister.name)];
+		if (0 != tmp) {
+			decRefFunc((void *)tmp);
+		}
 		((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asRegister.name)] = (rev::DWORD)symbolicValue;
+		if (nullptr != symbolicValue) {
+			addRefFunc(symbolicValue);
+		}
 		return true;
 
 	case RIVER_OPTYPE_MEM:
 		if (0 == current->operands[opIdx].asAddress->type) {
+			tmp = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)];
+			if (0 != tmp) {
+				decRefFunc((void *)tmp);
+			}
 			((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)] = (rev::DWORD)symbolicValue;
+			if (nullptr != symbolicValue) {
+				addRefFunc(symbolicValue);
+			}
 		}
 		else {
 			//MarkAddr(pEnv, opBase[-(addressOffsets[opIdx])], (rev::DWORD)symbolicValue, 0);
@@ -343,7 +406,14 @@ bool RevSymbolicEnvironment::UnsetOperand(rev::BYTE opIdx) {
 void RevSymbolicEnvironment::SetFlgValue(rev::BYTE flg, void *symbolicValue) {
 	unsigned int flgIdx = BinLog2(flg);
 
+	rev::DWORD tmp = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedFlags[flgIdx];
+	if (0 != tmp) {
+		decRefFunc((void *)tmp);
+	}
 	((ExecutionEnvironment *)pEnv)->runtimeContext.taintedFlags[flgIdx] = (rev::DWORD)symbolicValue;
+	if (nullptr != symbolicValue) {
+		addRefFunc(symbolicValue);
+	}
 }
 
 void RevSymbolicEnvironment::UnsetFlgValue(rev::BYTE flg) {

@@ -46,7 +46,7 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(rev::DWORD node, r
 	if (subRegs[node] == &needExtract) {
 		rev::DWORD c;
 		c = node;
-		while ((c != 0xFF) && (subRegs[c] != &needExtract)) {
+		while ((c != 0xFF) && (subRegs[c] == &needExtract)) {
 			c = rParent[c];
 		}
 
@@ -54,7 +54,7 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(rev::DWORD node, r
 			__asm int 3;
 		}
 
-		return parent->ExtractBits(
+		return parent->exec->ExtractBits(
 			subRegs[c],
 			rOff[node] << 3,
 			rSize[node]
@@ -69,7 +69,7 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(rev::DWORD node, r
 
 		void *ms = Get(rMChild[node], mVal);
 		if (nullptr == ms) {
-			ms = parent->MakeConst(
+			ms = parent->exec->MakeConst(
 				mVal,
 				msz
 			);
@@ -77,20 +77,20 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(rev::DWORD node, r
 
 		void *ls = Get(rLChild[node], lVal);
 		if (nullptr == ls) {
-			ls = parent->MakeConst(
+			ls = parent->exec->MakeConst(
 				lVal,
 				msz
 			);
 		}
 
-		return parent->ConcatBits(ms, ls);
+		return parent->exec->ConcatBits(ms, ls);
 	}
 	else {
 		return subRegs[node];
 	}
 }
 
-void OverlappedRegistersEnvironment::OverlappedRegister::SetParent(sym::SymbolicExecutor *p) {
+void OverlappedRegistersEnvironment::OverlappedRegister::SetParent(OverlappedRegistersEnvironment *p) {
 	parent = p;
 }
 
@@ -183,6 +183,12 @@ void OverlappedRegistersEnvironment::_PushState(stk::LargeStack &stack) {
 void OverlappedRegistersEnvironment::_PopState(stk::LargeStack &stack) {
 	for (int i = 7; i >= 0; --i) {
 		subRegisters[i].LoadState(stack);
+	}
+}
+
+OverlappedRegistersEnvironment::OverlappedRegistersEnvironment() {
+	for (int i = 7; i >= 0; --i) {
+		subRegisters[i].SetParent(this);
 	}
 }
 

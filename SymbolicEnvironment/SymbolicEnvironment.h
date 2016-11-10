@@ -13,6 +13,14 @@ namespace sym {
 		SymbolicExecutor *exec;
 	public :
 		/**
+		Function typed for monitoring variable reference counting
+		*/
+		typedef void(*AddRefFunc)(void *);
+		typedef void(*DecRefFunc)(void *);
+
+		virtual void SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef) = 0;
+
+		/**
 		*	The set current instruction gets called by the symbolic handler.
 		*	This function parses instruction operands and makes them available for the SymbolicExecutor
 		*	Params:
@@ -96,6 +104,7 @@ namespace sym {
 	protected :
 		SymbolicEnvironment *subEnv;
 
+		virtual void _SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef);
 		virtual bool _SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer);
 		
 		virtual void _PushState(stk::LargeStack &stack) = 0;
@@ -111,6 +120,8 @@ namespace sym {
 		virtual void SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, rev::DWORD size);
 
 		virtual bool SetSubEnvironment(SymbolicEnvironment *env);
+
+		virtual void SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef);
 		virtual bool SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer);
 
 		virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue);

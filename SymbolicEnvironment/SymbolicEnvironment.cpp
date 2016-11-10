@@ -8,6 +8,9 @@ namespace sym {
 		return true;
 	}
 
+	void sym::ScopedSymbolicEnvironment::_SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef) {
+	}
+
 	bool ScopedSymbolicEnvironment::_SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer) {
 		return true;
 	}
@@ -38,6 +41,11 @@ namespace sym {
 	bool ScopedSymbolicEnvironment::SetSubEnvironment(SymbolicEnvironment *env) {
 		subEnv = env;
 		return true;
+	}
+
+	void ScopedSymbolicEnvironment::SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef) {
+		_SetReferenceCounting(addRef, decRef);
+		subEnv->SetReferenceCounting(addRef, decRef);
 	}
 
 	bool ScopedSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer) {
