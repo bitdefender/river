@@ -1,29 +1,46 @@
-#ifdef __linux__
+#if defined(__linux__) || defined(EXTERN_EXECUTION_ONLY)
 #include "Abstract.Importer.h"
 #include "Inproc.Mapper.h"
 #include "Inproc.Native.Importer.h"
+#include "Extern.Mapper.h"
 #include "ELF.Loader.h"
 #include <stdio.h>
 
 #include "LoaderAPI.h"
 // keep in mind that this funcion does NOT return the module base
 void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &baseAddr) {
-	ldr::AbstractBinary *fExec = ldr::LoadBinary(libName);
+	CreateModule(libName, module);
 
-	ldr::InprocMapper mpr;
-	ldr::InprocNativeImporter imp;
+	if (!module)
+		return;
+
+	MapModule(module, baseAddr);
+}
+
+void CreateModule(const wchar_t *libname, MODULE_PTR &module) {
+	ldr::AbstractBinary *fExec = ldr::LoadBinary(libname);
 
 	if (!fExec->IsValid()) {
 		delete fExec;
 		return;
 	}
 
-	if (!fExec->Map(mpr, imp, baseAddr)) {
-		delete fExec;
+	module = fExec;
+}
+
+void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr) {
+	ldr::InprocMapper mpr;
+	ldr::InprocNativeImporter imp;
+
+	if (!module->Map(mpr, imp, baseAddr)) {
+		delete module;
 		return;
 	}
+}
 
-	module = fExec;
+void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess) {
+	ldr::ExternMapper mLoader(hProcess);
+	module->Map(mLoader, mLoader, baseAddr);
 }
 
 void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName) {

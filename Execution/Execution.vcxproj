@@ -44,7 +44,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_EXECUTION_EXPORTS;BLOCK_CACHE_READ_ONLY;INPROCESS_EXECUTION_ONLY;INPROCESS_EXECUTION_ONLYDUMP_BLOCKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_EXECUTION_EXPORTS;BLOCK_CACHE_READ_ONLY;EXTERN_EXECUTION_ONLY;INPROCESS_EXECUTION_ONLYDUMP_BLOCKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -66,7 +66,7 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
       <SDLCheck>true</SDLCheck>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <UndefineAllPreprocessorDefinitions>true</UndefineAllPreprocessorDefinitions>
-      <PreprocessorDefinitions>_WINDOWS;_EXECUTION_EXPORTS;BLOCK_CACHE_READ_ONLY;INPROCESS_EXECUTION_ONLY;INPROCESS_EXECUTION_ONLY%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_EXECUTION_EXPORTS;BLOCK_CACHE_READ_ONLY;EXTERN_EXECUTION_ONLY;INPROCESS_EXECUTION_ONLY%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

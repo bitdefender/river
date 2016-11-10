@@ -2,6 +2,7 @@
 #include "ELF.Loader.h"
 
 #include <string.h>
+#include <algorithm>
 
 //#define DONOTPRINT
 

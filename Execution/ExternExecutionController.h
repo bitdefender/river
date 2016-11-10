@@ -30,12 +30,16 @@ private:
 
 	SHM_T shmAlloc;
 
-	BYTE *pLoaderBase;
+	MODULE_PTR hLoaderModule;
+	BASE_PTR hLoaderBase;
 	BYTE *pLoaderConfig;
 	BYTE *pLoaderPerform;
 
-	BYTE *pIpcBase;
-	BYTE *pRevtracerBase;
+	MODULE_PTR hIpcModule;
+	BASE_PTR hIpcBase;
+
+	MODULE_PTR hRevtracerModule;
+	BASE_PTR hRevtracerBase;
 
 	BYTE *pLdrMapMemory;
 
@@ -60,8 +64,8 @@ private:
 	bool MapTracer();
 	bool WriteLoaderConfig();
 
-	bool InitializeIpcLib(ldr::FloatingPE *fIpcLib);
-	bool InitializeRevtracer(ldr::FloatingPE *fRevTracer);
+	bool InitializeIpcLib();
+	bool InitializeRevtracer();
 
 	bool SwitchEntryPoint();
 	bool PatchProcess();
