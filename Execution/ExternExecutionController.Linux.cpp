@@ -5,10 +5,11 @@
 #include <sys/wait.h>
 #include <sys/user.h>
 #include <string.h>
+#include <iostream>
 #include "../libproc/os-linux.h"
 
 // TODO seach for this lib in LD_LIBRARY_PATH
-#define LOADER_PATH "libloader.so"
+#define LOADER_PATH "/home/alex/river/tracer.simple/inst/lib/libloader.so"
 
 
 unsigned long ExternExecutionController::ControlThread() {
@@ -81,6 +82,7 @@ void ExternExecutionController::ConvertWideStringPath(char *result, size_t len) 
 	memset(result, 0, len);
 	const wchar_t *pathStream = path.c_str();
 	std::wcstombs(result, pathStream, len);
+	std::cout << "[EXTERN EXECUTION] Tracee path is [" << result << "]\n";
 }
 
 const int long_size = sizeof(long);
@@ -152,17 +154,17 @@ void DeleteBreakpoint(DWORD address, pid_t child, unsigned char *bkp) {
 }
 
 void ExternExecutionController::MapSharedLibraries(unsigned long baseAddress) {
-	CreateModule(L"ipclib.so", hIpcModule);
+	//CreateModule(L"ipclib.so", hIpcModule);
 	CreateModule(L"revtracer.dll", hRevtracerModule);
 
-	DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+	DWORD dwIpcLibSize = 0;//(hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 	DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 	DWORD dwTotalSize = dwIpcLibSize + dwRevTracerSize;
 
 	hIpcBase = baseAddress;
 	hRevtracerBase = hIpcBase + dwIpcLibSize;
 
-	MapModule(hIpcModule, hIpcBase);
+	//MapModule(hIpcModule, hIpcBase);
 	MapModule(hRevtracerModule, hRevtracerBase);
 
 	printf("ipclib@0x%08lx\nrevtracer@0x%08lx\n", (DWORD)hIpcBase, (DWORD)hRevtracerBase);
@@ -303,7 +305,7 @@ bool ExternExecutionController::Execute() {
 		wait(nullptr);
 
 		ptrace(PTRACE_GETREGS, child, 0, &regs);
-		printf("Child should break at entry point. EIP = 0x%08lx\n", regs.eip);
+		printf("[Parent] Child should break at entry point. EIP = 0x%08lx\n", regs.eip);
 		fflush(stdout);
 
 		DeleteBreakpoint(entryPoint, child, backup);
@@ -312,18 +314,20 @@ bool ExternExecutionController::Execute() {
 		unsigned long symbolOffset = 0x2014;
 		unsigned long symbolAddress = GetLoaderAddress(child) + symbolOffset;
 		unsigned char sym_addr[4] = {0, 0, 0, 0};
+		printf("[Parent] Trying to read data from child %08lx\n", symbolAddress);
 		getdata(child, symbolAddress, sym_addr, 4);
 
 		for (int i = 0; i < 4; ++i) {
 			((char*)&shmAddress)[i] = sym_addr[i];
 		}
 
-		shmAddress = (unsigned long)mmap((void*)shmAddress, 1 << 30, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, shmAlloc, 0);
-		printf("[Execution] Mapped shared memory at address %08lx", shmAddress);
+		printf("[Parent] Received shared mem address %08lx\n", shmAddress);
+		printf("[Parent] Mapped shared memory at address %08lx\n", shmAddress);
 
 		MapSharedLibraries(shmAddress);
 		InitializeRevtracer();
 
+		printf("[Parent] Passing execution control to revtracerPerform\n");
 		regs.eip = (unsigned long) revtracerPerform;
 		ptrace (PTRACE_SETREGS, child, 0, &regs);
 
