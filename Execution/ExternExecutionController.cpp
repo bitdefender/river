@@ -23,11 +23,6 @@ namespace ipc {
 	}
 };
 
-template <typename T> bool LoadExportedName(MODULE_PTR &module, BASE_PTR &base, char *name, T *&ptr) {
-	ptr = (T *)GET_PROC_ADDRESS(module, base, name);
-	return ptr != nullptr;
-}
-
 ExternExecutionController::ExternExecutionController() {
 	shmAlloc = NULL;
 }
