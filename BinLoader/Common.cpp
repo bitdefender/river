@@ -159,10 +159,22 @@ bool find_in_env(const wchar_t *moduleName, wchar_t *path) {
 
 void solve_path(const char *moduleName, char *path) {
 	memset(path, 0, MAX_PATH_NAME);
-	find_in_env(moduleName, path);
+	FILE *fModule = nullptr;
+	if (0 != FOPEN(fModule, moduleName, "rb")) {
+		find_in_env(moduleName, path);
+	} else {
+		strcpy(path, moduleName);
+		fclose(fModule);
+	}
 }
 
 void solve_path(const wchar_t *moduleName, wchar_t *path) {
 	memset(path, 0, MAX_PATH_NAME);
-	find_in_env(moduleName, path);
+	FILE *fModule = nullptr;
+	if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
+		find_in_env(moduleName, path);
+	} else {
+		wcscpy(path, moduleName);
+		fclose(fModule);
+	}
 }
