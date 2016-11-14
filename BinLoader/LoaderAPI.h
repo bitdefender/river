@@ -2,6 +2,7 @@
 #define _LOADER_API
 
 #if defined(__linux__) || defined(EXTERN_EXECUTION_ONLY)
+#include <string>
 #include "Abstract.Loader.h"
 typedef unsigned long DWORD;
 typedef ldr::AbstractBinary *MODULE_PTR;
@@ -18,6 +19,12 @@ DWORD GetEntryPoint(const char *elfName);
 void CreateModule(const wchar_t *libname, MODULE_PTR &module);
 void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr);
 void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess);
+
+template <typename T> bool LoadExportedName(MODULE_PTR &module, BASE_PTR &base, const char *name, T *&ptr) {
+	ptr = (T *)GET_PROC_ADDRESS(module, base, name);
+	return ptr != nullptr;
+}
+
 
 #elif defined(_WIN32)
 typedef HMODULE BASE_PTR;

@@ -1,5 +1,6 @@
 #ifndef _EXTERN_MAPPER_H_
 #define _EXTERN_MAPPER_H_
+#ifdef _WIN32
 
 #include <Windows.h>
 
@@ -27,5 +28,5 @@ namespace ldr {
 		virtual DWORD FindImport(const char *moduleName, const char *funcName, const char* version);
 	};
 };
-
+#endif
 #endif
