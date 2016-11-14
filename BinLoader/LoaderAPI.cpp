@@ -57,8 +57,9 @@ void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcNam
 DWORD GetEntryPoint(const char *elfName) {
 	ldr::AbstractBinary *fExec = ldr::LoadBinary(elfName);
 	if (ldr::FloatingELF32* fElf = dynamic_cast<ldr::FloatingELF32*>(fExec)) {
+		unsigned long entryPoint = fElf->GetEntryPoint();
 		delete fExec;
-		return fElf->GetEntryPoint();
+		return entryPoint;
 	}
 
 	delete fExec;
