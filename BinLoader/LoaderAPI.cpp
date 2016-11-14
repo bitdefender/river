@@ -38,10 +38,12 @@ void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr) {
 	}
 }
 
+#ifdef _WIN32
 void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess) {
 	ldr::ExternMapper mLoader(hProcess);
 	module->Map(mLoader, mLoader, baseAddr);
 }
+#endif
 
 void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName) {
 
