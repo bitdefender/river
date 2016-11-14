@@ -13,6 +13,7 @@
 
 unsigned long ExternExecutionController::ControlThread() {
 	//TODO
+	printf("I am the control thread function\n");
 	return 0;
 }
 
@@ -150,7 +151,21 @@ void DeleteBreakpoint(DWORD address, pid_t child, unsigned char *bkp) {
 	putdata(child, address, bkp, 3);
 }
 
-void MapSharedLibraries(unsigned long baseAddress) {
+void ExternExecutionController::MapSharedLibraries(unsigned long baseAddress) {
+	CreateModule(L"ipclib.so", hIpcModule);
+	CreateModule(L"revtracer.dll", hRevtracerModule);
+
+	DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+	DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+	DWORD dwTotalSize = dwIpcLibSize + dwRevTracerSize;
+
+	hIpcBase = baseAddress;
+	hRevtracerBase = hIpcBase + dwIpcLibSize;
+
+	MapModule(hIpcModule, hIpcBase);
+	MapModule(hRevtracerModule, hRevtracerBase);
+
+	printf("ipclib@0x%08lx\nrevtracer@0x%08lx\n", (DWORD)hIpcBase, (DWORD)hRevtracerBase);
 }
 
 unsigned long GetLoaderAddress(pid_t pid) {
@@ -175,6 +190,67 @@ unsigned long GetLoaderAddress(pid_t pid) {
 	}
 	maps_close(&mi);
 	return 0;
+}
+
+bool ExternExecutionController::InitializeRevtracer() {
+	/* Imports */
+	tmpRevApi.lowLevel.ntAllocateVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallAllocateMemoryHandler");
+	tmpRevApi.lowLevel.ntFreeVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFreeMemoryHandler");
+
+	tmpRevApi.lowLevel.ntQueryInformationThread = nullptr;
+	tmpRevApi.lowLevel.ntTerminateProcess = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallTerminateProcessHandler");
+
+#ifdef DUMP_BLOCKS
+	tmpRevApi.lowLevel.ntWriteFile = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallWriteFile");
+	tmpRevApi.lowLevel.ntWaitForSingleObject = nullptr;
+#endif
+
+	tmpRevApi.lowLevel.rtlNtStatusToDosError = nullptr;
+	tmpRevApi.lowLevel.vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
+
+	if (nullptr != symbCb) {
+		tmpRevApi.symbolicHandler = symbCb;
+	}
+
+	rev::RevtracerAPI *revAPI;
+	if (!LoadExportedName(hRevtracerModule, hRevtracerBase, "revtracerAPI", revAPI) ||
+		!LoadExportedName(hRevtracerModule, hRevtracerBase, "revtracerConfig", revCfg)
+		) {
+		return false;
+	}
+
+	memcpy(revAPI, &tmpRevApi, sizeof(tmpRevApi));
+
+	if (!LoadExportedName(hRevtracerModule, hRevtracerBase, "GetCurrentRegisters", gcr) ||
+		!LoadExportedName(hRevtracerModule, hRevtracerBase, "GetMemoryInfo", gmi) ||
+		!LoadExportedName(hRevtracerModule, hRevtracerBase, "MarkMemoryValue", mmv) ||
+		!LoadExportedName(hRevtracerModule, hRevtracerBase, "GetLastBasicBlockCost", glbbc)
+	) {
+		DEBUG_BREAK;
+		return false;
+	}
+
+	revCfg->context = nullptr;
+	// TODO config segment offsets are not initialized
+	revCfg->hookCount = 0;
+	revCfg->featureFlags = featureFlags;
+
+#ifdef DUMP_BLOCKS
+	revCfg->dumpBlocks = TRUE;
+
+	/* The file descriptor will be open in the child as well */
+	hBlocksFd = OPEN_FILE_RW("blocks.bin");
+#else
+	revCfg->dumpBlocks = FALSE;
+	revCfg->hBlocks = nullptr;
+#endif
+
+	/* Exports */
+	if (!LoadExportedName(hRevtracerModule, hRevtracerBase, "RevtracerPerform", revtracerPerform)) {
+		return false;
+	}
+
+	return true;
 }
 
 bool ExternExecutionController::Execute() {
@@ -246,17 +322,10 @@ bool ExternExecutionController::Execute() {
 		printf("[Execution] Mapped shared memory at address %08lx", shmAddress);
 
 		MapSharedLibraries(shmAddress);
+		InitializeRevtracer();
 
-		// TODO give execution control to revtracer by setting the eip
-
-		//wait(&status);
-		//ptrace(PTRACE_CONT, child, nullptr, nullptr);
-
-		//if (WIFEXITED(status) ) {
-		//	int es = WEXITSTATUS(status);
-		//	printf("Exit status was %d\n", es);
-		//}
-		//fflush(stdout);
+		regs.eip = (unsigned long) revtracerPerform;
+		ptrace (PTRACE_SETREGS, child, 0, &regs);
 
 		ptrace (PTRACE_DETACH, child, nullptr, nullptr);
 

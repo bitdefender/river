@@ -10,7 +10,7 @@ OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LIB_BINLOADER_PATH := ../BinLoader/libbinloader.a
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
 CC_FLAGS += -g -m32 -march=i386 -std=c++11 -D_EXECUTION_EXPORTS \
-						-DBLOCK_CACHE_READ_ONLY \
+						-DBLOCK_CACHE_READ_ONLY -DEXTERN_EXECUTION_ONLY \
 						$(INCLUDE_PATHS) $(CC_FLAGS_CROSS)
 LD_FLAGS := -lrt
 

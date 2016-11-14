@@ -23,7 +23,7 @@ typedef int SHM_T;
 
 class ExternExecutionController : public CommonExecutionController {
 private:
-	HANDLE hProcess, hMainThread;
+	HANDLE hProcess /* child process */, hMainThread;
 	THREAD_T hControlThread;
 	FILE_T hDbg;
 	DWORD pid, mainTid;
@@ -59,6 +59,8 @@ private:
 
 	char debugBuffer[4096];
 
+	FILE_T hBlocksFd;
+
 	bool InitializeAllocator();
 	bool MapLoader();
 	bool MapTracer();
@@ -71,6 +73,7 @@ private:
 	bool PatchProcess();
 
 	void ConvertWideStringPath(char *result, size_t len);
+	void MapSharedLibraries(unsigned long baseAddress);
 public:
 	ExternExecutionController();
 
