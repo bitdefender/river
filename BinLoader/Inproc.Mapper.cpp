@@ -38,7 +38,7 @@ namespace ldr {
 		PROT_EXEC | PROT_WRITE | PROT_READ,	// 7 RWX
 	};
 // virtual memory functions
-#define VIRTUAL_ALLOC(addr, size, protect) ({ addr = mmap(nullptr, (size), (protect), MAP_SHARED | MAP_ANONYMOUS, 0, 0); addr; })
+#define VIRTUAL_ALLOC(addr, size, protect) ({ addr = mmap(addr, (size), (protect), MAP_SHARED | MAP_ANONYMOUS, 0, 0); addr; })
 #define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect) (0 == mprotect((addr), (size), (newProtect)))
 
 #endif

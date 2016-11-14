@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "LoaderAPI.h"
+#include "Common.h"
 // keep in mind that this funcion does NOT return the module base
 void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &baseAddr) {
 	CreateModule(libName, module);
@@ -20,7 +21,7 @@ void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &bas
 void CreateModule(const wchar_t *libname, MODULE_PTR &module) {
 	ldr::AbstractBinary *fExec = ldr::LoadBinary(libname);
 
-	if (!fExec->IsValid()) {
+	if (fExec && !fExec->IsValid()) {
 		delete fExec;
 		return;
 	}
