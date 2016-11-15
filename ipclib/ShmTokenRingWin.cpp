@@ -1,4 +1,4 @@
-#include "ShmTokenRing.h"
+#include "ShmTokenRingWin.h"
 #include "ipclib.h"
 
 #ifdef _MSC_VER
@@ -9,24 +9,24 @@
 #endif
 
 namespace ipc {
-	void ShmTokenRing::Init() {
+	void ShmTokenRingWin::Init() {
 		userCount = 0;
 		currentOwner = 0;
 	}
 
-	void ShmTokenRing::Init(long presetUsers) {
+	void ShmTokenRingWin::Init(long presetUsers) {
 		userCount = presetUsers;
 		currentOwner = 0;
 	}
 
-	long ShmTokenRing::Use() {
+	long ShmTokenRingWin::Use() {
 		long ret = LOCK_INC(userCount);
 		return ret - 1;
 	}
 
 	void NtDllNtYieldExecution();
 
-	bool ShmTokenRing::Wait(long userId, bool blocking) const {
+	bool ShmTokenRingWin::Wait(long userId, bool blocking) const {
 		long loop = 1 << 8;
 
 		do {
@@ -53,7 +53,7 @@ namespace ipc {
 		} while (1);
 	}
 
-	void ShmTokenRing::Release(long userId) {
+	void ShmTokenRingWin::Release(long userId) {
 		if (currentOwner == userId) {
 			long localUserCount = userCount;
 			long localCurrentOwner = currentOwner;

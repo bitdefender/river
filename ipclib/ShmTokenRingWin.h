@@ -1,8 +1,10 @@
-#ifndef _SHM_TOKEN_RING_
-#define _SHM_TOKEN_RING_
+#ifndef _SHM_TOKEN_RING_WIN
+#define _SHM_TOKEN_RING_WIN
+
+#include "AbstractShmTokenRing.h"
 
 namespace ipc {
-	class ShmTokenRing {
+	class ShmTokenRingWin : public AbstractShmTokenRing {
 	private:
 		volatile long currentOwner;
 		volatile long userCount;
