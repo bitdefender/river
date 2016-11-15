@@ -1,7 +1,7 @@
 #ifndef _IPCLIB_H_
 #define _IPCLIB_H_
 
-#include "ShmTokenRing.h"
+#include "AbstractShmTokenRing.h"
 #include "RingBuffer.h"
 
 namespace ipc {
@@ -153,7 +153,7 @@ namespace ipc {
 
 	extern "C" {
 		DLL_PUBLIC extern RingBuffer<(1 << 20)> debugLog;
-		DLL_PUBLIC extern ShmTokenRing ipcToken;
+		DLL_PUBLIC extern AbstractShmTokenRing *ipcToken;
 
 		DLL_PUBLIC extern IpcAPI ipcAPI;
 		DLL_PUBLIC extern IpcData ipcData;

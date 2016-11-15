@@ -1,22 +1,24 @@
-lib_ipc := ipclib.dll
-CC := i686-w64-mingw32-gcc
-CXX := i686-w64-mingw32-g++
-CPP_FILES := ipclib.cpp ShmTokenRing.cpp
-OBJ_FILES := $(addprefix ,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS :=
-CC_FLAGS_CROSS =-D_cdecl="" -D_stdcall=""
-CC_FLAGS += -m32 -std=c++11 -fcheck-new -D_BUILDING_IPC_DLL $(CC_FLAGS_CROSS)
+ipc_lib := libipc.so
+CC := gcc
+CXX := g++
+CPP_FILES := ipclib.cpp ShmTokenRingLin.cpp UnifiedShmTokenRing.cpp
+OBJ_FILES := ipclib.o ShmTokenRingLin.o UnifiedShmTokenRing.o
 
-all: $(lib_ipc)
+CXX_FLAGS += -m32 -std=c++11
+prefix := /usr/local
 
-$(lib_ipc): $(OBJ_FILES)
-	$(CXX) -shared -o $@ \
-		-Wl,--export-all-symbols \
-		-Wl,--enable-auto-import $^
+all: $(ipc_lib)
+
+install: $(ipc_lib)
+	install -m 0755 $(ipc_lib) -t $(prefix)/lib -D
+
+$(ipc_lib): $(OBJ_FILES)
+	$(CXX) $(CXX_FLAGS) -shared -o $@ $(OBJ_FILES)
 
 %.o: %.cpp
-	   $(CXX) $(CC_FLAGS) -c -o $@ $<
+	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 
 .PHONY: clean
 clean:
-	$(RM) $(lib_ipc) $(OBJ_FILES)
+	$(RM) -r $(ipc_lib) $(OBJ_FILES)
+
