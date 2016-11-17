@@ -1,0 +1,24 @@
+# Windows binaries
+*.dll
+*.exe
+*.lib
+*.pdb
+*.ilk
+
+# Linux binaries
+*.a
+*.o
+*.so
+
+# Visual Studio Metainformation
+Debug/
+Release/
+*.sdf
+*.suo
+*.user
+*.filters
+
+# Visual Studio Intellisense database
+*.opensdf
+*.VC.db
+*.VC.opendb
