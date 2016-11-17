@@ -46,10 +46,10 @@ public :
 
 	virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue);
 	virtual bool GetFlgValue(rev::BYTE flg, rev::BOOL &isTracked, rev::BYTE &concreteValue, void *&symbolicValue);
-	virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue);
-	virtual bool UnsetOperand(rev::BYTE opIdx);
-	virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue);
-	virtual void UnsetFlgValue(rev::BYTE flg);
+	virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount);
+	virtual bool UnsetOperand(rev::BYTE opIdx, bool doRefCount);
+	virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue, bool doRefCount);
+	virtual void UnsetFlgValue(rev::BYTE flg, bool doRefCount);
 
 	virtual void SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, rev::DWORD size);
 };

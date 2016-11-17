@@ -64,19 +64,19 @@ namespace sym {
 		return subEnv->GetFlgValue(flg, isTracked, concreteValue, symbolicValue);
 	}
 
-	bool ScopedSymbolicEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue) {
-		return subEnv->SetOperand(opIdx, symbolicValue);
+	bool ScopedSymbolicEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount) {
+		return subEnv->SetOperand(opIdx, symbolicValue, doRefCount);
 	}
 
-	bool ScopedSymbolicEnvironment::UnsetOperand(rev::BYTE opIdx) {
-		return subEnv->UnsetOperand(opIdx);
+	bool ScopedSymbolicEnvironment::UnsetOperand(rev::BYTE opIdx, bool doRefCount) {
+		return subEnv->UnsetOperand(opIdx, doRefCount);
 	}
 
-	void ScopedSymbolicEnvironment::SetFlgValue(rev::BYTE flg, void *symbolicValue) {
-		return subEnv->SetFlgValue(flg, symbolicValue);
+	void ScopedSymbolicEnvironment::SetFlgValue(rev::BYTE flg, void *symbolicValue, bool doRefCount) {
+		return subEnv->SetFlgValue(flg, symbolicValue, doRefCount);
 	}
 
-	void ScopedSymbolicEnvironment::UnsetFlgValue(rev::BYTE flg) {
-		return subEnv->UnsetFlgValue(flg);
+	void ScopedSymbolicEnvironment::UnsetFlgValue(rev::BYTE flg, bool doRefCount) {
+		return subEnv->UnsetFlgValue(flg, doRefCount);
 	}
 };

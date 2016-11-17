@@ -72,14 +72,14 @@ namespace sym {
 		*		true - if the expression was bound successfully
 		*		false - otherwise
 		*/
-		virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue) = 0;
+		virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount = true) = 0;
 
 		/**
 		*  The UnsetOperand unbinds the symbolic expression from the specified operand.
 		*  Params:
 		*		opIdx - input, specifies the operand index.
 		*/
-		virtual bool UnsetOperand(rev::BYTE opIdx) = 0;
+		virtual bool UnsetOperand(rev::BYTE opIdx, bool doRefCount = true) = 0;
 
 		/**
 		*  The SetFlgValue function binds a symbolic expression to flag.
@@ -90,14 +90,14 @@ namespace sym {
 		*		true - if the expression was bound successfully
 		*		false - otherwise
 		*/
-		virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue) = 0;
+		virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue, bool doRefCount = true) = 0;
 
 		/**
 		*  The UnsetFlgValue unbinds the symbolic expression from the specified operand.
 		*  Params:
 		*		flg - input, one of the RIVER_SPEC_FLAG_?F constants.
 		*/
-		virtual void UnsetFlgValue(rev::BYTE flg) = 0;
+		virtual void UnsetFlgValue(rev::BYTE flg, bool doRefCount = true) = 0;
 	};
 
 	class ScopedSymbolicEnvironment : public SymbolicEnvironment {
@@ -126,10 +126,10 @@ namespace sym {
 
 		virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue);
 		virtual bool GetFlgValue(rev::BYTE flg, rev::BOOL &isTracked, rev::BYTE &concreteValue, void *&symbolicValue);
-		virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue);
-		virtual bool UnsetOperand(rev::BYTE opIdx);
-		virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue);
-		virtual void UnsetFlgValue(rev::BYTE flg);
+		virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount);
+		virtual bool UnsetOperand(rev::BYTE opIdx, bool doRefCount);
+		virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue, bool doRefCount);
+		virtual void UnsetFlgValue(rev::BYTE flg, bool doRefCount);
 	};
 
 	/** Executor class. Inherit this class to provide bindings to a SMT solver. */

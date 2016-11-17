@@ -4,7 +4,7 @@
 #include "../revtracer/Tracking.h"
 #include "../Execution/Execution.h"
 
-static rev::BYTE GetFundamentalRegister(rev::BYTE reg) {
+static rev::BYTE _GetFundamentalRegister(rev::BYTE reg) {
 	if (reg < 0x20) {
 		return reg & 0x07;
 	}
@@ -70,7 +70,7 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 				trackIndex++;
 				break;*/
 			default:
-				_asm int 3;
+				DEBUG_BREAK;
 			}
 		}
 	}
@@ -93,7 +93,7 @@ template <> void *RevSymbolicEnvironment::GetSubexpression<0, 4>(rev::DWORD addr
 }
 
 void *RevSymbolicEnvironment::GetSubexpressionInvalid(rev::DWORD address) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 RevSymbolicEnvironment::GetSubExpFunc RevSymbolicEnvironment::subExpsGet[4][5] = {
@@ -191,7 +191,7 @@ template <> void RevSymbolicEnvironment::SetSubexpression<0, 4>(void *expr, rev:
 }
 
 void RevSymbolicEnvironment::SetSubexpressionInvalid(void *expr, rev::DWORD address, void *value) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 RevSymbolicEnvironment::SetSubExpFunc RevSymbolicEnvironment::subExpsSet[4][5] = {
@@ -278,7 +278,7 @@ bool RevSymbolicEnvironment::GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, r
 		return true;
 
 	case RIVER_OPTYPE_REG:
-		symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asRegister.name)];
+		symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asRegister.name)];
 
 		isTracked = (symExpr != NULL);
 		symbolicValue = symExpr;
@@ -289,7 +289,7 @@ bool RevSymbolicEnvironment::GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, r
 		// how do we handle dereferenced symbolic values?
 
 		if (0 == current->operands[opIdx].asAddress->type) {
-			symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)];
+			symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)];
 
 			isTracked = (symExpr != NULL);
 			symbolicValue = symExpr;
@@ -304,7 +304,7 @@ bool RevSymbolicEnvironment::GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, r
 		//symExpr = get from opBase[opOffset[opIdx]]
 
 		if (opBase[-((int)addressOffsets[opIdx])] < 0x1000) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		symExpr = GetExpression(opBase[-((int)addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx])); //(void *)TrackAddr(pEnv, opBase[-(addressOffsets[opIdx])], 0);
@@ -359,7 +359,7 @@ bool RevSymbolicEnvironment::GetFlgValue(rev::BYTE flg, rev::BOOL &isTracked, re
 	return true;
 }
 
-bool RevSymbolicEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue) {
+bool RevSymbolicEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount) {
 	rev::DWORD tmp;
 	switch (RIVER_OPTYPE(current->opTypes[opIdx])) {
 	case RIVER_OPTYPE_NONE:
@@ -367,24 +367,24 @@ bool RevSymbolicEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue) {
 		return false;
 
 	case RIVER_OPTYPE_REG:
-		tmp = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asRegister.name)];
-		if (0 != tmp) {
+		tmp = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asRegister.name)];
+		if (doRefCount && (0 != tmp)) {
 			decRefFunc((void *)tmp);
 		}
-		((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asRegister.name)] = (rev::DWORD)symbolicValue;
-		if (nullptr != symbolicValue) {
+		((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asRegister.name)] = (rev::DWORD)symbolicValue;
+		if (doRefCount && (nullptr != symbolicValue)) {
 			addRefFunc(symbolicValue);
 		}
 		return true;
 
 	case RIVER_OPTYPE_MEM:
 		if (0 == current->operands[opIdx].asAddress->type) {
-			tmp = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)];
-			if (0 != tmp) {
+			tmp = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)];
+			if (doRefCount && (0 != tmp)) {
 				decRefFunc((void *)tmp);
 			}
-			((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)] = (rev::DWORD)symbolicValue;
-			if (nullptr != symbolicValue) {
+			((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)] = (rev::DWORD)symbolicValue;
+			if (doRefCount && (nullptr != symbolicValue)) {
 				addRefFunc(symbolicValue);
 			}
 		}
@@ -399,25 +399,25 @@ bool RevSymbolicEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue) {
 	return false;
 }
 
-bool RevSymbolicEnvironment::UnsetOperand(rev::BYTE opIdx) {
-	return SetOperand(opIdx, nullptr);
+bool RevSymbolicEnvironment::UnsetOperand(rev::BYTE opIdx, bool doRefCount) {
+	return SetOperand(opIdx, nullptr, doRefCount);
 }
 
-void RevSymbolicEnvironment::SetFlgValue(rev::BYTE flg, void *symbolicValue) {
+void RevSymbolicEnvironment::SetFlgValue(rev::BYTE flg, void *symbolicValue, bool doRefCount) {
 	unsigned int flgIdx = BinLog2(flg);
 
 	rev::DWORD tmp = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedFlags[flgIdx];
-	if (0 != tmp) {
+	if (doRefCount && (0 != tmp)) {
 		decRefFunc((void *)tmp);
 	}
 	((ExecutionEnvironment *)pEnv)->runtimeContext.taintedFlags[flgIdx] = (rev::DWORD)symbolicValue;
-	if (nullptr != symbolicValue) {
+	if (doRefCount && (nullptr != symbolicValue)) {
 		addRefFunc(symbolicValue);
 	}
 }
 
-void RevSymbolicEnvironment::UnsetFlgValue(rev::BYTE flg) {
-	SetFlgValue(flg, nullptr);
+void RevSymbolicEnvironment::UnsetFlgValue(rev::BYTE flg, bool doRefCount) {
+	SetFlgValue(flg, nullptr, doRefCount);
 }
 
 void RevSymbolicEnvironment::SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, rev::DWORD size) {
@@ -437,7 +437,7 @@ void RevSymbolicEnvironment::SetSymbolicVariable(const char *name, rev::ADDR_TYP
 		oSize = RIVER_OPSIZE_8;
 		break;
 	default :
-		__asm int 3;
+		DEBUG_BREAK;
 	}
 
 	SetExpression(

@@ -17,25 +17,32 @@ private :
 		OverlappedRegistersEnvironment *parent;
 
 		// marks children as need extraction
-		void MarkNeedExtract(rev::DWORD node);
-		void MarkUnset(rev::DWORD node);
+		void MarkNeedExtract(rev::DWORD node, bool doRefCount);
+		void MarkNeedConcat(rev::DWORD node, bool doRefCount);
+		void MarkUnset(rev::DWORD node, bool doRefCount);
 
 		void *Get(rev::DWORD node, rev::DWORD concreteValue);
 	public:
+		OverlappedRegister();
+
 		void SetParent(OverlappedRegistersEnvironment *p);
 
 		void *Get(RiverRegister &reg, rev::DWORD &concreteValue);
-		void Set(RiverRegister &reg, void *value);
-		bool Unset(RiverRegister &reg);
+		void Set(RiverRegister &reg, void *value, bool doRefCount);
+		bool Unset(RiverRegister &reg, bool doRefCount);
 
 		void SaveState(stk::LargeStack &stack);
 		void LoadState(stk::LargeStack &stack);
 	} subRegisters[8];
 
 	RiverInstruction *current;
+	AddRefFunc addRefFunc;
+	DecRefFunc decRefFunc;
 
 protected :
 	virtual bool _SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer);
+
+	virtual void _SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef);
 
 	virtual void _PushState(stk::LargeStack &stack);
 	virtual void _PopState(stk::LargeStack &stack);
@@ -44,8 +51,8 @@ public :
 	OverlappedRegistersEnvironment();
 
 	virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue);
-	virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue);
-	virtual bool UnsetOperand(rev::BYTE opIdx);
+	virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount);
+	virtual bool UnsetOperand(rev::BYTE opIdx, bool doRefCount);
 };
 
 #endif
