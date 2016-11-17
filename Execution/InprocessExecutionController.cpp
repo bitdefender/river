@@ -134,7 +134,7 @@ bool InprocessExecutionController::Execute() {
 	gcr = (GetCurrentRegistersFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetCurrentRegisters");
 	gmi = (GetMemoryInfoFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetMemoryInfo");
 	mmv = (MarkMemoryValueFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "MarkMemoryValue");
-	glbbc = (GetLastBasicBlockCostFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetLastBasicBlockCost");
+	glbbc = (GetLastBasicBlockInfoFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetLastBasicBlockInfo");
 
 	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv)) {
 		DEBUG_BREAK;

@@ -29,12 +29,15 @@ public :
 	}
 
 	virtual unsigned int ExecutionControl(void *ctx, void *address) {
+		rev::BasicBlockInfo bbInfo;
+		ctrl->GetLastBasicBlockInfo(ctx, &bbInfo);
+
 		const char unkmod[MAX_PATH] = "???";
-		unsigned int offset = (DWORD)address;
+		unsigned int offset = (DWORD)bbInfo.address;
 		int foundModule = -1;
 
 		for (int i = 0; i < mCount; ++i) {
-			if ((mInfo[i].ModuleBase <= (DWORD)address) && ((DWORD)address < mInfo[i].ModuleBase + mInfo[i].Size)) {
+			if ((mInfo[i].ModuleBase <= (DWORD)bbInfo.address) && ((DWORD)bbInfo.address < mInfo[i].ModuleBase + mInfo[i].Size)) {
 				offset -= mInfo[i].ModuleBase;
 				foundModule = i;
 				break;
@@ -46,7 +49,7 @@ public :
 		fprintf(fBlocks, "%-15s + %08lX (%4d)\n",
 			(-1 == foundModule) ? unkmod : mInfo[foundModule].Name,
 			(DWORD)offset,
-			ctrl->GetLastBasicBlockCost(ctx)
+			bbInfo.cost
 		);
 		return EXECUTION_ADVANCE;
 	}

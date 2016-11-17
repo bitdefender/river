@@ -14,7 +14,7 @@ void InitSegments(void *hThread, rev::DWORD *segments);
 typedef void(*GetCurrentRegistersFunc)(void *ctx, rev::ExecutionRegs *regs);
 typedef void *(*GetMemoryInfoFunc)(void *ctx, void *ptr);
 typedef void (*SetSymbolicExecutorFunc)(rev::SymbolicExecutorConstructor);
-typedef rev::DWORD(*GetLastBasicBlockCostFunc)(void *ctx);
+typedef bool(*GetLastBasicBlockInfoFunc)(void *ctx, rev::BasicBlockInfo *);
 
 typedef void (*MarkMemoryValueFunc)(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value);
 
@@ -55,7 +55,7 @@ protected:
 	GetCurrentRegistersFunc gcr;
 	GetMemoryInfoFunc gmi;
 	MarkMemoryValueFunc mmv;
-	GetLastBasicBlockCostFunc glbbc;
+	GetLastBasicBlockInfoFunc glbbc;
 
 	//rev::SymExeConstructorFunc symbolicConstructor;
 	rev::TrackCallbackFunc trackCb;
@@ -80,7 +80,7 @@ public :
 
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers);
 	virtual void *GetMemoryInfo(void *ctx, void *ptr);
-	virtual unsigned int GetLastBasicBlockCost(void *ctx);
+	virtual bool GetLastBasicBlockInfo(void *ctx, rev::BasicBlockInfo *bbInfo);
 
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...);
 
