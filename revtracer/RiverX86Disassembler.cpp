@@ -192,17 +192,20 @@ void RiverX86Disassembler::DisassembleSzModRMOp(BYTE opIdx, BYTE *&px86, RiverIn
 	BYTE mod = *px86 >> 6;
 	BYTE rm = *px86 & 0x07;
 
-	rAddr = codegen->AllocAddr(ri.modifiers); //new RiverAddress;
-	rAddr->DecodeFromx86(*codegen, px86, extra, ri.modifiers);
+	WORD tmpMod = 0;
 
 	BYTE opType = RIVER_OPTYPE_MEM;
 	if (RIVER_MODIFIER_O8 & sz) {
 		opType |= RIVER_OPSIZE_8;
-	}
-	else if (RIVER_MODIFIER_O16 & sz) {
+		tmpMod |= RIVER_MODIFIER_O8;
+	} else if (RIVER_MODIFIER_O16 & sz) {
 		opType |= RIVER_OPSIZE_16;
+		tmpMod |= RIVER_MODIFIER_O16;
 	}
 
+	rAddr = codegen->AllocAddr(ri.modifiers); //new RiverAddress;
+	rAddr->DecodeFromx86(*codegen, px86, extra, ri.modifiers | tmpMod);
+	
 	ri.opTypes[opIdx] = opType;
 	ri.operands[opIdx].asAddress = rAddr;
 }

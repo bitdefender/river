@@ -152,14 +152,15 @@ namespace rev {
 		return (void *)ret;
 	}
 
-	DWORD GetLastBasicBlockCost(void *ctx) {
+	bool GetLastBasicBlockInfo(void *ctx, BasicBlockInfo *info) {
 		struct ExecutionEnvironment *pEnv = (struct ExecutionEnvironment *)ctx;
 
 		RiverBasicBlock *pCB = pEnv->blockCache.FindBlock(pEnv->lastFwBlock);
 		if (nullptr != pCB) {
-			return pCB->dwOrigOpCount;
+			info->address = (rev::ADDR_TYPE)pCB->address;
+			info->cost = pCB->dwOrigOpCount;
 		}
-		return 0;
+		return false;
 	}
 
 

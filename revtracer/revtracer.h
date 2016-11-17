@@ -157,12 +157,17 @@ namespace rev {
 		DWORD eflags;
 	};
 
+	struct BasicBlockInfo {
+		ADDR_TYPE address;
+		DWORD cost;
+	};
+
 	extern "C" {
 
 		/* Execution context callbacks ********************/
 		DLL_REVTRACER_PUBLIC void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
 		DLL_REVTRACER_PUBLIC void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
-		DLL_REVTRACER_PUBLIC DWORD GetLastBasicBlockCost(void *ctx);
+		DLL_REVTRACER_PUBLIC bool GetLastBasicBlockInfo(void *ctx, BasicBlockInfo *info);
 		DLL_REVTRACER_PUBLIC void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
 
 		/* In process API *********************************/
