@@ -142,32 +142,33 @@ void putdata(pid_t child, long addr,
 void InsertBreakpoint(DWORD address, pid_t child, unsigned char *bkp) {
 	unsigned char code[] = {0xcd,0x80,0xcc,0};
 
-	printf("Inserting breakpoint at address %lx\n", address);
+	printf("[Parent] Inserting breakpoint at address %lx\n", address);
 	getdata(child, address, bkp, 3);
 	putdata(child, address, code, 3);
 
 }
 
 void DeleteBreakpoint(DWORD address, pid_t child, unsigned char *bkp) {
-	printf("Deleting breakpoint at address %lx\n", address);
+	printf("[Parent] Deleting breakpoint at address %lx\n", address);
 	putdata(child, address, bkp, 3);
 }
 
 void ExternExecutionController::MapSharedLibraries(unsigned long baseAddress) {
-	//CreateModule(L"ipclib.so", hIpcModule);
+	CreateModule(L"libipc.so", hIpcModule);
+	LOAD_LIBRARYW(L"librevtracerwrapper.so", hRevWrapperModule, hRevWrapperBase);
 	CreateModule(L"revtracer.dll", hRevtracerModule);
 
-	DWORD dwIpcLibSize = 0;//(hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+	DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 	DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 	DWORD dwTotalSize = dwIpcLibSize + dwRevTracerSize;
 
 	hIpcBase = baseAddress;
 	hRevtracerBase = hIpcBase + dwIpcLibSize;
 
-	//MapModule(hIpcModule, hIpcBase);
+	MapModule(hIpcModule, hIpcBase);
 	MapModule(hRevtracerModule, hRevtracerBase);
 
-	printf("ipclib@0x%08lx\nrevtracer@0x%08lx\n", (DWORD)hIpcBase, (DWORD)hRevtracerBase);
+	printf("[Parent] Mapped ipclib@0x%08lx and revtracer@0x%08lx\n", (DWORD)hIpcBase, (DWORD)hRevtracerBase);
 }
 
 unsigned long GetLoaderAddress(pid_t pid) {
@@ -184,7 +185,7 @@ unsigned long GetLoaderAddress(pid_t pid) {
 
 	while (maps_next (&mi, &segbase, &hi, &mapoff, &mp)) {
 		if (nullptr != strstr(mi.path, LOADER_PATH)) {
-			printf("Found child mapping for ld_preload %p\n", (void*)segbase);
+			printf("[Parent] Found child mapping for ld_preload %p\n", (void*)segbase);
 			maps_close(&mi);
 			return segbase;
 		}
@@ -192,6 +193,42 @@ unsigned long GetLoaderAddress(pid_t pid) {
 	}
 	maps_close(&mi);
 	return 0;
+}
+
+bool ExternExecutionController::InitializeIpcLib() {
+	/* Imports */
+	ipc::IpcAPI *ipcAPI;
+	if (!LoadExportedName(hIpcModule, hIpcBase, "ipcAPI", ipcAPI)) {
+		return false;
+	}
+
+	ipcAPI->ntYieldExecution = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallYieldExecution");
+	//ntdllYieldExecution = (NtYieldExecutionFunc)ipcAPI->ntYieldExecution;
+	ipcAPI->vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
+
+	ipcAPI->ldrMapMemory = pLdrMapMemory;
+
+
+	/* Exports */
+	if (!LoadExportedName(hIpcModule, hIpcBase, "debugLog", debugLog) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "ipcToken", ipcToken) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "ipcData", ipcData) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "Initialize", tmpRevApi.ipcLibInitialize) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "DebugPrint", tmpRevApi.dbgPrintFunc) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "MemoryAllocFunc", tmpRevApi.memoryAllocFunc) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "MemoryFreeFunc", tmpRevApi.memoryFreeFunc) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "TakeSnapshot", tmpRevApi.takeSnapshot) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "RestoreSnapshot", tmpRevApi.restoreSnapshot) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "InitializeContextFunc", tmpRevApi.initializeContext) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "CleanupContextFunc", tmpRevApi.cleanupContext) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "BranchHandlerFunc", tmpRevApi.branchHandler) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "IsProcessorFeaturePresent", pIPFPFunc)
+	) {
+		return false;
+	}
+
+	return true;
 }
 
 bool ExternExecutionController::InitializeRevtracer() {
@@ -296,7 +333,7 @@ bool ExternExecutionController::Execute() {
 		wait(&status);
 
 		ptrace(PTRACE_GETREGS, child, 0, &regs);
-		printf("Child started. EIP = 0x%08lx\n", regs.eip);
+		printf("[Parent] Child started. EIP = 0x%08lx\n", regs.eip);
 		fflush(stdout);
 
 		InsertBreakpoint(entryPoint, child, backup);
@@ -325,9 +362,11 @@ bool ExternExecutionController::Execute() {
 		printf("[Parent] Mapped shared memory at address %08lx\n", shmAddress);
 
 		MapSharedLibraries(shmAddress);
+		InitializeIpcLib();
 		InitializeRevtracer();
 
 		printf("[Parent] Passing execution control to revtracerPerform\n");
+		DEBUG_BREAK;
 		regs.eip = (unsigned long) revtracerPerform;
 		ptrace (PTRACE_SETREGS, child, 0, &regs);
 

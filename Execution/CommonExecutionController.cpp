@@ -95,7 +95,7 @@ bool CommonExecutionController::SetPath(const wstring &p) {
 		return false;
 	}
 
-	std::wcout << "Setting tracee path to [" << p << "]\n";
+	std::wcout << "[CommonExecutionController] Setting tracee path to [" << p << "]\n";
 	path = p;
 	execState = INITIALIZED;
 	return true;
