@@ -4,8 +4,6 @@
 #ifdef _MSC_VER
 #include <intrin.h>
 #define LOCK_INC(count_ptr) _InterlockedIncrement(&(count_ptr))
-#else
-#define LOCK_INC(count_ptr)  ({ asm volatile("lock; incl %0" : "=m"(count_ptr) : "m"(count_ptr)); count_ptr; })
 #endif
 
 namespace ipc {
@@ -19,7 +17,7 @@ namespace ipc {
 		currentOwner = 0;
 	}
 
-	long ShmTokenRingWin::Use() {
+	long ShmTokenRingWin::Use(pid_t pid) {
 		long ret = LOCK_INC(userCount);
 		return ret - 1;
 	}
