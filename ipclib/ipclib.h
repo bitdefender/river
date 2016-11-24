@@ -172,6 +172,7 @@ namespace ipc {
 		DLL_PUBLIC extern DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction);
 		DLL_PUBLIC extern void SyscallControlFunc(void *context, void *userContext);
 
+		DLL_PUBLIC extern void InitializeIpcToken();
 		DLL_PUBLIC extern void Initialize();
 
 		DLL_PUBLIC BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature);
