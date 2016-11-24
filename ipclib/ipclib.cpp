@@ -17,7 +17,7 @@ namespace ipc {
 
 
 	RingBuffer<(1 << 20)> debugLog;
-	AbstractShmTokenRing *ipcToken = AbstractShmTokenRingFactory();
+	AbstractShmTokenRing *ipcToken;
 
 	DLL_PUBLIC IpcAPI ipcAPI = {
 		NULL
@@ -281,9 +281,13 @@ namespace ipc {
 		}
 	}
 
+	DLL_PUBLIC void InitializeIpcToken() {
+		ipcToken = AbstractShmTokenRingFactory();
+	}
+
 	DLL_PUBLIC void Initialize() {
 		debugLog.Init();
-		ipcToken->Init(2);
+		ipcToken->Init(0);
 	}
 
 	void NtDllNtYieldExecution() {

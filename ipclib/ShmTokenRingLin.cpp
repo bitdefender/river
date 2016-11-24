@@ -19,6 +19,13 @@ namespace ipc {
 		dbg_log("[ShmTokenRingLin] Caught signal SIGUSR1 in process %d\n", pid);
 	}
 
+	void ShmTokenRingLin::Init(long presetUsers) {
+		userCount = presetUsers;
+		currentOwner = 0;
+		for (int i = 0; i < userCount; i++)
+			userPids[i] = -1;
+	}
+
 	void ShmTokenRingLin::Init() {
 		struct sigaction sa;
 
@@ -33,6 +40,7 @@ namespace ipc {
 
 	// on linux we are forced to use Use in order to set pids
 	long ShmTokenRingLin::Use(pid_t pid) {
+		dbg_log("[ShmTokenRingLin] Pid %d started using the token ring\n", pid);
 		userPids[userCount] = pid;
 		// TODO this critical section
 		userCount++;
