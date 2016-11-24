@@ -29,8 +29,8 @@ void CreateModule(const wchar_t *libname, MODULE_PTR &module) {
 	module = fExec;
 }
 
-void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr) {
-	ldr::InprocMapper mpr;
+void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr, int shmFd, off_t offset) {
+	ldr::InprocMapper mpr(shmFd, offset);
 	ldr::InprocNativeImporter imp;
 
 	if (!module->Map(mpr, imp, baseAddr)) {

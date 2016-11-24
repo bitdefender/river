@@ -17,7 +17,7 @@ void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &bas
 void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName);
 DWORD GetEntryPoint(const char *elfName);
 void CreateModule(const wchar_t *libname, MODULE_PTR &module);
-void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr);
+void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr, int shmFd = -1, off_t offset = 0);
 void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess);
 
 template <typename T> bool LoadExportedName(MODULE_PTR &module, BASE_PTR &base, const char *name, T *&ptr) {
