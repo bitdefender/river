@@ -4,7 +4,7 @@
 #include <string.h>
 #include <algorithm>
 
-//#define DONOTPRINT
+#define DONOTPRINT
 
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
@@ -752,7 +752,8 @@ namespace ldr {
 			}
 
 			if (loaded) {
-				mapr.ChangeProtect((void *)(i->header.p_vaddr), stopSegment - startSegment, prot[i->header.p_flags]);
+				void *address = (void*)(i->header.p_vaddr & ~(i->header.p_align - 1));
+				mapr.ChangeProtect(address, stopSegment - startSegment, prot[i->header.p_flags]);
 			}
 		}
 		return true;
