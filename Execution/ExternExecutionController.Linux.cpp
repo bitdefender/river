@@ -7,14 +7,110 @@
 #include <string.h>
 #include <iostream>
 #include "../libproc/os-linux.h"
+#include "Debugger.h"
 
 // TODO seach for this lib in LD_LIBRARY_PATH
 #define LOADER_PATH "/home/alex/river/tracer.simple/inst/lib/libloader.so"
 
+static bool ChildRunning = false;
 
 unsigned long ExternExecutionController::ControlThread() {
-	//TODO
-	printf("I am the control thread function\n");
+	bool bRunning = true;
+	DWORD exitCode;
+
+	//HANDLE hDbg = 0;
+	FILE_T hOffs = 0;
+
+	do {
+
+		hDbg = OPEN_FILE_W("debug.log");
+
+		if (FAIL_OPEN_FILE(hDbg)) {
+			//TerminateProcess(hProcess, 0);
+			break;
+		}
+
+		hOffs = OPEN_FILE_W("bbs1.txt");
+
+		if (FAIL_OPEN_FILE(hOffs)) {
+			break;
+		}
+
+
+		while (bRunning) {
+			do {
+				if (!ChildRunning) {
+					break;
+				}
+
+			} while (!ipcToken->Wait(REMOTE_TOKEN_USER, false));
+			updated = false;
+
+			while (!debugLog->IsEmpty()) {
+				int read;
+				DWORD written;
+				debugLog->Read(debugBuffer, sizeof(debugBuffer)-1, read);
+
+				BOOL ret;
+				WRITE_FILE(hDbg, debugBuffer, read, written, ret);
+			}
+
+			if (!ChildRunning) {
+				break;
+			}
+
+			switch (ipcData->type) {
+			case REPLY_MEMORY_ALLOC:
+			case REPLY_MEMORY_FREE:
+			case REPLY_TAKE_SNAPSHOT:
+			case REPLY_RESTORE_SNAPSHOT:
+			case REPLY_INITIALIZE_CONTEXT:
+			case REPLY_CLEANUP_CONTEXT:
+			case REPLY_SYSCALL_CONTROL:
+			case REPLY_BRANCH_HANDLER:
+				DEBUG_BREAK;
+				break;
+
+			case REQUEST_MEMORY_ALLOC: {
+				DWORD offset;
+				ipcData->type = REPLY_MEMORY_ALLOC;
+				//ipcData->data.asMemoryAllocReply.pointer = shmAlloc->Allocate(ipcData->data.asMemoryAllocRequest, offset);
+				//TODO allocate memory in shared mem
+				ipcData->data.asMemoryAllocReply.offset = offset;
+				break;
+			}
+
+			case REQUEST_BRANCH_HANDLER: {
+				void *context = ipcData->data.asBranchHandlerRequest.executionEnv;
+				ipc::ADDR_TYPE next = ipcData->data.asBranchHandlerRequest.nextInstruction;
+				ipcData->type = REPLY_BRANCH_HANDLER;
+				execState = SUSPENDED;
+				if (EXECUTION_TERMINATE == (ipcData->data.asBranchHandlerReply = BranchHandlerFunc(context, this, next))) {
+					bRunning = false;
+				}
+				break;
+			}
+
+			case REQUEST_SYSCALL_CONTROL:
+				ipcData->type = REPLY_SYSCALL_CONTROL;
+				break;
+
+			default:
+				DEBUG_BREAK;
+				break;
+			}
+
+			ipcToken->Release(REMOTE_TOKEN_USER);
+		}
+
+
+	} while (false);
+
+	CLOSE_FILE(hDbg);
+
+	execState = TERMINATED;
+
+	observer->TerminationNotification(context); // this needs to be the last thing called!
 	return 0;
 }
 
@@ -85,72 +181,24 @@ void ExternExecutionController::ConvertWideStringPath(char *result, size_t len) 
 	std::cout << "[EXTERN EXECUTION] Tracee path is [" << result << "]\n";
 }
 
-const int long_size = sizeof(long);
+void DebugPrintVMMap(pid_t pid) {
+	struct map_iterator mi;
+	struct map_prot mp;
+	unsigned long hi;
+	unsigned long segbase, mapoff;
 
-void getdata(pid_t child, long addr,
-		unsigned char *str, int len)
-{   unsigned char *laddr;
-	int i, j;
-	union u {
-		long val;
-		char chars[long_size];
-	}data;
-	i = 0;
-	j = len / long_size;
-	laddr = str;
-	while(i < j) {
-		data.val = ptrace(PTRACE_PEEKDATA, child,
-				addr + i * 4, nullptr);
-		memcpy(laddr, data.chars, long_size);
-		++i;
-		laddr += long_size;
+
+	printf("[%d] debug vmmap ........................................\n", pid);
+	if (maps_init (&mi, pid) < 0) {
+		printf("Cannot find maps for pid %d\n", pid);
+		return;
 	}
-	j = len % long_size;
-	if(j != 0) {
-		data.val = ptrace(PTRACE_PEEKDATA, child,
-				addr + i * 4, nullptr);
-		memcpy(laddr, data.chars, j);
+
+	while (maps_next (&mi, &segbase, &hi, &mapoff, &mp)) {
+		printf("path : %s base addr : %lx\n", mi.path, segbase);
 	}
-	str[len] = '\0';
-}
-void putdata(pid_t child, long addr,
-		unsigned char *str, int len)
-{   unsigned char *laddr;
-	int i, j;
-	union u {
-		long val;
-		char chars[long_size];
-	}data;
-	i = 0;
-	j = len / long_size;
-	laddr = str;
-	while(i < j) {
-		memcpy(data.chars, laddr, long_size);
-		ptrace(PTRACE_POKEDATA, child,
-				addr + i * 4, data.val);
-		++i;
-		laddr += long_size;
-	}
-	j = len % long_size;
-	if(j != 0) {
-		memcpy(data.chars, laddr, j);
-		ptrace(PTRACE_POKEDATA, child,
-				addr + i * 4, data.val);
-	}
-}
 
-void InsertBreakpoint(DWORD address, pid_t child, unsigned char *bkp) {
-	unsigned char code[] = {0xcd,0x80,0xcc,0};
-
-	printf("[Parent] Inserting breakpoint at address %lx\n", address);
-	getdata(child, address, bkp, 3);
-	putdata(child, address, code, 3);
-
-}
-
-void DeleteBreakpoint(DWORD address, pid_t child, unsigned char *bkp) {
-	printf("[Parent] Deleting breakpoint at address %lx\n", address);
-	putdata(child, address, bkp, 3);
+	maps_close(&mi);
 }
 
 void ExternExecutionController::MapSharedLibraries(unsigned long baseAddress) {
@@ -165,10 +213,13 @@ void ExternExecutionController::MapSharedLibraries(unsigned long baseAddress) {
 	hIpcBase = baseAddress;
 	hRevtracerBase = hIpcBase + dwIpcLibSize;
 
-	MapModule(hIpcModule, hIpcBase);
-	MapModule(hRevtracerModule, hRevtracerBase);
+	//DebugPrintVMMap();
+	MapModule(hIpcModule, hIpcBase, shmAlloc, 0);
+	MapModule(hRevtracerModule, hRevtracerBase, shmAlloc, dwIpcLibSize);
 
-	printf("[Parent] Mapped ipclib@0x%08lx and revtracer@0x%08lx\n", (DWORD)hIpcBase, (DWORD)hRevtracerBase);
+	printf("[Parent] Mapped ipclib@0x%08lx revtracer@0x%08lx and revwrapper@0x%08lx\n",
+			(DWORD)hIpcBase, (DWORD)hRevtracerBase,
+			(DWORD)hRevWrapperBase);
 }
 
 unsigned long GetLoaderAddress(pid_t pid) {
@@ -195,6 +246,7 @@ unsigned long GetLoaderAddress(pid_t pid) {
 	return 0;
 }
 
+
 bool ExternExecutionController::InitializeIpcLib() {
 	/* Imports */
 	ipc::IpcAPI *ipcAPI;
@@ -211,7 +263,6 @@ bool ExternExecutionController::InitializeIpcLib() {
 
 	/* Exports */
 	if (!LoadExportedName(hIpcModule, hIpcBase, "debugLog", debugLog) ||
-		!LoadExportedName(hIpcModule, hIpcBase, "ipcToken", ipcToken) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "ipcData", ipcData) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "Initialize", tmpRevApi.ipcLibInitialize) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "DebugPrint", tmpRevApi.dbgPrintFunc) ||
@@ -227,6 +278,16 @@ bool ExternExecutionController::InitializeIpcLib() {
 	) {
 		return false;
 	}
+
+	rev::IpcLibInitFunc initIpcToken;
+	LoadExportedName(hIpcModule, hIpcBase, "InitializeIpcToken", initIpcToken);
+	initIpcToken();
+
+	unsigned long *addr = (unsigned long *)GET_PROC_ADDRESS(hIpcModule, hIpcBase, "ipcToken");
+	ipcToken = (ipc::AbstractShmTokenRing *)(*addr);
+	printf("[Parent] Found ipctoken address %p\n", ipcToken);
+	if (!ipcToken)
+		return false;
 
 	return true;
 }
@@ -304,9 +365,6 @@ bool ExternExecutionController::Execute() {
 	int status;
 	struct user_regs_struct regs;
 
-	/* int 0x80, int3 */
-	unsigned char backup[4];
-
 	char arg[MAX_PATH];
 	DWORD entryPoint;
 
@@ -330,29 +388,27 @@ bool ExternExecutionController::Execute() {
 	}
 
 	else {
-		wait(&status);
+		dbg::Debugger debugger;
+		debugger.Attach(child);
 
-		ptrace(PTRACE_GETREGS, child, 0, &regs);
-		printf("[Parent] Child started. EIP = 0x%08lx\n", regs.eip);
-		fflush(stdout);
+		debugger.InsertBreakpoint(entryPoint);
 
-		InsertBreakpoint(entryPoint, child, backup);
+		ChildRunning = debugger.Run(PTRACE_CONT);
+		if (!ChildRunning) {
+			printf("[Parent] Child %d exited\n", child);
+			return false;
+		}
 
-		ptrace(PTRACE_CONT, child, nullptr, nullptr);
-		wait(nullptr);
+		debugger.PrintEip();
 
-		ptrace(PTRACE_GETREGS, child, 0, &regs);
-		printf("[Parent] Child should break at entry point. EIP = 0x%08lx\n", regs.eip);
-		fflush(stdout);
+		debugger.DeleteBreakpoint(entryPoint);
 
-		DeleteBreakpoint(entryPoint, child, backup);
-
-
+		DebugPrintVMMap(child);
 		unsigned long symbolOffset = 0x2014;
 		unsigned long symbolAddress = GetLoaderAddress(child) + symbolOffset;
-		unsigned char sym_addr[4] = {0, 0, 0, 0};
+		unsigned char sym_addr[5] = {0, 0, 0, 0, 0};
 		printf("[Parent] Trying to read data from child %08lx\n", symbolAddress);
-		getdata(child, symbolAddress, sym_addr, 4);
+		debugger.GetData(symbolAddress, sym_addr, 4);
 
 		for (int i = 0; i < 4; ++i) {
 			((char*)&shmAddress)[i] = sym_addr[i];
@@ -363,18 +419,29 @@ bool ExternExecutionController::Execute() {
 
 		MapSharedLibraries(shmAddress);
 		InitializeIpcLib();
+		ipcToken->Use(getpid());
+		ipcToken->Use(child);
 		InitializeRevtracer();
+		DebugPrintVMMap(getpid());
 
-		printf("[Parent] Passing execution control to revtracerPerform\n");
-		DEBUG_BREAK;
-		regs.eip = (unsigned long) revtracerPerform;
-		ptrace (PTRACE_SETREGS, child, 0, &regs);
+		printf("[Parent] Passing execution control to revtracerPerform %08lx\n", (unsigned long)revtracerPerform);
+		debugger.SetEip((unsigned long)revtracerPerform);
+		revCfg->entryPoint = (void*)entryPoint;
 
-		ptrace (PTRACE_DETACH, child, nullptr, nullptr);
+		for (int i = 0; i < 10000; i++) {
+			debugger.Run(PTRACE_SINGLESTEP);
+			debugger.PrintEip();
+		}
 
 		int ret;
 		CREATE_THREAD(hControlThread, ControlThreadFunc, this, ret);
 		execState = RUNNING;
+
+		ChildRunning = debugger.Run(PTRACE_CONT);
+		if (!ChildRunning) {
+			printf("[Parent] Child %d exited\n", child);
+			return false;
+		}
 
 		return ret == TRUE;
 	}
