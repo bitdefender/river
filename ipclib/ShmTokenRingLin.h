@@ -1,12 +1,11 @@
 #ifndef _SHM_TOKEN_RING_LIN
 #define _SHM_TOKEN_RING_LIN
 
-#include "AbstractShmTokenRing.h"
 #include <unistd.h>
 #define MAX_USER_COUNT 10
 
 namespace ipc {
-	class ShmTokenRingLin : public AbstractShmTokenRing {
+	class ShmTokenRingLin {
 	private:
 		volatile long currentOwner;
 		volatile long userCount;
