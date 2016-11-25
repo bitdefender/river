@@ -2,7 +2,7 @@ ipc_lib := libipc.so
 CC := gcc
 CXX := g++
 CPP_FILES := ipclib.cpp ShmTokenRingLin.cpp UnifiedShmTokenRing.cpp
-OBJ_FILES := ipclib.o ShmTokenRingLin.o UnifiedShmTokenRing.o
+OBJ_FILES := ipclib.o ShmTokenRingLin.o
 
 CXX_FLAGS += -m32 -std=c++11
 prefix := /usr/local
