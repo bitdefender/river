@@ -49,7 +49,11 @@ private:
 	BASE_PTR hRevWrapperBase;
 
 	ipc::RingBuffer<(1 << 20)> *debugLog;
-	ipc::AbstractShmTokenRing *ipcToken;
+#ifdef __linux__
+	ipc::ShmTokenRingLin *ipcToken;
+#else
+	ipc::ShmTokenRingWin *ipcToken;
+#endif
 	ipc::IpcData *ipcData;
 	BYTE *pIPFPFunc;
 	
