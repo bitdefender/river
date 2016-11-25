@@ -1,7 +1,7 @@
 lib_execution := libexecution.so
 CC := gcc
 CXX := g++
-EXTERNAL_FILES := ../revtracer/sync.cpp ../revtracer/crc32.cpp ../revtracer/cb.cpp ../libproc/libproc.cpp
+EXTERNAL_FILES := ../revtracer/sync.cpp ../revtracer/crc32.cpp ../revtracer/cb.cpp ../libproc/libproc.cpp ../ipclib/ShmTokenRingLin.cpp
 INCLUDE_PATHS := -I../BinLoader
 INPROCESS_EXECUTION_CPP := LargeStack.cpp CommonExecutionController2.cpp InprocessExecutionController.cpp CommonExecutionController.cpp Main.cpp
 EXTERN_EXECUTION_CPP := Debugger.cpp ExternExecutionController.Linux.cpp #DualAllocator.cpp

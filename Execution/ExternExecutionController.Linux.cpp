@@ -254,9 +254,11 @@ bool ExternExecutionController::InitializeIpcLib() {
 		return false;
 	}
 
-	ipcAPI->ntYieldExecution = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallYieldExecution");
-	//ntdllYieldExecution = (NtYieldExecutionFunc)ipcAPI->ntYieldExecution;
-	ipcAPI->vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
+	if (!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallYieldExecution", ipcAPI->ntYieldExecution) ||
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler", ipcAPI->vsnprintf_s)
+		) {
+		return false;
+	}
 
 	ipcAPI->ldrMapMemory = pLdrMapMemory;
 
@@ -274,20 +276,11 @@ bool ExternExecutionController::InitializeIpcLib() {
 		!LoadExportedName(hIpcModule, hIpcBase, "CleanupContextFunc", tmpRevApi.cleanupContext) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "BranchHandlerFunc", tmpRevApi.branchHandler) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl) ||
-		!LoadExportedName(hIpcModule, hIpcBase, "IsProcessorFeaturePresent", pIPFPFunc)
+		!LoadExportedName(hIpcModule, hIpcBase, "IsProcessorFeaturePresent", pIPFPFunc) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "ipcToken", ipcToken)
 	) {
 		return false;
 	}
-
-	rev::IpcLibInitFunc initIpcToken;
-	LoadExportedName(hIpcModule, hIpcBase, "InitializeIpcToken", initIpcToken);
-	initIpcToken();
-
-	unsigned long *addr = (unsigned long *)GET_PROC_ADDRESS(hIpcModule, hIpcBase, "ipcToken");
-	ipcToken = (ipc::AbstractShmTokenRing *)(*addr);
-	printf("[Parent] Found ipctoken address %p\n", ipcToken);
-	if (!ipcToken)
-		return false;
 
 	return true;
 }
