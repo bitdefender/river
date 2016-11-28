@@ -126,17 +126,36 @@ namespace dbg {
 			ptrace(request, Tracee, 0, last_sig);
 			waitpid(Tracee, &status, 0);
 
-			if (WIFEXITED(status))
+			if (WIFEXITED(status)) {
+				printf("[Debugger] Pid %d exited\n", Tracee);
 				return 0;
+			}
 
 			if (WIFSTOPPED(status)) {
 				last_sig = WSTOPSIG(status);
 				if (last_sig == SIGTRAP) {
 					event = (status >> 16) & 0xffff;
+					printf("[Debugger] Tracee received SIGTRAP\n");
+					PrintEip();
 					return (event == PTRACE_EVENT_EXIT) ? 0 : 1;
+				} else {
+					printf("[Debugger] Tracee received signal %d\n", last_sig);
 				}
 			}
 		}
+	}
+
+
+	unsigned long Debugger::GetAndResolveModuleAddress(unsigned long symbolAddress) {
+		unsigned char sym_addr[5] = {0, 0, 0, 0, 0};
+		printf("[Parent] Trying to read data from child %08lx\n", symbolAddress);
+		GetData(symbolAddress, sym_addr, 4);
+
+		unsigned long result;
+		for (int i = 0; i < 4; ++i) {
+			((char*)&result)[i] = sym_addr[i];
+		}
+		return result;
 	}
 
 } //namespace dbg

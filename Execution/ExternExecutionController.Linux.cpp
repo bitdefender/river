@@ -201,27 +201,6 @@ void DebugPrintVMMap(pid_t pid) {
 	maps_close(&mi);
 }
 
-void ExternExecutionController::MapSharedLibraries(unsigned long baseAddress) {
-	CreateModule(L"libipc.so", hIpcModule);
-	LOAD_LIBRARYW(L"librevtracerwrapper.so", hRevWrapperModule, hRevWrapperBase);
-	CreateModule(L"revtracer.dll", hRevtracerModule);
-
-	DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
-	DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
-	DWORD dwTotalSize = dwIpcLibSize + dwRevTracerSize;
-
-	hIpcBase = baseAddress;
-	hRevtracerBase = hIpcBase + dwIpcLibSize;
-
-	//DebugPrintVMMap();
-	MapModule(hIpcModule, hIpcBase, shmAlloc, 0);
-	MapModule(hRevtracerModule, hRevtracerBase, shmAlloc, dwIpcLibSize);
-
-	printf("[Parent] Mapped ipclib@0x%08lx revtracer@0x%08lx and revwrapper@0x%08lx\n",
-			(DWORD)hIpcBase, (DWORD)hRevtracerBase,
-			(DWORD)hRevWrapperBase);
-}
-
 unsigned long GetLoaderAddress(pid_t pid) {
 	struct map_iterator mi;
 	struct map_prot mp;
@@ -365,6 +344,8 @@ bool ExternExecutionController::Execute() {
 	entryPoint = GetEntryPoint(arg);
 
 	unsigned long shmAddress = 0x0;
+	const char* ld_library_path = getenv("LD_LIBRARY_PATH");
+	printf("[Parent] Retrieved path %s\n", ld_library_path);
 	child = fork();
 	if(child == 0) {
 		ptrace(PTRACE_TRACEME, 0, nullptr, nullptr);
@@ -372,7 +353,9 @@ bool ExternExecutionController::Execute() {
 		char *const args[] = {arg, nullptr};
 		char env[MAX_PATH] = "LD_PRELOAD=";
 		strcat(env, LOADER_PATH);
-		char *const envs[] = {env, nullptr};
+		char env_path[MAX_PATH] = "LD_LIBRARY_PATH=";
+		strcat(env_path, ld_library_path);
+		char *const envs[] = {env, env_path, nullptr};
 		int ret = execve(arg, args, envs);
 
 		if (ret == -1) {
@@ -385,55 +368,59 @@ bool ExternExecutionController::Execute() {
 		debugger.Attach(child);
 
 		debugger.InsertBreakpoint(entryPoint);
-
-		ChildRunning = debugger.Run(PTRACE_CONT);
-		if (!ChildRunning) {
-			printf("[Parent] Child %d exited\n", child);
-			return false;
-		}
-
+		debugger.Run(PTRACE_CONT);
 		debugger.PrintEip();
-
 		debugger.DeleteBreakpoint(entryPoint);
 
-		DebugPrintVMMap(child);
-		unsigned long symbolOffset = 0x2014;
-		unsigned long symbolAddress = GetLoaderAddress(child) + symbolOffset;
-		unsigned char sym_addr[5] = {0, 0, 0, 0, 0};
-		printf("[Parent] Trying to read data from child %08lx\n", symbolAddress);
-		debugger.GetData(symbolAddress, sym_addr, 4);
+		//DebugPrintVMMap(child);
+		unsigned long shmAddressOffset = 0x1f014;
+		unsigned long ipcBaseOffset = 0x1f01c;
+		unsigned long revwrapperBaseOffset = 0x1f02c;
+		unsigned long revtracerBaseOffset = 0x1f024;
 
-		for (int i = 0; i < 4; ++i) {
-			((char*)&shmAddress)[i] = sym_addr[i];
-		}
+		unsigned long libloaderAddress = GetLoaderAddress(child);
+		shmAddress = debugger.GetAndResolveModuleAddress(libloaderAddress + shmAddressOffset);
 
 		printf("[Parent] Received shared mem address %08lx\n", shmAddress);
+		shmAddress = (unsigned long)mmap((void*)shmAddress, 1 << 30,
+				PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, shmAlloc, 0);
+
 		printf("[Parent] Mapped shared memory at address %08lx\n", shmAddress);
 
-		MapSharedLibraries(shmAddress);
+		hIpcBase = debugger.GetAndResolveModuleAddress(libloaderAddress + ipcBaseOffset);
+		hRevWrapperBase = debugger.GetAndResolveModuleAddress(libloaderAddress + revwrapperBaseOffset);
+		hRevtracerBase = debugger.GetAndResolveModuleAddress(libloaderAddress + revtracerBaseOffset);
+
+		printf("[Parent] Found libraries mapping in shared memory ipclib@%lx revtracer@%lx revwrapper@%lx\n",
+				hIpcBase, hRevtracerBase, hRevWrapperBase);
+
+		DEBUG_BREAK;
+		DebugPrintVMMap(getpid());
 		InitializeIpcLib();
 		ipcToken->Use(getpid());
 		ipcToken->Use(child);
 		InitializeRevtracer();
-		DebugPrintVMMap(getpid());
 
 		printf("[Parent] Passing execution control to revtracerPerform %08lx\n", (unsigned long)revtracerPerform);
 		debugger.SetEip((unsigned long)revtracerPerform);
 		revCfg->entryPoint = (void*)entryPoint;
 
-		for (int i = 0; i < 10000; i++) {
-			debugger.Run(PTRACE_SINGLESTEP);
-			debugger.PrintEip();
-		}
-
 		int ret;
+		ChildRunning = true;
 		CREATE_THREAD(hControlThread, ControlThreadFunc, this, ret);
 		execState = RUNNING;
 
-		ChildRunning = debugger.Run(PTRACE_CONT);
-		if (!ChildRunning) {
-			printf("[Parent] Child %d exited\n", child);
-			return false;
+		for (int i = 0; i < 1; i++) {
+			ChildRunning = debugger.Run(PTRACE_CONT);
+			if (!ChildRunning) {
+				printf("[Parent] Child %d exited.\n", child);
+				ChildRunning = false;
+			}
+		}
+
+		for (int i = 0; i < 1000000; i++) {
+			debugger.Run(PTRACE_SINGLESTEP);
+			debugger.PrintEip();
 		}
 
 		return ret == TRUE;
