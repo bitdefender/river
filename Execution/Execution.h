@@ -32,8 +32,10 @@
 
 #ifdef __linux__
 typedef pthread_t THREAD_T;
+typedef void* ADDR_TYPE;
 #else
 typedef void* THREAD_T;
+typedef HANDLE ADDR_TYPE;
 #endif
 
 #define EXECUTION_INPROCESS						0x00000000
@@ -115,6 +117,8 @@ public :
 
 	virtual void TerminationNotification(void *ctx) = 0;
 };
+
+typedef ADDR_TYPE(*RevWrapperInitCallback)(void);
 
 class ExecutionController {
 public:

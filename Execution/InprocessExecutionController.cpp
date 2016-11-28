@@ -8,8 +8,6 @@
 #include <string.h>
 #endif
 
-typedef ADDR_TYPE(*GetHandlerCallback)(void);
-
 bool InprocessExecutionController::SetPath() {
 	return false;
 }
@@ -106,7 +104,7 @@ bool InprocessExecutionController::Execute() {
 		return false;
 	}
 
-	if (nullptr == ((GetHandlerCallback)initHandler)()) {
+	if (nullptr == ((RevWrapperInitCallback)initHandler)()) {
 		DEBUG_BREAK;
 		return false;
 	}

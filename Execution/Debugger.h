@@ -18,6 +18,7 @@ class Debugger {
 		void PrintEip();
 		void GetData(long addr, unsigned char *str, int len);
 		void PutData(long addr, unsigned char *str, int len);
+		unsigned long GetAndResolveModuleAddress(unsigned long symbolAddress);
 
 	private:
 		pid_t Tracee;
