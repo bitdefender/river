@@ -106,8 +106,10 @@ bool find_module(const char *moduleName, char *dirname, char *path) {
 
 bool find_in_env(const char *moduleName, char *path) {
 	const char* env = getenv("LD_LIBRARY_PATH");
-	if (!env)
+	if (!env) {
+		printf("[Binloader] Export LD_LIBRARY_PATH accordingly to find %s\n", moduleName);
 		return false;
+	}
 
 	// iterate thourgh it
 	const char *it = env;
