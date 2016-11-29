@@ -124,7 +124,7 @@ namespace dbg {
 
 		while (1) {
 			ptrace(request, Tracee, 0, last_sig);
-			waitpid(Tracee, &status, 0);
+			waitpid(Tracee, &status, WCONTINUED);
 
 			if (WIFEXITED(status)) {
 				printf("[Debugger] Pid %d exited\n", Tracee);
@@ -138,6 +138,9 @@ namespace dbg {
 					printf("[Debugger] Tracee received SIGTRAP\n");
 					PrintEip();
 					return (event == PTRACE_EVENT_EXIT) ? 0 : 1;
+				} else if (last_sig == SIGUSR1) {
+					printf("[Debugger] Child received SIGUSR1, continuing ...\n");
+					fflush(stdout);
 				} else {
 					printf("[Debugger] Tracee received signal %d\n", last_sig);
 				}
