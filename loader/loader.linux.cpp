@@ -7,7 +7,7 @@
 
 #define DEBUG_BREAK asm volatile("int $0x3")
 
-typedef void*(*RevWrapperInitCallback)(void);
+typedef int(*RevWrapperInitCallback)(void);
 static void init(void) __attribute__((constructor));
 static void destroy(void) __attribute__((destructor));
 
@@ -72,7 +72,12 @@ unsigned long MapSharedLibraries(int shmFd) {
 
 	RevWrapperInitCallback initRevWrapper;
 	LoadExportedName(hRevWrapperModule, hRevWrapperBase, "InitRevtracerWrapper", initRevWrapper);
-	initRevWrapper();
+	if (initRevWrapper() == -1) {
+		printf("[Child] Could not find revwrapper needed libraries\n");
+		return 0x0;
+	} else {
+		printf("[Child] Revwrapper init returned successfully\n");
+	}
 	return hIpcBase;
 }
 
