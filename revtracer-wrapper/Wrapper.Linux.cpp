@@ -114,9 +114,13 @@ void LinFlushInstructionCache(void) {
 }
 
 namespace revwrapper {
-	extern "C" void InitRevtracerWrapper() {
+	extern "C" int InitRevtracerWrapper() {
 		lcHandler = GET_LIB_HANDLER("libc.so");
 		lpthreadHandler = GET_LIB_HANDLER("libpthread.so");
+
+		if (!lcHandler || !lpthreadHandler)
+			return -1;
+
 		// get functionality from ntdll
 		_virtualAlloc = (AllocateMemoryHandler)LOAD_PROC(lcHandler, "mmap");
 		_virtualFree = (FreeMemoryHandler)LOAD_PROC(lcHandler, "munmap");
@@ -143,6 +147,7 @@ namespace revwrapper {
 		yieldExecution = LinYieldExecution;
 
 		flushInstructionCache = LinFlushInstructionCache;
+		return 0;
 	}
 };
 

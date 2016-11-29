@@ -31,7 +31,7 @@ namespace revwrapper {
 
 	extern "C" {
 		/** Initializes the API-wrapper */
-		DLL_REVTRACER_WRAPPER_PUBLIC extern void InitRevtracerWrapper();
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int InitRevtracerWrapper();
 
 		/** Allocates virtual memory */
 		DLL_REVTRACER_WRAPPER_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long);
