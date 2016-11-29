@@ -406,8 +406,11 @@ void WinFlushInstructionCache(void) {
 // ------------------- Initialization -------------------------
 
 namespace revwrapper {
-	extern "C" void InitRevtracerWrapper() {
+	extern "C" int InitRevtracerWrapper() {
 		libhandler = GET_LIB_HANDLER(L"ntdll.dll");
+
+		if (!libhandler)
+			return -1;
 
 		// get functionality from ntdll
 		_virtualAlloc = (AllocateMemoryHandler)LOAD_PROC(libhandler, "NtAllocateVirtualMemory");
@@ -439,6 +442,7 @@ namespace revwrapper {
 		formatPrint = WinFormatPrint;
 
 		flushInstructionCache = WinFlushInstructionCache;
+		return 0;
 	}
 }; // namespace revwrapper
 
