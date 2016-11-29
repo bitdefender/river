@@ -14,6 +14,24 @@
 
 static bool ChildRunning = false;
 
+static void SignalHandler(int signo)
+{
+	printf("[DEBUG] Caught signal SIGUSR1 in process %d\n", getpid());
+}
+
+static int SetupSignalHandler() {
+	struct sigaction sa;
+
+	memset(&sa, 0, sizeof(sa));
+
+	sa.sa_handler = SignalHandler;
+	int ret = sigaction(SIGUSR1, &sa, NULL);
+	if (ret < 0) {
+		printf("[Parent] Failed to setup signal handler\n");
+	}
+	return ret;
+}
+
 unsigned long ExternExecutionController::ControlThread() {
 	bool bRunning = true;
 	DWORD exitCode;
@@ -164,6 +182,7 @@ bool ExternExecutionController::ReadProcessMemory(unsigned int base, unsigned in
 
 
 bool ExternExecutionController::InitializeAllocator() {
+	printf("[Extern] Entering InitializeAllocator\n");
 	shmAlloc = shm_open("/thug_life", O_CREAT | O_RDWR | O_TRUNC | O_EXCL, 0644);
 	if (shmAlloc == -1) {
 		printf("Could not allocate shared memory chunk. Exiting. %d\n", errno);
@@ -347,6 +366,7 @@ bool ExternExecutionController::Execute() {
 	const char* ld_library_path = getenv("LD_LIBRARY_PATH");
 	printf("[Parent] Retrieved path %s\n", ld_library_path);
 	child = fork();
+	SetupSignalHandler();
 	if(child == 0) {
 		ptrace(PTRACE_TRACEME, 0, nullptr, nullptr);
 
@@ -387,18 +407,20 @@ bool ExternExecutionController::Execute() {
 
 		printf("[Parent] Mapped shared memory at address %08lx\n", shmAddress);
 
+		CreateModule(L"libipc.so", hIpcModule);
 		hIpcBase = debugger.GetAndResolveModuleAddress(libloaderAddress + ipcBaseOffset);
+		CreateModule(L"librevtracerwrapper.so", hRevWrapperModule);
 		hRevWrapperBase = debugger.GetAndResolveModuleAddress(libloaderAddress + revwrapperBaseOffset);
+		CreateModule(L"revtracer.dll", hRevtracerModule);
 		hRevtracerBase = debugger.GetAndResolveModuleAddress(libloaderAddress + revtracerBaseOffset);
 
 		printf("[Parent] Found libraries mapping in shared memory ipclib@%lx revtracer@%lx revwrapper@%lx\n",
 				hIpcBase, hRevtracerBase, hRevWrapperBase);
 
-		DEBUG_BREAK;
-		DebugPrintVMMap(getpid());
 		InitializeIpcLib();
-		ipcToken->Use(getpid());
+		ipcToken->Init(0);
 		ipcToken->Use(child);
+		ipcToken->Use(getpid());
 		InitializeRevtracer();
 
 		printf("[Parent] Passing execution control to revtracerPerform %08lx\n", (unsigned long)revtracerPerform);
@@ -410,17 +432,13 @@ bool ExternExecutionController::Execute() {
 		CREATE_THREAD(hControlThread, ControlThreadFunc, this, ret);
 		execState = RUNNING;
 
-		for (int i = 0; i < 1; i++) {
-			ChildRunning = debugger.Run(PTRACE_CONT);
-			if (!ChildRunning) {
-				printf("[Parent] Child %d exited.\n", child);
-				ChildRunning = false;
-			}
-		}
+		DebugPrintVMMap(child);
+		ChildRunning = debugger.Run(PTRACE_CONT);
+		debugger.PrintEip();
 
-		for (int i = 0; i < 1000000; i++) {
-			debugger.Run(PTRACE_SINGLESTEP);
-			debugger.PrintEip();
+		if (!ChildRunning) {
+			printf("[Parent] Child %d exited.\n", child);
+			ChildRunning = false;
 		}
 
 		return ret == TRUE;
