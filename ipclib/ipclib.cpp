@@ -31,7 +31,6 @@ namespace ipc {
 
 	typedef int (*_vsnprintf_sFunc)(
 		char *buffer,
-		size_t sizeOfBuffer,
 		size_t count,
 		const char *format,
 		va_list argptr
@@ -43,7 +42,6 @@ namespace ipc {
 		va_start(va, size);
 		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_s)(
 			buff, 
-			size, 
 			size - 1, 
 			"[%3s|%5s|%3s|%c] ",
 			va
@@ -103,7 +101,7 @@ namespace ipc {
 		}
 
 		va_start(va, fmt);
-		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_s)(tmpBuff, sizeof(tmpBuff)-1, sizeof(tmpBuff)-1, fmt, va);
+		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_s)(tmpBuff, sizeof(tmpBuff)-1, fmt, va);
 		va_end(va);
 
 		if (sz) {
@@ -287,7 +285,8 @@ namespace ipc {
 
 	DLL_PUBLIC void Initialize() {
 		debugLog.Init();
-		ipcToken.Init(0);
+		//TODO handle Windows case accordingly
+		// init is handled by parent
 	}
 
 	void NtDllNtYieldExecution() {

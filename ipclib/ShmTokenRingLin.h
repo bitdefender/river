@@ -12,7 +12,6 @@ namespace ipc {
 		pid_t userPids[MAX_USER_COUNT];
 
 	public:
-		void Init();
 		void Init(long presetUsers);
 
 		long Use(pid_t pid = -1);

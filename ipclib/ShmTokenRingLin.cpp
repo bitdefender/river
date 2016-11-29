@@ -8,16 +8,10 @@
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
 #else
-#define dbg_log(fmt,...) printf(fmt, ##__VA_ARGS__)
+#define dbg_log(fmt,...) { printf(fmt, ##__VA_ARGS__); fflush(stdout); }
 #endif
 
 namespace ipc {
-
-	static void SignalHandler(int signo)
-	{
-		pid_t pid = getpid();
-		dbg_log("[ShmTokenRingLin] Caught signal SIGUSR1 in process %d\n", pid);
-	}
 
 	void ShmTokenRingLin::Init(long presetUsers) {
 		userCount = presetUsers;
@@ -26,43 +20,36 @@ namespace ipc {
 			userPids[i] = -1;
 	}
 
-	void ShmTokenRingLin::Init() {
-		struct sigaction sa;
-
-		memset(&sa, 0, sizeof(sa));
-
-		sa.sa_handler = SignalHandler;
-		int ret = sigaction(SIGUSR1, &sa, NULL);
-		if (ret < 0) {
-			dbg_log("[ShmTokenRingLin] Failed to setup signal handler\n");
-		}
-	}
-
 	// on linux we are forced to use Use in order to set pids
 	long ShmTokenRingLin::Use(pid_t pid) {
-		dbg_log("[ShmTokenRingLin] Pid %d started using the token ring\n", pid);
 		userPids[userCount] = pid;
 		// TODO this critical section
-		userCount++;
+		userCount += 1;
+		dbg_log("[ShmTokenRingLin] User %ld with pid %d started using the token ring. Current Usercount %ld this %p\n", userCount - 1, userPids[userCount - 1], userCount, this);
 		return userCount - 1;
 	}
 
 	bool ShmTokenRingLin::Wait(long int userId, bool blocking) const {
+		dbg_log("[ShmTokenRingLin] User %ld waiting for token\n", userId);
 
 		do {
-			sigset_t old_mask;
+			sigset_t mask;
 			long localCurrentOwner = currentOwner;
 
-			if (localCurrentOwner == userId)
+			if (localCurrentOwner == userId) {
+				dbg_log("[ShmTokenRingLin] Wait finished for user %ld\n", userId);
 				return true;
-			int ret = sigprocmask(SIG_SETMASK, nullptr, &old_mask);
+			}
 
+			sigfillset(&mask);
+			sigdelset(&mask, SIGUSR1);
+
+			int ret = sigsuspend(&mask);
 			if (ret < 0) {
-				dbg_log("[ipclib] Wait failed with exitcode %d\n", ret);
+				dbg_log("[ipclib] Wait failed with exitcode %d pid %d\n", ret, getpid());
 				return false;
 			}
 
-			sigsuspend(&old_mask);
 
 			localCurrentOwner = currentOwner;
 			if (localCurrentOwner != userId && !blocking)
@@ -82,9 +69,11 @@ namespace ipc {
 			}
 
 			currentOwner = localCurrentOwner;
+			dbg_log("[ShmTokenRingLin] User %ld sending signal SIGUSR1 to %ld this %p\n", userId, currentOwner, this);
 			int ret = kill(userPids[currentOwner], SIGUSR1);
 			if (ret < 0)
-				dbg_log("[ShmTokenRingWin] Could not send signal to my neighbour %d.\n", userPids[currentOwner]);
+				dbg_log("[ShmTokenRingLin] Could not send signal to my neighbour %d.\n", userPids[currentOwner]);
+
 		}
 
 	}
