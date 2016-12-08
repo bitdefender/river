@@ -4,7 +4,7 @@ CXX := g++
 EXTERNAL_FILES := ../revtracer/sync.cpp ../revtracer/crc32.cpp ../revtracer/cb.cpp ../libproc/libproc.cpp ../ipclib/ShmTokenRingLin.cpp
 INCLUDE_PATHS := -I../BinLoader
 INPROCESS_EXECUTION_CPP := LargeStack.cpp CommonExecutionController2.cpp InprocessExecutionController.cpp CommonExecutionController.cpp Main.cpp
-EXTERN_EXECUTION_CPP := Debugger.cpp ExternExecutionController.Linux.cpp #DualAllocator.cpp
+EXTERN_EXECUTION_CPP := Debugger.cpp ExternExecutionController.Linux.cpp DualAllocator.Linux.cpp
 CPP_FILES := $(LOADER_FILES) $(EXTERN_EXECUTION_CPP) $(INPROCESS_EXECUTION_CPP) $(EXTERNAL_FILES)
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LIB_BINLOADER_PATH := ../BinLoader/libbinloader.a

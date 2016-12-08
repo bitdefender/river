@@ -16,9 +16,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-typedef DualAllocator* SHM_T;
 #elif defined(__linux__)
-typedef int SHM_T;
 #endif
 
 class ExternExecutionController : public CommonExecutionController {
@@ -28,7 +26,7 @@ private:
 	FILE_T hDbg;
 	DWORD pid, mainTid;
 
-	SHM_T shmAlloc;
+	DualAllocator* shmAlloc;
 
 	MODULE_PTR hLoaderModule;
 	BASE_PTR hLoaderBase;
@@ -56,7 +54,7 @@ private:
 #endif
 	ipc::IpcData *ipcData;
 	BYTE *pIPFPFunc;
-	
+
 	rev::RevtracerAPI tmpRevApi;
 	rev::RevtracerConfig *revCfg;
 	BYTE *revtracerPerform;

@@ -8,29 +8,12 @@
 #include <iostream>
 #include "../libproc/os-linux.h"
 #include "Debugger.h"
+#include "DualAllocator.h"
 
 // TODO seach for this lib in LD_LIBRARY_PATH
 #define LOADER_PATH "/home/alex/river/tracer.simple/inst/lib/libloader.so"
 
 static bool ChildRunning = false;
-
-static void SignalHandler(int signo)
-{
-	printf("[DEBUG] Caught signal SIGUSR1 in process %d\n", getpid());
-}
-
-static int SetupSignalHandler() {
-	struct sigaction sa;
-
-	memset(&sa, 0, sizeof(sa));
-
-	sa.sa_handler = SignalHandler;
-	int ret = sigaction(SIGUSR1, &sa, NULL);
-	if (ret < 0) {
-		printf("[Parent] Failed to setup signal handler\n");
-	}
-	return ret;
-}
 
 unsigned long ExternExecutionController::ControlThread() {
 	bool bRunning = true;
@@ -92,8 +75,7 @@ unsigned long ExternExecutionController::ControlThread() {
 			case REQUEST_MEMORY_ALLOC: {
 				DWORD offset;
 				ipcData->type = REPLY_MEMORY_ALLOC;
-				//ipcData->data.asMemoryAllocReply.pointer = shmAlloc->Allocate(ipcData->data.asMemoryAllocRequest, offset);
-				//TODO allocate memory in shared mem
+				ipcData->data.asMemoryAllocReply.pointer = shmAlloc->Allocate(ipcData->data.asMemoryAllocRequest, offset);
 				ipcData->data.asMemoryAllocReply.offset = offset;
 				break;
 			}
@@ -139,7 +121,7 @@ void *ControlThreadFunc(void *ptr) {
 }
 
 ExternExecutionController::ExternExecutionController() {
-	shmAlloc = -1;
+	shmAlloc = nullptr;
 }
 
 bool ExternExecutionController::SetEntryPoint() {
@@ -177,19 +159,6 @@ unsigned int ExternExecutionController::ExecutionBegin(void *address, void *cbCt
 
 // reads the child process memory
 bool ExternExecutionController::ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) {
-	return true;
-}
-
-
-bool ExternExecutionController::InitializeAllocator() {
-	printf("[Extern] Entering InitializeAllocator\n");
-	shmAlloc = shm_open("/thug_life", O_CREAT | O_RDWR | O_TRUNC | O_EXCL, 0644);
-	if (shmAlloc == -1) {
-		printf("Could not allocate shared memory chunk. Exiting. %d\n", errno);
-		strerror(errno);
-		return false;
-	}
-
 	return true;
 }
 
@@ -366,7 +335,6 @@ bool ExternExecutionController::Execute() {
 	const char* ld_library_path = getenv("LD_LIBRARY_PATH");
 	printf("[Parent] Retrieved path %s\n", ld_library_path);
 	child = fork();
-	SetupSignalHandler();
 	if(child == 0) {
 		ptrace(PTRACE_TRACEME, 0, nullptr, nullptr);
 
@@ -401,29 +369,43 @@ bool ExternExecutionController::Execute() {
 		unsigned long libloaderAddress = GetLoaderAddress(child);
 		shmAddress = debugger.GetAndResolveModuleAddress(libloaderAddress + shmAddressOffset);
 
+		CreateModule(L"libipc.so", hIpcModule);
+		CreateModule(L"librevtracerwrapper.so", hRevWrapperModule);
+		CreateModule(L"revtracer.dll", hRevtracerModule);
+
+		DWORD libsSize = hIpcModule->GetRequiredSize() +
+			hRevWrapperModule->GetRequiredSize() +
+			hRevtracerModule->GetRequiredSize();
 		printf("[Parent] Received shared mem address %08lx\n", shmAddress);
-		shmAddress = (unsigned long)mmap((void*)shmAddress, 1 << 30,
-				PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, shmAlloc, 0);
+
+		// initialize dual allocator with child pid
+		shmAlloc = new DualAllocator(1 << 30, child, "thug_life", 0);
+		shmAddress = shmAlloc->AllocateFixed(libsSize, shmAddress);
+
+		if (!shmAddress) {
+			printf("[Parent] Could not find enough space to map libraries. Exiting.");
+			return -1;
+		}
 
 		printf("[Parent] Mapped shared memory at address %08lx\n", shmAddress);
 
-		CreateModule(L"libipc.so", hIpcModule);
 		hIpcBase = debugger.GetAndResolveModuleAddress(libloaderAddress + ipcBaseOffset);
-		CreateModule(L"librevtracerwrapper.so", hRevWrapperModule);
 		hRevWrapperBase = debugger.GetAndResolveModuleAddress(libloaderAddress + revwrapperBaseOffset);
-		CreateModule(L"revtracer.dll", hRevtracerModule);
 		hRevtracerBase = debugger.GetAndResolveModuleAddress(libloaderAddress + revtracerBaseOffset);
 
 		printf("[Parent] Found libraries mapping in shared memory ipclib@%lx revtracer@%lx revwrapper@%lx\n",
 				hIpcBase, hRevtracerBase, hRevWrapperBase);
 
 		InitializeIpcLib();
-		ipcToken->Init(0);
-		ipcToken->Use(child);
-		ipcToken->Use(getpid());
 		InitializeRevtracer();
 
+		// Setup token ring pids
+		ipcToken->SetupSignalHandler();
+		ipcToken->Init(0);
+		ipcToken->Use(REMOTE_TOKEN_USER, getpid());
+
 		printf("[Parent] Passing execution control to revtracerPerform %08lx\n", (unsigned long)revtracerPerform);
+		// ipcToken object exists and called init and use.
 		debugger.SetEip((unsigned long)revtracerPerform);
 		revCfg->entryPoint = (void*)entryPoint;
 
@@ -432,9 +414,12 @@ bool ExternExecutionController::Execute() {
 		CREATE_THREAD(hControlThread, ControlThreadFunc, this, ret);
 		execState = RUNNING;
 
-		DebugPrintVMMap(child);
 		ChildRunning = debugger.Run(PTRACE_CONT);
 		debugger.PrintEip();
+		for (int i = 0; i < 100; i++) {
+			debugger.Run(PTRACE_SINGLESTEP);
+			debugger.PrintEip();
+		}
 
 		if (!ChildRunning) {
 			printf("[Parent] Child %d exited.\n", child);

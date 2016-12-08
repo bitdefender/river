@@ -143,6 +143,7 @@ namespace dbg {
 					fflush(stdout);
 				} else {
 					printf("[Debugger] Tracee received signal %d\n", last_sig);
+					PrintEip();
 				}
 			}
 		}
