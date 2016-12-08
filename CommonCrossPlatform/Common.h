@@ -16,6 +16,8 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 typedef int FILE_T;
+typedef pid_t PROCESS_HANDLE;
+typedef int MAPPING_HANDLE;
 typedef wchar_t WCHAR;
 typedef unsigned long ULONG;
 typedef void* HANDLE;
@@ -117,6 +119,8 @@ typedef void* lib_t;
 typedef HANDLE FILE_T;
 typedef void* THREAD_T;
 typedef void* EVENT_T;
+typedef HANDLE PROCESS_HANDLE;
+typedef HANDLE MAPPING_HANDLE;
 
 #define CREATE_EVENT(handle) do { handle = CreateEvent(nullptr, false, false, nullptr); } while (false)
 #define SIGNAL_EVENT(handle) SetEvent((handle))
