@@ -12,9 +12,11 @@ namespace ipc {
 		pid_t userPids[MAX_USER_COUNT];
 
 	public:
+		ShmTokenRingLin();
+		int SetupSignalHandler();
 		void Init(long presetUsers);
 
-		long Use(pid_t pid = -1);
+		long Use(unsigned int id, pid_t pid = -1);
 
 		bool Wait(long int userId, bool blocking = true) const;
 		void Release(long userId);
