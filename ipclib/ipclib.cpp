@@ -286,7 +286,8 @@ namespace ipc {
 	DLL_PUBLIC void Initialize() {
 		debugLog.Init();
 		//TODO handle Windows case accordingly
-		// init is handled by parent
+		ipcToken.SetupSignalHandler();
+		ipcToken.Use(INPROC_TOKEN_USER, getpid());
 	}
 
 	void NtDllNtYieldExecution() {
