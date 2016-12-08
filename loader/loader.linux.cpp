@@ -22,8 +22,8 @@ BASE_PTR hRevtracerBase;
 MODULE_PTR hRevWrapperModule;
 BASE_PTR hRevWrapperBase;
 
-unsigned long FindFreeVirtualMemory(int shmFd) {
-	void *addr = mmap(0, 1 << 30, PROT_READ | PROT_WRITE | PROT_EXEC,
+unsigned long FindFreeVirtualMemory(int shmFd, DWORD size) {
+	void *addr = mmap(0, size, PROT_READ | PROT_WRITE | PROT_EXEC,
 			MAP_SHARED, shmFd, 0);
 	munmap(addr, 1 << 30);
 	return (unsigned long)addr;
@@ -56,7 +56,7 @@ unsigned long MapSharedLibraries(int shmFd) {
 	DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 	DWORD dwTotalSize = dwIpcLibSize + dwRevWrapperSize + dwRevTracerSize;
 
-	hIpcBase = FindFreeVirtualMemory(shmFd);
+	hIpcBase = FindFreeVirtualMemory(shmFd, dwTotalSize);
 
 	MapModule(hIpcModule, hIpcBase, shmFd, 0);
 
