@@ -49,6 +49,16 @@ struct map_prot
 	uint32_t flags;
 };
 
+#define FREE 0
+#define ALLOCATED 1
+
+struct map_region
+{
+	uint32_t address;
+	uint32_t size;
+	uint32_t state;
+};
+
 extern int maps_init(struct map_iterator *mi, pid_t pid);
 
 extern int maps_next (struct map_iterator *mi,
