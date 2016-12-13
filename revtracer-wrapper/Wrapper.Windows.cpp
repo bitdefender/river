@@ -186,9 +186,9 @@ LPVOID Kernel32MapViewOfFileEx(
 	return ViewBase;
 }
 
-void *WinMapMemory(void *mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
+void *WinMapMemory(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
 	return Kernel32MapViewOfFileEx(
-			mapHandler,
+			(void *)mapHandler,
 			access,
 			0,
 			offset,
