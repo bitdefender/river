@@ -3,7 +3,7 @@
 
 typedef void *(*AllocateVirtualFunc)(unsigned long);
 typedef void (*FreeVirtualFunc)(void *);
-typedef void *(*MapMemoryFunc)(void *, unsigned long, unsigned long, unsigned long, void *);
+typedef void *(*MapMemoryFunc)(unsigned long, unsigned long, unsigned long, unsigned long, void *);
 
 typedef void (*TerminateProcessFunc)(int);
 typedef void *(*GetTerminationCodeFunc)();

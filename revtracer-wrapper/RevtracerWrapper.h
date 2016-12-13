@@ -41,7 +41,7 @@ namespace revwrapper {
 
 		/** Map memory at specified address */
 		DLL_PUBLIC extern void *CallMapMemoryHandler(
-				void *mapHandler,
+				unsigned long mapHandler,
 				unsigned long access,
 				unsigned long offset,
 				unsigned long size,

@@ -15,6 +15,9 @@ typedef void* lib_t;
 DLL_LOCAL lib_t lcHandler;
 DLL_LOCAL lib_t lpthreadHandler;
 
+typedef int (*PrintfHandler)(const char *format, ...);
+PrintfHandler _print;
+
 // ------------------- Memory allocation ----------------------
 typedef void* (*AllocateMemoryHandler)(
 	void *addr,
@@ -46,8 +49,10 @@ void LinFreeVirtual(void *address) {
 // ------------------- Memory mapping ------------------------
 typedef AllocateMemoryHandler MapMemoryHandler;
 
-void *LinMapMemory(void *mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
-	return nullptr;
+void *LinMapMemory(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
+	void *addr =  _virtualAlloc(address, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, (int)mapHandler, 0);
+	_print("[RevtracerWrapper] Got address %p for input %d size %ld address %p\n", addr, mapHandler, size, address);
+	return addr;
 }
 
 // ------------------- Process termination --------------------
@@ -130,6 +135,7 @@ namespace revwrapper {
 		_writeFile = (WriteFileHandler)LOAD_PROC(lcHandler, "write");
 
 		_formatPrint = (FormatPrintHandler)LOAD_PROC(lcHandler, "vsnprintf");
+		_print = (PrintfHandler)LOAD_PROC(lcHandler, "printf");
 
 		_yieldExecution = (YieldExecutionHandler)LOAD_PROC(lpthreadHandler, "pthread_yield");
 

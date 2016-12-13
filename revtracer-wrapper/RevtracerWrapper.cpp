@@ -29,7 +29,7 @@ namespace revwrapper {
 		return freeVirtual(address);
 	}
 
-	DLL_PUBLIC extern void *CallMapMemoryHandler(void *mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
+	DLL_PUBLIC extern void *CallMapMemoryHandler(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
 		return mapMemory(mapHandler, access, offset, size, address);
 	}
 
