@@ -10,7 +10,7 @@ prefix := /usr/local
 all: $(lib_revwrapper)
 
 test: $(lib_revwrapper) Main.o
-	$(CXX) $(CC_FLAGS) Main.o -L. -lrevtracerwrapper -o test
+	$(CXX) $(CC_FLAGS) Main.o -L. -lrevtracerwrapper -lrt -o test
 
 install: $(lib_revwrapper)
 	install -m 0755 $(lib_revwrapper) -t $(prefix)/lib -D

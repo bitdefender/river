@@ -51,7 +51,7 @@ typedef AllocateMemoryHandler MapMemoryHandler;
 
 void *LinMapMemory(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
 	void *addr =  _virtualAlloc(address, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, (int)mapHandler, 0);
-	_print("[RevtracerWrapper] Got address %p for input %d size %ld address %p\n", addr, mapHandler, size, address);
+	_print("[RevtracerWrapper] Got address %p for input shm %d size %ld address %p\n", addr, mapHandler, size, address);
 	return addr;
 }
 
