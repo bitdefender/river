@@ -29,6 +29,17 @@ void CreateModule(const wchar_t *libname, MODULE_PTR &module) {
 	module = fExec;
 }
 
+void CreateModule(const char *libname, MODULE_PTR &module) {
+	ldr::AbstractBinary *fExec = ldr::LoadBinary(libname);
+
+	if (fExec && !fExec->IsValid()) {
+		delete fExec;
+		return;
+	}
+
+	module = fExec;
+}
+
 void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr, int shmFd, off_t offset) {
 	ldr::InprocMapper mpr(shmFd, offset);
 	ldr::InprocNativeImporter imp;
