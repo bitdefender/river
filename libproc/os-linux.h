@@ -54,8 +54,8 @@ struct map_prot
 
 struct map_region
 {
-	uint32_t address;
-	uint32_t size;
+	unsigned long address;
+	unsigned long size;
 	uint32_t state;
 };
 
