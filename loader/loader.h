@@ -69,7 +69,6 @@ namespace ldr {
 	typedef unsigned short WORD;
 	typedef unsigned char BYTE;
 
-	typedef size_t SIZE_T, *PSIZE_T;
 	typedef void *ADDR_TYPE;
 
 	typedef void *HANDLE;
@@ -110,7 +109,7 @@ namespace ldr {
 		DLL_PUBLIC extern LoaderAPI loaderAPI;
 		DLL_PUBLIC extern DWORD hIpcBase, hRevWrapperBase, hRevtracerBase;
 
-		DLL_PUBLIC void *MapMemory(DWORD desiredAccess, DWORD offset, SIZE_T size, void *address);
+		DLL_PUBLIC void *MapMemory(unsigned long access, unsigned long offset, unsigned long size, void *address);
 		DLL_PUBLIC void LoaderPerform();
 	}
 
