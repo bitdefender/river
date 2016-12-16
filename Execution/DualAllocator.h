@@ -12,6 +12,7 @@ private:
 	DWORD dwSize;
 	DWORD dwUsed;
 	DWORD dwGran;
+	DWORD baseAddress;
 
 	std::vector<std::pair<FileView, DWORD> > mappedViews;
 	PROCESS_HANDLE hProcess[2];
@@ -22,6 +23,7 @@ public:
 
 	HANDLE CloneTo(PROCESS_HANDLE process);
 
+	void SetBaseAddress(DWORD baseAddress);
 	void *Allocate(DWORD size, DWORD &offset);
 	DWORD AllocateFixed(DWORD size, DWORD address);
 	void Free(void *ptr);

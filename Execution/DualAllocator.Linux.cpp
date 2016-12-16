@@ -4,16 +4,25 @@
 #include <algorithm>
 #include "../libproc/os-linux.h"
 
+#define DONOTPRINT
+
+#ifdef DONOTPRINT
+#define dbg_log(fmt,...) ((void)0)
+#else
+#define dbg_log(fmt,...) printf(fmt, ##__VA_ARGS__)
+#endif
+
 DualAllocator::DualAllocator(DWORD size, PROCESS_HANDLE remoteProcess, const char *shmName, DWORD granularity) {
 	dwSize = size;
 	dwUsed = 0;
+	dwGran = 0x1000;
 
 	hProcess[0] = GET_CURRENT_PROC();
 	hProcess[1] = remoteProcess;
 
-	hMapping = shm_open("/thug_life", O_CREAT | O_RDWR | O_TRUNC | O_EXCL, 0644);
+	hMapping = shm_open("/thug_life", O_CREAT | O_RDWR, 0644);
 	if (hMapping == -1) {
-		printf("[DualAllocator] Could not allocate shared memory chunk. Exiting. %d\n", errno);
+		printf("[DualAllocator] Could not init shared memory chunk. Exiting. %d\n", errno);
 	}
 }
 
@@ -30,30 +39,50 @@ HANDLE DualAllocator::CloneTo(PROCESS_HANDLE process) {
 	return nullptr;
 }
 
-DWORD DualAllocator::AllocateFixed(DWORD size, DWORD address) {
+void DualAllocator::SetBaseAddress(DWORD baseAddress) {
+	this->baseAddress = baseAddress;
+}
+
+DWORD DualAllocator::AllocateFixed(DWORD address, DWORD size) {
 	// TODO check if there is enough free space in parent! Should be!
-	return (unsigned long)mmap((void*)address, size,
+	dwUsed += size;
+	dwUsed += dwGran - 1;
+	dwUsed &= ~(dwGran - 1);
+
+	void* addr = mmap((void*)address, size,
 				PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, hMapping, 0);
+	if (addr == (void *)(-1))
+		printf("[DualAllocator] mmap failed with error code %d for address %p. Used: %08lx\n", errno, addr, dwUsed);
+	return (DWORD)addr;
 }
 
 void GetMemoryLayout(std::vector<struct map_region> &mrs, pid_t pid) {
 	struct map_iterator mi;
-	if (!maps_init(&mi, pid))
+	if (maps_init(&mi, pid) < 0) {
+		dbg_log("[DualAllocator] Cannot retrieve /proc/%d/maps\n", pid);
 		return;
+	}
 
 	struct map_prot mp;
 	unsigned long low, high, offset;
 
-	while (!maps_next(&mi, &low, &high, &offset, &mp)) {
-
+	dbg_log("[DualAllocator] /proc/%d/maps\n", pid);
+	while (maps_next(&mi, &low, &high, &offset, &mp)) {
+		dbg_log("[DualAllocator] path : %s base addr : %08lx high %08lx\n", mi.path, low, high);
 		struct map_region mr;
 		ssize_t len = mrs.size();
 		if (len > 1) {
 			// add free region before current region
 			mr.address = mrs[len - 1].address + mrs[len-1].size;
-			mr.size = low = mr.address;
+			mr.size = low - mr.address;
+		} else {
+			mr.address = 0x0;
+			mr.size = low;
+		}
+		if (mr.size > 0x00) {
 			mr.state = FREE;
 			mrs.push_back(mr);
+			dbg_log("[DualAllocator] Added FREE %08x %08x\n", mr.address, mr.size);
 		}
 
 		// add current allocated region
@@ -61,6 +90,7 @@ void GetMemoryLayout(std::vector<struct map_region> &mrs, pid_t pid) {
 		mr.size = high - low;
 		mr.state = ALLOCATED;
 		mrs.push_back(mr);
+		dbg_log("[DualAllocator] Added ALLOCATED %08x %08x\n", mr.address, mr.size);
 
 
 	}
@@ -73,17 +103,21 @@ bool VirtualQuery(std::vector<struct map_region> &mrs, uint32_t address,
 	for (auto it = mrs.begin(); it != mrs.end(); ++it) {
 		if (address < it->address)
 			continue;
-		if (address > it->address + it->size)
+		if (address >= it->address + it->size)
 			continue;
 		mr = *it;
 		return true;
 	}
+
+	//shouldn't reach this point
+	printf("[DualAllocator] Could not find memory region for address %08x\n",
+			address);
 	return false;
 }
 
 
 void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
-	printf("Looking for a 0x%08lx block\n", size);
+	printf("[DualAllocator] Looking for a 0x%08lx block\n", size);
 
 	// alignment
 	size = (size + 0xFFF) & ~0xFFF;
@@ -94,12 +128,11 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 				out of %08lx\n", dwUsed, dwSize);
 		return NULL;
 	}
-	offset = dwUsed;
-	dwUsed += size;
 
+	offset = dwUsed;
 	// now look for a suitable address;
 
-	DWORD dwOffset = 0x01000000; // dwGran;
+	DWORD dwOffset = baseAddress; // dwGran;
 	DWORD dwCandidate = 0, dwCandidateSize = 0xFFFFFFFF;
 
 	std::vector<struct map_region> MemoryLayout[2];
@@ -108,14 +141,13 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 		GetMemoryLayout(MemoryLayout[i], hProcess[i]);
 	}
 
-	while (dwOffset < 0x2FFF0000) {
+	while (dwOffset < 0xF7000000) {
 		struct map_region mr;
 		DWORD regionSize = 0xFFFFFFFF;
 		bool regionFree = true;
 
 		for (int i = 0; i < 2; ++i) {
-			if (!VirtualQuery(MemoryLayout[i], dwOffset,  mr))
-				return nullptr;
+			VirtualQuery(MemoryLayout[i], dwOffset,  mr);
 
 			DWORD dwSize = mr.size - (dwOffset - mr.address); // or allocationbase
 			if (regionSize > dwSize) {
@@ -138,15 +170,19 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 		}
 
 		dwOffset += regionSize;
-		//dwOffset += dwGran - 1;
-		//dwOffset &= ~(dwGran - 1);
+		dwOffset += dwGran - 1;
+		dwOffset &= ~(dwGran - 1);
 	}
 
 	if (0 == dwCandidate) {
+		printf("[DualAllocator] Could not find candidate for size %08lx\n", size);
 		return NULL;
 	}
 
+	printf("[DualAllocator] Trying to allocate %08lx at address %08lx\n",
+			size, dwCandidate);
 	void *ptr = (void *)AllocateFixed(dwCandidate, size);
+	printf("[DualAllocator] Allocated addr @%p of size %08lx\n", ptr, size);
 
 	if (dwCandidate != (DWORD)ptr) {
 		DEBUG_BREAK;

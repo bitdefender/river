@@ -78,6 +78,13 @@ namespace dbg {
 		printf("[Debugger] Tracee process %d stopped at eip %lx\n", Tracee, regs.eip);
 	}
 
+	int Debugger::CheckEip(unsigned eip) {
+		struct user_regs_struct regs;
+		ptrace(PTRACE_GETREGS, Tracee, 0, &regs);
+		printf("[Debugger] Tracee process %d testing eip %08lx with limit %08x\n", Tracee, regs.eip, eip);
+		return eip == regs.eip;
+	}
+
 	Debugger::Debugger() {
 		Tracee = -1;
 	}

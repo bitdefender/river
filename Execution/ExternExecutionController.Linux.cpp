@@ -14,6 +14,7 @@
 #define LOADER_PATH "/home/alex/river/tracer.simple/inst/lib/libloader.so"
 
 static bool ChildRunning = false;
+static void *hMapMemoryAddress = nullptr;
 
 unsigned long ExternExecutionController::ControlThread() {
 	bool bRunning = true;
@@ -72,6 +73,11 @@ unsigned long ExternExecutionController::ControlThread() {
 				DEBUG_BREAK;
 				break;
 
+			case REQUEST_DUMMY:
+				ipcData->type = REPLY_DUMMY;
+				printf("[Parent] Received dummy\n");
+				fflush(stdout);
+				break;
 			case REQUEST_MEMORY_ALLOC: {
 				DWORD offset;
 				ipcData->type = REPLY_MEMORY_ALLOC;
@@ -227,7 +233,7 @@ bool ExternExecutionController::InitializeIpcLib() {
 		return false;
 	}
 
-	ipcAPI->ldrMapMemory = pLdrMapMemory;
+	ipcAPI->ldrMapMemory = hMapMemoryAddress;
 
 
 	/* Exports */
@@ -315,12 +321,6 @@ bool ExternExecutionController::InitializeRevtracer() {
 
 bool ExternExecutionController::Execute() {
 
-	if (!InitializeAllocator()) {
-		execState = ERR;
-		DEBUG_BREAK;
-		return false;
-	}
-
 	pid_t child;
 	int status;
 	struct user_regs_struct regs;
@@ -331,7 +331,7 @@ bool ExternExecutionController::Execute() {
 	ConvertWideStringPath(arg, MAX_PATH);
 	entryPoint = GetEntryPoint(arg);
 
-	unsigned long shmAddress = 0x0;
+	void *shmAddress = nullptr;
 	const char* ld_library_path = getenv("LD_LIBRARY_PATH");
 	printf("[Parent] Retrieved path %s\n", ld_library_path);
 	child = fork();
@@ -361,40 +361,50 @@ bool ExternExecutionController::Execute() {
 		debugger.DeleteBreakpoint(entryPoint);
 
 		//DebugPrintVMMap(child);
-		unsigned long shmAddressOffset = 0x1f014;
-		unsigned long ipcBaseOffset = 0x1f01c;
-		unsigned long revwrapperBaseOffset = 0x1f02c;
-		unsigned long revtracerBaseOffset = 0x1f024;
 
-		unsigned long libloaderAddress = GetLoaderAddress(child);
-		shmAddress = debugger.GetAndResolveModuleAddress(libloaderAddress + shmAddressOffset);
+		unsigned long libloaderBase = GetLoaderAddress(child);
+		MODULE_PTR libloaderModule;
+		CreateModule(LOADER_PATH, libloaderModule);
+		LoadExportedName(libloaderModule, libloaderBase, "sharedMemoryAdress", shmAddress);
+		shmAddress = (void*)debugger.GetAndResolveModuleAddress((DWORD)shmAddress);
 
 		CreateModule(L"libipc.so", hIpcModule);
 		CreateModule(L"librevtracerwrapper.so", hRevWrapperModule);
 		CreateModule(L"revtracer.dll", hRevtracerModule);
 
-		DWORD libsSize = hIpcModule->GetRequiredSize() +
-			hRevWrapperModule->GetRequiredSize() +
-			hRevtracerModule->GetRequiredSize();
-		printf("[Parent] Received shared mem address %08lx\n", shmAddress);
+		DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+		DWORD dwRevWrapperSize = (hRevWrapperModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+		DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+		DWORD dwTotalSize = dwIpcLibSize + dwRevWrapperSize + dwRevTracerSize;
+
+		printf("[Parent] Received shared mem address %08lx\n", (DWORD)shmAddress);
 
 		// initialize dual allocator with child pid
 		shmAlloc = new DualAllocator(1 << 30, child, "thug_life", 0);
-		shmAddress = shmAlloc->AllocateFixed(libsSize, shmAddress);
+		shmAlloc->SetBaseAddress((DWORD)shmAddress);
+		//DebugPrintVMMap(child);
+		//DebugPrintVMMap(getpid());
+		shmAddress = (void*)shmAlloc->AllocateFixed((DWORD)shmAddress, dwTotalSize);
 
 		if (!shmAddress) {
 			printf("[Parent] Could not find enough space to map libraries. Exiting.");
 			return -1;
 		}
 
-		printf("[Parent] Mapped shared memory at address %08lx\n", shmAddress);
+		printf("[Parent] Mapped shared memory at address %08lx\n", (DWORD)shmAddress);
 
-		hIpcBase = debugger.GetAndResolveModuleAddress(libloaderAddress + ipcBaseOffset);
-		hRevWrapperBase = debugger.GetAndResolveModuleAddress(libloaderAddress + revwrapperBaseOffset);
-		hRevtracerBase = debugger.GetAndResolveModuleAddress(libloaderAddress + revtracerBaseOffset);
+		void *tmpAddress;
+		LoadExportedName(libloaderModule, libloaderBase, "hIpcBase", tmpAddress);
+		hIpcBase = debugger.GetAndResolveModuleAddress((DWORD)tmpAddress);
+		LoadExportedName(libloaderModule, libloaderBase, "hRevWrapperBase", tmpAddress);
+		hRevWrapperBase = debugger.GetAndResolveModuleAddress((DWORD)tmpAddress);
+		LoadExportedName(libloaderModule, libloaderBase, "hRevtracerBase", tmpAddress);
+		hRevtracerBase = debugger.GetAndResolveModuleAddress((DWORD)tmpAddress);
+		LoadExportedName(libloaderModule, libloaderBase, "MapMemory", hMapMemoryAddress);
 
-		printf("[Parent] Found libraries mapping in shared memory ipclib@%lx revtracer@%lx revwrapper@%lx\n",
-				hIpcBase, hRevtracerBase, hRevWrapperBase);
+		printf("[Parent] Found libraries mapping in shared memory ipclib@%lx revtracer@%lx revwrapper@%lx mapMemory %08lx\n",
+				hIpcBase, hRevtracerBase, hRevWrapperBase, (DWORD)hMapMemoryAddress);
+		DebugPrintVMMap(child);
 
 		InitializeIpcLib();
 		InitializeRevtracer();
@@ -416,15 +426,16 @@ bool ExternExecutionController::Execute() {
 
 		ChildRunning = debugger.Run(PTRACE_CONT);
 		debugger.PrintEip();
-		for (int i = 0; i < 100; i++) {
-			debugger.Run(PTRACE_SINGLESTEP);
-			debugger.PrintEip();
-		}
-
-		if (!ChildRunning) {
-			printf("[Parent] Child %d exited.\n", child);
-			ChildRunning = false;
-		}
+		ChildRunning = debugger.Run(PTRACE_CONT);
+		debugger.PrintEip();
+		ChildRunning = debugger.Run(PTRACE_CONT);
+		debugger.PrintEip();
+		//ChildRunning = debugger.Run(PTRACE_CONT);
+		//debugger.PrintEip();
+		//while (!debugger.CheckEip(0x83d2ff50)) {
+		//for (int i = 0; i < 2000; i++) {
+		//	debugger.Run(PTRACE_SINGLESTEP);
+		//}
 
 		return ret == TRUE;
 	}
