@@ -16,6 +16,7 @@ class Debugger {
 		int Run(enum __ptrace_request request);
 		void SetEip(unsigned long address);
 		void PrintEip();
+		int CheckEip(unsigned eip);
 		void GetData(long addr, unsigned char *str, int len);
 		void PutData(long addr, unsigned char *str, int len);
 		unsigned long GetAndResolveModuleAddress(unsigned long symbolAddress);
