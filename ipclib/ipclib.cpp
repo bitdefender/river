@@ -119,7 +119,7 @@ namespace ipc {
 #define FILE_MAP_READ       SECTION_MAP_READ
 #define FILE_MAP_EXECUTE	SECTION_MAP_EXECUTE
 
-	typedef void *(*LdrMapMemory)(DWORD desiredAccess, DWORD offset, size_t size, void *address);
+	typedef void *(*LdrMapMemory)(DWORD desiredAccess, DWORD offset, unsigned long size, void *address);
 	DLL_PUBLIC void *MemoryAllocFunc(DWORD dwSize) {
 		ipcData.type = REQUEST_MEMORY_ALLOC;
 		ipcData.data.asMemoryAllocRequest = dwSize;
@@ -283,11 +283,26 @@ namespace ipc {
 		}
 	}
 
+	DLL_PUBLIC void DummyFunc() {
+		ipcData.type = REQUEST_DUMMY;
+		ipcToken.Release(INPROC_TOKEN_USER);
+		// remote execution here
+
+		ipcToken.Wait(INPROC_TOKEN_USER);
+		if (ipcData.type != REPLY_DUMMY) {
+			DEBUG_BREAK;
+		}
+	}
+
+
 	DLL_PUBLIC void Initialize() {
 		debugLog.Init();
 		//TODO handle Windows case accordingly
 		ipcToken.SetupSignalHandler();
 		ipcToken.Use(INPROC_TOKEN_USER, getpid());
+		for (int i = 0; i < 5; i++) {
+			DummyFunc();
+		}
 	}
 
 	void NtDllNtYieldExecution() {
