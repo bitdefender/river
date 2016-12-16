@@ -1,3 +1,4 @@
+#include "loader.h"
 #include <sys/mman.h>
 #include <sys/stat.h>        /* For mode constants */
 #include <fcntl.h>
@@ -8,6 +9,7 @@
 #define DEBUG_BREAK asm volatile("int $0x3")
 
 typedef int(*RevWrapperInitCallback)(void);
+typedef void *(*CallMapMemoryCallback)(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address);
 static void init(void) __attribute__((constructor));
 static void destroy(void) __attribute__((destructor));
 
@@ -22,23 +24,33 @@ BASE_PTR hRevtracerBase;
 MODULE_PTR hRevWrapperModule;
 BASE_PTR hRevWrapperBase;
 
+int shmFd;
+
+CallMapMemoryCallback mapMemory;
+
+// Do not use library dependent code here!
+extern "C" {
+	void *MapMemory(unsigned long access, unsigned long offset, unsigned long size, void *address) {
+		return mapMemory((unsigned long)shmFd, access, offset, size, address);
+	}
+}
+
 unsigned long FindFreeVirtualMemory(int shmFd, DWORD size) {
 	void *addr = mmap(0, size, PROT_READ | PROT_WRITE | PROT_EXEC,
 			MAP_SHARED, shmFd, 0);
-	munmap(addr, 1 << 30);
+	munmap(addr, size);
 	return (unsigned long)addr;
 }
 
 int  InitializeAllocator() {
-	int fd = shm_open("/thug_life", O_CREAT | O_RDWR | O_TRUNC, 0644);
-	if (fd < 0) {
+	shmFd = shm_open("/thug_life", O_CREAT | O_RDWR | O_TRUNC | O_EXCL, 0644);
+	if (shmFd < 0) {
 		printf("[Child] Could not allocate shared memory chunk. Exiting.\n");
 		return -1;
 	}
 
-	int ret = ftruncate(fd, 1 << 30);
-	fflush(stdout);
-	return fd;
+	int ret = ftruncate(shmFd, 1 << 30);
+	return shmFd;
 }
 
 unsigned long MapSharedLibraries(int shmFd) {
@@ -56,7 +68,7 @@ unsigned long MapSharedLibraries(int shmFd) {
 	DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 	DWORD dwTotalSize = dwIpcLibSize + dwRevWrapperSize + dwRevTracerSize;
 
-	hIpcBase = FindFreeVirtualMemory(shmFd, dwTotalSize);
+	hIpcBase = FindFreeVirtualMemory(shmFd, 1 << 30);
 
 	MapModule(hIpcModule, hIpcBase, shmFd, 0);
 
@@ -78,15 +90,18 @@ unsigned long MapSharedLibraries(int shmFd) {
 	} else {
 		printf("[Child] Revwrapper init returned successfully\n");
 	}
+
+	LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallMapMemoryHandler", mapMemory);
+	printf("[Child] Found mapMemory handler at address %08lx\n", (unsigned long)mapMemory);
 	return hIpcBase;
 }
 
 void init() {
-	int fd = InitializeAllocator();
-	sharedMemoryAdress = MapSharedLibraries(fd);
+	InitializeAllocator();
+	sharedMemoryAdress = MapSharedLibraries(shmFd);
 	if ((int)sharedMemoryAdress == -1)
 		printf("[Child] Failed to map the shared mem\n");
-	printf("[Child] Shared mem address is %p\n", (void*)sharedMemoryAdress);
+	printf("[Child] Shared mem address is %p. Fd is [%d]\n", (void*)sharedMemoryAdress, shmFd);
 	fflush(stdout);
 
 }
