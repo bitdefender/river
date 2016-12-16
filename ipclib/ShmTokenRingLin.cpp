@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 //#define DONOTPRINT
 
@@ -18,13 +19,12 @@ namespace ipc {
 
 	static void SignalHandler(int signo)
 	{
-		dbg_log("[!!!][ShmTokenRingLin] Caught signal %d in process %d\n", signo, getpid());
+		//dbg_log("[!!!][ShmTokenRingLin] Caught signal %d in process %d\n", signo, getpid());
 	}
 
 	ShmTokenRingLin::ShmTokenRingLin() {
 		// happens when ipclib is loaded in memory
 		dbg_log("[ShmTokenRingLin] Constructor is called when loading libipc\n");
-		SetupSignalHandler();
 		Init(0);
 	}
 
@@ -73,11 +73,8 @@ namespace ipc {
 			sigfillset(&mask);
 			sigdelset(&mask, SIGUSR1);
 
-			int ret = sigsuspend(&mask);
-			if (ret < 0) {
-				dbg_log("[ipclib] Wait failed with exitcode %d pid %d\n", ret, getpid());
-				DEBUG_BREAK;
-				return true;
+			while(sigsuspend(&mask) != 0) {
+				dbg_log("[ipclib] Wait failed pid %d errno %d\n", getpid(), errno);
 			}
 
 			localCurrentOwner = currentOwner;

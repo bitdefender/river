@@ -99,6 +99,7 @@ namespace ipc {
 #define REQUEST_CLEANUP_CONTEXT				0x91
 #define REQUEST_SYSCALL_CONTROL				0x95
 #define REQUEST_BRANCH_HANDLER				0xA0
+#define REQUEST_DUMMY						0xFF
 
 #define REPLY_MEMORY_ALLOC					0xC0
 #define REPLY_MEMORY_FREE					0xC1
@@ -108,6 +109,7 @@ namespace ipc {
 #define REPLY_CLEANUP_CONTEXT				0xD1
 #define REPLY_SYSCALL_CONTROL				0xD5
 #define REPLY_BRANCH_HANDLER				0xE0
+#define REPLY_DUMMY							0xFE
 
 	struct IpcData {
 		DWORD type;
