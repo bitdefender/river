@@ -16,6 +16,9 @@ WriteFileFunc writeFile;
 ToErrnoFunc toErrno;
 
 YieldExecutionFunc yieldExecution;
+InitSemaphoreFunc initSemaphore;
+WaitSemaphoreFunc waitSemaphore;
+PostSemaphoreFunc postSemaphore;
 
 FlushInstructionCacheFunc flushInstructionCache;
 
@@ -56,6 +59,18 @@ namespace revwrapper {
 	// Used until we replace the ipclib spinlock with signals / events
 	DLL_PUBLIC extern long CallYieldExecution(void) {
 		return yieldExecution();
+	}
+
+	DLL_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value) {
+		return initSemaphore(semaphore, shared, value);
+	}
+
+	DLL_PUBLIC extern int CallWaitSemaphore(void *semaphore) {
+		return waitSemaphore(semaphore);
+	}
+
+	DLL_PUBLIC extern int CallPostSemaphore(void *semaphore) {
+		return postSemaphore(semaphore);
 	}
 
 	DLL_PUBLIC extern void CallFlushInstructionCache(void) {
