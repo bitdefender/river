@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <semaphore.h>
 
 
 // Used for revtracer wrapper local tests
@@ -26,6 +27,17 @@ int TestCallMapMemoryHandler_valid_shm() {
 	return addr != (void*)-1;
 }
 
+int TestSemaphore() {
+	sem_t semaphore;
+	int ret = revwrapper::CallInitSemaphore((void*)&semaphore, 0, 1);
+	assert(ret == 0);
+	ret = revwrapper::CallWaitSemaphore((void*)&semaphore);
+	assert(ret == 0);
+	ret = revwrapper::CallPostSemaphore((void*)&semaphore);
+	assert(ret == 0);
+	return 1;
+}
+
 int main () {
 
   int ret = revwrapper::InitRevtracerWrapper();
@@ -35,4 +47,5 @@ int main () {
   }
   assert(TestCallMapMemoryHandler_basic() == 1);
   assert(TestCallMapMemoryHandler_valid_shm() == 1);
+  assert(TestSemaphore() == 1);
 }

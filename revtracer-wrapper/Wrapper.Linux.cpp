@@ -50,8 +50,8 @@ void LinFreeVirtual(void *address) {
 typedef AllocateMemoryHandler MapMemoryHandler;
 
 void *LinMapMemory(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
-	void *addr =  _virtualAlloc(address, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, (int)mapHandler, 0);
-	_print("[RevtracerWrapper] Got address %p for input shm %d size %ld address %p\n", addr, mapHandler, size, address);
+	void *addr =  _virtualAlloc(address, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, (int)mapHandler, offset);
+	_print("[RevtracerWrapper] LinMapMemory: received %p input shm %d size %lu address %p at offset %08lx\n", addr, (int)mapHandler, size, address, offset);
 	return addr;
 }
 
@@ -113,8 +113,7 @@ long LinYieldExecution(void) {
 	return (long) _yieldExecution();
 }
 
-
-// ------------------- Yield execution ------------------------
+// ------------------- Flush instr cache ----------------------
 void LinFlushInstructionCache(void) {
 }
 
@@ -149,8 +148,13 @@ namespace revwrapper {
 
 		toErrno = LinToErrno;
 		formatPrint = LinFormatPrint;
+		Print = _print;
+		_print("[RevtracerWrapper] InitRevtracerWrapper success\n");
 
 		yieldExecution = LinYieldExecution;
+		initSemaphore = (InitSemaphoreFunc)LOAD_PROC(lpthreadHandler, "sem_init");
+		waitSemaphore = (WaitSemaphoreFunc)LOAD_PROC(lpthreadHandler, "sem_wait");
+		postSemaphore = (PostSemaphoreFunc)LOAD_PROC(lpthreadHandler, "sem_post");
 
 		flushInstructionCache = LinFlushInstructionCache;
 		return 0;

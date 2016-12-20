@@ -70,6 +70,15 @@ namespace revwrapper {
 		/** Yield the CPU */
 		DLL_PUBLIC extern long CallYieldExecution(void);
 
+		/** Init semaphore */
+		DLL_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value);
+
+		/** Wait for semaphore */
+		DLL_PUBLIC extern int CallWaitSemaphore(void *semaphore);
+
+		/** Post semaphore*/
+		DLL_PUBLIC extern int CallPostSemaphore(void *semaphore);
+
 		/** Flush contents of instruction cache */
 		DLL_PUBLIC extern void CallFlushInstructionCache(void);
 	}
