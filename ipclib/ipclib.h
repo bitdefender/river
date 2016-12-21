@@ -86,6 +86,9 @@ namespace ipc {
 		ADDR_TYPE ntSetEvent;
 		ADDR_TYPE ntDelayExecution;*/
 		ADDR_TYPE ntYieldExecution;
+		ADDR_TYPE initSemaphore;
+		ADDR_TYPE waitSemaphore;
+		ADDR_TYPE postSemaphore;
 		ADDR_TYPE vsnprintf_s;
 
 		ADDR_TYPE ldrMapMemory;
@@ -154,8 +157,8 @@ namespace ipc {
 		} data;
 	};
 
-#define INPROC_TOKEN_USER 0
-#define REMOTE_TOKEN_USER 1
+#define INPROC_TOKEN_USER 1
+#define REMOTE_TOKEN_USER 0
 
 	extern "C" {
 		DLL_PUBLIC extern RingBuffer<(1 << 20)> debugLog;
