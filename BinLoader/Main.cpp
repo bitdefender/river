@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 #include "Abstract.Loader.h"
 #include "Abstract.Importer.h"
 #include "Inproc.Mapper.h"
@@ -25,7 +26,12 @@ int main() {
 	//printf("Allocated %d bytes @address %p\n", 1024, addr);
 
 	//delete fElf;
-
+	MODULE_PTR lModule = nullptr;
+	BASE_PTR lBase = 0;
+	CreateModule("libc.so", lModule);
+	assert(lModule != nullptr);
+	MapModule(lModule, lBase);
+	assert(lBase != 0);
 	return 0;
 }
 
