@@ -9,7 +9,7 @@
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
 #else
-#define dbg_log(fmt,...) printf(fmt, ##__VA_ARGS__)
+#define dbg_log(fmt,...) {printf(fmt, ##__VA_ARGS__); fflush(stdout);}
 #endif
 
 #define SHT_NULL	 0
