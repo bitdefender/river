@@ -213,7 +213,8 @@ namespace ldr {
 
 	void *FloatingELF32::RVA(DWORD rva) const {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
-			if ((i->header.sh_addr <= rva) && (i->header.sh_addr + i->header.sh_size > rva)) {
+			if ((i->header.sh_addr <= rva) && (i->header.sh_addr + i->header.sh_size > rva) &&
+					(i->header.sh_type != SHT_NOBITS)) {
 				return &i->data[rva - i->header.sh_addr];
 			}
 		}
