@@ -75,8 +75,6 @@ unsigned long ExternExecutionController::ControlThread() {
 
 			case REQUEST_DUMMY:
 				ipcData->type = REPLY_DUMMY;
-				printf("[Parent] Received dummy\n");
-				fflush(stdout);
 				break;
 			case REQUEST_MEMORY_ALLOC: {
 				DWORD offset;
@@ -102,6 +100,7 @@ unsigned long ExternExecutionController::ControlThread() {
 				break;
 
 			default:
+				printf("[Parent] Received message with number %lu\n", ipcData->type);
 				DEBUG_BREAK;
 				break;
 			}
@@ -189,7 +188,7 @@ void DebugPrintVMMap(pid_t pid) {
 	}
 
 	while (maps_next (&mi, &segbase, &hi, &mapoff, &mp)) {
-		printf("path : %s base addr : %lx\n", mi.path, segbase);
+		printf("path : %s base addr : %08lx high %08lx\n", mi.path, segbase, hi);
 	}
 
 	maps_close(&mi);
@@ -228,7 +227,10 @@ bool ExternExecutionController::InitializeIpcLib() {
 	}
 
 	if (!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallYieldExecution", ipcAPI->ntYieldExecution) ||
-		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler", ipcAPI->vsnprintf_s)
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler", ipcAPI->vsnprintf_s) ||
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallInitSemaphore", ipcAPI->initSemaphore) ||
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallWaitSemaphore", ipcAPI->waitSemaphore) ||
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallPostSemaphore", ipcAPI->postSemaphore)
 		) {
 		return false;
 	}
@@ -404,16 +406,15 @@ bool ExternExecutionController::Execute() {
 
 		printf("[Parent] Found libraries mapping in shared memory ipclib@%lx revtracer@%lx revwrapper@%lx mapMemory %08lx\n",
 				hIpcBase, hRevtracerBase, hRevWrapperBase, (DWORD)hMapMemoryAddress);
-		DebugPrintVMMap(child);
 
 		InitializeIpcLib();
 		InitializeRevtracer();
 
 		// Setup token ring pids
-		ipcToken->SetupSignalHandler();
 		ipcToken->Init(0);
-		ipcToken->Use(REMOTE_TOKEN_USER, getpid());
+		ipcToken->Use(REMOTE_TOKEN_USER);
 
+		DebugPrintVMMap(child);
 		printf("[Parent] Passing execution control to revtracerPerform %08lx\n", (unsigned long)revtracerPerform);
 		// ipcToken object exists and called init and use.
 		debugger.SetEip((unsigned long)revtracerPerform);
@@ -426,14 +427,9 @@ bool ExternExecutionController::Execute() {
 
 		ChildRunning = debugger.Run(PTRACE_CONT);
 		debugger.PrintEip();
-		ChildRunning = debugger.Run(PTRACE_CONT);
-		debugger.PrintEip();
-		ChildRunning = debugger.Run(PTRACE_CONT);
-		debugger.PrintEip();
 		//ChildRunning = debugger.Run(PTRACE_CONT);
 		//debugger.PrintEip();
-		//while (!debugger.CheckEip(0x83d2ff50)) {
-		//for (int i = 0; i < 2000; i++) {
+		//while (!debugger.CheckEip(0x0)) {
 		//	debugger.Run(PTRACE_SINGLESTEP);
 		//}
 
