@@ -32,6 +32,12 @@ int main() {
 	assert(lModule != nullptr);
 	MapModule(lModule, lBase);
 	assert(lBase != 0);
+
+	CreateModule("libpthread.so", lModule);
+	assert(lModule != nullptr);
+	lBase = 0;
+	MapModule(lModule, lBase);
+	assert(lBase != 0);
 	return 0;
 }
 
