@@ -148,7 +148,6 @@ namespace revwrapper {
 
 		toErrno = LinToErrno;
 		formatPrint = LinFormatPrint;
-		Print = _print;
 		_print("[RevtracerWrapper] InitRevtracerWrapper success\n");
 
 		yieldExecution = LinYieldExecution;
