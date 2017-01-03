@@ -28,7 +28,7 @@ install: $(lib_execution)
 	install -m 0755 $(lib_execution) -t $(prefix)/lib -D
 
 $(lib_execution): $(OBJ_FILES)
-	$(CXX) $(CC_FLAGS) -Wl,-Ttext-segment=0xf7c49000 -shared -o $@ $^ $(LIB_BINLOADER_PATH) $(LD_FLAGS)
+	$(CXX) $(CC_FLAGS)  -shared -o $@ $^ $(LIB_BINLOADER_PATH) $(LD_FLAGS)
 
 %.o: %.cpp
 	   $(CXX) $(CC_FLAGS) -c -o $@ $<
