@@ -5,7 +5,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
 #include <semaphore.h>
 #include "../BinLoader/LoaderAPI.h"
 
@@ -20,10 +19,11 @@ int TestCallMapMemoryHandler_basic() {
 }
 
 int TestCallMapMemoryHandler_valid_shm() {
-	int shmFd = shm_open("/test-valid-shm", O_CREAT | O_RDWR | O_TRUNC | O_EXCL, 0644);
+	int shmFd = revwrapper::CallOpenSharedMemory("/test-valid-shm", O_CREAT | O_RDWR | O_TRUNC | O_EXCL, 0644);
+	assert(shmFd != -1);
 	void *address = (void*)0xb7aab000;
 	void *addr = revwrapper::CallMapMemoryHandler(shmFd, 0, 0, 1000, address);
-	shm_unlink("/test-valid-shm");
+	revwrapper::CallUnlinkSharedMemory("/test-valid-shm");
 	printf("[TestCallMapMemoryHandler_valid_shm] Result [%p]\n", addr);
 	return addr != (void*)-1;
 }

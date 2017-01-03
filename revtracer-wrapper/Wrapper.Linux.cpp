@@ -13,7 +13,7 @@
 typedef void* lib_t;
 
 DLL_LOCAL MODULE_PTR lpthreadModule;
-DLL_LOCAL lib_t lcModule;
+DLL_LOCAL lib_t lcModule, lrtModule;
 
 typedef int (*PrintfHandler)(const char *format, ...);
 PrintfHandler _print;
@@ -120,6 +120,7 @@ void LinFlushInstructionCache(void) {
 namespace revwrapper {
 	extern "C" int InitRevtracerWrapper(unsigned long _lcBase, unsigned long lpthreadBase) {
 		lcModule = dlopen("libc.so", RTLD_LAZY);
+		lrtModule = dlopen("librt.so", RTLD_LAZY);
 		CreateModule("libpthread.so", lpthreadModule);
 		//TODO find base addresses
 
@@ -160,6 +161,9 @@ namespace revwrapper {
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_post", postSemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_destroy", destroySemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_getvalue", getvalueSemaphore);
+
+		openSharedMemory = (OpenSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_open");
+		unlinkSharedMemory = (UnlinkSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_unlink");
 
 		flushInstructionCache = LinFlushInstructionCache;
 		return 0;

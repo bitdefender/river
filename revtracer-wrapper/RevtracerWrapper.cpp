@@ -22,6 +22,8 @@ PostSemaphoreFunc postSemaphore;
 DestroySemaphoreFunc destroySemaphore;
 GetValueSemaphoreFunc getvalueSemaphore;
 
+OpenSharedMemoryFunc openSharedMemory;
+UnlinkSharedMemoryFunc unlinkSharedMemory;
 
 FlushInstructionCacheFunc flushInstructionCache;
 
@@ -82,6 +84,14 @@ namespace revwrapper {
 
 	DLL_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *value) {
 		return getvalueSemaphore(semaphore, value);
+	}
+
+	DLL_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode) {
+		return openSharedMemory(name, oflag, mode);
+	}
+
+	DLL_PUBLIC extern int CallUnlinkSharedMemory(const char *name) {
+		return unlinkSharedMemory(name);
 	}
 
 	DLL_PUBLIC extern void CallFlushInstructionCache(void) {

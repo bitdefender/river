@@ -20,6 +20,9 @@ typedef int (*PostSemaphoreFunc)(void *);
 typedef int (*DestroySemaphoreFunc)(void *);
 typedef int (*GetValueSemaphoreFunc) (void *, int *);
 
+typedef int (*OpenSharedMemoryFunc) (const char *, int, int);
+typedef int (*UnlinkSharedMemoryFunc) (const char *);
+
 typedef void (*FlushInstructionCacheFunc)(void);
 
 
@@ -41,6 +44,9 @@ extern WaitSemaphoreFunc waitSemaphore;
 extern PostSemaphoreFunc postSemaphore;
 extern DestroySemaphoreFunc destroySemaphore;
 extern GetValueSemaphoreFunc getvalueSemaphore;
+
+extern OpenSharedMemoryFunc openSharedMemory;
+extern UnlinkSharedMemoryFunc unlinkSharedMemory;
 
 extern FlushInstructionCacheFunc flushInstructionCache;
 
