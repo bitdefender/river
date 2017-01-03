@@ -85,6 +85,12 @@ namespace revwrapper {
 		/** Get value semaphore */
 		DLL_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *ret);
 
+		/** Open shared mem */
+		DLL_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode);
+
+		/** Unlink shared mem */
+		DLL_PUBLIC extern int CallUnlinkSharedMemory(const char *name);
+
 		/** Flush contents of instruction cache */
 		DLL_PUBLIC extern void CallFlushInstructionCache(void);
 	}
