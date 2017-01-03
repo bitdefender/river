@@ -15,6 +15,7 @@
 
 static bool ChildRunning = false;
 static void *hMapMemoryAddress = nullptr;
+ldr::LoaderAPI *loaderAPI;
 
 unsigned long ExternExecutionController::ControlThread() {
 	bool bRunning = true;
@@ -257,6 +258,7 @@ bool ExternExecutionController::InitializeIpcLib() {
 		return false;
 	}
 
+	ipcToken->SetIpcApiHandler(ipcAPI);
 	return true;
 }
 
@@ -367,8 +369,6 @@ bool ExternExecutionController::Execute() {
 		unsigned long libloaderBase = GetLoaderAddress(child);
 		MODULE_PTR libloaderModule;
 		CreateModule(LOADER_PATH, libloaderModule);
-		LoadExportedName(libloaderModule, libloaderBase, "sharedMemoryAdress", shmAddress);
-		shmAddress = (void*)debugger.GetAndResolveModuleAddress((DWORD)shmAddress);
 
 		CreateModule(L"libipc.so", hIpcModule);
 		CreateModule(L"librevtracerwrapper.so", hRevWrapperModule);
@@ -379,30 +379,29 @@ bool ExternExecutionController::Execute() {
 		DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwTotalSize = dwIpcLibSize + dwRevWrapperSize + dwRevTracerSize;
 
+		LoadExportedName(libloaderModule, libloaderBase, "loaderAPI", loaderAPI);
+		// TODO dirty hack - sharedMemoryAddress offset in struct
+		shmAddress = (void*)debugger.GetAndResolveModuleAddress((DWORD)loaderAPI + 12);
 		printf("[Parent] Received shared mem address %08lx\n", (DWORD)shmAddress);
 
 		// initialize dual allocator with child pid
 		shmAlloc = new DualAllocator(1 << 30, child, "thug_life", 0);
 		shmAlloc->SetBaseAddress((DWORD)shmAddress);
-		//DebugPrintVMMap(child);
-		//DebugPrintVMMap(getpid());
 		shmAddress = (void*)shmAlloc->AllocateFixed((DWORD)shmAddress, dwTotalSize);
 
-		if (!shmAddress) {
+		if (shmAddress == (void *)-1) {
 			printf("[Parent] Could not find enough space to map libraries. Exiting.");
 			return -1;
 		}
 
 		printf("[Parent] Mapped shared memory at address %08lx\n", (DWORD)shmAddress);
 
-		void *tmpAddress;
-		LoadExportedName(libloaderModule, libloaderBase, "hIpcBase", tmpAddress);
-		hIpcBase = debugger.GetAndResolveModuleAddress((DWORD)tmpAddress);
-		LoadExportedName(libloaderModule, libloaderBase, "hRevWrapperBase", tmpAddress);
-		hRevWrapperBase = debugger.GetAndResolveModuleAddress((DWORD)tmpAddress);
-		LoadExportedName(libloaderModule, libloaderBase, "hRevtracerBase", tmpAddress);
-		hRevtracerBase = debugger.GetAndResolveModuleAddress((DWORD)tmpAddress);
 		LoadExportedName(libloaderModule, libloaderBase, "MapMemory", hMapMemoryAddress);
+
+		//TODO dirty hack - base members offsets in struct
+		hIpcBase = debugger.GetAndResolveModuleAddress((DWORD)loaderAPI->mos + 4);
+		hRevWrapperBase = debugger.GetAndResolveModuleAddress((DWORD)(loaderAPI->mos + 2) + 4);
+		hRevtracerBase = debugger.GetAndResolveModuleAddress((DWORD)(loaderAPI->mos + 3) + 4);
 
 		printf("[Parent] Found libraries mapping in shared memory ipclib@%lx revtracer@%lx revwrapper@%lx mapMemory %08lx\n",
 				hIpcBase, hRevtracerBase, hRevWrapperBase, (DWORD)hMapMemoryAddress);
@@ -410,11 +409,12 @@ bool ExternExecutionController::Execute() {
 		InitializeIpcLib();
 		InitializeRevtracer();
 
+		DebugPrintVMMap(child);
+		DebugPrintVMMap(getpid());
 		// Setup token ring pids
 		ipcToken->Init(0);
 		ipcToken->Use(REMOTE_TOKEN_USER);
 
-		DebugPrintVMMap(child);
 		printf("[Parent] Passing execution control to revtracerPerform %08lx\n", (unsigned long)revtracerPerform);
 		// ipcToken object exists and called init and use.
 		debugger.SetEip((unsigned long)revtracerPerform);
