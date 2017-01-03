@@ -1,6 +1,8 @@
 #ifndef _LOADER_H
 #define _LOADER_H
 
+#include "../BinLoader/LoaderAPI.h"
+
 namespace ldr {
 #if defined _WIN32 || defined __CYGWIN__
 	#ifdef _BUILDING_LOADER_DLL
@@ -88,6 +90,7 @@ namespace ldr {
 		ADDR_TYPE entryPoint;
 	};
 
+#define MAX_LIBS 10
 	struct LoaderAPI {
 		//ADDR_TYPE ntOpenSection;
 		ADDR_TYPE ntMapViewOfSection;
@@ -101,13 +104,14 @@ namespace ldr {
 
 		//ADDR_TYPE rtlInitUnicodeStringEx;
 		//ADDR_TYPE rtlFreeUnicodeString;
+		unsigned long sharedMemoryAddress;
+		struct mappedObject mos[MAX_LIBS];
 	};
 
 
 	extern "C" {
 		DLL_PUBLIC extern LoaderConfig loaderConfig;
 		DLL_PUBLIC extern LoaderAPI loaderAPI;
-		DLL_PUBLIC extern DWORD hIpcBase, hRevWrapperBase, hRevtracerBase, hLibCBase, hLibPthreadBase;
 
 		DLL_PUBLIC void *MapMemory(unsigned long access, unsigned long offset, unsigned long size, void *address);
 		DLL_PUBLIC void LoaderPerform();

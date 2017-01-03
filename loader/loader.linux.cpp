@@ -7,11 +7,11 @@
 #include <assert.h>
 #include <vector>
 #include <string>
-#include "../BinLoader/LoaderAPI.h"
 
 #define DEBUG_BREAK asm volatile("int $0x3")
 
-#define MAX_LIBS 10
+namespace ldr {
+
 #define LIB_IPC_INDEX 0
 #define LIB_PTHREAD_INDEX 1
 #define LIB_REV_WRAPPER_INDEX 2
@@ -23,16 +23,7 @@ typedef void *(*CallMapMemoryCallback)(unsigned long mapHandler, unsigned long a
 static void init(void) __attribute__((constructor));
 static void destroy(void) __attribute__((destructor));
 
-struct mappedObject {
-	MODULE_PTR module;
-	BASE_PTR base;
-	DWORD size;
-};
-
-unsigned long sharedMemoryAdress = 0x0;
-
-mappedObject mos[MAX_LIBS];
-
+struct LoaderAPI loaderAPI;
 int shmFd;
 
 CallMapMemoryCallback mapMemory;
@@ -71,58 +62,60 @@ unsigned long MapSharedLibraries(int shmFd) {
 	std::vector<std::string> libNames = {"libipc.so", "libpthread.so", "librevtracerwrapper.so", "revtracer.dll"};
 
 	for (int i = 0; i < libNames.size(); ++i) {
-		CreateModule(libNames[i].c_str(), mos[i].module);
-		if (!mos[i].module) {
+		CreateModule(libNames[i].c_str(), loaderAPI.mos[i].module);
+		if (!loaderAPI.mos[i].module) {
 			printf("[Child] Could not map %s lib in shm\n", libNames[i].c_str());
 			return -1;
 		}
+		loaderAPI.mos[i].base = 0x0;
 	}
 
 	DWORD dwTotalSize = 0;
 	for (int i = 0; i < libNames.size(); ++i) {
-		mos[i].size = (mos[i].module->GetRequiredSize() + 0xFFF) & ~0xFFFF;
-		dwTotalSize += mos[i].size;
+		loaderAPI.mos[i].size = (loaderAPI.mos[i].module->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+		dwTotalSize += loaderAPI.mos[i].size;
 	}
 
-	mos[0].base = FindFreeVirtualMemory(shmFd, 1 << 30);
+	loaderAPI.mos[0].base = FindFreeVirtualMemory(shmFd, 1 << 30);
+	printf("[Child] Mapped shared memory base address @%08lx\n", loaderAPI.mos[0].base);
 
 	for (int i = 1; i < libNames.size(); ++i) {
-		mos[i].base = mos[i - 1].base + mos[i - 1].size;
+		loaderAPI.mos[i].base = loaderAPI.mos[i - 1].base + loaderAPI.mos[i - 1].size;
 	}
 
 	DWORD offset = 0;
 	for (int i = 0; i < libNames.size(); ++i) {
-		MapModule(mos[i].module, mos[i].base, shmFd, offset);
-		offset += mos[i].size;
+		MapModule(loaderAPI.mos[i].module, loaderAPI.mos[i].base, shmFd, offset);
+		offset += loaderAPI.mos[i].size;
 	}
 
 	assert(offset == dwTotalSize);
 
 	for (int i = 0; i < libNames.size(); ++i) {
-		printf("[Child] Mapped library %s at address %08lx\n", libNames[i].c_str(), (DWORD)mos[i].base);
+		printf("[Child] Mapped library %s at address %08lx\n", libNames[i].c_str(), (DWORD)loaderAPI.mos[i].base);
 	}
 
 	RevWrapperInitCallback initRevWrapper;
-	LoadExportedName(mos[LIB_REV_WRAPPER_INDEX].module, mos[LIB_REV_WRAPPER_INDEX].base, "InitRevtracerWrapper", initRevWrapper);
+	LoadExportedName(loaderAPI.mos[LIB_REV_WRAPPER_INDEX].module, loaderAPI.mos[LIB_REV_WRAPPER_INDEX].base, "InitRevtracerWrapper", initRevWrapper);
 	printf("[Child] Found initRevWrapper address @%p\n", (void *)initRevWrapper);
-	if (initRevWrapper(0, mos[LIB_PTHREAD_INDEX].base) == -1) {
+	if (initRevWrapper(0, loaderAPI.mos[LIB_PTHREAD_INDEX].base) == -1) {
 		printf("[Child] Could not find revwrapper needed libraries\n");
 		return 0x0;
 	} else {
 		printf("[Child] Revwrapper init returned successfully\n");
 	}
 
-	LoadExportedName(mos[LIB_REV_WRAPPER_INDEX].module, mos[LIB_REV_WRAPPER_INDEX].base, "CallMapMemoryHandler", mapMemory);
+	LoadExportedName(loaderAPI.mos[LIB_REV_WRAPPER_INDEX].module, loaderAPI.mos[LIB_REV_WRAPPER_INDEX].base, "CallMapMemoryHandler", mapMemory);
 	printf("[Child] Found mapMemory handler at address %08lx\n", (unsigned long)mapMemory);
-	return mos[LIB_IPC_INDEX].base;
+	return loaderAPI.mos[LIB_IPC_INDEX].base;
 }
 
 void init() {
 	InitializeAllocator();
-	sharedMemoryAdress = MapSharedLibraries(shmFd);
-	if ((int)sharedMemoryAdress == -1)
+	loaderAPI.sharedMemoryAddress = MapSharedLibraries(shmFd);
+	if ((int)loaderAPI.sharedMemoryAddress == -1)
 		printf("[Child] Failed to map the shared mem\n");
-	printf("[Child] Shared mem address is %p. Fd is [%d]\n", (void*)sharedMemoryAdress, shmFd);
+	printf("[Child] Shared mem address is %p. Fd is [%d]\n", (void*)loaderAPI.sharedMemoryAddress, shmFd);
 	fflush(stdout);
 
 }
@@ -130,3 +123,5 @@ void init() {
 void destroy() {
 	shm_unlink("/thug_life");
 }
+
+}; //namespace ldr
