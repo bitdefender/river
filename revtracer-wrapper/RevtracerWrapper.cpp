@@ -19,6 +19,9 @@ YieldExecutionFunc yieldExecution;
 InitSemaphoreFunc initSemaphore;
 WaitSemaphoreFunc waitSemaphore;
 PostSemaphoreFunc postSemaphore;
+DestroySemaphoreFunc destroySemaphore;
+GetValueSemaphoreFunc getvalueSemaphore;
+
 
 FlushInstructionCacheFunc flushInstructionCache;
 
@@ -71,6 +74,14 @@ namespace revwrapper {
 
 	DLL_PUBLIC extern int CallPostSemaphore(void *semaphore) {
 		return postSemaphore(semaphore);
+	}
+
+	DLL_PUBLIC extern int CallDestroySemaphore(void *semaphore) {
+		return destroySemaphore(semaphore);
+	}
+
+	DLL_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *value) {
+		return getvalueSemaphore(semaphore, value);
 	}
 
 	DLL_PUBLIC extern void CallFlushInstructionCache(void) {

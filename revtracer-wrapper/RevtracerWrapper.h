@@ -31,7 +31,7 @@ namespace revwrapper {
 
 	extern "C" {
 		/** Initializes the API-wrapper */
-		DLL_PUBLIC extern int InitRevtracerWrapper();
+		DLL_PUBLIC extern int InitRevtracerWrapper(unsigned long, unsigned long);
 
 		/** Allocates virtual memory */
 		DLL_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long);
@@ -78,6 +78,12 @@ namespace revwrapper {
 
 		/** Post semaphore*/
 		DLL_PUBLIC extern int CallPostSemaphore(void *semaphore);
+
+		/** Destroy semaphore */
+		DLL_PUBLIC extern int CallDestroySemaphore(void *semaphore);
+
+		/** Get value semaphore */
+		DLL_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *ret);
 
 		/** Flush contents of instruction cache */
 		DLL_PUBLIC extern void CallFlushInstructionCache(void);
