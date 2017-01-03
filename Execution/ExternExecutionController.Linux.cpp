@@ -370,14 +370,17 @@ bool ExternExecutionController::Execute() {
 		MODULE_PTR libloaderModule;
 		CreateModule(LOADER_PATH, libloaderModule);
 
+		MODULE_PTR hPthreadModule;
 		CreateModule(L"libipc.so", hIpcModule);
+		CreateModule(L"libpthread.so", hPthreadModule);
 		CreateModule(L"librevtracerwrapper.so", hRevWrapperModule);
 		CreateModule(L"revtracer.dll", hRevtracerModule);
 
 		DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
+		DWORD dwLibPthreadSize = (hPthreadModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwRevWrapperSize = (hRevWrapperModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
-		DWORD dwTotalSize = dwIpcLibSize + dwRevWrapperSize + dwRevTracerSize;
+		DWORD dwTotalSize = dwIpcLibSize + dwLibPthreadSize + dwRevWrapperSize + dwRevTracerSize;
 
 		LoadExportedName(libloaderModule, libloaderBase, "loaderAPI", loaderAPI);
 		// TODO dirty hack - sharedMemoryAddress offset in struct
@@ -407,6 +410,7 @@ bool ExternExecutionController::Execute() {
 				hIpcBase, hRevtracerBase, hRevWrapperBase, (DWORD)hMapMemoryAddress);
 
 		InitializeIpcLib();
+		DebugPrintVMMap(child);
 		InitializeRevtracer();
 
 		DebugPrintVMMap(child);
