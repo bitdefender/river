@@ -40,6 +40,7 @@ HANDLE DualAllocator::CloneTo(PROCESS_HANDLE process) {
 }
 
 void DualAllocator::SetBaseAddress(DWORD baseAddress) {
+	//TODO move this in constructor
 	this->baseAddress = baseAddress;
 }
 
