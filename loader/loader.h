@@ -107,7 +107,7 @@ namespace ldr {
 	extern "C" {
 		DLL_PUBLIC extern LoaderConfig loaderConfig;
 		DLL_PUBLIC extern LoaderAPI loaderAPI;
-		DLL_PUBLIC extern DWORD hIpcBase, hRevWrapperBase, hRevtracerBase;
+		DLL_PUBLIC extern DWORD hIpcBase, hRevWrapperBase, hRevtracerBase, hLibCBase, hLibPthreadBase;
 
 		DLL_PUBLIC void *MapMemory(unsigned long access, unsigned long offset, unsigned long size, void *address);
 		DLL_PUBLIC void LoaderPerform();

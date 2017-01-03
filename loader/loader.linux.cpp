@@ -4,25 +4,34 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <assert.h>
+#include <vector>
+#include <string>
 #include "../BinLoader/LoaderAPI.h"
 
 #define DEBUG_BREAK asm volatile("int $0x3")
 
-typedef int(*RevWrapperInitCallback)(void);
+#define MAX_LIBS 10
+#define LIB_IPC_INDEX 0
+#define LIB_PTHREAD_INDEX 1
+#define LIB_REV_WRAPPER_INDEX 2
+#define LIB_REVTRACER_INDEX 3
+
+typedef int(*RevWrapperInitCallback)(DWORD, DWORD);
 typedef void *(*CallMapMemoryCallback)(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address);
+
 static void init(void) __attribute__((constructor));
 static void destroy(void) __attribute__((destructor));
 
+struct mappedObject {
+	MODULE_PTR module;
+	BASE_PTR base;
+	DWORD size;
+};
+
 unsigned long sharedMemoryAdress = 0x0;
 
-MODULE_PTR hIpcModule;
-BASE_PTR hIpcBase;
-
-MODULE_PTR hRevtracerModule;
-BASE_PTR hRevtracerBase;
-
-MODULE_PTR hRevWrapperModule;
-BASE_PTR hRevWrapperBase;
+mappedObject mos[MAX_LIBS];
 
 int shmFd;
 
@@ -54,46 +63,58 @@ int  InitializeAllocator() {
 }
 
 unsigned long MapSharedLibraries(int shmFd) {
-	CreateModule(L"libipc.so", hIpcModule);
-	CreateModule(L"librevtracerwrapper.so", hRevWrapperModule);
-	CreateModule(L"revtracer.dll", hRevtracerModule);
+	//
+	// Libs are mapped in the following order:
+	//  libipc | libc | libpthread | librevwrapper | revtracer
+	//
 
-	if (!hIpcModule || !hRevWrapperModule || !hRevtracerModule) {
-		printf("[Child] Could not map libraries in shared memory\n");
-		return 0;
+	std::vector<std::string> libNames = {"libipc.so", "libpthread.so", "librevtracerwrapper.so", "revtracer.dll"};
+
+	for (int i = 0; i < libNames.size(); ++i) {
+		CreateModule(libNames[i].c_str(), mos[i].module);
+		if (!mos[i].module) {
+			printf("[Child] Could not map %s lib in shm\n", libNames[i].c_str());
+			return -1;
+		}
 	}
 
-	DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
-	DWORD dwRevWrapperSize = (hRevWrapperModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
-	DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
-	DWORD dwTotalSize = dwIpcLibSize + dwRevWrapperSize + dwRevTracerSize;
+	DWORD dwTotalSize = 0;
+	for (int i = 0; i < libNames.size(); ++i) {
+		mos[i].size = (mos[i].module->GetRequiredSize() + 0xFFF) & ~0xFFFF;
+		dwTotalSize += mos[i].size;
+	}
 
-	hIpcBase = FindFreeVirtualMemory(shmFd, 1 << 30);
+	mos[0].base = FindFreeVirtualMemory(shmFd, 1 << 30);
 
-	MapModule(hIpcModule, hIpcBase, shmFd, 0);
+	for (int i = 1; i < libNames.size(); ++i) {
+		mos[i].base = mos[i - 1].base + mos[i - 1].size;
+	}
 
-	hRevWrapperBase = hIpcBase + dwIpcLibSize;
-	hRevtracerBase = hRevWrapperBase + dwRevWrapperSize;
+	DWORD offset = 0;
+	for (int i = 0; i < libNames.size(); ++i) {
+		MapModule(mos[i].module, mos[i].base, shmFd, offset);
+		offset += mos[i].size;
+	}
 
-	MapModule(hRevWrapperModule, hRevWrapperBase, shmFd, dwIpcLibSize);
-	MapModule(hRevtracerModule, hRevtracerBase, shmFd, dwIpcLibSize + dwRevWrapperSize);
+	assert(offset == dwTotalSize);
 
-	printf("[Child] Mapped ipclib@0x%08lx revtracer@0x%08lx and revwrapper@0x%08lx\n",
-			(DWORD)hIpcBase, (DWORD)hRevtracerBase,
-			(DWORD)hRevWrapperBase);
+	for (int i = 0; i < libNames.size(); ++i) {
+		printf("[Child] Mapped library %s at address %08lx\n", libNames[i].c_str(), (DWORD)mos[i].base);
+	}
 
 	RevWrapperInitCallback initRevWrapper;
-	LoadExportedName(hRevWrapperModule, hRevWrapperBase, "InitRevtracerWrapper", initRevWrapper);
-	if (initRevWrapper() == -1) {
+	LoadExportedName(mos[LIB_REV_WRAPPER_INDEX].module, mos[LIB_REV_WRAPPER_INDEX].base, "InitRevtracerWrapper", initRevWrapper);
+	printf("[Child] Found initRevWrapper address @%p\n", (void *)initRevWrapper);
+	if (initRevWrapper(0, mos[LIB_PTHREAD_INDEX].base) == -1) {
 		printf("[Child] Could not find revwrapper needed libraries\n");
 		return 0x0;
 	} else {
 		printf("[Child] Revwrapper init returned successfully\n");
 	}
 
-	LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallMapMemoryHandler", mapMemory);
+	LoadExportedName(mos[LIB_REV_WRAPPER_INDEX].module, mos[LIB_REV_WRAPPER_INDEX].base, "CallMapMemoryHandler", mapMemory);
 	printf("[Child] Found mapMemory handler at address %08lx\n", (unsigned long)mapMemory);
-	return hIpcBase;
+	return mos[LIB_IPC_INDEX].base;
 }
 
 void init() {
