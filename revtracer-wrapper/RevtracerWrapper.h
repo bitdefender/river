@@ -79,6 +79,12 @@ namespace revwrapper {
 		/** Post semaphore*/
 		DLL_PUBLIC extern int CallPostSemaphore(void *semaphore);
 
+		/** Destroy semaphore */
+		DLL_PUBLIC extern int CallDestroySemaphore(void *semaphore);
+
+		/** Get value semaphore */
+		DLL_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *ret);
+
 		/** Flush contents of instruction cache */
 		DLL_PUBLIC extern void CallFlushInstructionCache(void);
 	}

@@ -1,19 +1,19 @@
 #ifdef __linux__
 
-#include <stdarg.h>
-#include <stdlib.h>
 #include <dlfcn.h>
+#include <stdarg.h>
 
 #include "Wrapper.Global.h"
 
 #include "RevtracerWrapper.h"
+#include "../BinLoader/LoaderAPI.h"
 #include "../CommonCrossPlatform/Common.h"
 
 
 typedef void* lib_t;
 
-DLL_LOCAL lib_t lcHandler;
-DLL_LOCAL lib_t lpthreadHandler;
+DLL_LOCAL MODULE_PTR lpthreadModule;
+DLL_LOCAL lib_t lcModule;
 
 typedef int (*PrintfHandler)(const char *format, ...);
 PrintfHandler _print;
@@ -118,25 +118,28 @@ void LinFlushInstructionCache(void) {
 }
 
 namespace revwrapper {
-	extern "C" int InitRevtracerWrapper() {
-		lcHandler = GET_LIB_HANDLER("libc.so");
-		lpthreadHandler = GET_LIB_HANDLER("libpthread.so");
+	extern "C" int InitRevtracerWrapper(unsigned long _lcBase, unsigned long lpthreadBase) {
+		lcModule = dlopen("libc.so", RTLD_LAZY);
+		CreateModule("libpthread.so", lpthreadModule);
+		//TODO find base addresses
 
-		if (!lcHandler || !lpthreadHandler)
+		if (!lcModule || !lpthreadModule) {
+			DEBUG_BREAK;
 			return -1;
+		}
 
 		// get functionality from ntdll
-		_virtualAlloc = (AllocateMemoryHandler)LOAD_PROC(lcHandler, "mmap");
-		_virtualFree = (FreeMemoryHandler)LOAD_PROC(lcHandler, "munmap");
+		_virtualAlloc = (AllocateMemoryHandler)LOAD_PROC(lcModule, "mmap");
+		_virtualFree = (FreeMemoryHandler)LOAD_PROC(lcModule, "munmap");
 
-		_terminateProcess = (TerminateProcessHandler)LOAD_PROC(lcHandler, "exit");
+		_terminateProcess = (TerminateProcessHandler)LOAD_PROC(lcModule, "exit");
 
-		_writeFile = (WriteFileHandler)LOAD_PROC(lcHandler, "write");
+		_writeFile = (WriteFileHandler)LOAD_PROC(lcModule, "write");
 
-		_formatPrint = (FormatPrintHandler)LOAD_PROC(lcHandler, "vsnprintf");
-		_print = (PrintfHandler)LOAD_PROC(lcHandler, "printf");
+		_formatPrint = (FormatPrintHandler)LOAD_PROC(lcModule, "vsnprintf");
+		_print = (PrintfHandler)LOAD_PROC(lcModule, "printf");
 
-		_yieldExecution = (YieldExecutionHandler)LOAD_PROC(lpthreadHandler, "pthread_yield");
+		LoadExportedName(lpthreadModule, lpthreadBase, "pthread_yield", _yieldExecution);
 
 		// set global functionality
 		allocateVirtual = LinAllocateVirtual;
@@ -151,9 +154,12 @@ namespace revwrapper {
 		_print("[RevtracerWrapper] InitRevtracerWrapper success\n");
 
 		yieldExecution = LinYieldExecution;
-		initSemaphore = (InitSemaphoreFunc)LOAD_PROC(lpthreadHandler, "sem_init");
-		waitSemaphore = (WaitSemaphoreFunc)LOAD_PROC(lpthreadHandler, "sem_wait");
-		postSemaphore = (PostSemaphoreFunc)LOAD_PROC(lpthreadHandler, "sem_post");
+		LoadExportedName(lpthreadModule, lpthreadBase, "sem_init", initSemaphore);
+		_print("[RevtracerWrapper] Found InitSemaphoreFunc @address %08lx\n", (void*)initSemaphore);
+		LoadExportedName(lpthreadModule, lpthreadBase, "sem_wait", waitSemaphore);
+		LoadExportedName(lpthreadModule, lpthreadBase, "sem_post", postSemaphore);
+		LoadExportedName(lpthreadModule, lpthreadBase, "sem_destroy", destroySemaphore);
+		LoadExportedName(lpthreadModule, lpthreadBase, "sem_getvalue", getvalueSemaphore);
 
 		flushInstructionCache = LinFlushInstructionCache;
 		return 0;

@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <semaphore.h>
+#include "../BinLoader/LoaderAPI.h"
 
 
 // Used for revtracer wrapper local tests
@@ -35,12 +36,21 @@ int TestSemaphore() {
 	assert(ret == 0);
 	ret = revwrapper::CallPostSemaphore((void*)&semaphore);
 	assert(ret == 0);
+	int value = 0;
+	ret = revwrapper::CallGetValueSemaphore((void*)&semaphore, &value);
+	assert(ret == 0);
+	printf("[Test::] Received value %d\n", value);
+	ret = revwrapper::CallDestroySemaphore((void*)&semaphore);
+	assert(ret == 0);
 	return 1;
 }
 
 int main () {
-
-  int ret = revwrapper::InitRevtracerWrapper();
+  MODULE_PTR lpModule;
+  BASE_PTR lpBase;
+  CreateModule("libpthread.so", lpModule);
+  MapModule(lpModule, lpBase);
+  int ret = revwrapper::InitRevtracerWrapper(0, lpBase);
   if (ret != 0) {
 	  printf("Cannot initialize revtracer-wrapper\n");
 	  return 0;
