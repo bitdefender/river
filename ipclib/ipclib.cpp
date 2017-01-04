@@ -8,7 +8,7 @@ namespace ipc {
 	typedef NTSTATUS(*CallYieldExecutionHandler)();
 
 	typedef char *va_list;
-#define _ADDRESSOF(v)   ( &reinterpret_cast<const char &>(v) )
+#define _ADDRESSOF(v)   ( (unsigned int *)&v )
 #define _INTSIZEOF(n)   ( (sizeof(n) + sizeof(int) - 1) & ~(sizeof(int) - 1) )
 
 #define va_start(ap,v)  ( ap = (va_list)_ADDRESSOF(v) + _INTSIZEOF(v) )
@@ -33,7 +33,7 @@ namespace ipc {
 		char *buffer,
 		size_t count,
 		const char *format,
-		va_list argptr
+		char *argptr
 	);
 
 	int GeneratePrefix(char *buff, int size, ...) {
@@ -51,42 +51,44 @@ namespace ipc {
 		return sz;
 	}
 
+	char tmpBuff[512];
+
+	char pfxBuff[] = "[___|_____|___|_]      ";
+	static char lastChar = '\n';
+
+	const char messageTypes[][4] = {
+		"___",
+		"ERR",
+		"INF",
+		"DBG"
+	};
+
+	const char executionStages[][6] = {
+		"_____",
+		"BRHND",
+		"DIASM",
+		"TRANS",
+		"REASM",
+		"RUNTM",
+		"INSPT",
+		"CNTNR"
+	};
+
+	const char codeTypes[][4] = {
+		"___",
+		"NAT",
+		"RIV",
+		"TRK",
+		"SYM"
+	};
+
+	const char codeDirections[] = {
+		'_', 'F', 'B'
+	};
+
 	DLL_PUBLIC void DebugPrint(DWORD printMask, const char *fmt, ...) {
 		va_list va;
-		char tmpBuff[512];
 
-		char pfxBuff[] = "[___|_____|___|_]      ";
-		static char lastChar = '\n';
-
-		const char messageTypes[][4] = {
-			"___",
-			"ERR",
-			"INF",
-			"DBG"
-		};
-
-		const char executionStages[][6] = {
-			"_____",
-			"BRHND",
-			"DIASM",
-			"TRANS",
-			"REASM",
-			"RUNTM",
-			"INSPT",
-			"CNTNR"
-		};
-
-		const char codeTypes[][4] = {
-			"___",
-			"NAT",
-			"RIV",
-			"TRK",
-			"SYM"
-		};
-
-		const char codeDirections[] = {
-			'_', 'F', 'B'
-		};
 
 		if ('\n' == lastChar) {
 			int sz = GeneratePrefix(
@@ -299,9 +301,6 @@ namespace ipc {
 		debugLog.Init();
 		//TODO handle Windows case accordingly
 		ipcToken.Use(INPROC_TOKEN_USER);
-		//while(1) {
-		//	DummyFunc();
-		//}
 	}
 
 	void NtDllNtYieldExecution() {
