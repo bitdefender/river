@@ -232,10 +232,12 @@ namespace rev {
 
 		pEnv->runtimeContext.registers = rgs;
 
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", revtracerConfig.entryPoint);
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (DWORD)revtracerConfig.entryPoint);
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)revtracerConfig.entryPoint);
 		pBlock->address = (DWORD)revtracerConfig.entryPoint;
 		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
+
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "New entry point @%08x\n", (DWORD)pBlock->pFwCode);
 		
 		// TODO: replace with address of the actual terminate process
 		pEnv->exitAddr = (DWORD)revtracerAPI.lowLevel.ntTerminateProcess;
@@ -282,15 +284,16 @@ namespace rev {
 		}
 #else
 		__asm__ (
-				"xchgl %1, %%esp             \n\t"
+				"xchgl %0, %%esp             \n\t"
 				"pushal                      \n\t"
 				"pushfl                      \n\t"
-				"call %P2                    \n\t"
+				"call %P1                    \n\t"
 				"popfl                       \n\t"
 				"popal                       \n\t"
-				"xchgl %1, %%esp             \n\t"
-				"jmp *%0" : : "r" (revtracerConfig.entryPoint),
-				"r" (shadowStack), "i" (TracerInitialization)
+				"xchgl %0, %%esp" : : "m" (shadowStack), "i" (TracerInitialization)
+				);
+		__asm__ (
+				"jmp *%0" : : "m" (revtracerConfig.entryPoint)
 				);
 #endif
 	}
@@ -371,7 +374,7 @@ namespace rev {
 	void Initialize() {
 		revtracerAPI.ipcLibInitialize();
 
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Feature flags %08x\n", revtracerConfig.featureFlags);
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Feature flags %08x, entrypoint %08x\n", revtracerConfig.featureFlags, revtracerConfig.entryPoint);
 
 		pEnv = new ExecutionEnvironment(revtracerConfig.featureFlags, 0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
 		pEnv->userContext = revtracerConfig.context; //AllocUserContext(pEnv, revtracerConfig.contextSize);

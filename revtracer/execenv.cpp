@@ -8,6 +8,7 @@
 void *ExecutionEnvironment::operator new(size_t sz){
 	void *storage = revtracerAPI.memoryAllocFunc(sz);
 	if (NULL == storage) {
+		DEBUG_BREAK;
 		return NULL;
 	}
 	return storage;
