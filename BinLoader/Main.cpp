@@ -7,6 +7,8 @@
 #include "LoaderAPI.h"
 
 typedef void* (*handler)(unsigned long);
+typedef int (*_printf)(const char *format, ...);
+_printf myPrintf;
 
 int main() {
 	//ldr::AbstractBinary *fElf = ldr::LoadBinary("tested");
@@ -32,12 +34,16 @@ int main() {
 	assert(lModule != nullptr);
 	MapModule(lModule, lBase);
 	assert(lBase != 0);
+	LoadExportedName(lModule, lBase, "printf", myPrintf);
+	assert(myPrintf != nullptr);
+	myPrintf("My printf function is working\n");
+	fflush(stdout);
 
-	CreateModule("libpthread.so", lModule);
-	assert(lModule != nullptr);
-	lBase = 0;
-	MapModule(lModule, lBase);
-	assert(lBase != 0);
+	//CreateModule("libpthread.so", lModule);
+	//assert(lModule != nullptr);
+	//lBase = 0;
+	//MapModule(lModule, lBase);
+	//assert(lBase != 0);
 	return 0;
 }
 
