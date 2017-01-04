@@ -548,6 +548,7 @@ namespace ldr {
 					dbg_log("$ 0x%08lx => 0x%08lx", oldAddr, *addr);
 					break;
 				case R_386_GLOB_DAT :
+				case R_386_JMP_SLOT :
 					// TODO : Probably bug source
 					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;

@@ -7,6 +7,11 @@
 typedef unsigned long DWORD;
 typedef ldr::AbstractBinary *MODULE_PTR;
 typedef DWORD BASE_PTR;
+struct mappedObject {
+	MODULE_PTR module;
+	BASE_PTR base;
+	DWORD size;
+};
 
 #define LOAD_LIBRARYW(libName, module, base) ManualLoadLibrary((libName), (module), (base))
 #define GET_PROC_ADDRESS(module, base, name) ManualGetProcAddress((module), (base), (name))
@@ -18,12 +23,12 @@ void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcNam
 DWORD GetEntryPoint(const char *elfName);
 void CreateModule(const wchar_t *libname, MODULE_PTR &module);
 void CreateModule(const char *libname, MODULE_PTR &module);
-void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr, int shmFd = -1, off_t offset = 0);
+void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr, int shmFd = -1, unsigned long offset = 0);
 void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess);
 
 template <typename T> bool LoadExportedName(MODULE_PTR &module, BASE_PTR &base, const char *name, T *&ptr) {
 	ptr = (T *)GET_PROC_ADDRESS(module, base, name);
-	return ptr != nullptr;
+	return ptr != NULL;
 }
 
 
