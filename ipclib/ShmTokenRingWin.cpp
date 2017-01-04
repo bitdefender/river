@@ -17,7 +17,7 @@ namespace ipc {
 		currentOwner = 0;
 	}
 
-	long ShmTokenRingWin::Use(pid_t pid) {
+	long ShmTokenRingWin::Use() {
 		long ret = LOCK_INC(userCount);
 		return ret - 1;
 	}
