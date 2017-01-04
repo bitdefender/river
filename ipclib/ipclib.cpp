@@ -298,11 +298,10 @@ namespace ipc {
 	DLL_PUBLIC void Initialize() {
 		debugLog.Init();
 		//TODO handle Windows case accordingly
-		ipcToken.SetupSignalHandler();
-		ipcToken.Use(INPROC_TOKEN_USER, getpid());
-		for (int i = 0; i < 5; i++) {
-			DummyFunc();
-		}
+		ipcToken.Use(INPROC_TOKEN_USER);
+		//while(1) {
+		//	DummyFunc();
+		//}
 	}
 
 	void NtDllNtYieldExecution() {

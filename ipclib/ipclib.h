@@ -9,30 +9,7 @@
 #include "RingBuffer.h"
 
 namespace ipc {
-#if defined _WIN32 || defined __CYGWIN__
-	#ifdef _BUILDING_IPC_DLL
-		#ifdef __GNUC__
-			#define DLL_PUBLIC __attribute__ ((dllexport))
-		#else
-			#define DLL_PUBLIC __declspec(dllexport)
-		#endif
-	#else
-		#ifdef __GNUC__
-			#define DLL_PUBLIC __attribute__ ((dllimport))
-		#else
-			#define DLL_PUBLIC __declspec(dllimport)
-		#endif
-	#endif
-	#define DLL_LOCAL
-#else
-	#if __GNUC__ >= 4
-		#define DLL_PUBLIC __attribute__ ((visibility ("default")))
-		#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
-	#else
-		#define DLL_PUBLIC
-		#define DLL_LOCAL
-	#endif
-#endif
+
 
 /* Define NULL pointer value */
 #ifndef NULL
@@ -81,18 +58,6 @@ namespace ipc {
 
 	typedef int BOOL;
 
-	struct IpcAPI {
-		/*ADDR_TYPE ntWaitForSingleObject;
-		ADDR_TYPE ntSetEvent;
-		ADDR_TYPE ntDelayExecution;*/
-		ADDR_TYPE ntYieldExecution;
-		ADDR_TYPE initSemaphore;
-		ADDR_TYPE waitSemaphore;
-		ADDR_TYPE postSemaphore;
-		ADDR_TYPE vsnprintf_s;
-
-		ADDR_TYPE ldrMapMemory;
-	};
 
 #define REQUEST_MEMORY_ALLOC				0x80
 #define REQUEST_MEMORY_FREE					0x81
@@ -162,14 +127,15 @@ namespace ipc {
 
 	extern "C" {
 		DLL_PUBLIC extern RingBuffer<(1 << 20)> debugLog;
+
+		DLL_PUBLIC extern IpcAPI ipcAPI;
+		DLL_PUBLIC extern IpcData ipcData;
+
 #ifdef __linux__
 		DLL_PUBLIC extern ShmTokenRingLin ipcToken;
 #else
 		DLL_PUBLIC extern ShmTokenRingWin ipcToken;
 #endif
-
-		DLL_PUBLIC extern IpcAPI ipcAPI;
-		DLL_PUBLIC extern IpcData ipcData;
 
 		DLL_PUBLIC void DebugPrint(DWORD printMask, const char *fmt, ...);
 

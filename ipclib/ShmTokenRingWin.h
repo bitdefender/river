@@ -11,7 +11,7 @@ namespace ipc {
 		void Init();
 		void Init(long presetUsers);
 
-		long Use(pid_t pid = -1);
+		long Use();
 
 		bool Wait(long userId, bool blocking = true) const;
 		void Release(long userId);

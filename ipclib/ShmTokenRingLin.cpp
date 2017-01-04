@@ -4,7 +4,7 @@
 #include <string.h>
 #include <errno.h>
 
-//#define DONOTPRINT
+#define DONOTPRINT
 
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
@@ -17,95 +17,99 @@
 
 namespace ipc {
 
-	static void SignalHandler(int signo)
-	{
-		//dbg_log("[!!!][ShmTokenRingLin] Caught signal %d in process %d\n", signo, getpid());
+	ShmTokenRingLin::~ShmTokenRingLin() {
+		dbg_log("[ShmTokenRingLin] Destructor is called\n");
+		((DestroySemaphoreHandler)ipcAPI->destroySemaphore)((void*)&use_semaphore);
+		for (int i = 0; i < MAX_USER_COUNT; i++)
+			if (valid[i]) {
+				((DestroySemaphoreHandler)ipcAPI->destroySemaphore)((void*)&semaphores[i]);
+			}
 	}
 
-	ShmTokenRingLin::ShmTokenRingLin() {
-		// happens when ipclib is loaded in memory
-		dbg_log("[ShmTokenRingLin] Constructor is called when loading libipc\n");
-		Init(0);
+	void dump_sem_mem(sem_t *s) {
+		dbg_log("!!!!!!!!!!!!!!!!!!!!!!!!!!!1Dumping mem for semaphore  %p\n", s);
+		unsigned char *p = (unsigned char*)s;
+		for (int i = 0; i < 16; i++)
+			dbg_log("%x ", *(p + i));
+		dbg_log("\n");
 	}
-
-	int ShmTokenRingLin::SetupSignalHandler() {
-		struct sigaction sa;
-
-		memset(&sa, 0, sizeof(sa));
-
-		sa.sa_handler = SignalHandler;
-		int ret = sigaction(SIGUSR1, &sa, NULL);
-		if (ret < 0) {
-			dbg_log("[ShmTokenRingLin] Failed to setup signal handler\n");
-		}
-		dbg_log("[ShmTokenRingLin] Signal handler setup exits with code %d\n", ret);
-		return ret;
-	}
-
 	void ShmTokenRingLin::Init(long presetUsers) {
+		dbg_log("[ShmTokenRingLin] Initialization with %lu presetUsers\n", presetUsers);
+
 		userCount = presetUsers;
 		currentOwner = 0;
-		for (int i = 0; i < MAX_USER_COUNT; i++)
-			userPids[i] = -1;
+
+		((InitSemaphoreHandler)ipcAPI->initSemaphore)((void*)&use_semaphore, 1, 1);
+
+		sem_t s;
+		for (int i = 0; i < MAX_USER_COUNT; i++) {
+			valid[i] = false;
+		}
 	}
 
-	// on linux we are forced to use Use in order to set pids
-	long ShmTokenRingLin::Use(unsigned int id, pid_t pid) {
-		userPids[id] = pid;
-		// TODO this critical section
+
+	void ShmTokenRingLin::SetIpcApiHandler(IpcAPI *ipcAPI) {
+		this->ipcAPI = ipcAPI;
+	}
+
+	unsigned long ShmTokenRingLin::Use(unsigned long id) {
+
+		int ret = 0;
+		if (id >= MAX_USER_COUNT) {
+			return -1;
+		}
+
+		((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&use_semaphore, &ret);
+		dbg_log("[ShmTokenRingLin] User %lu tries to start this %p sem value %d\n", id, &use_semaphore, ret);
+		ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&use_semaphore);
+		if (ret != 0) {
+			dbg_log("[ShmTokenRingLin] Wait for use_semaphore failed errno %d\n", errno);
+		}
+		((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&use_semaphore, &ret);
+		dbg_log("[ShmTokenRingLin] Sem value after wait is %d\n", ret);
+		dump_sem_mem(&semaphores[id]);
+		ret = ((InitSemaphoreHandler)ipcAPI->initSemaphore)(&semaphores[id], 1, 0);
+		dump_sem_mem(&semaphores[id]);
+
+		dbg_log("[ShmTokenRingLin] Inited sem %lu with ret %d errno %d addr %p\n", id, ret, errno, &semaphores[id]);
+		valid[id] = true;
 		userCount += 1;
-		dbg_log("[ShmTokenRingLin] User %d with pid %d started using the token ring. Current Usercount %ld\n", id, userPids[id], userCount);
-		return userCount - 1;
+		ret = ((PostSemaphoreHandler)ipcAPI->postSemaphore)(&use_semaphore);
+		if (ret != 0) {
+			dbg_log("[ShmTokenRingLin] Post use_semaphore failed errno %d\n", errno);
+		}
+
+		((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&use_semaphore, &ret);
+		dbg_log("[ShmTokenRingLin] User %lu started this  %p sem val %d\n", id, this, ret);
+		return id;
 	}
 
-	bool ShmTokenRingLin::Wait(long int userId, bool blocking) const {
-		dbg_log("[ShmTokenRingLin] User %ld waiting for token\n", userId);
+	bool ShmTokenRingLin::Wait(long int userId, bool blocking) {
 
-		do {
-			sigset_t mask;
-			long localCurrentOwner = currentOwner;
-
-			if (localCurrentOwner == userId) {
-				dbg_log("[ShmTokenRingLin] Wait finished for user %ld\n", userId);
+		while(1) {
+			dbg_log("[ShmTokenRingLin] User %ld waiting for token sem valid %d\n", userId, (int)valid[userId]);
+			int ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&semaphores[userId]);
+			if (ret != 0) {
+				dbg_log("[ShmTokenRingLin] Wait failed errno %d\n", errno);
+			} else {
+				dump_sem_mem(&semaphores[userId]);
+				((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&semaphores[userId], &ret);
+				dbg_log("[ShmTokenRingLin] !!! User %ld wait finished sem %p sem val = %d\n", userId, &semaphores[userId], ret);
+				dump_sem_mem(&semaphores[userId]);
 				return true;
 			}
+		}
 
-			sigfillset(&mask);
-			sigdelset(&mask, SIGUSR1);
-
-			while(sigsuspend(&mask) != 0) {
-				dbg_log("[ipclib] Wait failed pid %d errno %d\n", getpid(), errno);
-			}
-
-			localCurrentOwner = currentOwner;
-			if (localCurrentOwner != userId && !blocking)
-				return false;
-		} while (1);
 	}
 
 	void ShmTokenRingLin::Release(long userId) {
 
-		if (currentOwner == userId) {
-			long localUserCount = userCount;
-			long localCurrentOwner = currentOwner;
-
-			localCurrentOwner = currentOwner + 1;
-			if (localCurrentOwner == localUserCount) {
-				localCurrentOwner = 0;
-			}
-
-			currentOwner = localCurrentOwner;
-			if (userPids[currentOwner] == -1) {
-				dbg_log("[ShmTokenRingLin] Could not send signal because my neighbour is not connected %ld.\n", currentOwner);
-				return;
-			}
-
-			int ret = kill(userPids[currentOwner], SIGUSR1);
-			dbg_log("[ShmTokenRingLin] User %ld sending signal SIGUSR1 to %ld this %p\n", userId, currentOwner, this);
-			if (ret < 0)
-				dbg_log("[ShmTokenRingLin] Could not send signal to my neighbour %d.\n", userPids[currentOwner]);
-
+		unsigned long localCurrentOwner = (userId + 1) % userCount;
+		if (!valid[localCurrentOwner]) {
+			dbg_log("[ShmTokenRingLin] Trying to release invalid semaphore %lu\n", localCurrentOwner);
+			return;
 		}
-
+		int ret = ((PostSemaphoreHandler)ipcAPI->postSemaphore)(&semaphores[localCurrentOwner]);
+		dbg_log("[ShmTokenRingLin] User %lu unlocks sem for %lu ret %d errno %d\n", userId, localCurrentOwner, ret, errno);
 	}
 } //namespace ipc
