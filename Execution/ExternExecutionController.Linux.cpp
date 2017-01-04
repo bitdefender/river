@@ -231,7 +231,9 @@ bool ExternExecutionController::InitializeIpcLib() {
 		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler", ipcAPI->vsnprintf_s) ||
 		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallInitSemaphore", ipcAPI->initSemaphore) ||
 		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallWaitSemaphore", ipcAPI->waitSemaphore) ||
-		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallPostSemaphore", ipcAPI->postSemaphore)
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallPostSemaphore", ipcAPI->postSemaphore) ||
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallGetValueSemaphore", ipcAPI->getvalueSemaphore) ||
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "CallDestroySemaphore", ipcAPI->destroySemaphore)
 		) {
 		return false;
 	}
@@ -423,19 +425,21 @@ bool ExternExecutionController::Execute() {
 		// ipcToken object exists and called init and use.
 		debugger.SetEip((unsigned long)revtracerPerform);
 		revCfg->entryPoint = (void*)entryPoint;
+		printf("[Parent] Entrypoint setup for revtracer to %08lx\n", (DWORD)revCfg->entryPoint);
 
 		int ret;
 		ChildRunning = true;
 		CREATE_THREAD(hControlThread, ControlThreadFunc, this, ret);
 		execState = RUNNING;
 
-		ChildRunning = debugger.Run(PTRACE_CONT);
-		debugger.PrintEip();
-		//ChildRunning = debugger.Run(PTRACE_CONT);
-		//debugger.PrintEip();
-		//while (!debugger.CheckEip(0x0)) {
-		//	debugger.Run(PTRACE_SINGLESTEP);
-		//}
+		for (int i = 0; i < 1; i++) {
+			ChildRunning = debugger.Run(PTRACE_CONT);
+			debugger.PrintEip();
+		}
+
+		while (debugger.Run(PTRACE_SINGLESTEP) != -1) {
+			debugger.PrintEip();
+		}
 
 		return ret == TRUE;
 	}

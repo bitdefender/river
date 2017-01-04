@@ -82,6 +82,7 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 		}
 	}
 
+	printf("[Parent] BH direction %s\n", dwDirection == EXECUTION_ADVANCE ? "advance" : "other");
 	return dwDirection;
 }
 

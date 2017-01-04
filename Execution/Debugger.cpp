@@ -150,10 +150,13 @@ namespace dbg {
 					fflush(stdout);
 				} else {
 					printf("[Debugger] Tracee received signal %d\n", last_sig);
+					if (last_sig == 11)
+						return -1;
 					PrintEip();
 				}
 			}
 		}
+		return 0;
 	}
 
 
