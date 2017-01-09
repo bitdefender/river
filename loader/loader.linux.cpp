@@ -1,10 +1,14 @@
 #include "loader.h"
 #include <sys/mman.h>
 #include <sys/stat.h>        /* For mode constants */
+#include <asm/ldt.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
+#include <errno.h>
+
 #include <vector>
 #include <string>
 
@@ -16,6 +20,7 @@ namespace ldr {
 #define LIB_PTHREAD_INDEX 1
 #define LIB_REV_WRAPPER_INDEX 2
 #define LIB_REVTRACER_INDEX 3
+#define __NR_get_thread_area 244
 
 typedef int(*RevWrapperInitCallback)(DWORD, DWORD);
 typedef void *(*CallMapMemoryCallback)(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address);
@@ -40,6 +45,26 @@ unsigned long FindFreeVirtualMemory(int shmFd, DWORD size) {
 			MAP_SHARED, shmFd, 0);
 	munmap(addr, size);
 	return (unsigned long)addr;
+}
+
+void InitSegmentDescriptors() {
+	struct user_desc* table_entry_ptr = NULL;
+
+	table_entry_ptr = (struct user_desc*)malloc(sizeof(struct user_desc));
+
+	for (int i = 0; i < 0x100; ++i) {
+		table_entry_ptr->entry_number = i;
+		int ret = syscall( __NR_get_thread_area,
+				table_entry_ptr);
+		if (ret == -1 && errno == EINVAL) {
+			loaderAPI.segments[i] = 0xFFFFFFFF;
+		} else if (ret == 0) {
+			loaderAPI.segments[i] = table_entry_ptr->base_addr;
+		} else {
+			printf("[Child] Error found when get_thread_area. errno %d\n", errno);
+		}
+	}
+	free(table_entry_ptr);
 }
 
 int  InitializeAllocator() {
@@ -113,11 +138,12 @@ unsigned long MapSharedLibraries(int shmFd) {
 void init() {
 	InitializeAllocator();
 	loaderAPI.sharedMemoryAddress = MapSharedLibraries(shmFd);
+	InitSegmentDescriptors();
+
 	if ((int)loaderAPI.sharedMemoryAddress == -1)
 		printf("[Child] Failed to map the shared mem\n");
 	printf("[Child] Shared mem address is %p. Fd is [%d]\n", (void*)loaderAPI.sharedMemoryAddress, shmFd);
 	fflush(stdout);
-
 }
 
 void destroy() {
