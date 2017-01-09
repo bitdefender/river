@@ -17,6 +17,8 @@ static bool ChildRunning = false;
 static void *hMapMemoryAddress = nullptr;
 ldr::LoaderAPI *loaderAPI;
 
+dbg::Debugger debugger;
+
 unsigned long ExternExecutionController::ControlThread() {
 	bool bRunning = true;
 	DWORD exitCode;
@@ -303,7 +305,11 @@ bool ExternExecutionController::InitializeRevtracer() {
 	}
 
 	revCfg->context = nullptr;
-	// TODO config segment offsets are not initialized
+	for (unsigned i = 0; i < 0x100; i++) {
+		revCfg->segmentOffsets[i] = debugger.GetAndResolveModuleAddress(
+				(DWORD)loaderAPI->segments + i * 4);
+	}
+
 	revCfg->hookCount = 0;
 	revCfg->featureFlags = featureFlags;
 
@@ -358,7 +364,6 @@ bool ExternExecutionController::Execute() {
 	}
 
 	else {
-		dbg::Debugger debugger;
 		debugger.Attach(child);
 
 		debugger.InsertBreakpoint(entryPoint);
@@ -437,9 +442,16 @@ bool ExternExecutionController::Execute() {
 			debugger.PrintEip();
 		}
 
-		while (debugger.Run(PTRACE_SINGLESTEP) != -1) {
-			debugger.PrintEip();
-		}
+		//while (debugger.Run(PTRACE_SINGLESTEP) != -1) {
+		//	debugger.PrintEip();
+		//}
+
+		int read;
+		DWORD written;
+		debugLog->Read(debugBuffer, sizeof(debugBuffer)-1, read);
+
+		BOOL _ret;
+		WRITE_FILE(hDbg, debugBuffer, read, written, _ret);
 
 		return ret == TRUE;
 	}
