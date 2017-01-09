@@ -90,7 +90,9 @@ namespace ldr {
 		ADDR_TYPE entryPoint;
 	};
 
-#define MAX_LIBS 10
+#define MAX_LIBS 0x10
+#define MAX_SEGMENTS 0x100
+
 	struct LoaderAPI {
 		//ADDR_TYPE ntOpenSection;
 		ADDR_TYPE ntMapViewOfSection;
@@ -106,6 +108,7 @@ namespace ldr {
 		//ADDR_TYPE rtlFreeUnicodeString;
 		unsigned long sharedMemoryAddress;
 		struct mappedObject mos[MAX_LIBS];
+		DWORD segments[MAX_SEGMENTS];
 	};
 
 
