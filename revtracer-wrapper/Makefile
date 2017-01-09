@@ -17,7 +17,7 @@ install: $(lib_revwrapper)
 	install -m 0755 $(lib_revwrapper) -t $(prefix)/lib -D
 
 $(lib_revwrapper): $(OBJ_FILES)
-	$(CXX) $(CC_FLAGS) -shared -o $@ $^ $(LIB_BINLOADER_PATH) $(LD_FLAGS) -nostdlib
+	$(CXX) $(CC_FLAGS) -shared -o $@ $^ $(LIB_BINLOADER_PATH) $(LD_FLAGS)
 
 %.o: %.cpp
 	   $(CXX) $(CC_FLAGS) -c $(CC_LIB) -o $@ $<
