@@ -95,7 +95,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 			/*0xC0*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH | RIVER_MODIFIER_O16>, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH>,
 			/*0xC4*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr,
 			/*0xC8*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
-			/*0xCC*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+			/*0xCC*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
 			/*0xD0*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultSecondRegInstr<RIVER_REG_CL, RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultSecondRegInstr<RIVER_REG_CL>,
 			/*0xD4*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
