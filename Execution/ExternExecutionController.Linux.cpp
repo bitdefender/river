@@ -13,7 +13,7 @@
 // TODO seach for this lib in LD_LIBRARY_PATH
 #define LOADER_PATH "/home/alex/river/tracer.simple/inst/lib/libloader.so"
 
-static bool ChildRunning = false;
+static int ChildRunning = 1;
 static void *hMapMemoryAddress = nullptr;
 ldr::LoaderAPI *loaderAPI;
 
@@ -417,11 +417,10 @@ bool ExternExecutionController::Execute() {
 				hIpcBase, hRevtracerBase, hRevWrapperBase, (DWORD)hMapMemoryAddress);
 
 		InitializeIpcLib();
-		DebugPrintVMMap(child);
+		//DebugPrintVMMap(child);
 		InitializeRevtracer();
 
-		DebugPrintVMMap(child);
-		DebugPrintVMMap(getpid());
+		//DebugPrintVMMap(getpid());
 		// Setup token ring pids
 		ipcToken->Init(0);
 		ipcToken->Use(REMOTE_TOKEN_USER);
@@ -433,18 +432,17 @@ bool ExternExecutionController::Execute() {
 		printf("[Parent] Entrypoint setup for revtracer to %08lx\n", (DWORD)revCfg->entryPoint);
 
 		int ret;
-		ChildRunning = true;
 		CREATE_THREAD(hControlThread, ControlThreadFunc, this, ret);
 		execState = RUNNING;
 
-		for (int i = 0; i < 1; i++) {
-			ChildRunning = debugger.Run(PTRACE_CONT);
-			debugger.PrintEip();
+		ChildRunning = debugger.Run(PTRACE_CONT);
+
+		if (ChildRunning != 0) {
+			printf("[Execution] Child %d tracing failed\n.", child);
+			DEBUG_BREAK;
 		}
 
-		//while (debugger.Run(PTRACE_SINGLESTEP) != -1) {
-		//	debugger.PrintEip();
-		//}
+		printf("[Execution] Child %d exited normally.\n", child);
 
 		int read;
 		DWORD written;
