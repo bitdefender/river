@@ -155,24 +155,27 @@ void NativeX86Assembler::AssembleLeaveForSyscall(
 		0x60,										// 0x07 - pusha
 		0x68, 0x46, 0x02, 0x00, 0x00,				// 0x08 - push 0x00000246 - NEW FLAGS
 		0x9D,										// 0x0D - popf
-		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x0E - push <jump_addr>
-		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x13 - push <execution_environment>
-		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,			// 0x18 - call <dwBranchHandler>
-		0x61,										// 0x1E - popa
-		0x9D,										// 0x1F - popf
-		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x20 - xchg esp, large ds:<dwVirtualStack>
-		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x26 - jmp large dword ptr ds:<jumpbuff>	
+		//0x68, 0x00, 0x00, 0x00, 0x00,				// 0x0E - push <jump_addr>  TODO win
+		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00,				// 0x0E - push <jump_addr>
+		0x68, 0x00, 0x00, 0x00, 0x00,				// 0x14 - push <execution_environment>
+		0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,			// 0x19 - call <dwBranchHandler>
+		0x61,										// 0x1F - popa
+		0x9D,										// 0x20 - popf
+		0x87, 0x25, 0x00, 0x00, 0x00, 0x00,			// 0x21 - xchg esp, large ds:<dwVirtualStack>
+		0xFF, 0x25, 0x00, 0x00, 0x00, 0x00			// 0x27 - jmp large dword ptr ds:<jumpbuff>	
 	};
 
-	int addrJump = (int)(ri.operands[1].asImm32);
+	//TODO win
+	//int addrJump = (int)(ri.operands[1].asImm32);
+	//int addrJump = (int)runtime->jumpBuff;
 
 	rev_memcpy(px86.cursor, pBranchSysret, sizeof(pBranchSysret));
 	*(unsigned int *)(&(px86.cursor[0x02])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86.cursor[0x0F])) = addrJump;
-	*(unsigned int *)(&(px86.cursor[0x14])) = (unsigned int)runtime;
-	*(unsigned int *)(&(px86.cursor[0x1A])) = (unsigned int)&dwBranchHandler;
-	*(unsigned int *)(&(px86.cursor[0x22])) = (unsigned int)&runtime->virtualStack;
-	*(unsigned int *)(&(px86.cursor[0x28])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86.cursor[0x10])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86.cursor[0x15])) = (unsigned int)runtime;
+	*(unsigned int *)(&(px86.cursor[0x1B])) = (unsigned int)&dwBranchHandler;
+	*(unsigned int *)(&(px86.cursor[0x23])) = (unsigned int)&runtime->virtualStack;
+	*(unsigned int *)(&(px86.cursor[0x29])) = (unsigned int)&runtime->jumpBuff;
 
 	px86.cursor += sizeof(pBranchSysret);
 	pFlags |= RIVER_FLAG_BRANCH;
@@ -344,30 +347,74 @@ void NativeX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, Relocab
 	instrCounter += 16;
 }
 
+//void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
+//	static const unsigned char pSaveEdxCode[] = {
+//		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x00 - mov [<eaxSave>], eax
+//		0x8B, 0x02,										// 0x05 - mov eax, [edx]
+//		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x07 - mov [<espSave>], eax
+//		0xA1, 0x00, 0x00, 0x00, 0x00,					// 0x0C - mov eax, [<eaxSave>]
+//		0xC7, 0x02, 0x00, 0x00, 0x00, 0x00,				// 0x11 - mov [edx], imm32
+//		0x0F, 0x34,										// 0x17 - syscall
+//		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00				// 0x19 - push [<espSave>]
+//	};
+//
+//	rev_memcpy(px86.cursor, pSaveEdxCode, sizeof(pSaveEdxCode));
+//	*(unsigned int *)(&(px86.cursor[0x01])) = (unsigned int)&runtime->returnRegister;
+//	*(unsigned int *)(&(px86.cursor[0x08])) = (unsigned int)&runtime->jumpBuff;
+//	*(unsigned int *)(&(px86.cursor[0x0D])) = (unsigned int)&runtime->returnRegister;
+//	*(unsigned int *)(&(px86.cursor[0x13])) = ((unsigned int)px86.cursor) + 0x19;
+//	*(unsigned int *)(&(px86.cursor[0x1B])) = (unsigned int)&runtime->jumpBuff;
+//
+//	px86.SetRelocation(&px86.cursor[0x13]);
+//	//needsRAFix = true;
+//	//rvAddress = &px86[0x13];
+//
+//	px86.cursor += sizeof(pSaveEdxCode);
+//	instrCounter += 7;
+//}
+
+
 void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
-	static const unsigned char pSaveEdxCode[] = {
-		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x00 - mov [<eaxSave>], eax
-		0x8B, 0x02,										// 0x05 - mov eax, [edx]
-		0xA3, 0x00, 0x00, 0x00, 0x00,					// 0x07 - mov [<espSave>], eax
-		0xA1, 0x00, 0x00, 0x00, 0x00,					// 0x0C - mov eax, [<eaxSave>]
-		0xC7, 0x02, 0x00, 0x00, 0x00, 0x00,				// 0x11 - mov [edx], imm32
-		0x0F, 0x34,										// 0x17 - syscall
-		0xFF, 0x35, 0x00, 0x00, 0x00, 0x00				// 0x19 - push [<espSave>]
+
+	//<__kernel_vsyscall>:push   ecx
+	//<__kernel_vsyscall+1>:push   edx
+	//<__kernel_vsyscall+2>:push   ebp
+	//<__kernel_vsyscall+3>:mov    ebp,esp
+	//<__kernel_vsyscall+5>:sysenter
+	//<__kernel_vsyscall+7>:int    0x80
+	//<__kernel_vsyscall+9>:pop    ebp
+	//<__kernel_vsyscall+10>:pop    edx
+	//<__kernel_vsyscall+11>:pop    ecx
+	//<__kernel_vsyscall+12>:ret
+
+	static const unsigned char pSaveRetCode[] = {
+		0xA3, 0x00, 0x00, 0x00, 0x00,                     // 0x00 - mov [<eaxSave>], eax
+		0x8B, 0x44, 0x24, 0x0C,                            // 0x05 - mov eax,DWORD PTR [esp+0xc]
+		0xA3, 0x00, 0x00, 0x00, 0x00,                     // 0x09 - mov [<espSave>], eax
+		0xA1, 0x00, 0x00, 0x00, 0x00,                     // 0x0e - mov eax, [<eaxSave>]
+		0xC7, 0x44, 0x24, 0x0C, 0x00, 0x00, 0x00, 0x00, // 0x13 - mov DWORD PTR [esp+0xc],0x0
+		0x0F, 0x34,                                     // 0x1b - sysenter
+		0xA3, 0x00, 0x00, 0x00, 0x00,                     // 0x1d - mov [<eaxSave>], eax
+		0xA1, 0x00, 0x00, 0x00, 0x00,                     // 0x22 - mov eax, [<espSave>]
+		0x89, 0x44, 0x24, 0xFC,                         // 0x27 - mov [esp - 4], eax
+		0xA1, 0x00, 0x00, 0x00, 0x00                     // 0x2b - mov eax, [<eaxSave>]
 	};
 
-	rev_memcpy(px86.cursor, pSaveEdxCode, sizeof(pSaveEdxCode));
+	rev_memcpy(px86.cursor, pSaveRetCode, sizeof(pSaveRetCode));
 	*(unsigned int *)(&(px86.cursor[0x01])) = (unsigned int)&runtime->returnRegister;
-	*(unsigned int *)(&(px86.cursor[0x08])) = (unsigned int)&runtime->jumpBuff;
-	*(unsigned int *)(&(px86.cursor[0x0D])) = (unsigned int)&runtime->returnRegister;
-	*(unsigned int *)(&(px86.cursor[0x13])) = ((unsigned int)px86.cursor) + 0x19;
-	*(unsigned int *)(&(px86.cursor[0x1B])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86.cursor[0x0A])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86.cursor[0x0F])) = (unsigned int)&runtime->returnRegister;
+	*(unsigned int *)(&(px86.cursor[0x17])) = ((unsigned int)px86.cursor) + 0x1D;
+	*(unsigned int *)(&(px86.cursor[0x1E])) = (unsigned int)&runtime->returnRegister;
+	*(unsigned int *)(&(px86.cursor[0x23])) = (unsigned int)&runtime->jumpBuff;
+	*(unsigned int *)(&(px86.cursor[0x2C])) = (unsigned int)&runtime->returnRegister;
 
-	px86.SetRelocation(&px86.cursor[0x13]);
+	px86.SetRelocation(&px86.cursor[0x17]);
 	//needsRAFix = true;
 	//rvAddress = &px86[0x13];
 
-	px86.cursor += sizeof(pSaveEdxCode);
-	instrCounter += 7;
+	px86.cursor += sizeof(pSaveRetCode);
+	instrCounter += 10;
 }
 
 
