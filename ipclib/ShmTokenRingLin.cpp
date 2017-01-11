@@ -61,7 +61,7 @@ namespace ipc {
 
 		((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&use_semaphore, &ret);
 		dbg_log("[ShmTokenRingLin] User %lu tries to start this %p sem value %d\n", id, &use_semaphore, ret);
-		ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&use_semaphore);
+		ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&use_semaphore, true);
 		if (ret != 0) {
 			dbg_log("[ShmTokenRingLin] Wait for use_semaphore failed errno %d\n", errno);
 		}
@@ -88,7 +88,7 @@ namespace ipc {
 
 		while(1) {
 			dbg_log("[ShmTokenRingLin] User %ld waiting for token sem valid %d\n", userId, (int)valid[userId]);
-			int ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&semaphores[userId]);
+			int ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&semaphores[userId], blocking);
 			if (ret != 0) {
 				dbg_log("[ShmTokenRingLin] Wait failed errno %d\n", errno);
 			} else {
