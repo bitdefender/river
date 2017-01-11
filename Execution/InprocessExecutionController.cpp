@@ -104,7 +104,7 @@ bool InprocessExecutionController::Execute() {
 		return false;
 	}
 
-	if (nullptr == ((RevWrapperInitCallback)initHandler)()) {
+	if (0 != ((RevWrapperInitCallback)initHandler)()) {
 		DEBUG_BREAK;
 		return false;
 	}
