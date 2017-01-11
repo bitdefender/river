@@ -98,9 +98,7 @@ namespace dbg {
 		Tracee = pid;
 		int status;
 
-		//ptrace(PTRACE_ATTACH, pid);
 		waitpid(pid, &status, 0);
-		ptrace(PTRACE_SETOPTIONS, Tracee, 0, PTRACE_O_TRACEEXIT);
 
 		struct user_regs_struct regs;
 		ptrace(PTRACE_GETREGS, pid, 0, &regs);
@@ -150,8 +148,14 @@ namespace dbg {
 					fflush(stdout);
 				} else {
 					printf("[Debugger] Tracee received signal %d\n", last_sig);
-					if (last_sig == 11)
+					if (last_sig == 11) {
+						for (int i = -20; i < 256; ++i) {
+							unsigned long ret = GetAndResolveModuleAddress(0xb81439bb + i);
+							printf("%02lx %02lx %02lx %02lx ", ret & 0xFF,  (ret >> 0x8) & 0xFF, (ret >> 0x10) & 0xFF, (ret >> 0x18) & 0xFF);
+						}
+						printf("\n");
 						return -1;
+					}
 					PrintEip();
 				}
 			}
@@ -162,7 +166,7 @@ namespace dbg {
 
 	unsigned long Debugger::GetAndResolveModuleAddress(unsigned long symbolAddress) {
 		unsigned char sym_addr[5] = {0, 0, 0, 0, 0};
-		printf("[Parent] Trying to read data from child %08lx\n", symbolAddress);
+		//printf("[Parent] Trying to read data from child %08lx\n", symbolAddress);
 		GetData(symbolAddress, sym_addr, 4);
 
 		unsigned long result;

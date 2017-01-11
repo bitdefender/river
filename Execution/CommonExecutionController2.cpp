@@ -24,6 +24,8 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 	ExecutionEnvironment *pEnv = (ExecutionEnvironment *)context;
 	ExecutionController *exec = (ExecutionController *)userContext;
 
+	printf("[BranchHandlerFunc] next instr %p\n", nextInstruction);
+
 	if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
 		if (pEnv->bForward) {
 			DWORD dwLastBlock = pEnv->lastFwBlock; //TopFromExecutionBuffer(pEnv);

@@ -17,7 +17,8 @@ LD_FLAGS := -lrt
 
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
 CC_FLAGS += -g -m32 -std=c++11 -D_EXECUTION_EXPORTS \
-						-DBLOCK_CACHE_READ_ONLY -DEXTERN_EXECUTION_ONLY \
+						-DBLOCK_CACHE_READ_ONLY  \
+						-DEXTERN_EXECUTION_ONLY \
 						$(INCLUDE_PATHS) $(CC_FLAGS_CROSS)
 
 prefix := /usr/local
