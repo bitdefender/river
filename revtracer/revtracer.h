@@ -74,13 +74,10 @@ namespace rev {
 		/* Low level ntdll.dll functions */
 		ADDR_TYPE ntAllocateVirtualMemory;
 		ADDR_TYPE ntFreeVirtualMemory;
-		ADDR_TYPE ntQueryInformationThread;
 		ADDR_TYPE ntTerminateProcess;
 
 		ADDR_TYPE ntWriteFile;
 		ADDR_TYPE ntWaitForSingleObject;
-
-		ADDR_TYPE rtlNtStatusToDosError;
 
 		ADDR_TYPE vsnprintf_s;
 	};
@@ -163,6 +160,12 @@ namespace rev {
 		DWORD cost;
 	};
 
+	struct RevtracerVersion {
+		BYTE major;
+		BYTE minor;
+		WORD build;
+	};
+
 	extern "C" {
 
 		/* Execution context callbacks ********************/
@@ -174,13 +177,14 @@ namespace rev {
 		/* In process API *********************************/
 		DLL_REVTRACER_PUBLIC extern RevtracerAPI revtracerAPI;
 		DLL_REVTRACER_PUBLIC extern RevtracerConfig revtracerConfig;
+		DLL_REVTRACER_PUBLIC extern RevtracerVersion revtracerVersion;
 		/* Can be used as an EP for in process execution  */
 		DLL_REVTRACER_PUBLIC void RevtracerPerform();
 
 
 		/* DLL API ****************************************/
 
-		DLL_REVTRACER_PUBLIC void SetDbgPrint(DbgPrintFunc);
+		/*DLL_REVTRACER_PUBLIC void SetDbgPrint(DbgPrintFunc);
 		DLL_REVTRACER_PUBLIC void SetMemoryMgmt(MemoryAllocFunc alc, MemoryFreeFunc fre);
 		DLL_REVTRACER_PUBLIC void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs);
 		DLL_REVTRACER_PUBLIC void SetLowLevelAPI(LowLevelRevtracerAPI *llApi);
@@ -189,7 +193,7 @@ namespace rev {
 
 
 		DLL_REVTRACER_PUBLIC void SetContext(ADDR_TYPE ctx);
-		DLL_REVTRACER_PUBLIC void SetEntryPoint(ADDR_TYPE ep);
+		DLL_REVTRACER_PUBLIC void SetEntryPoint(ADDR_TYPE ep);*/
 
 		DLL_REVTRACER_PUBLIC void Initialize();
 		DLL_REVTRACER_PUBLIC void Execute(int argc, char *argv[]);

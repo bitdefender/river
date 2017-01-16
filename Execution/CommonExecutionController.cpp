@@ -65,6 +65,12 @@ public :
 } defaultObserver;
 
 
+const rev::RevtracerVersion CommonExecutionController::supportedVersion = {
+	0,
+	1,
+	1
+};
+
 CommonExecutionController::CommonExecutionController() {
 	execState = NEW;
 
@@ -443,7 +449,7 @@ void *CommonExecutionController::GetMemoryInfo(void *ctx, void *ptr) {
 }
 
 bool CommonExecutionController::GetLastBasicBlockInfo(void *ctx, rev::BasicBlockInfo *bbInfo) {
-	return glbbc(ctx, bbInfo);
+	return glbbi(ctx, bbInfo);
 }
 
 void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) {

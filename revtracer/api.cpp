@@ -43,6 +43,10 @@ extern "C" {
 		return (DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
 	}
 
+	void ClearExecutionBuffer(ExecutionEnvironment *pEnv) {
+		pEnv->runtimeContext.execBuff = pEnv->executionBase;
+	}
+
 	typedef DWORD (*NtTerminateProcessFunc)(
 		DWORD ProcessHandle,
 		DWORD ExitStatus
@@ -99,13 +103,13 @@ extern "C" {
 
 		} else if (EXECUTION_ADVANCE == dwDirection) {
 			// go forwards
-			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Going Forwards from %08X!!!\n", a);
-			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Looking for block\n");
+			TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Going Forwards from %08X!!!\n", a);
+			TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Looking for block\n");
 			pCB = pEnv->blockCache.FindBlock((rev::UINT_PTR)a);
 			if (pCB) {
-				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Block found\n");
+				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Block found\n");
 			} else {
-				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Not Found\n");
+				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Not Found\n");
 				pCB = pEnv->blockCache.NewBlock((rev::UINT_PTR)a);
 
 				pEnv->codeGen.Translate(pCB, pEnv->generationFlags);
@@ -137,6 +141,35 @@ extern "C" {
 			//((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
 
 			pEnv->runtimeContext.jumpBuff = pEnv->exitAddr;
+		} else if (EXECUTION_RESTART == dwDirection) {
+			BRANCHING_PRINT(PRINT_BRANCHING_INFO, "RESTART Requested\n", a);
+			pEnv->lastFwBlock = 0;
+			ClearExecutionBuffer(pEnv);
+
+			// need to push the return address again
+			switch (revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
+			case EXECUTION_ADVANCE:
+				BRANCHING_PRINT(PRINT_BRANCHING_INFO, "Back at the first BB\n", a);
+
+				pEnv->runtimeContext.virtualStack -= 4;
+				*((ADDR_TYPE *)pEnv->runtimeContext.virtualStack) = a;
+
+				pEnv->lastFwBlock = (UINT_PTR)revtracerConfig.entryPoint;
+				pEnv->bForward = 1;
+				
+				pCB = pEnv->blockCache.FindBlock(pEnv->lastFwBlock);
+				pCB->MarkForward();
+
+				pEnv->runtimeContext.jumpBuff = (UINT_PTR)pCB->pFwCode;
+				break;
+			case EXECUTION_TERMINATE:
+				pEnv->runtimeContext.jumpBuff = (UINT_PTR)revtracerAPI.lowLevel.ntTerminateProcess;
+				break;
+			case EXECUTION_BACKTRACK:
+				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "EXECUTION_BACKTRACK @executionBegin");
+				pEnv->runtimeContext.jumpBuff = (UINT_PTR)revtracerAPI.lowLevel.ntTerminateProcess;
+				break;
+			}
 		}
 		
 	}

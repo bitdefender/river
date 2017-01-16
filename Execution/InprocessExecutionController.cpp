@@ -43,6 +43,11 @@ bool InprocessExecutionController::ReadProcessMemory(unsigned int base, unsigned
 	return true;
 }
 
+bool InprocessExecutionController::WriteProcessMemory(unsigned int base, unsigned int size, unsigned char * buff) {
+	memcpy((LPVOID)base, buff, size);
+	return true;
+}
+
 #ifdef __linux__
 void *ThreadProc(void *p) {
 	InprocessExecutionController *_this = (InprocessExecutionController *)p;
@@ -120,36 +125,24 @@ bool InprocessExecutionController::Execute() {
 	}
 
 	api->lowLevel.ntAllocateVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallAllocateMemoryHandler");
-
 	api->lowLevel.ntFreeVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFreeMemoryHandler");
-
-	api->lowLevel.ntQueryInformationThread = nullptr;
-
 	api->lowLevel.ntTerminateProcess = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallTerminateProcessHandler");
-
-	api->lowLevel.rtlNtStatusToDosError = nullptr;
-
 	api->lowLevel.vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
 
 	gcr = (GetCurrentRegistersFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetCurrentRegisters");
 	gmi = (GetMemoryInfoFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetMemoryInfo");
 	mmv = (MarkMemoryValueFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "MarkMemoryValue");
-	glbbc = (GetLastBasicBlockInfoFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetLastBasicBlockInfo");
+	glbbi = (GetLastBasicBlockInfoFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetLastBasicBlockInfo");
 
-	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv)) {
+	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv) || (nullptr == glbbi)) {
 		DEBUG_BREAK;
 		return false;
 	}
 
-	//config->contextSize = sizeof(CustomExecutionContext);
 	revCfg->entryPoint = entryPoint;
 	revCfg->featureFlags = featureFlags;
 	revCfg->context = this;
-	//revCfg->sCons = symbolicConstructor;
-
-
-	//config->sCons = SymExeConstructor;
-
+	
 	revtracerInitialize = (InitializeFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "Initialize");
 	revtraceExecute = (ExecuteFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "Execute");
 

@@ -174,7 +174,7 @@ namespace ipc {
 
 		DLL_PUBLIC extern void Initialize();
 
-		DLL_PUBLIC BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature);
+		DLL_PUBLIC BOOL __stdcall IsProcessorFeaturePresent(DWORD ProcessorFeature);
 	}
 };
 

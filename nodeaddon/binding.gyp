@@ -8,7 +8,7 @@
                 "<!(node -e \"require('nan')\")"
             ],
             "libraries": [
-            	"-lD:\evaluators\Debug\Execution.lib",
+            	"-lD:/wrk/riverhg/Debug/Execution.lib",
             ]
         }
     ]
