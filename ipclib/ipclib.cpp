@@ -324,7 +324,7 @@ namespace ipc {
 #define PF_ARM_FMAC_INSTRUCTIONS_AVAILABLE  27   
 #define PF_RDRAND_INSTRUCTION_AVAILABLE     28   
 
-	DLL_PUBLIC BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature) {
+	DLL_PUBLIC BOOL __stdcall IsProcessorFeaturePresent(DWORD ProcessorFeature) {
 		BOOL result;
 
 		if (ProcessorFeature >= 0x40) {

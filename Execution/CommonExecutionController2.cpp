@@ -61,6 +61,11 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 		dwDirection = exec->ExecutionControl(nextInstruction, pEnv);
 	}
 
+	// for now: we only accept resets at execution end
+	if ((EXECUTION_RESTART == dwDirection) && (nextInstruction != (ADDR_TYPE)pEnv->exitAddr)) {
+		dwDirection = EXECUTION_TERMINATE;
+	}
+
 	if ((EXECUTION_BACKTRACK == dwDirection) && (0 == (pEnv->generationFlags & TRACER_FEATURE_REVERSIBLE))) {
 		dwDirection = EXECUTION_ADVANCE;
 	}

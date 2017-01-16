@@ -6,8 +6,8 @@
 #include <intrin.h>
 
 
-void InitSymbolicHandler(ExecutionEnvironment *pEnv);
-void *CreateSymbolicVariable(const char *name);
+//void InitSymbolicHandler(ExecutionEnvironment *pEnv);
+//void *CreateSymbolicVariable(const char *name);
 
 namespace rev {
 
@@ -204,6 +204,12 @@ namespace rev {
 		0
 	};
 
+	RevtracerVersion revtracerVersion = {
+		0,
+		1,
+		1
+	};
+
 	DWORD miniStack[4096];
 	DWORD shadowStack = (DWORD)&(miniStack[4090]);
 
@@ -295,37 +301,10 @@ namespace rev {
 #endif
 	}
 
-
-
-
-	/* Segment initialization *************************************************************/
-
-	//DWORD segmentOffsets[0x100];
-	/*void InitSegment(DWORD dwSeg) {
-		LDT_ENTRY entry;
-		Kernel32GetThreadSelectorEntry(Kernel32GetCurrentThread(), dwSeg, &entry);
-
-		DWORD base = entry.BaseLow | (entry.HighWord.Bytes.BaseMid << 16) | (entry.HighWord.Bytes.BaseHi << 24);
-		DWORD limit = entry.LimitLow | (entry.HighWord.Bits.LimitHi << 16);
-
-		if (entry.HighWord.Bits.Granularity) {
-			limit = (limit << 12) | 0x0FFF;
-		}
-
-		segmentOffsets[dwSeg] = base;
-	}
-
-
-	void InitSegments() {
-		for (DWORD i = 0; i < 0x100; ++i) {
-			InitSegment(i);
-		}
-	}*/
-
 	/* DLL API ****************************************************************************/
 
 
-	void SetDbgPrint(DbgPrintFunc func) {
+	/*void SetDbgPrint(DbgPrintFunc func) {
 		revtracerAPI.dbgPrintFunc = func;
 	}
 
@@ -342,10 +321,7 @@ namespace rev {
 	void SetLowLevelAPI(LowLevelRevtracerAPI *llApi) {
 		revtracerAPI.lowLevel.ntAllocateVirtualMemory = llApi->ntAllocateVirtualMemory;
 		revtracerAPI.lowLevel.ntFreeVirtualMemory = llApi->ntFreeVirtualMemory;
-		revtracerAPI.lowLevel.ntQueryInformationThread = llApi->ntQueryInformationThread;
-
-		revtracerAPI.lowLevel.rtlNtStatusToDosError = llApi->rtlNtStatusToDosError;
-
+		
 		revtracerAPI.lowLevel.vsnprintf_s = llApi->vsnprintf_s;
 	}
 
@@ -366,7 +342,7 @@ namespace rev {
 
 	void SetEntryPoint(ADDR_TYPE ep) {
 		revtracerConfig.entryPoint = ep;
-	}
+	}*/
 
 	void Initialize() {
 		revtracerAPI.ipcLibInitialize();

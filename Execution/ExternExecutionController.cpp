@@ -1,7 +1,8 @@
 #include "ExternExecutionController.h"
 
-#include "Loader/Extern.Mapper.h"
-#include "Loader/Mem.Mapper.h"
+#include "../BinLoader/Extern.Mapper.h"
+#include "../BinLoader/Mem.Mapper.h"
+#include "../BinLoader/Inproc.Native.Importer.h"
 
 #include "RiverStructs.h"
 
@@ -22,7 +23,7 @@ namespace ipc {
 	}
 };
 
-template <typename T> bool LoadExportedName(FloatingPE *fpe, BYTE *base, char *name, T *&ptr) {
+template <typename T> bool LoadExportedName(ldr::FloatingPE *fpe, BYTE *base, char *name, T *&ptr) {
 	DWORD rva;
 	if (!fpe->GetExport(name, rva)) {
 		return false;
@@ -101,8 +102,10 @@ BYTE *GetFreeRegion(HANDLE hProcess, DWORD size) {
 }
 
 bool ExternExecutionController::MapLoader() {
-	FloatingPE *fLoader = new FloatingPE("loader.dll");
-	ExternMapper mLoader(hProcess);
+	ldr::FloatingPE *fLoader = new ldr::FloatingPE("loader.dll");
+	ldr::ExternMapper mLoader(hProcess);
+	ldr::InprocNativeImporter mImporter;
+
 	DWORD dwWritten;
 	bool bRet = false;
 	do {
@@ -113,7 +116,7 @@ bool ExternExecutionController::MapLoader() {
 			break;
 		}
 
-		if (!fLoader->MapPE(mLoader, (DWORD &)pLoaderBase)) {
+		if (!fLoader->Map(mLoader, mImporter, (DWORD &)pLoaderBase)) {
 			DEBUG_BREAK;
 			break;
 		}
@@ -148,7 +151,7 @@ bool ExternExecutionController::MapLoader() {
 			break;
 		}
 
-		if (FALSE == WriteProcessMemory(hProcess, ldrAPIPtr, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
+		if (FALSE == ::WriteProcessMemory(hProcess, ldrAPIPtr, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
 			DEBUG_BREAK;
 			break;
 		}
@@ -172,7 +175,7 @@ DWORD CharacteristicsToDesiredAccess(DWORD c) {
 	return r;
 }
 
-bool ExternExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
+bool ExternExecutionController::InitializeIpcLib(ldr::FloatingPE *fIpcLib) {
 	/* Imports */
 	ipc::IpcAPI *ipcAPI;
 	if (!LoadExportedName(fIpcLib, pIpcBase, "ipcAPI", ipcAPI)) {
@@ -200,7 +203,7 @@ bool ExternExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 		!LoadExportedName(fIpcLib, pIpcBase, "CleanupContextFunc", tmpRevApi.cleanupContext) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "BranchHandlerFunc", tmpRevApi.branchHandler) ||
 		!LoadExportedName(fIpcLib, pIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl) ||
-		!LoadExportedName(fIpcLib, pIpcBase, "IsProcessorFeaturePresent", pIPFPFunc)
+		!LoadExportedName(fIpcLib, pIpcBase, "_IsProcessorFeaturePresent@4", pIPFPFunc)
 	) {
 		return false;
 	}
@@ -208,13 +211,13 @@ bool ExternExecutionController::InitializeIpcLib(FloatingPE *fIpcLib) {
 	return true;
 }
 
-bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
+bool ExternExecutionController::InitializeRevtracer(ldr::FloatingPE *fRevTracer) {
 	/* Imports */
 	HMODULE hNtDll = GetModuleHandle("ntdll.dll");
 	tmpRevApi.lowLevel.ntAllocateVirtualMemory = GetProcAddress(hNtDll, "NtAllocateVirtualMemory");
 	tmpRevApi.lowLevel.ntFreeVirtualMemory = GetProcAddress(hNtDll, "NtFreeVirtualMemory");
 
-	tmpRevApi.lowLevel.ntQueryInformationThread = GetProcAddress(hNtDll, "NtQueryInformationThread");
+	//tmpRevApi.lowLevel.ntQueryInformationThread = GetProcAddress(hNtDll, "NtQueryInformationThread");
 	tmpRevApi.lowLevel.ntTerminateProcess = GetProcAddress(hNtDll, "NtTerminateProcess");
 
 #ifdef DUMP_BLOCKS
@@ -222,7 +225,7 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	tmpRevApi.lowLevel.ntWaitForSingleObject = GetProcAddress(hNtDll, "NtWaitForSingleObject");
 #endif
 
-	tmpRevApi.lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
+	//tmpRevApi.lowLevel.rtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
 	tmpRevApi.lowLevel.vsnprintf_s = GetProcAddress(hNtDll, "_vsnprintf_s");
 
 	/*if (nullptr != trackCb) {
@@ -249,7 +252,7 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 	if (!LoadExportedName(fRevTracer, pRevtracerBase, "GetCurrentRegisters", gcr) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "GetMemoryInfo", gmi) ||
 		!LoadExportedName(fRevTracer, pRevtracerBase, "MarkMemoryValue", mmv) ||
-		!LoadExportedName(fRevTracer, pRevtracerBase, "GetLastBasicBlockInfo", glbbc)
+		!LoadExportedName(fRevTracer, pRevtracerBase, "GetLastBasicBlockInfo", glbbi)
 	) {
 		DEBUG_BREAK;
 		return false;
@@ -301,11 +304,12 @@ bool ExternExecutionController::InitializeRevtracer(FloatingPE *fRevTracer) {
 }
 
 bool ExternExecutionController::MapTracer() {
-	FloatingPE *fIpcLib = new FloatingPE("ipclib.dll");
-	FloatingPE *fRevTracer = new FloatingPE("revtracer.dll");
+	ldr::FloatingPE *fIpcLib = new ldr::FloatingPE("ipclib.dll");
+	ldr::FloatingPE *fRevTracer = new ldr::FloatingPE("revtracer.dll");
 	bool bRet = false;
 	do {
-		MemMapper mMapper;
+		ldr::MemMapper mMapper;
+		ldr::InprocNativeImporter mImporter;
 
 		DWORD dwIpcLibSize = (fIpcLib->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwRevTracerSize = (fRevTracer->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
@@ -319,7 +323,7 @@ bool ExternExecutionController::MapTracer() {
 		DWORD ipcLibOffset = dwOffset;
 		DWORD revTracerOffset = dwOffset + dwIpcLibSize;
 
-		if (!fIpcLib->MapPE(mMapper, (DWORD &)pIpcBase) || !fRevTracer->MapPE(mMapper, (DWORD &)pRevtracerBase)) {
+		if (!fIpcLib->Map(mMapper, mImporter, (DWORD &)pIpcBase) || !fRevTracer->Map(mMapper, mImporter, (DWORD &)pRevtracerBase)) {
 			break;
 		}
 
@@ -330,7 +334,7 @@ bool ExternExecutionController::MapTracer() {
 		DWORD sCount = 0;
 		DWORD dwIpcLibSections = fIpcLib->GetSectionCount();
 		for (DWORD i = 0; i < dwIpcLibSections; ++i) {
-			const PESection *sec = fIpcLib->GetSection(i);
+			const ldr::PESection *sec = fIpcLib->GetSection(i);
 
 			if (sec->header.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) {
 				continue;
@@ -345,7 +349,7 @@ bool ExternExecutionController::MapTracer() {
 
 		DWORD dwRevTracerSections = fRevTracer->GetSectionCount();
 		for (DWORD i = 0; i < dwRevTracerSections; ++i) {
-			const PESection *sec = fRevTracer->GetSection(i);
+			const ldr::PESection *sec = fRevTracer->GetSection(i);
 
 			if (sec->header.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) {
 				continue;
@@ -390,7 +394,7 @@ bool ExternExecutionController::MapTracer() {
 
 bool ExternExecutionController::WriteLoaderConfig() {
 	DWORD dwWritten;
-	if (FALSE == WriteProcessMemory(hProcess, pLoaderConfig, &loaderConfig, sizeof(loaderConfig), &dwWritten)) {
+	if (FALSE == ::WriteProcessMemory(hProcess, pLoaderConfig, &loaderConfig, sizeof(loaderConfig), &dwWritten)) {
 		return false;
 	}
 
@@ -483,7 +487,7 @@ bool ExternExecutionController::PatchProcess() {
 		return false;
 	}
 
-	if (FALSE == WriteProcessMemory(hProcess, mAddr, &tmp, sizeof(tmp), &dwWr)) {
+	if (FALSE == ::WriteProcessMemory(hProcess, mAddr, &tmp, sizeof(tmp), &dwWr)) {
 		return false;
 	}
 
@@ -718,6 +722,11 @@ DWORD ExternExecutionController::ControlThread() {
 bool ExternExecutionController::ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) {
 	DWORD dwRd;
 	return TRUE == ::ReadProcessMemory(hProcess, (LPCVOID)base, buff, size, &dwRd);
+}
+
+bool ExternExecutionController::WriteProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) {
+	DWORD dwWr;
+	return TRUE == ::WriteProcessMemory(hProcess, (LPVOID)base, buff, size, &dwWr);
 }
 
 unsigned int ExternExecutionController::ExecutionBegin(void *address, void *cbCtx) {

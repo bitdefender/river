@@ -4,7 +4,7 @@
 #include "CommonExecutionController.h"
 
 #include "DualAllocator.h"
-#include "Loader/PE.ldr.h"
+#include "../BinLoader/PE.Loader.h"
 
 #include "../loader/loader.h"
 #include "../ipclib/ipclib.h"
@@ -51,8 +51,8 @@ private:
 	bool MapTracer();
 	bool WriteLoaderConfig();
 
-	bool InitializeIpcLib(FloatingPE *fIpcLib);
-	bool InitializeRevtracer(FloatingPE *fRevTracer);
+	bool InitializeIpcLib(ldr::FloatingPE *fIpcLib);
+	bool InitializeRevtracer(ldr::FloatingPE *fRevTracer);
 
 	bool SwitchEntryPoint();
 	bool PatchProcess();
@@ -69,6 +69,7 @@ public:
 	virtual THREAD_T GetProcessHandle();
 
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
+	virtual bool WriteProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
 
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx);
 };

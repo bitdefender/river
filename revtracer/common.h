@@ -1,9 +1,9 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#define ENABLE_DEBUG_TRANSLATIONS
+//#define ENABLE_DEBUG_TRANSLATIONS
 //#define ENABLE_DEBUG_TRACKING
-#define ENABLE_DEBUG_BRANCHING
+//#define ENABLE_DEBUG_BRANCHING
 
 
 #ifdef ENABLE_DEBUG_TRANSLATIONS
@@ -35,4 +35,5 @@
 #define DEBUG_BREAK asm volatile("int $0x3")
 typedef unsigned int size_t;
 #endif
+
 #endif

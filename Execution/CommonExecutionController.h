@@ -55,13 +55,13 @@ protected:
 	GetCurrentRegistersFunc gcr;
 	GetMemoryInfoFunc gmi;
 	MarkMemoryValueFunc mmv;
-	GetLastBasicBlockInfoFunc glbbc;
+	GetLastBasicBlockInfoFunc glbbi;
 
-	//rev::SymExeConstructorFunc symbolicConstructor;
 	rev::TrackCallbackFunc trackCb;
 	rev::MarkCallbackFunc markCb;
 	rev::SymbolicHandlerFunc symbCb;
 
+	static const rev::RevtracerVersion supportedVersion;
 public :
 	virtual int GetState() const;
 
