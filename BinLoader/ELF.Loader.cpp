@@ -751,4 +751,41 @@ namespace ldr {
 		return true;
 	}
 
+	void FloatingELF32::ForAllExports(std::function<void(const char *, const DWORD, const char *, const DWORD, const unsigned char *)> verb) const {
+		for (auto i = sections.begin(); i != sections.end(); ++i) {
+			if (SHT_DYNSYM == i->header.sh_type) {
+				Elf32Sym *symb = (Elf32Sym *)i->data;
+				DWORD count = i->header.sh_size / sizeof(*symb);
+				for (DWORD j = 0; j < count; ++j) {
+					if ((STB_GLOBAL == ELF32STBIND(symb[j].st_info)) && (SHN_UNDEF != symb[j].st_shndx)) {
+						if (nullptr != i->versions && nullptr != gnu_versions_r) {
+							ELFSymbolVersioning *vers = gnu_versions_r->idxSVers[((WORD *)i->versions->data)[j]];
+
+							if (0 != symb[j].st_value) {
+								if (nullptr != vers) {
+									verb(
+										(const char *)&sections[i->header.sh_link].data[symb[j].st_name],
+										0,
+										vers->version.c_str(),
+										symb[j].st_value,
+										(const unsigned char *)RVA(symb[j].st_value)
+									);
+								}
+								else {
+									verb(
+										(const char *)&sections[i->header.sh_link].data[symb[j].st_name],
+										0,
+										"",
+										symb[j].st_value,
+										(const unsigned char *)RVA(symb[j].st_value)
+									);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	};
+
 }; //namespace ldr

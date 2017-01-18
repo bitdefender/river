@@ -5,9 +5,7 @@
 #include "Abstract.Mapper.h"
 #include "Abstract.Loader.h"
 
-#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#undef _CRT_SECURE_NO_WARNINGS
 
 #include <vector>
 #include <string>
@@ -160,6 +158,8 @@ namespace ldr {
 
 		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr);
 		virtual bool GetExport(const char *funcName, DWORD &funcRVA) const;
+
+		virtual void ForAllExports(std::function<void(const char *, const DWORD, const char *, const DWORD, const unsigned char *)> verb) const;
 
 		virtual bool IsValid() const {
 			return isValid;
