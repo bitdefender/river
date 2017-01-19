@@ -24,6 +24,7 @@
 #define SHT_SHLIB	 10
 #define SHT_DYNSYM	 11
 #define SHT_GNU_HASH 0x6FFFFFF6
+#define SHT_VERDEF	 0x6FFFFFFD
 #define SHT_VERNEED	 0x6FFFFFFE
 #define SHT_VERSYM	 0x6FFFFFFF
 #define SHT_LOPROC   0x70000000
@@ -166,21 +167,28 @@ namespace ldr {
 #define SHN_COMMON 0xfff2
 #define SHN_HIRESERVE 0xffff
 
+#define VER_DEF_NONE		0
+#define VER_DEF_CURRENT		1
+#define VER_DEF_NUM			2
+
+#define VER_FLG_BASE		1
+#define VER_FLG_WEAK		2
+
 #define ELF32STBIND(i) ((i)>>4)
 #define ELF32STTYPE(i) ((i)&0xf
 
-	struct Elf32Rel{
+	struct ELF32Rel{
 		DWORD r_offset;
 		DWORD r_info;
 	};
 
-	struct Elf32Rela {
+	struct ELF32Rela {
 		DWORD r_offset;
 		DWORD r_info;
 		LONG r_addend;
 	};
 
-	struct Elf32Sym {
+	struct ELF32Sym {
 		DWORD st_name;
 		DWORD st_value;
 		DWORD st_size;
@@ -189,7 +197,7 @@ namespace ldr {
 		WORD st_shndx;
 	};
 
-	struct Elf32Dyn {
+	struct ELF32Dyn {
 		LONG d_tag;
 		DWORD d_un;
 	};
@@ -202,12 +210,27 @@ namespace ldr {
 		DWORD vn_next;
 	};
 
-	struct Elf32VerAux {
+	struct ELF32VerNeedAux {
 		DWORD vna_hash;
 		WORD vna_flags;
 		WORD vna_other;
 		DWORD vna_name;
 		DWORD vna_next;
+	};
+
+	struct ELF32VerDef {
+		WORD vd_version;
+		WORD vd_flags;
+		WORD vd_ndx;
+		WORD vd_cnt;
+		DWORD vd_hash;
+		DWORD vd_aux;
+		DWORD vd_next;
+	};
+
+	struct ELF32VerDefAux {
+		DWORD vda_name;
+		DWORD vda_next;
 	};
 
 	void *FloatingELF32::RVA(DWORD rva) const {
@@ -338,6 +361,13 @@ namespace ldr {
 					gnu_versions_r = &sections[i];
 					ParseVerNeed(sections[i]);
 					break;
+				case SHT_VERDEF:
+					dbg_log("Verdef section\n");
+					gnu_versions_d = &sections[i];
+					ParseVerDef(sections[i]);
+					break;
+				default:
+					dbg_log("Section type %08lx - not recognized\n", sections[i].header.sh_type);
 			}
 		}
 
@@ -401,7 +431,7 @@ namespace ldr {
 			funcname[at - name] = '\0';
 
 			if  (nullptr != gnu_versions_r) {
-				for (auto v = gnu_versions_r->sVers.begin(); v != gnu_versions_r->sVers.end(); ++v) {
+				for (auto v = gnu_versions_r->snVers.begin(); v != gnu_versions_r->snVers.end(); ++v) {
 					if (!strcmp(v->version.c_str(), at + 2)) {
 						return impr.FindImport(v->module.c_str(), funcname, at + 2);
 					}
@@ -423,7 +453,7 @@ namespace ldr {
 	bool FloatingELF32::FixImports(AbstractImporter &impr, DWORD offset) {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if ((SHT_DYNSYM == i->header.sh_type) || (SHT_SYMTAB == i->header.sh_type)) {
-				Elf32Sym *symb = (Elf32Sym *)i->data;
+				ELF32Sym *symb = (ELF32Sym *)i->data;
 				DWORD count = i->header.sh_size / sizeof(*symb);
 				for (DWORD j = 0; j < count; ++j) {
 					if ((STB_GLOBAL == ELF32STBIND(symb[j].st_info)) && (SHN_UNDEF == symb[j].st_shndx)) {
@@ -433,7 +463,7 @@ namespace ldr {
 						);
 
 						if (nullptr != i->versions && nullptr != gnu_versions_r) {
-							ELFSymbolVersioning *vers = gnu_versions_r->idxSVers[((WORD *)i->versions->data)[j]];
+							ELFSymbolVersionNeeded *vers = gnu_versions_r->idxSnVers[((WORD *)i->versions->data)[j]];
 							if (nullptr != vers) {
 								dbg_log(
 									"##%s",
@@ -460,7 +490,7 @@ namespace ldr {
 	bool FloatingELF32::PrintSymbols() const {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if ((SHT_DYNSYM == i->header.sh_type) || (SHT_SYMTAB == i->header.sh_type)) {
-				Elf32Sym *symb = (Elf32Sym *)i->data;
+				ELF32Sym *symb = (ELF32Sym *)i->data;
 				DWORD count = i->header.sh_size / sizeof(*symb);
 				for (DWORD j = 0; j < count; ++j) {
 					if ((STB_GLOBAL == ELF32STBIND(symb[j].st_info)) && (SHN_UNDEF == symb[j].st_shndx)) {
@@ -470,7 +500,7 @@ namespace ldr {
 						);
 
 						if (nullptr != i->versions && nullptr != gnu_versions_r) {
-							ELFSymbolVersioning *vers = gnu_versions_r->idxSVers[((WORD *)i->versions->data)[j]];
+							ELFSymbolVersionNeeded *vers = gnu_versions_r->idxSnVers[((WORD *)i->versions->data)[j]];
 
 							if (nullptr != vers) {
 								dbg_log(
@@ -491,7 +521,7 @@ namespace ldr {
 	bool FloatingELF32::GetExport(const char *funcName, DWORD &funcRVA) const {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if (SHT_DYNSYM == i->header.sh_type) {
-				Elf32Sym *symb = (Elf32Sym *)i->data;
+				ELF32Sym *symb = (ELF32Sym *)i->data;
 				DWORD count = i->header.sh_size / sizeof(*symb);
 				for (DWORD j = 0; j < count; ++j) {
 					if ((STB_GLOBAL == ELF32STBIND(symb[j].st_info)) &&
@@ -509,26 +539,26 @@ namespace ldr {
 	}
 
 	bool FloatingELF32::RelocateSection(void *r, DWORD count, const ELFSection &symb, const ELFSection &names, DWORD offset) {
-		Elf32Rel *rels = (Elf32Rel *)r;
+		ELF32Rel *rels = (ELF32Rel *)r;
 			for (DWORD i = 0; i < count; ++i) {
 			dbg_log("Off: 0x%08lx, Sym: 0x%06lx, Typ: 0x%02x ", rels[i].r_offset, ELF32RSYM(rels[i].r_info), ELF32RTYPE(rels[i].r_info));
 			DWORD *addr = (DWORD *)RVA(rels[i].r_offset);
 			DWORD oldAddr;
-			Elf32Sym *s;
+			ELF32Sym *s;
 
 			switch (ELF32RTYPE(rels[i].r_info)) {
 				case R_386_NONE :
 					dbg_log("$ none");
 					break;
 				case R_386_32 :
-					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
+					s = &((ELF32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;
 					*addr += offset + s->st_value;
 					dbg_log("$ 0x%08lx => 0x%08lx; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
 					//set *addr
 					break;
 				case R_386_PC32:
-					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
+					s = &((ELF32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;
 					*addr += s->st_value - rels[i].r_offset;
 					dbg_log("$ %s %lx %lx %lx %lx", (char *)&names.data[s->st_name], s->st_value, offset, rels[i].r_offset, *addr);
@@ -541,7 +571,7 @@ namespace ldr {
 					break;
 				case R_386_GLOB_DAT :
 					// TODO : Probably bug source
-					s = &((Elf32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
+					s = &((ELF32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
 					oldAddr = *addr;
 					*addr = s->st_value;
 					dbg_log("$ 0x%08lx => 0x%08lx; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
@@ -562,7 +592,7 @@ namespace ldr {
 				if (rel) {
 					DWORD symbols = i->header.sh_link;
 					DWORD symNames = sections[symbols].header.sh_link;
-					RelocateSection((Elf32Rel *)rel, relSz / relEnt, sections[symbols], sections[symNames], offset);
+					RelocateSection((ELF32Rel *)rel, relSz / relEnt, sections[symbols], sections[symNames], offset);
 				}
 			}
 		}
@@ -618,7 +648,7 @@ namespace ldr {
 
 	bool FloatingELF32::ParseVerNeed(ELFSection &s) {
 		DWORD maxVer = 0;
-		s.sVers.clear();
+		s.snVers.clear();
 		for (unsigned char *ptr = s.data; ptr < s.data + s.header.sh_size; ) {
 			ELF32VerNeed *vn = (ELF32VerNeed *)ptr;
 			ptr += sizeof(*vn);
@@ -626,30 +656,74 @@ namespace ldr {
 			dbg_log("%s with %d entries\n", &sections[s.header.sh_link].data[vn->vn_file], vn->vn_cnt);
 
 			for (DWORD j = 0; j < vn->vn_cnt; ++j) {
-				Elf32VerAux *va = (Elf32VerAux *)ptr;
+				ELF32VerNeedAux *va = (ELF32VerNeedAux *)ptr;
 				ptr += sizeof(*va);
 
 				dbg_log("\t %s -> %d\n", &sections[s.header.sh_link].data[va->vna_name], va->vna_other);
 				if (maxVer < va->vna_other) {
 					maxVer = va->vna_other;
 				}
-				s.sVers.push_back(ELFSymbolVersioning(va->vna_other, (char *)&sections[s.header.sh_link].data[va->vna_name], (char *)&sections[s.header.sh_link].data[vn->vn_file]));
+				s.snVers.push_back(ELFSymbolVersionNeeded(va->vna_other, (char *)&sections[s.header.sh_link].data[va->vna_name], (char *)&sections[s.header.sh_link].data[vn->vn_file]));
 			}
 		}
 
-		s.idxSVers.resize(maxVer + 1);
+		s.idxSnVers.resize(maxVer + 1);
 		for (DWORD i = 0; i <= maxVer; ++i) {
-			s.idxSVers[i] = nullptr;
+			s.idxSnVers[i] = nullptr;
 		}
 
-		for (auto i = s.sVers.begin(); i != s.sVers.end(); ++i) {
-			s.idxSVers[i->index] = &(*i);
+		for (auto i = s.snVers.begin(); i != s.snVers.end(); ++i) {
+			s.idxSnVers[i->index] = &(*i);
+		}
+		return true;
+	}
+
+	bool FloatingELF32::ParseVerDef(ELFSection &s) {
+		DWORD maxVer = 0;
+		s.snVers.clear();
+		for (unsigned char *ptr = s.data; ptr < s.data + s.header.sh_size; ) {
+			ELF32VerDef *vd = (ELF32VerDef *)ptr;
+			ptr += sizeof(*vd);
+
+			dbg_log("%d with %d entries [%s %s]\n", 
+				vd->vd_ndx, 
+				vd->vd_cnt,
+				(vd->vd_flags & VER_FLG_BASE) ? "VER_FLG_BASE" : "",
+				(vd->vd_flags & VER_FLG_WEAK) ? "VER_FLG_WEAK" : ""
+			);
+
+			if (maxVer < vd->vd_ndx) {
+				maxVer = vd->vd_ndx;
+			}
+
+			for (DWORD j = 0; j < vd->vd_cnt; ++j) {
+				ELF32VerDefAux *va = (ELF32VerDefAux *)ptr;
+				ptr += sizeof(*va);
+
+				// I think that VER_FLG_BASE marks an unversioned symbol
+				if (0 == (vd->vd_flags & VER_FLG_BASE)) {
+					if (0 == j) {
+						dbg_log("\t %s\n", &sections[s.header.sh_link].data[va->vda_name]);
+						s.sdVers.push_back(ELFSymbolVersionDefined(vd->vd_ndx, (char *)&sections[s.header.sh_link].data[va->vda_name]));
+					}
+				}
+			}
+		}
+
+		s.idxSdVers.resize(maxVer + 1);
+		for (DWORD i = 0; i <= maxVer; ++i) {
+			s.idxSdVers[i] = nullptr;
+		}
+	
+
+		for (auto i = s.sdVers.begin(); i != s.sdVers.end(); ++i) {
+			s.idxSdVers[i->index] = &(*i);
 		}
 		return true;
 	}
 
 	bool FloatingELF32::ParseDynamic(const ELFSection &s) {
-		Elf32Dyn *dyns = (Elf32Dyn *)s.data;
+		ELF32Dyn *dyns = (ELF32Dyn *)s.data;
 		DWORD cnt = s.header.sh_size / sizeof(dyns[0]);
 
 		for (DWORD j = 0; j < cnt; ++j) {
@@ -754,12 +828,12 @@ namespace ldr {
 	void FloatingELF32::ForAllExports(std::function<void(const char *, const DWORD, const char *, const DWORD, const unsigned char *)> verb) const {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if (SHT_DYNSYM == i->header.sh_type) {
-				Elf32Sym *symb = (Elf32Sym *)i->data;
+				ELF32Sym *symb = (ELF32Sym *)i->data;
 				DWORD count = i->header.sh_size / sizeof(*symb);
 				for (DWORD j = 0; j < count; ++j) {
 					if ((STB_GLOBAL == ELF32STBIND(symb[j].st_info)) && (SHN_UNDEF != symb[j].st_shndx)) {
-						if (nullptr != i->versions && nullptr != gnu_versions_r) {
-							ELFSymbolVersioning *vers = gnu_versions_r->idxSVers[((WORD *)i->versions->data)[j]];
+						if (nullptr != i->versions && nullptr != gnu_versions_d) {
+							ELFSymbolVersionDefined *vers = gnu_versions_d->idxSdVers[((WORD *)i->versions->data)[j]];
 
 							if (0 != symb[j].st_value) {
 								if (nullptr != vers) {

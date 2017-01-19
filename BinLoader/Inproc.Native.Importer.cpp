@@ -26,7 +26,7 @@ namespace ldr {
 	// function ordinals not present on Linux
 #define GET_PROC_ADDRESS_BY_ORDINAL(module, name) IMPORT_NOT_FOUND
 #define GET_PROC_ADDRESS_BY_NAME_VERSION(module, name, version) dlvsym((module), (name), (version))
-#define GET_IMPORT(module, rva) ((0 == rva) ? (IMPORT_NOT_FOUND) : (module) + (rva))
+#define GET_IMPORT(module, rva) ((0 == rva) ? (IMPORT_NOT_FOUND) : (*(DWORD *)module) + (rva))
 #endif
 
 	InprocNativeImporter::CachedModule *InprocNativeImporter::AddModule(const char *name)	{
@@ -52,6 +52,12 @@ namespace ldr {
 		if (nullptr == mod) {
 			AbstractBinary *bin = LoadBinary(name); 
 			
+			if (nullptr == bin) {
+				printf("Could not load module %s\n", name);
+				return nullptr;
+				
+			}
+
 			mod = AddModule(name);
 			bin->ForAllExports([mod](const char *funcName, const DWORD ordinal, const char *version, const DWORD rva, const unsigned char *body) {
 				mod->AddImport(funcName, ordinal, version, rva);

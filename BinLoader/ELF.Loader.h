@@ -75,14 +75,24 @@ namespace ldr {
 	};
 
 
-	class ELFSymbolVersioning {
+	class ELFSymbolVersionNeeded {
 	public:
 		DWORD index;
 		std::string version;
 		std::string module;
 
-		ELFSymbolVersioning(DWORD idx, std::string v, std::string m) :
+		ELFSymbolVersionNeeded(DWORD idx, std::string v, std::string m) :
 			index(idx), version(v), module(m) {}
+	};
+
+	class ELFSymbolVersionDefined {
+	public :
+		WORD index;
+		std::string version;
+
+		ELFSymbolVersionDefined(WORD idx, std::string v) :
+			index(idx), version(v)
+		{}
 	};
 
 	class ELFSection {
@@ -91,8 +101,11 @@ namespace ldr {
 		unsigned char *data;
 
 		ELFSection *versions;
-		std::vector<ELFSymbolVersioning> sVers;
-		std::vector<ELFSymbolVersioning *> idxSVers;
+		std::vector<ELFSymbolVersionNeeded> snVers;
+		std::vector<ELFSymbolVersionNeeded *> idxSnVers;
+
+		std::vector<ELFSymbolVersionDefined> sdVers;
+		std::vector<ELFSymbolVersionDefined *> idxSdVers;
 
 		ELFSection();
 		bool Load(FILE *fModule);
@@ -130,6 +143,7 @@ namespace ldr {
 
 		ELFSection *names;
 		ELFSection *gnu_versions_r;
+		ELFSection *gnu_versions_d;
 
 		bool isValid;
 
@@ -142,6 +156,7 @@ namespace ldr {
 		bool RelocateSection(void *r, DWORD count, const ELFSection &symb, const ELFSection &names, DWORD offset);
 
 		bool ParseVerNeed(ELFSection &s);
+		bool ParseVerDef(ELFSection &s);
 		bool ParseDynamic(const ELFSection &section);
 
 		bool Relocate(DWORD newBase);
