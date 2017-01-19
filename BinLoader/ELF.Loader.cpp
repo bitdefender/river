@@ -140,6 +140,8 @@ namespace ldr {
 #define DT_STRSZ			10   
 #define DT_SYMENT			11   
 #define DT_INIT				12   
+#define DT_INIT_ARRAY		25 /* Array with addresses Offf init fct */
+#define DT_INIT_ARRAYSZ		27 /* Size in bytestes of DT_INIT_ARRAY */
 #define DT_FINI				13   
 #define DT_SONAME			14   
 #define DT_RPATH			15   
@@ -607,9 +609,6 @@ namespace ldr {
 	bool FloatingELF32::Relocate(DWORD newBase) {
 		DWORD offset = newBase - moduleBase;
 
-		dbg_log("Relocate :: pltrel %p %08lx size %0lx\n",
-				rd[PLTREL_INDEX].rValue, rd[PLTREL_INDEX].address,
-				rd[PLTREL_INDEX].size);
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if (SHT_REL == i->header.sh_type) {
 				if (i->header.sh_addr == rd[REL_INDEX].address) {
@@ -621,7 +620,6 @@ namespace ldr {
 				}
 
 				if (i->header.sh_addr == rd[PLTREL_INDEX].address) {
-					DEBUG_BREAK;
 					DWORD symbols = i->header.sh_link;
 					DWORD symNames = sections[symbols].header.sh_link;
 					RelocateSection((ELF32Rel *)rd[PLTREL_INDEX].rValue,
@@ -806,6 +804,13 @@ namespace ldr {
 			switch (dyns[j].d_tag) {
 				case DT_INIT :
 					start = dyns[j].d_un;
+					break;
+				case DT_INIT_ARRAY:
+					init_array = dyns[j].d_un;
+					break;
+				case DT_INIT_ARRAYSZ:
+					init_array_sz = dyns[j].d_un;
+					break;
 				case DT_PLTGOT :
 				case DT_HASH :
 				case DT_STRTAB :
@@ -908,9 +913,17 @@ namespace ldr {
 		}
 
 		typedef void (*start_handler) (void);
-		DEBUG_BREAK;
+		typedef void (*init_handler) (void);
 		((start_handler) (baseAddr + start)) ();
-		DEBUG_BREAK;
+
+		// init array
+		unsigned int j, jm;
+		jm = init_array_sz / 4;
+
+		for (j = 0; j < jm; ++j) {
+			DEBUG_BREAK;
+			(((init_handler*) (baseAddr + init_array))[j]) ();
+		}
 
 		return true;
 	}
