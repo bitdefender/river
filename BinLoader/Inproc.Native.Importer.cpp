@@ -60,6 +60,7 @@ namespace ldr {
 			mod = AddModule(name);
 			bin->ForAllExports([mod](const char *funcName, const DWORD ordinal, const char *version, const DWORD rva, const unsigned char *body) {
 				mod->AddImport(funcName, ordinal, version, rva);
+				printf("func %s rva %08lx\n", funcName, rva);
 			});
 
 			delete bin;
@@ -151,6 +152,7 @@ namespace ldr {
 			ret = GET_IMPORT(hModule, mod->FindCachedImport(funcName, version));
 		}
 
+		printf("module %s func %s rva %08lx modulebase %08lx\n", moduleName, funcName, ret, *(DWORD*)(hModule));
 		return ret;
 	}
 
