@@ -132,6 +132,15 @@ namespace ldr {
 
 	};
 
+	struct RelocData {
+		void *rValue;
+		DWORD address;
+		DWORD size;
+	};
+
+#define REL_INDEX 0
+#define PLTREL_INDEX 1
+
 	class FloatingELF32 : public AbstractBinary {
 	private:
 		ElfIdent ident;
@@ -140,9 +149,10 @@ namespace ldr {
 		std::vector<ELFProgramHeader> pHeaders;
 		std::vector<ELFSection> sections;
 		std::vector<std::string> libraries;
-		DWORD moduleBase;
-		void *rel, *rela;
-		DWORD relSz, relaSz, relEnt, relaEnt;
+		DWORD moduleBase, start;
+		RelocData rd[2];
+		void *rela;
+		DWORD relaSz, relEnt, relaEnt;
 
 		ELFSection *names;
 		ELFSection *gnu_versions_r;

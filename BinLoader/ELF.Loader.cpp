@@ -4,7 +4,7 @@
 #include <string.h>
 #include <algorithm>
 
-#define DONOTPRINT
+//#define DONOTPRINT
 
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
@@ -489,7 +489,7 @@ namespace ldr {
 						} else {
 							symb[j].st_value = Import(impr, (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
 						}
-						symb[j].st_value -= offset;
+						//symb[j].st_value -= offset;
 						dbg_log("\n");
 					}
 				}
@@ -582,6 +582,13 @@ namespace ldr {
 					dbg_log("$ 0x%08lx => 0x%08lx", oldAddr, *addr);
 					break;
 				case R_386_GLOB_DAT :
+					// TODO : Probably bug source
+					s = &((ELF32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
+					oldAddr = *addr;
+					*addr = s->st_value;
+					dbg_log("$ 0x%08lx => 0x%08lx; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
+					//set *addr
+					break;
 				case R_386_JMP_SLOT :
 					// TODO : Probably bug source
 					s = &((ELF32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
@@ -600,12 +607,26 @@ namespace ldr {
 	bool FloatingELF32::Relocate(DWORD newBase) {
 		DWORD offset = newBase - moduleBase;
 
+		dbg_log("Relocate :: pltrel %p %08lx size %0lx\n",
+				rd[PLTREL_INDEX].rValue, rd[PLTREL_INDEX].address,
+				rd[PLTREL_INDEX].size);
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if (SHT_REL == i->header.sh_type) {
-				if (rel) {
+				if (i->header.sh_addr == rd[REL_INDEX].address) {
 					DWORD symbols = i->header.sh_link;
 					DWORD symNames = sections[symbols].header.sh_link;
-					RelocateSection((ELF32Rel *)rel, relSz / relEnt, sections[symbols], sections[symNames], offset);
+					RelocateSection((ELF32Rel *)rd[REL_INDEX].rValue,
+							rd[REL_INDEX].size / relEnt,
+							sections[symbols], sections[symNames], offset);
+				}
+
+				if (i->header.sh_addr == rd[PLTREL_INDEX].address) {
+					DEBUG_BREAK;
+					DWORD symbols = i->header.sh_link;
+					DWORD symNames = sections[symbols].header.sh_link;
+					RelocateSection((ELF32Rel *)rd[PLTREL_INDEX].rValue,
+							rd[PLTREL_INDEX].size / relEnt,
+							sections[symbols], sections[symNames], offset);
 				}
 			}
 		}
@@ -783,12 +804,13 @@ namespace ldr {
 			DWORD value = dyns[j].d_un;
 			DWORD *rValue = nullptr;
 			switch (dyns[j].d_tag) {
+				case DT_INIT :
+					start = dyns[j].d_un;
 				case DT_PLTGOT :
 				case DT_HASH :
 				case DT_STRTAB :
 				case DT_SYMTAB :
 				case DT_RELA :
-				case DT_INIT :
 				case DT_FINI :
 				case DT_REL :
 				case DT_DEBUG :
@@ -802,13 +824,14 @@ namespace ldr {
 					libraries.push_back((char *)&sections[s.header.sh_link].data[value]);
 					break;
 				case DT_REL :
-					rel = rValue;
+					rd[REL_INDEX].rValue = rValue;
+					rd[REL_INDEX].address = value;
 					break;
 				case DT_RELA :
 					rela = rValue;
 					break;
 				case DT_RELSZ :
-					relSz = value;
+					rd[REL_INDEX].size = value;
 					break;
 				case DT_RELASZ :
 					relaSz = value;
@@ -818,6 +841,13 @@ namespace ldr {
 					break;
 				case DT_RELAENT :
 					relaEnt = value;
+					break;
+				case DT_JMPREL:
+					rd[PLTREL_INDEX].rValue = rValue;
+					rd[PLTREL_INDEX].address = value;
+					break;
+				case DT_PLTRELSZ:
+					rd[PLTREL_INDEX].size = value;
 					break;
 				case DT_SONAME :
 					dbg_log("So name %s\n", &sections[s.header.sh_link].data[value]);
@@ -876,6 +906,12 @@ namespace ldr {
 				mapr.ChangeProtect(address, stopSegment - startSegment, prot[i->header.p_flags]);
 			}
 		}
+
+		typedef void (*start_handler) (void);
+		DEBUG_BREAK;
+		((start_handler) (baseAddr + start)) ();
+		DEBUG_BREAK;
+
 		return true;
 	}
 
