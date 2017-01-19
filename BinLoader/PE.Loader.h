@@ -2,8 +2,6 @@
 #define _PE_LDR_H_
 
 #include <vector>
-#include <functional>
-using namespace std;
 
 #include "Types.h"
 #include "Abstract.Mapper.h"
@@ -148,7 +146,7 @@ namespace ldr {
 		ImagePeHeader peHdr;
 		ImageOptionalHeader optHdr;
 
-		vector<PESection> sections;
+		std::vector<PESection> sections;
 
 		void *RVA(DWORD rva) const;
 		bool LoadPE(FILE *fModule);
@@ -164,7 +162,7 @@ namespace ldr {
 		bool FixImports(AbstractImporter &impr);
 
 		bool GetExport(const char *funcName, DWORD &funcRVA) const;
-		void ForAllExports(std::function<void(const char *, const DWORD, const DWORD, const unsigned char *)> verb) const;
+		void ForAllExports(std::function<void(const char *, const DWORD, const char*, const DWORD, const unsigned char *)> verb) const;
 		DWORD GetRequiredSize() const;
 		DWORD GetSectionCount() const;
 		const PESection *GetSection(DWORD dwIdx) const;

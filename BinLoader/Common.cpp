@@ -149,12 +149,12 @@ bool find_in_env(const wchar_t *moduleName, wchar_t *path) {
 #elif defined(_WIN32)
 #include <string.h>
 bool find_in_env(const char *moduleName, char *path) {
-	strcpy_s(path, strlen(moduleName), moduleName);
+	strcpy_s(path, strlen(moduleName) + 1, moduleName);
 	return true;
 }
 
 bool find_in_env(const wchar_t *moduleName, wchar_t *path) {
-	wcscpy_s(path, wcslen(moduleName), moduleName);
+	wcscpy_s(path, wcslen(moduleName) + 1, moduleName);
 	return true;
 }
 #endif
