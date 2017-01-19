@@ -149,10 +149,10 @@ namespace ldr {
 		std::vector<ELFProgramHeader> pHeaders;
 		std::vector<ELFSection> sections;
 		std::vector<std::string> libraries;
-		DWORD moduleBase, start;
+		DWORD moduleBase, start, init_array;
 		RelocData rd[2];
 		void *rela;
-		DWORD relaSz, relEnt, relaEnt;
+		DWORD relaSz, relEnt, relaEnt, init_array_sz;
 
 		ELFSection *names;
 		ELFSection *gnu_versions_r;
