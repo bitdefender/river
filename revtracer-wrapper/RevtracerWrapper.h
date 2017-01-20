@@ -143,7 +143,7 @@ namespace revwrapper {
 		DLL_WRAPPER_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value);
 
 		/** Wait for semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallWaitSemaphore(void *semaphore);
+		DLL_PUBLIC extern int CallWaitSemaphore(void *semaphore, bool blocking);
 
 		/** Post semaphore*/
 		DLL_WRAPPER_PUBLIC extern int CallPostSemaphore(void *semaphore);

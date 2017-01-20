@@ -494,6 +494,7 @@ namespace ldr {
 							symb[j].st_value = Import(impr, (char *)&sections[i->header.sh_link].data[symb[j].st_name]);
 						}
 						//symb[j].st_value -= offset;
+						//hack because s.st_value is normally the offset of a symbol in ITS library
 						dbg_log("\n");
 					}
 				}
@@ -560,6 +561,7 @@ namespace ldr {
 			dbg_log("Off: 0x%08lx, Sym: 0x%06lx, Typ: 0x%02x ", rels[i].r_offset, ELF32RSYM(rels[i].r_info), ELF32RTYPE(rels[i].r_info));
 			DWORD *addr = (DWORD *)RVA(rels[i].r_offset);
 			DWORD oldAddr;
+			WORD sectionIndex;
 			ELF32Sym *s;
 
 			switch (ELF32RTYPE(rels[i].r_info)) {
@@ -568,16 +570,22 @@ namespace ldr {
 					break;
 				case R_386_32 :
 					s = &((ELF32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
+					sectionIndex = s->st_shndx;
 					oldAddr = *addr;
-					*addr += offset + s->st_value;
-					dbg_log("$ 0x%08lx => 0x%08lx; %s", oldAddr, *addr, (char *)&names.data[s->st_name]);
+					*addr += s->st_value;
+					if (sectionIndex != SHN_UNDEF)
+						*addr += offset; //hack because the imports have absolute addrs and static calls have relative addrs
+					dbg_log("$ %s st %lx off %lx res_addr %lx oldaddr %lx", (char *)&names.data[s->st_name], s->st_value, offset, *addr, oldAddr);
 					//set *addr
 					break;
 				case R_386_PC32:
 					s = &((ELF32Sym *)symb.data)[ELF32RSYM(rels[i].r_info)];
+					sectionIndex = s->st_shndx;
 					oldAddr = *addr;
 					*addr += s->st_value - rels[i].r_offset;
-					dbg_log("$ %s %lx %lx %lx %lx", (char *)&names.data[s->st_name], s->st_value, offset, rels[i].r_offset, *addr);
+					if (sectionIndex == SHN_UNDEF)
+						*addr -= offset; //hack because we get the imports as absolute values and the static relocs have relative values X(X((X
+					dbg_log("$ %s %lx %lx %lx %lx oldaddr %lx", (char *)&names.data[s->st_name], s->st_value, offset, rels[i].r_offset, *addr, oldAddr);
 					//set *addr
 					break;
 				case R_386_RELATIVE :
@@ -865,7 +873,7 @@ namespace ldr {
 		return true;
 	}
 
-	bool FloatingELF32::Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr) {
+	bool FloatingELF32::Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr, bool callConstructors) {
 		DWORD oNA = 0;
 
 		for (auto i = pHeaders.begin(); i != pHeaders.end(); ++i) {
@@ -916,6 +924,9 @@ namespace ldr {
 
 		typedef void (*start_handler) (void);
 		typedef void (*init_handler) (void);
+
+		if (!callConstructors)
+			return true;
 
 		if (start)
 			((start_handler) (baseAddr + start)) ();

@@ -334,7 +334,7 @@ bool ExternExecutionController::InitializeRevtracer() {
 bool ExternExecutionController::Execute() {
 
 	pid_t child;
-	int status;
+	int ret, status;
 	struct user_regs_struct regs;
 
 	char arg[MAX_PATH];
@@ -367,8 +367,10 @@ bool ExternExecutionController::Execute() {
 		debugger.Attach(child);
 
 		debugger.InsertBreakpoint(entryPoint);
-		debugger.Run(PTRACE_CONT);
+		ret = debugger.Run(PTRACE_CONT);
 		debugger.PrintEip();
+		if (ret == -1)
+			return false;
 		debugger.DeleteBreakpoint(entryPoint);
 
 		//DebugPrintVMMap(child);
@@ -436,18 +438,10 @@ bool ExternExecutionController::Execute() {
 		revCfg->entryPoint = (void*)entryPoint;
 		printf("[Parent] Entrypoint setup for revtracer to %08lx\n", (DWORD)revCfg->entryPoint);
 
-		int ret;
 		CREATE_THREAD(hControlThread, ControlThreadFunc, this, ret);
 		execState = RUNNING;
 
 		ChildRunning = debugger.Run(PTRACE_CONT);
-
-		if (ChildRunning != 0) {
-			printf("[Execution] Child %d tracing failed\n.", child);
-			DEBUG_BREAK;
-		}
-
-		printf("[Execution] Child %d exited normally.\n", child);
 
 		int read;
 		DWORD written;
@@ -455,6 +449,13 @@ bool ExternExecutionController::Execute() {
 
 		BOOL _ret;
 		WRITE_FILE(hDbg, debugBuffer, read, written, _ret);
+
+		if (ChildRunning != 0) {
+			printf("[Execution] Child %d tracing failed\n.", child);
+			DEBUG_BREAK;
+		}
+
+		printf("[Execution] Child %d exited normally.\n", child);
 
 		return ret == TRUE;
 	}

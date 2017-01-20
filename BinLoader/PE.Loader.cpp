@@ -535,7 +535,7 @@ namespace ldr {
 		}
 	}
 
-	bool FloatingPE::Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr) {
+	bool FloatingPE::Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr, bool callConstructors) {
 
 
 		FixImports(impr);
