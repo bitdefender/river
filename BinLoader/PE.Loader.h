@@ -167,7 +167,7 @@ namespace ldr {
 		DWORD GetSectionCount() const;
 		const PESection *GetSection(DWORD dwIdx) const;
 
-		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr);
+		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr, bool callConstructors = false);
 
 		virtual bool IsValid() const {
 			return isValid;

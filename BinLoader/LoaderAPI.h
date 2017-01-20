@@ -23,7 +23,9 @@ void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcNam
 DWORD GetEntryPoint(const char *elfName);
 void CreateModule(const wchar_t *libname, MODULE_PTR &module);
 void CreateModule(const char *libname, MODULE_PTR &module);
-void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr, int shmFd = -1, unsigned long offset = 0);
+void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr,
+		bool callConstructors = false, int shmFd = -1,
+		unsigned long offset = 0);
 void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess);
 
 template <typename T> bool LoadExportedName(MODULE_PTR &module, BASE_PTR &base, const char *name, T *&ptr) {

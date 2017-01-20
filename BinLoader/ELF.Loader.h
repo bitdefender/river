@@ -187,7 +187,7 @@ namespace ldr {
 		DWORD GetEntryPoint() const;
 		DWORD GetRequiredSize() const;
 
-		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr);
+		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr, bool callConstructors = false);
 		virtual bool GetExport(const char *funcName, DWORD &funcRVA) const;
 
 

@@ -40,11 +40,12 @@ void CreateModule(const char *libname, MODULE_PTR &module) {
 	module = fExec;
 }
 
-void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr, int shmFd, unsigned long offset) {
+void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr,
+		bool callConstructors, int shmFd, unsigned long offset) {
 	ldr::InprocMapper mpr(shmFd, offset);
 	ldr::InprocNativeImporter imp;
 
-	if (!module->Map(mpr, imp, baseAddr)) {
+	if (!module->Map(mpr, imp, baseAddr, callConstructors)) {
 		delete module;
 		return;
 	}
