@@ -4,7 +4,7 @@
 #include <string.h>
 #include <algorithm>
 
-//#define DONOTPRINT
+#define DONOTPRINT
 
 #ifdef DONOTPRINT
 #define dbg_log(fmt,...) ((void)0)
@@ -397,7 +397,8 @@ namespace ldr {
 		return true;
 	}
 
-	FloatingELF32::FloatingELF32(const char *moduleName) {
+	FloatingELF32::FloatingELF32(const char *moduleName) :start(0), init_array(0)
+	{
 		// TODO fix this fclose double free
 		FILE *fModule = nullptr;
 		
@@ -410,7 +411,8 @@ namespace ldr {
 		fclose(fModule);
 	}
 
-	FloatingELF32::FloatingELF32(const wchar_t *moduleName) {
+	FloatingELF32::FloatingELF32(const wchar_t *moduleName) :start(0), init_array(0)
+	{
 		FILE *fModule = nullptr;
 		
 		if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
@@ -914,15 +916,18 @@ namespace ldr {
 
 		typedef void (*start_handler) (void);
 		typedef void (*init_handler) (void);
-		((start_handler) (baseAddr + start)) ();
+
+		if (start)
+			((start_handler) (baseAddr + start)) ();
 
 		// init array
-		unsigned int j, jm;
-		jm = init_array_sz / 4;
+		if (init_array) {
+			unsigned int j, jm;
+			jm = init_array_sz / 4;
 
-		for (j = 0; j < jm; ++j) {
-			DEBUG_BREAK;
-			(((init_handler*) (baseAddr + init_array))[j]) ();
+			for (j = 0; j < jm; ++j) {
+				(((init_handler*) (baseAddr + init_array))[j]) ();
+			}
 		}
 
 		return true;
