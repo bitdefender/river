@@ -39,6 +39,7 @@ extern "C" {
 	void *MapMemory(unsigned long access, unsigned long offset, unsigned long size, void *address) {
 		return mapMemory((unsigned long)shmFd, access, offset, size, address);
 	}
+	void patch__rtld_global_ro();
 }
 
 unsigned long FindFreeVirtualMemory(int shmFd, DWORD size) {
@@ -110,7 +111,11 @@ unsigned long MapSharedLibraries(int shmFd) {
 
 	DWORD offset = 0;
 	for (int i = 0; i < libNames.size(); ++i) {
-		MapModule(loaderAPI.mos[i].module, loaderAPI.mos[i].base, shmFd, offset);
+		bool callConstructors = false;
+		if (libNames[i].compare("libpthread.so") == 0)
+			callConstructors = true;
+
+		MapModule(loaderAPI.mos[i].module, loaderAPI.mos[i].base, callConstructors, shmFd, offset);
 		offset += loaderAPI.mos[i].size;
 	}
 
@@ -145,6 +150,9 @@ void init() {
 		printf("[Child] Failed to map the shared mem\n");
 	printf("[Child] Shared mem address is %p. Fd is [%d]\n", (void*)loaderAPI.sharedMemoryAddress, shmFd);
 	fflush(stdout);
+
+	// disable sse mmx
+	patch__rtld_global_ro();
 }
 
 void destroy() {

@@ -32,14 +32,13 @@ int TestSemaphore() {
 	sem_t semaphore;
 	int ret = revwrapper::CallInitSemaphore((void*)&semaphore, 0, 1);
 	assert(ret == 0);
-	ret = revwrapper::CallWaitSemaphore((void*)&semaphore);
+	ret = revwrapper::CallWaitSemaphore((void*)&semaphore, true);
 	assert(ret == 0);
 	ret = revwrapper::CallPostSemaphore((void*)&semaphore);
 	assert(ret == 0);
 	int value = 0;
 	ret = revwrapper::CallGetValueSemaphore((void*)&semaphore, &value);
 	assert(ret == 0);
-	printf("[Test::] Received value %d\n", value);
 	ret = revwrapper::CallDestroySemaphore((void*)&semaphore);
 	assert(ret == 0);
 	return 1;
@@ -49,7 +48,7 @@ int main () {
   MODULE_PTR lpModule;
   BASE_PTR lpBase;
   CreateModule("libpthread.so", lpModule);
-  MapModule(lpModule, lpBase);
+  MapModule(lpModule, lpBase, true);
   int ret = revwrapper::InitRevtracerWrapper(0, lpBase);
   if (ret != 0) {
 	  printf("Cannot initialize revtracer-wrapper\n");
