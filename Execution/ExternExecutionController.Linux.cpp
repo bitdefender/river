@@ -383,6 +383,11 @@ bool ExternExecutionController::Execute() {
 		CreateModule(L"librevtracerwrapper.so", hRevWrapperModule);
 		CreateModule(L"revtracer.dll", hRevtracerModule);
 
+		if (!hIpcModule || !hPthreadModule || !hRevtracerModule || !hRevtracerModule) {
+			printf("[Extern Execution] Please set LD_LIBRARY_PATH correctly. Modules not found\n");
+			DEBUG_BREAK;
+		}
+
 		DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwLibPthreadSize = (hPthreadModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwRevWrapperSize = (hRevWrapperModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
