@@ -149,11 +149,6 @@ namespace dbg {
 				} else {
 					printf("[Debugger] Tracee received signal %d\n", last_sig);
 					if (last_sig == 11) {
-						for (int i = -20; i < 256; ++i) {
-							unsigned long ret = GetAndResolveModuleAddress(0xb81439bb + i);
-							printf("%02lx %02lx %02lx %02lx ", ret & 0xFF,  (ret >> 0x8) & 0xFF, (ret >> 0x10) & 0xFF, (ret >> 0x18) & 0xFF);
-						}
-						printf("\n");
 						return -1;
 					}
 					PrintEip();
