@@ -24,4 +24,4 @@ $(lib_revwrapper): $(OBJ_FILES)
 
 .PHONY: clean
 clean:
-	$(RM) $(lib_revwrapper) $(OBJ_FILES) test Main.o
+	$(RM) $(lib_revwrapper) $(OBJ_FILES) test Main.o lib/*

@@ -9,6 +9,9 @@
 #include "../BinLoader/LoaderAPI.h"
 #include "../CommonCrossPlatform/Common.h"
 
+#include <semaphore.h>
+#include <time.h>
+#include <asm/ldt.h>
 
 typedef void* lib_t;
 
@@ -117,6 +120,63 @@ long LinYieldExecution(void) {
 void LinFlushInstructionCache(void) {
 }
 
+// ------------------- Wait semaphore -------------------------
+typedef int(*WaitSemaphoreHandler) (sem_t *);
+typedef int(*TimedWaitSemaphoreHandler) (sem_t *, const struct timespec *);
+typedef int(*ClockGetTimeHandler) (clockid_t clk_id, struct timespec *tp);
+
+WaitSemaphoreHandler _waitSemaphore;
+TimedWaitSemaphoreHandler _timedWaitSemaphore;
+ClockGetTimeHandler _clockGetTime;
+
+static long sec_to_nsec = 1000000000;
+
+#define __NR_get_thread_area 244
+void DebugSegmentDescriptors() {
+	struct user_desc* table_entry_ptr = NULL;
+
+	table_entry_ptr = (struct user_desc*)malloc(sizeof(struct user_desc));
+
+	for (int i = 0; i < 0x100; i) {
+		table_entry_ptr->entry_number = i;
+		int ret = syscall( __NR_get_thread_area,
+				table_entry_ptr);
+		if (ret == -1 && errno == EINVAL) {
+		} else if (ret == 0) {
+			_print("[RevtracerWrapper] Segment %d base %08x\n", i, table_entry_ptr->base_addr);
+		} else {
+			printf("[Child] Error found when get_thread_area. errno %d\n", errno);
+		}
+	}
+	free(table_entry_ptr);
+}
+
+int LinWaitSemaphore(void *semaphore, bool blocking) {
+	return _waitSemaphore((sem_t *)semaphore);
+}
+
+// Not used!
+int LinWaitSemaphoreNonBlocking(void *semaphore) {
+	int ret;
+	int timeout = 3;
+	struct timespec abs_timeout;
+
+	if (_clockGetTime(CLOCK_REALTIME, &abs_timeout) == -1) {
+		_print("[RevtracerWrapper] Cannot get current time\n");
+		return -1;
+	}
+
+	abs_timeout.tv_nsec = timeout * sec_to_nsec;
+	abs_timeout.tv_sec = timeout;
+	abs_timeout.tv_nsec %= 1000000000;
+
+	unsigned int segments[0x100];
+	ret = _timedWaitSemaphore((sem_t *)semaphore, &abs_timeout);
+
+	return ret;
+}
+
+
 namespace revwrapper {
 	extern "C" int InitRevtracerWrapper(unsigned long _lcBase, unsigned long lpthreadBase) {
 		lcModule = dlopen("libc.so", RTLD_LAZY);
@@ -157,11 +217,14 @@ namespace revwrapper {
 		yieldExecution = LinYieldExecution;
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_init", initSemaphore);
 		_print("[RevtracerWrapper] Found InitSemaphoreFunc @address %08lx\n", (void*)initSemaphore);
-		LoadExportedName(lpthreadModule, lpthreadBase, "sem_wait", waitSemaphore);
+		LoadExportedName(lpthreadModule, lpthreadBase, "sem_wait", _waitSemaphore);
+		LoadExportedName(lpthreadModule, lpthreadBase, "sem_timedwait", _timedWaitSemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_post", postSemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_destroy", destroySemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_getvalue", getvalueSemaphore);
+		_clockGetTime = (ClockGetTimeHandler)LOAD_PROC(lcModule, "clock_gettime");
 
+		waitSemaphore = LinWaitSemaphore;
 		openSharedMemory = (OpenSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_open");
 		unlinkSharedMemory = (UnlinkSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_unlink");
 

@@ -15,7 +15,7 @@ typedef long (*ToErrnoFunc)(long);
 
 typedef long (*YieldExecutionFunc)(void);
 typedef int (*InitSemaphoreFunc)(void *, int, int);
-typedef int (*WaitSemaphoreFunc)(void *);
+typedef int (*WaitSemaphoreFunc)(void *, bool);
 typedef int (*PostSemaphoreFunc)(void *);
 typedef int (*DestroySemaphoreFunc)(void *);
 typedef int (*GetValueSemaphoreFunc) (void *, int *);
