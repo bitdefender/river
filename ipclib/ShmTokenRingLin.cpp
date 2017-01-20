@@ -63,7 +63,7 @@ namespace ipc {
 		dbg_log("[ShmTokenRingLin] User %lu tries to start this %p sem value %d\n", id, &use_semaphore, ret);
 		ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&use_semaphore, true);
 		if (ret != 0) {
-			dbg_log("[ShmTokenRingLin] Wait for use_semaphore failed errno %d\n", errno);
+			dbg_log("[ShmTokenRingLin] Wait for use_semaphore failed\n");
 		}
 		((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&use_semaphore, &ret);
 		dbg_log("[ShmTokenRingLin] Sem value after wait is %d\n", ret);
@@ -71,12 +71,12 @@ namespace ipc {
 		ret = ((InitSemaphoreHandler)ipcAPI->initSemaphore)(&semaphores[id], 1, 0);
 		dump_sem_mem(&semaphores[id]);
 
-		dbg_log("[ShmTokenRingLin] Inited sem %lu with ret %d errno %d addr %p\n", id, ret, errno, &semaphores[id]);
+		dbg_log("[ShmTokenRingLin] Inited sem %lu with ret %d addr %p\n", id, ret, &semaphores[id]);
 		valid[id] = true;
 		userCount += 1;
 		ret = ((PostSemaphoreHandler)ipcAPI->postSemaphore)(&use_semaphore);
 		if (ret != 0) {
-			dbg_log("[ShmTokenRingLin] Post use_semaphore failed errno %d\n", errno);
+			dbg_log("[ShmTokenRingLin] Post use_semaphore failed\n");
 		}
 
 		((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&use_semaphore, &ret);
@@ -90,7 +90,8 @@ namespace ipc {
 			dbg_log("[ShmTokenRingLin] User %ld waiting for token sem valid %d\n", userId, (int)valid[userId]);
 			int ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&semaphores[userId], blocking);
 			if (ret != 0) {
-				dbg_log("[ShmTokenRingLin] Wait failed errno %d\n", errno);
+				if (!blocking)
+					return false;
 			} else {
 				dump_sem_mem(&semaphores[userId]);
 				((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&semaphores[userId], &ret);
@@ -110,6 +111,6 @@ namespace ipc {
 			return;
 		}
 		int ret = ((PostSemaphoreHandler)ipcAPI->postSemaphore)(&semaphores[localCurrentOwner]);
-		dbg_log("[ShmTokenRingLin] User %lu unlocks sem for %lu ret %d errno %d\n", userId, localCurrentOwner, ret, errno);
+		dbg_log("[ShmTokenRingLin] User %lu unlocks sem for %lu ret %d\n", userId, localCurrentOwner, ret);
 	}
 } //namespace ipc
