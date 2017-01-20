@@ -38,6 +38,7 @@ extern "C" {
 	void *MapMemory(unsigned long access, unsigned long offset, unsigned long size, void *address) {
 		return mapMemory((unsigned long)shmFd, access, offset, size, address);
 	}
+	void patch__rtld_global_ro();
 }
 
 unsigned long FindFreeVirtualMemory(int shmFd, DWORD size) {
@@ -148,6 +149,9 @@ void init() {
 		printf("[Child] Failed to map the shared mem\n");
 	printf("[Child] Shared mem address is %p. Fd is [%d]\n", (void*)loaderAPI.sharedMemoryAddress, shmFd);
 	fflush(stdout);
+
+	// disable sse mmx
+	patch__rtld_global_ro();
 }
 
 void destroy() {
