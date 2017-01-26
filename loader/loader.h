@@ -107,7 +107,7 @@ namespace ldr {
 		//ADDR_TYPE rtlInitUnicodeStringEx;
 		//ADDR_TYPE rtlFreeUnicodeString;
 		unsigned long sharedMemoryAddress;
-		struct mappedObject mos[MAX_LIBS];
+		struct MappedObject mos[MAX_LIBS];
 		DWORD segments[MAX_SEGMENTS];
 	};
 

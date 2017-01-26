@@ -7,7 +7,35 @@
 #include "RevtracerWrapper.h"
 #include "../CommonCrossPlatform/Common.h"
 
-DLL_LOCAL lib_t libhandler;
+revwrapper::LibraryLayout *libLayout;
+
+struct WindowsFunctions {
+	struct {
+		unsigned int _virtualAlloc;
+		unsigned int _virtualFree;
+		unsigned int _mapMemory;
+
+		unsigned int _flushMemoryCache;
+
+		unsigned int _terminateProcess;
+
+		unsigned int _writeFile;
+		unsigned int _waitForSingleObject;
+
+		unsigned int _systemError;
+
+		unsigned int _formatPrint;
+
+		unsigned int _ntYieldExecution;
+		unsigned int _flushInstructionCache;
+
+		unsigned int _createEvent;
+		unsigned int _setEvent;
+	} ntdll;
+} windowsFunctions;
+
+#define CALL_API(LIB, FUNC, TYPE) ((TYPE)((unsigned char *)libLayout->windows.##LIB##Base + windowsFunctions.##LIB##.##FUNC))
+
 
 #ifndef NT_SUCCESS
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
@@ -22,15 +50,14 @@ typedef NTSTATUS(__stdcall *AllocateMemoryHandler)(
 	DWORD                AllocationType,
 	DWORD                Protect);
 
-AllocateMemoryHandler _virtualAlloc;
-
 LPVOID __stdcall Kernel32VirtualAllocEx(HANDLE hProcess, LPVOID lpAddress, size_t dwSize, DWORD flAllocationType, DWORD flProtect) {
 	LPVOID addr = lpAddress;
 	if (lpAddress && (unsigned int)lpAddress < 0x10000) {
 		//RtlSetLastWin32Error(87);
 	}
 	else {
-		NTSTATUS ret = _virtualAlloc(
+		//NTSTATUS ret = ((AllocateMemoryHandler)((unsigned char *)libLayout->windows.ntdllBase + windowsFunctions.ntdll._virtualAlloc))(
+		NTSTATUS ret = CALL_API(ntdll, _virtualAlloc, AllocateMemoryHandler) (
 			hProcess,
 			&addr,
 			0,
@@ -61,8 +88,6 @@ typedef BOOL(*RtlFlushSecureMemoryCacheHandler)(
 		SIZE_T 	MemoryLength
 	);
 
-RtlFlushSecureMemoryCacheHandler _flushMemoryCache;
-
 // ------------------- Memory deallocation --------------------
 typedef NTSTATUS(*FreeMemoryHandler)(
 	HANDLE ProcessHandle,
@@ -70,8 +95,6 @@ typedef NTSTATUS(*FreeMemoryHandler)(
 	PULONG RegionSize,
 	ULONG FreeType
 );
-
-FreeMemoryHandler _virtualFree;
 
 BOOL Kernel32VirtualFreeEx(
 		HANDLE hProcess,
@@ -84,18 +107,26 @@ BOOL Kernel32VirtualFreeEx(
 		if ((unsigned __int16)(dwFreeType & 0x8000) && dwSize) {
 			return FALSE;
 		} else {
-			ret = ((FreeMemoryHandler)_virtualFree)(hProcess,
-					&lpAddress, (PULONG)dwSize, dwFreeType);
+			ret = CALL_API(ntdll, _virtualFree, FreeMemoryHandler) (
+				hProcess,
+				&lpAddress, 
+				(PULONG)dwSize, 
+				dwFreeType
+			);
 			if (ret >= 0) {
 				return TRUE;
 			}
 
 			if ((0xC0000045 == ret) && ((HANDLE)0xFFFFFFFF == hProcess)) {
-				if (FALSE == ((RtlFlushSecureMemoryCacheHandler)_flushMemoryCache)(lpAddress, dwSize)) {
+				if (FALSE == CALL_API(ntdll, _flushMemoryCache, RtlFlushSecureMemoryCacheHandler) (lpAddress, dwSize)) {
 					return FALSE;
 				}
-				ret = ((FreeMemoryHandler)_virtualFree)(hProcess,
-							&lpAddress, (PULONG)dwSize, dwFreeType);
+				ret = CALL_API(ntdll, _virtualFree, FreeMemoryHandler) (
+					hProcess,
+					&lpAddress, 
+					(PULONG)dwSize, 
+					dwFreeType
+				);
 				return (ret >= 0) ? TRUE : FALSE;
 			} else {
 				return FALSE;
@@ -104,7 +135,7 @@ BOOL Kernel32VirtualFreeEx(
 	}
 
 void WinFreeVirtual(void *address) {
-	_virtualFree((HANDLE)0xFFFFFFFF, &address, 0, MEM_RELEASE);
+	Kernel32VirtualFreeEx((HANDLE)0xFFFFFFFF, &address, 0, MEM_RELEASE);
 }
 
 // ------------------- Memory mapping -------------------------
@@ -126,8 +157,6 @@ typedef NTSTATUS(*MapMemoryHandler) (
 		ULONG           AllocationType,
 		ULONG           Win32Protect
 	);
-
-MapMemoryHandler _mapMemory;
 
 LPVOID Kernel32MapViewOfFileEx(
 		HANDLE hFileMappingObject,
@@ -163,18 +192,18 @@ LPVOID Kernel32MapViewOfFileEx(
 	}
 
 	/* Map the section */
-	Status = _mapMemory(
-			hFileMappingObject,
-			(HANDLE)0xFFFFFFFF,
-			&ViewBase,
-			0,
-			0,
-			&SectionOffset,
-			&ViewSize,
-			ViewShare,
-			0,
-			Protect
-			);
+	Status = CALL_API(ntdll, _mapMemory, MapMemoryHandler) (
+		hFileMappingObject,
+		(HANDLE)0xFFFFFFFF,
+		&ViewBase,
+		0,
+		0,
+		&SectionOffset,
+		&ViewSize,
+		ViewShare,
+		0,
+		Protect
+	);
 
 	if (!NT_SUCCESS(Status)) {
 		/* We failed */
@@ -188,13 +217,13 @@ LPVOID Kernel32MapViewOfFileEx(
 
 void *WinMapMemory(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
 	return Kernel32MapViewOfFileEx(
-			(void *)mapHandler,
-			access,
-			0,
-			offset,
-			size,
-			address
-			);
+		(void *)mapHandler,
+		access,
+		0,
+		offset,
+		size,
+		address
+	);
 }
 
 
@@ -204,14 +233,12 @@ typedef NTSTATUS(__stdcall *TerminateProcessHandler)(
 	NTSTATUS ExitStatus
 );
 
-TerminateProcessHandler _terminateProcess;
-
 void WinTerminateProcess(int retCode) {
-	_terminateProcess((HANDLE)0xFFFFFFFF, retCode);
+	CALL_API(ntdll, _terminateProcess, TerminateProcessHandler) ((HANDLE)0xFFFFFFFF, retCode);
 }
 
 void *WinGetTerminationCodeFunc() {
-	return (void *)_terminateProcess;
+	return (void *)CALL_API(ntdll, _terminateProcess, TerminateProcessHandler);
 }
 
 
@@ -264,15 +291,11 @@ typedef NTSTATUS(__stdcall *WriteFileHandler)(
 	PVOID Key
 );
 
-WriteFileHandler _writeFile;
-
 typedef NTSTATUS(__stdcall *NtWaitForSingleObjectFunc)(
 	HANDLE Handle,
 	BOOL Alertable,
 	PVOID Timeout
 );
-
-NtWaitForSingleObjectFunc _waitForSingleObject;
 
 //#define STATUS_PENDING 0x103
 
@@ -305,7 +328,7 @@ BOOL Kernel32WriteFile(
 		break;
 	};
 
-	NTSTATUS ret = _writeFile( 
+	NTSTATUS ret = CALL_API(ntdll, _writeFile, WriteFileHandler) (
 		hIntFile,
 		NULL,
 		NULL,
@@ -315,10 +338,10 @@ BOOL Kernel32WriteFile(
 		nNumberOfBytesToWrite,
 		NULL,
 		NULL
-		);
+	);
 
 	if (ret == STATUS_PENDING) {
-		ret = _waitForSingleObject(
+		ret = CALL_API(ntdll, _waitForSingleObject, NtWaitForSingleObjectFunc) (
 			hIntFile,
 			FALSE,
 			NULL
@@ -348,17 +371,143 @@ bool WinWriteFile(void *handle, void *buffer, size_t size, unsigned long *writte
 	return TRUE == Kernel32WriteFile(handle, buffer, size, written);
 }
 
+// ------------------- Events ---------------------------------
+
+#define CREATE_EVENT_MANUAL_RESET 1
+#define CREATE_EVENT_INITIAL_SET  2
+
+#define EVENT_ALL_ACCESS			0x1F0003
+
+typedef struct _LSA_UNICODE_STRING {
+	USHORT Length;
+	USHORT MaximumLength;
+	PWSTR  Buffer;
+} LSA_UNICODE_STRING, *PLSA_UNICODE_STRING, UNICODE_STRING, *PUNICODE_STRING;
+
+typedef struct _OBJECT_ATTRIBUTES {
+	ULONG           Length;
+	HANDLE          RootDirectory;
+	PUNICODE_STRING ObjectName;
+	ULONG           Attributes;
+	PVOID           SecurityDescriptor;
+	PVOID           SecurityQualityOfService;
+}  OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
+
+int __stdcall BaseFormatObjectAttributes(OBJECT_ATTRIBUTES *objectAttributes)
+{
+	objectAttributes->SecurityQualityOfService = 0;
+	objectAttributes->Attributes = 0;
+	//v7 = (void(__stdcall *)(OBJECT_ATTRIBUTES *))dword_10152984;
+	objectAttributes->RootDirectory = nullptr;
+	objectAttributes->Length = 24;
+	objectAttributes->ObjectName = nullptr;
+	objectAttributes->SecurityDescriptor = nullptr;
+
+	/*if (v7)
+	{
+		if (v7 == BasepAdjustObjectAttributesForPrivateNamespace)
+		{
+			BasepAdjustObjectAttributesForPrivateNamespace(objectAttributes);
+		}
+		else
+		{
+			__guard_check_icall_fptr(v7);
+			v7(objectAttributes);
+		}
+	}*/
+	//*(_DWORD *)a4 = objectAttributes;
+	return 0;
+}
+
+typedef enum _EVENT_TYPE {
+	NotificationEvent,
+	SynchronizationEvent
+} EVENT_TYPE;
+
+typedef NTSTATUS(__stdcall *NtCreateEventFunc)(
+	PHANDLE            EventHandle,
+	ACCESS_MASK        DesiredAccess,
+	POBJECT_ATTRIBUTES ObjectAttributes,
+	EVENT_TYPE         EventType,
+	BOOLEAN            InitialState
+);
+
+HANDLE __stdcall CreateEventExW(DWORD flags, ACCESS_MASK DesiredAccess)
+{
+	NTSTATUS ret; // eax@3
+	NTSTATUS v6; // ecx@12
+	OBJECT_ATTRIBUTES ObjectAttributes; // [sp+8h] [bp-28h]@3
+	HANDLE EventHandle; // [sp+Ch] [bp-24h]@5
+	//char v10; // [sp+18h] [bp-18h]@3
+
+	if (flags & 0xFFFFFFFC)
+	{
+		v6 = 0xC00000F1;
+		return nullptr;
+	}
+	
+	ret = BaseFormatObjectAttributes(&ObjectAttributes);
+	if (ret < 0) {
+		return nullptr;
+	}
+
+	ret = CALL_API(ntdll, _createEvent, NtCreateEventFunc) (
+		&EventHandle,
+		DesiredAccess,
+		&ObjectAttributes,
+		(EVENT_TYPE)(~(BYTE)flags & 1),
+		((BYTE)flags >> 1) & 1
+	);
+
+	if (ret < 0) {
+		return nullptr;
+	}
+
+	/*if (ret == 0x40000000)
+		RtlSetLastWin32Error(0xB7);
+	else
+		RtlSetLastWin32Error(0);*/
+	return EventHandle;
+}
+
+HANDLE __stdcall CreateEventW(/*LPSECURITY_ATTRIBUTES lpEventAttributes = nullptr,*/ BOOL bManualReset, BOOL bInitialState /*, LPCWSTR lpName = nullptr */)
+{
+	DWORD flags;
+
+	flags = 0;
+	if (bManualReset) {
+		flags = CREATE_EVENT_MANUAL_RESET;
+	}
+	if (bInitialState) {
+		flags |= CREATE_EVENT_INITIAL_SET;
+	}
+		
+	return CreateEventExW(flags, EVENT_ALL_ACCESS);
+}
+
+typedef NTSTATUS(__stdcall *NtSetEventFunc)(
+	HANDLE EventHandle, 
+	PULONG PreviousState
+);
+
+BOOL __stdcall SetEvent(HANDLE hEvent) {
+	NTSTATUS ret = CALL_API(ntdll, _setEvent, NtSetEventFunc) (hEvent, 0);
+	if (ret < 0) {
+		return FALSE;
+	}
+	return true;
+}
+
+
+
 // ------------------- Error codes ----------------------------
 
 typedef DWORD(__stdcall *ConvertToSystemErrorHandler)(
 	NTSTATUS status
 );
 
-ConvertToSystemErrorHandler _systemError;
-
-
 long WinToErrno(long ntStatus) {
-	return _systemError(ntStatus);
+	return CALL_API(ntdll, _systemError, ConvertToSystemErrorHandler) (ntStatus);
 }
 
 // ------------------- Formatted print ------------------------
@@ -371,10 +520,8 @@ typedef int (*FormatPrintHandler)(
 	va_list argptr
 );
 
-FormatPrintHandler _formatPrint;
-
 int WinFormatPrint(char *buffer, size_t sizeOfBuffer, const char *format, char *argptr) {
-	return _formatPrint(buffer, sizeOfBuffer, _TRUNCATE, format, (va_list)argptr);
+	return CALL_API(ntdll, _formatPrint, FormatPrintHandler) (buffer, sizeOfBuffer, _TRUNCATE, format, (va_list)argptr);
 }
 
 // ------------------- Yield Execution ------------------------
@@ -382,10 +529,8 @@ int WinFormatPrint(char *buffer, size_t sizeOfBuffer, const char *format, char *
 typedef long NTSTATUS;
 typedef NTSTATUS(*NtYieldExecutionHandler)();
 
-NtYieldExecutionHandler _ntYieldExecution;
-
 long WinYieldExecution(void) {
-	return _ntYieldExecution();
+	return CALL_API(ntdll, _ntYieldExecution, NtYieldExecutionHandler) ();
 }
 
 // ------------------- Flush instruction cache ----------------
@@ -396,58 +541,39 @@ typedef NTSTATUS(*FlushInstructionCacheHandler)(
 		SIZE_T size
 	);
 
-FlushInstructionCacheHandler _flushInstructionCache;
-
 void WinFlushInstructionCache(void) {
-	_flushInstructionCache((HANDLE)0xFFFFFFFF, NULL, 0);
+	CALL_API(ntdll, _flushInstructionCache, FlushInstructionCacheHandler) ((HANDLE)0xFFFFFFFF, NULL, 0);
 }
 
 
 // ------------------- Initialization -------------------------
 
 namespace revwrapper {
-	extern "C" int InitRevtracerWrapper() {
-		libhandler = GET_LIB_HANDLER(L"ntdll.dll");
 
-		if (!libhandler)
-			return -1;
 
-		// get functionality from ntdll
-		_virtualAlloc = (AllocateMemoryHandler)LOAD_PROC(libhandler, "NtAllocateVirtualMemory");
-		_virtualFree = (FreeMemoryHandler)LOAD_PROC(libhandler, "NtFreeVirtualMemory");
-		_mapMemory = (MapMemoryHandler)LOAD_PROC(libhandler, "NtMapViewOfSection");
+	extern "C" {
+		DLL_WRAPPER_PUBLIC int InitRevtracerWrapper(void *configPage) {
+			
 
-		_terminateProcess = (TerminateProcessHandler)LOAD_PROC(libhandler, "NtTerminateProcess");
+			// set global functionality
+			allocateVirtual = WinAllocateVirtual;
+			freeVirtual = WinFreeVirtual;
+			mapMemory = WinMapMemory;
 
-		_writeFile = (WriteFileHandler)LOAD_PROC(libhandler, "NtWriteFile");
-		_waitForSingleObject = (NtWaitForSingleObjectFunc)LOAD_PROC(libhandler, "NtWaitForSingleObject");
+			terminateProcess = WinTerminateProcess;
+			getTerminationCode = WinGetTerminationCodeFunc;
+			writeFile = WinWriteFile;
+			toErrno = WinToErrno;
+			formatPrint = WinFormatPrint;
 
-		_systemError = (ConvertToSystemErrorHandler)LOAD_PROC(libhandler, "RtlNtStatusToDosError");
-
-		_formatPrint = (FormatPrintHandler)LOAD_PROC(libhandler, "_vsnprintf_s");
-
-		_ntYieldExecution = (NtYieldExecutionHandler)LOAD_PROC(libhandler, "NtYieldExecution");
-
-		_flushInstructionCache = (FlushInstructionCacheHandler)LOAD_PROC(libhandler, "NtFlushInstructionCache");
-
-		// set global functionality
-		allocateVirtual = WinAllocateVirtual;
-		freeVirtual = WinFreeVirtual;
-		mapMemory = WinMapMemory;
-
-		terminateProcess = WinTerminateProcess;
-		getTerminationCode = WinGetTerminationCodeFunc;
-		writeFile = WinWriteFile;
-		toErrno = WinToErrno;
-		formatPrint = WinFormatPrint;
-
-		flushInstructionCache = WinFlushInstructionCache;
-		return 0;
-	}
+			flushInstructionCache = WinFlushInstructionCache;
+			return 0;
+		}
+	};
 }; // namespace revwrapper
 
-BOOL WINAPI DllMain(_In_ HINSTANCE hinstDLL, _In_ DWORD fdwReason, _In_ LPVOID lpvReserved) {
-	return TRUE;
+DWORD DllEntry() {
+	return 1;
 }
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef _IPCLIB_H_
 #define _IPCLIB_H_
 
+#include "common.h"
+
 #ifdef __linux__
 #include "ShmTokenRingLin.h"
 #else
@@ -9,8 +11,6 @@
 #include "RingBuffer.h"
 
 namespace ipc {
-
-
 /* Define NULL pointer value */
 #ifndef NULL
 #ifdef __cplusplus
@@ -126,35 +126,35 @@ namespace ipc {
 #define REMOTE_TOKEN_USER 0
 
 	extern "C" {
-		DLL_PUBLIC extern RingBuffer<(1 << 20)> debugLog;
+		DLL_IPC_PUBLIC extern RingBuffer<(1 << 20)> debugLog;
 
-		DLL_PUBLIC extern IpcAPI ipcAPI;
-		DLL_PUBLIC extern IpcData ipcData;
+		DLL_IPC_PUBLIC extern IpcAPI ipcAPI;
+		DLL_IPC_PUBLIC extern IpcData ipcData;
 
 #ifdef __linux__
-		DLL_PUBLIC extern ShmTokenRingLin ipcToken;
+		DLL_IPC_PUBLIC extern ShmTokenRingLin ipcToken;
 #else
-		DLL_PUBLIC extern ShmTokenRingWin ipcToken;
+		DLL_IPC_PUBLIC extern ShmTokenRingWin ipcToken;
 #endif
 
-		DLL_PUBLIC void DebugPrint(DWORD printMask, const char *fmt, ...);
+		DLL_IPC_PUBLIC void DebugPrint(DWORD printMask, const char *fmt, ...);
 
-		DLL_PUBLIC extern void *MemoryAllocFunc(DWORD dwSize);
-		DLL_PUBLIC extern void MemoryFreeFunc(void *ptr);
+		DLL_IPC_PUBLIC extern void *MemoryAllocFunc(DWORD dwSize);
+		DLL_IPC_PUBLIC extern void MemoryFreeFunc(void *ptr);
 
-		DLL_PUBLIC extern QWORD TakeSnapshot();
-		DLL_PUBLIC extern QWORD RestoreSnapshot();
+		DLL_IPC_PUBLIC extern QWORD TakeSnapshot();
+		DLL_IPC_PUBLIC extern QWORD RestoreSnapshot();
 
-		DLL_PUBLIC extern void InitializeContextFunc(void *context);
-		DLL_PUBLIC extern void CleanupContextFunc(void *context);
+		DLL_IPC_PUBLIC extern void InitializeContextFunc(void *context);
+		DLL_IPC_PUBLIC extern void CleanupContextFunc(void *context);
 
-		DLL_PUBLIC extern DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction);
-		DLL_PUBLIC extern void SyscallControlFunc(void *context, void *userContext);
+		DLL_IPC_PUBLIC extern DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction);
+		DLL_IPC_PUBLIC extern void SyscallControlFunc(void *context, void *userContext);
 
-		DLL_PUBLIC extern void InitializeIpcToken();
-		DLL_PUBLIC extern void Initialize();
+		DLL_IPC_PUBLIC extern void InitializeIpcToken();
+		DLL_IPC_PUBLIC extern void Initialize();
 
-		DLL_PUBLIC BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature);
+		DLL_IPC_PUBLIC BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature);
 	}
 };
 

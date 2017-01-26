@@ -148,6 +148,7 @@ bool find_in_env(const wchar_t *moduleName, wchar_t *path) {
 }
 #elif defined(_WIN32)
 #include <string.h>
+#include <stdio.h>
 bool find_in_env(const char *moduleName, char *path) {
 	strcpy_s(path, strlen(moduleName) + 1, moduleName);
 	return true;

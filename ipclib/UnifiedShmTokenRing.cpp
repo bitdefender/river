@@ -1,6 +1,10 @@
 #include "AbstractShmTokenRing.h"
-#include "ShmTokenRingWin.h"
+
+#ifdef __linux__
 #include "ShmTokenRingLin.h"
+#elif defined(_WIN32)
+#include "ShmTokenRingWin.h"
+#endif
 
 namespace ipc {
 	AbstractShmTokenRing *AbstractShmTokenRingFactory(void) {

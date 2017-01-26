@@ -7,7 +7,7 @@
 typedef unsigned long DWORD;
 typedef ldr::AbstractBinary *MODULE_PTR;
 typedef DWORD BASE_PTR;
-struct mappedObject {
+struct MappedObject {
 	MODULE_PTR module;
 	BASE_PTR base;
 	DWORD size;
