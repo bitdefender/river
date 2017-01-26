@@ -62,39 +62,39 @@ namespace revwrapper {
 	}
 
 	// Used until we replace the ipclib spinlock with signals / events
-	DLL_PUBLIC extern long CallYieldExecution(void) {
+	DLL_WRAPPER_PUBLIC extern long CallYieldExecution(void) {
 		return yieldExecution();
 	}
 
-	DLL_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value) {
+	DLL_WRAPPER_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value) {
 		return initSemaphore(semaphore, shared, value);
 	}
 
-	DLL_PUBLIC extern int CallWaitSemaphore(void *semaphore) {
+	DLL_WRAPPER_PUBLIC extern int CallWaitSemaphore(void *semaphore) {
 		return waitSemaphore(semaphore);
 	}
 
-	DLL_PUBLIC extern int CallPostSemaphore(void *semaphore) {
+	DLL_WRAPPER_PUBLIC extern int CallPostSemaphore(void *semaphore) {
 		return postSemaphore(semaphore);
 	}
 
-	DLL_PUBLIC extern int CallDestroySemaphore(void *semaphore) {
+	DLL_WRAPPER_PUBLIC extern int CallDestroySemaphore(void *semaphore) {
 		return destroySemaphore(semaphore);
 	}
 
-	DLL_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *value) {
+	DLL_WRAPPER_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *value) {
 		return getvalueSemaphore(semaphore, value);
 	}
 
-	DLL_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode) {
+	DLL_WRAPPER_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode) {
 		return openSharedMemory(name, oflag, mode);
 	}
 
-	DLL_PUBLIC extern int CallUnlinkSharedMemory(const char *name) {
+	DLL_WRAPPER_PUBLIC extern int CallUnlinkSharedMemory(const char *name) {
 		return unlinkSharedMemory(name);
 	}
 
-	DLL_PUBLIC extern void CallFlushInstructionCache(void) {
+	DLL_WRAPPER_PUBLIC extern void CallFlushInstructionCache(void) {
 		flushInstructionCache();
 	}
 

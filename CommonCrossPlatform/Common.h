@@ -108,8 +108,10 @@ typedef struct event_t EVENT_T;
 
 // manual dynamic loading
 #include <dlfcn.h>
+#include <link.h>
 typedef void* lib_t;
 #define GET_LIB_HANDLER(libname) dlopen((libname), RTLD_LAZY)
+#define GET_LIB_BASE(lib) ((struct link_map *)(lib))->l_addr
 #define CLOSE_LIB(libhandler) dlclose((libhandler))
 #define LOAD_PROC(libhandler, szProc) dlsym((libhandler), (szProc))
 
@@ -117,8 +119,8 @@ typedef void* lib_t;
 #else
 #include <Windows.h>
 typedef HANDLE FILE_T;
-typedef void* THREAD_T;
-typedef void* EVENT_T;
+typedef HANDLE THREAD_T;
+typedef HANDLE EVENT_T;
 typedef HANDLE PROCESS_HANDLE;
 typedef HANDLE MAPPING_HANDLE;
 
@@ -148,8 +150,9 @@ typedef HANDLE MAPPING_HANDLE;
 #define GET_CURRENT_PROC() GetCurrentProcess()
 
 // manual dynamic loading
-typedef HMODULE lib_t;
+typedef HMODULE LIB_T;
 #define GET_LIB_HANDLER(libname) GetModuleHandleW((libname))
+#define GET_LIB_BASE(lib) (DWORD)(lib)
 #define CLOSE_LIB
 #define LOAD_PROC(libhandler, szProc) GetProcAddress((libhandler), (szProc))
 

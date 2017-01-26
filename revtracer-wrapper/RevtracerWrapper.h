@@ -1,8 +1,6 @@
 #ifndef _REVTRACER_WRAPPER_H
 #define _REVTRACER_WRAPPER_H
 
-typedef void *ADDR_TYPE;
-
 namespace revwrapper {
 	#if defined _WIN32 || defined __CYGWIN__
 		#ifdef _BUILDING_REVTRACER_WRAPPER_DLL
@@ -18,7 +16,7 @@ namespace revwrapper {
 				#define DLL_REVTRACER_WRAPPER_PUBLIC __declspec(dllimport)
 			#endif
 		#endif
-		#define DLL_LOCAL
+		#define DLL_WRAPPER_LOCAL
 	#else
 		#if __GNUC__ >= 4
 			#define DLL_REVTRACER_WRAPPER_PUBLIC __attribute__ ((visibility ("default")))
@@ -29,7 +27,77 @@ namespace revwrapper {
 		#endif
 	#endif
 
+	union LibraryLayout {
+		struct LinuxLayout {
+			unsigned int libcBase;
+			unsigned int librtBase;
+			unsigned int libpthreadBase;
+		} linux;
+		struct WindowsLayout {
+			unsigned int ntdllBase;
+		} windows;
+	};
+
+	struct ImportedApi {
+		LibraryLayout *libraries;
+
+		union {
+			struct {
+				struct {
+					unsigned int _virtualAlloc;
+					unsigned int _virtualFree;
+					unsigned int _terminateProcess;
+					unsigned int _writeFile;
+					unsigned int _waitForSingleObject;
+					unsigned int _formatPrint;
+					unsigned int _print;
+				} libc;
+
+				struct {
+					unsigned int _shm_open;
+					unsigned int _shm_unlink;
+				} librt;
+
+				struct {
+					unsigned int _yieldExecution;
+					unsigned int _sem_init;
+					unsigned int _sem_wait;
+					unsigned int _sem_post;
+					unsigned int _sem_destroy;
+					unsigned int _sem_getvalue;
+				} libpthread;
+			} linux;
+
+			struct {
+				struct {
+					unsigned int _virtualAlloc;
+					unsigned int _virtualFree;
+					unsigned int _mapMemory;
+
+					unsigned int _flushMemoryCache;
+
+					unsigned int _terminateProcess;
+
+					unsigned int _writeFile;
+					unsigned int _waitForSingleObject;
+
+					unsigned int _systemError;
+
+					unsigned int _formatPrint;
+
+					unsigned int _ntYieldExecution;
+					unsigned int _flushInstructionCache;
+
+					unsigned int _createEvent;
+					unsigned int _setEvent;
+				} ntdll;
+			} windows;
+		} functions;
+	};
+
 	extern "C" {
+		DLL_WRAPPER_PUBLIC extern LibraryLayout temporaryLayout;
+
 		/** Initializes the API-wrapper */
 		DLL_REVTRACER_WRAPPER_PUBLIC extern int InitRevtracerWrapper();
 
@@ -40,7 +108,7 @@ namespace revwrapper {
 		DLL_REVTRACER_WRAPPER_PUBLIC extern void CallFreeMemoryHandler(void*);
 
 		/** Map memory at specified address */
-		DLL_PUBLIC extern void *CallMapMemoryHandler(
+		DLL_WRAPPER_PUBLIC extern void *CallMapMemoryHandler(
 				unsigned long mapHandler,
 				unsigned long access,
 				unsigned long offset,
@@ -68,31 +136,31 @@ namespace revwrapper {
 			unsigned long *written);
 
 		/** Yield the CPU */
-		DLL_PUBLIC extern long CallYieldExecution(void);
+		DLL_WRAPPER_PUBLIC extern long CallYieldExecution(void);
 
 		/** Init semaphore */
-		DLL_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value);
+		DLL_WRAPPER_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value);
 
 		/** Wait for semaphore */
-		DLL_PUBLIC extern int CallWaitSemaphore(void *semaphore);
+		DLL_WRAPPER_PUBLIC extern int CallWaitSemaphore(void *semaphore);
 
 		/** Post semaphore*/
-		DLL_PUBLIC extern int CallPostSemaphore(void *semaphore);
+		DLL_WRAPPER_PUBLIC extern int CallPostSemaphore(void *semaphore);
 
 		/** Destroy semaphore */
-		DLL_PUBLIC extern int CallDestroySemaphore(void *semaphore);
+		DLL_WRAPPER_PUBLIC extern int CallDestroySemaphore(void *semaphore);
 
 		/** Get value semaphore */
-		DLL_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *ret);
+		DLL_WRAPPER_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *ret);
 
 		/** Open shared mem */
-		DLL_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode);
+		DLL_WRAPPER_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode);
 
 		/** Unlink shared mem */
-		DLL_PUBLIC extern int CallUnlinkSharedMemory(const char *name);
+		DLL_WRAPPER_PUBLIC extern int CallUnlinkSharedMemory(const char *name);
 
 		/** Flush contents of instruction cache */
-		DLL_PUBLIC extern void CallFlushInstructionCache(void);
+		DLL_WRAPPER_PUBLIC extern void CallFlushInstructionCache(void);
 	}
 }; //namespace revwrapper
 
