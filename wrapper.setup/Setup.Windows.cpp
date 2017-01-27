@@ -17,7 +17,7 @@ extern "C" bool InitFunctionOffsets(revwrapper::LibraryLayout *libs, revwrapper:
 	api->functions.windows.ntdll._virtualAlloc = (DWORD)LOAD_PROC(hNtDll, "NtAllocateVirtualMemory") - baseNtDll;
 	api->functions.windows.ntdll._virtualFree = (DWORD)LOAD_PROC(hNtDll, "NtFreeVirtualMemory") - baseNtDll;
 	api->functions.windows.ntdll._mapMemory = (DWORD)LOAD_PROC(hNtDll, "NtMapViewOfSection") - baseNtDll;
-	api->functions.windows.ntdll._flushMemoryCache = (DWORD)LOAD_PROC(hNtDll, "NtFlushMemoryCache") - baseNtDll;
+	api->functions.windows.ntdll._flushMemoryCache = (DWORD)LOAD_PROC(hNtDll, "RtlFlushSecureMemoryCache") - baseNtDll;
 	api->functions.windows.ntdll._terminateProcess = (DWORD)LOAD_PROC(hNtDll, "NtTerminateProcess") - baseNtDll;
 	api->functions.windows.ntdll._writeFile = (DWORD)LOAD_PROC(hNtDll, "NtWriteFile") - baseNtDll;
 	api->functions.windows.ntdll._waitForSingleObject = (DWORD)LOAD_PROC(hNtDll, "NtWaitForSingleObject") - baseNtDll;

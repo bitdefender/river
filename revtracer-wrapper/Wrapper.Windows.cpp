@@ -7,34 +7,7 @@
 #include "RevtracerWrapper.h"
 #include "../CommonCrossPlatform/Common.h"
 
-revwrapper::LibraryLayout *libLayout;
-
-struct WindowsFunctions {
-	struct {
-		unsigned int _virtualAlloc;
-		unsigned int _virtualFree;
-		unsigned int _mapMemory;
-
-		unsigned int _flushMemoryCache;
-
-		unsigned int _terminateProcess;
-
-		unsigned int _writeFile;
-		unsigned int _waitForSingleObject;
-
-		unsigned int _systemError;
-
-		unsigned int _formatPrint;
-
-		unsigned int _ntYieldExecution;
-		unsigned int _flushInstructionCache;
-
-		unsigned int _createEvent;
-		unsigned int _setEvent;
-	} ntdll;
-} windowsFunctions;
-
-#define CALL_API(LIB, FUNC, TYPE) ((TYPE)((unsigned char *)libLayout->windows.##LIB##Base + windowsFunctions.##LIB##.##FUNC))
+#define CALL_API(LIB, FUNC, TYPE) ((TYPE)((unsigned char *)revwrapper::wrapperImports.libraries->windows.##LIB##Base + revwrapper::wrapperImports.functions.windows.##LIB##.##FUNC))
 
 
 #ifndef NT_SUCCESS

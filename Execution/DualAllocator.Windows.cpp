@@ -12,8 +12,8 @@ DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const char *shmNa
 }
 
 DualAllocator::~DualAllocator() {
-	for (std::vector<FileView>::iterator it = mappedViews.begin(); it < mappedViews.end(); ++it) {
-		UnmapViewOfFile(*it);
+	for (auto it = mappedViews.begin(); it < mappedViews.end(); ++it) {
+		UnmapViewOfFile(it->first);
 	}
 
 	CloseHandle(hMapping);
@@ -107,7 +107,7 @@ void *DualAllocator::Allocate(DWORD size, DWORD &offset) {
 		DEBUG_BREAK;
 	}
 
-	mappedViews.push_back(ptr);
+	mappedViews.push_back(std::pair<FileView, DWORD>(ptr, size));
 	return ptr;
 }
 

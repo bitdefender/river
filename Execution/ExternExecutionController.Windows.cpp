@@ -102,7 +102,7 @@ bool ExternExecutionController::MapLoader() {
 			break;
 		}
 
-		hLoaderBase = (DWORD)GetFreeRegion(hProcess, hLoaderModule->GetRequiredSize());
+		hLoaderBase = (BASE_PTR)GetFreeRegion(hProcess, hLoaderModule->GetRequiredSize());
 		MapModuleExtern(hLoaderModule, hLoaderBase, hProcess);
 
 		FlushInstructionCache(hProcess, (LPVOID)hLoaderBase, hLoaderModule->GetRequiredSize());
@@ -310,8 +310,8 @@ bool ExternExecutionController::MapTracer() {
 		DWORD dwOffset;
 
 		DWORD libs = (DWORD)shmAlloc->Allocate(dwTotalSize, dwOffset);
-		hIpcBase = libs;
-		hRevtracerBase = libs + dwIpcLibSize;
+		hIpcBase = (BASE_PTR)libs;
+		hRevtracerBase = (BASE_PTR)(libs + dwIpcLibSize);
 		DWORD ipcLibOffset = dwOffset;
 		DWORD revTracerOffset = dwOffset + dwIpcLibSize;
 

@@ -3,6 +3,7 @@
 #include "../CommonCrossPlatform/Common.h"
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 #include "../BinLoader/LoaderAPI.h"
+#include "../wrapper.setup/Wrapper.Setup.h"
 
 #ifdef __linux__
 #include <string.h>
@@ -98,6 +99,11 @@ bool InprocessExecutionController::Execute() {
 		api->symbolicHandler = symbCb;
 	}
 
+	wrapperImports = (revwrapper::ImportedApi *)GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "wrapperImports");
+	
+	wrapperImports->libraries = &libLayout;
+	InitFunctionOffsets(&libLayout, wrapperImports);
+
 	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "InitRevtracerWrapper");
 	if (!initHandler) {
 		DEBUG_BREAK;
@@ -110,15 +116,10 @@ bool InprocessExecutionController::Execute() {
 	}
 
 	api->lowLevel.ntAllocateVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallAllocateMemoryHandler");
-
 	api->lowLevel.ntFreeVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFreeMemoryHandler");
-
 	api->lowLevel.ntQueryInformationThread = nullptr;
-
 	api->lowLevel.ntTerminateProcess = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallTerminateProcessHandler");
-
 	api->lowLevel.rtlNtStatusToDosError = nullptr;
-
 	api->lowLevel.vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
 
 	gcr = (GetCurrentRegistersFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetCurrentRegisters");

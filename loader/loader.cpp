@@ -112,7 +112,7 @@ namespace ldr {
 			void *addr = MapMemory(
 				loaderConfig.sections[s].desiredAccess,
 				loaderConfig.sections[s].sectionOffset,
-				loaderConfig.sections[s].mappingSize,
+				(SIZE_T)loaderConfig.sections[s].mappingSize,
 				loaderConfig.sections[s].mappingAddress
 			);
 

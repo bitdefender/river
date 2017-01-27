@@ -28,6 +28,8 @@ UnlinkSharedMemoryFunc unlinkSharedMemory;
 FlushInstructionCacheFunc flushInstructionCache;
 
 namespace revwrapper {
+	DLL_WRAPPER_PUBLIC ImportedApi wrapperImports;
+
 	DLL_WRAPPER_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long dwSize)
 	{
 		return allocateVirtual(dwSize);

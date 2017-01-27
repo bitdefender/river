@@ -2,18 +2,20 @@
 #define _INPROCESS_EXECUTION_CONTROLLER_H_
 
 #include "CommonExecutionController.h"
-#ifdef _WIN32
+/*#ifdef _WIN32
 #include <Windows.h>
-#endif
+#endif*/
 
+#include "../revtracer-wrapper/RevtracerWrapper.h"
 #include "../revtracer/revtracer.h"
-
 #include "../CommonCrossPlatform/Common.h"
 
 class InprocessExecutionController : public CommonExecutionController {
 private :
 	THREAD_T hThread;
 
+	revwrapper::LibraryLayout libLayout, **expLayout;
+	revwrapper::ImportedApi *wrapperImports;
 	rev::RevtracerConfig *revCfg;
 public :
 	virtual bool SetPath();

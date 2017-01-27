@@ -1,3 +1,4 @@
+#ifdef __linux__
 #include "loader.h"
 #include <sys/mman.h>
 #include <sys/stat.h>        /* For mode constants */
@@ -41,8 +42,7 @@ extern "C" {
 }
 
 unsigned long FindFreeVirtualMemory(int shmFd, DWORD size) {
-	void *addr = mmap(0, size, PROT_READ | PROT_WRITE | PROT_EXEC,
-			MAP_SHARED, shmFd, 0);
+	void *addr = mmap(0, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, shmFd, 0);
 	munmap(addr, size);
 	return (unsigned long)addr;
 }
@@ -135,6 +135,7 @@ unsigned long MapSharedLibraries(int shmFd) {
 	return loaderAPI.mos[LIB_IPC_INDEX].base;
 }
 
+//TODO: wrap this in inline asm (for preserving the registers and stack)
 void init() {
 	InitializeAllocator();
 	loaderAPI.sharedMemoryAddress = MapSharedLibraries(shmFd);
@@ -151,3 +152,6 @@ void destroy() {
 }
 
 }; //namespace ldr
+
+
+#endif

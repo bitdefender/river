@@ -1,6 +1,5 @@
-#if defined(__linux__) || defined(EXTERN_EXECUTION_ONLY)
 #include "Abstract.Importer.h"
-#include "Inproc.Mapper.h"
+#include "Shm.Mapper.h"
 #include "Inproc.Native.Importer.h"
 #include "Extern.Mapper.h"
 #include "ELF.Loader.h"
@@ -9,7 +8,7 @@
 #include "LoaderAPI.h"
 #include "Common.h"
 // keep in mind that this funcion does NOT return the module base
-void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &baseAddr) {
+void ManualLoadLibrary(const wchar_t *libName, ldr::AbstractBinary *&module, BASE_PTR &baseAddr) {
 	CreateModule(libName, module);
 
 	if (!module)
@@ -18,7 +17,7 @@ void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &bas
 	MapModule(module, baseAddr);
 }
 
-void CreateModule(const wchar_t *libname, MODULE_PTR &module) {
+void CreateModule(const wchar_t *libname, ldr::AbstractBinary *&module) {
 	ldr::AbstractBinary *fExec = ldr::LoadBinary(libname);
 
 	if (fExec && !fExec->IsValid()) {
@@ -29,7 +28,7 @@ void CreateModule(const wchar_t *libname, MODULE_PTR &module) {
 	module = fExec;
 }
 
-void CreateModule(const char *libname, MODULE_PTR &module) {
+void CreateModule(const char *libname, ldr::AbstractBinary *&module) {
 	ldr::AbstractBinary *fExec = ldr::LoadBinary(libname);
 
 	if (fExec && !fExec->IsValid()) {
@@ -40,24 +39,24 @@ void CreateModule(const char *libname, MODULE_PTR &module) {
 	module = fExec;
 }
 
-void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr, int shmFd, unsigned long offset) {
-	ldr::InprocMapper mpr(shmFd, offset);
+void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr, int shmFd, unsigned long offset) {
+	ldr::ShmMapper mpr(shmFd, offset);
 	ldr::InprocNativeImporter imp;
 
-	if (!module->Map(mpr, imp, baseAddr)) {
+	if (!module->Map(mpr, imp, (ldr::DWORD &)baseAddr)) {
 		delete module;
 		return;
 	}
 }
 
 #ifdef _WIN32
-void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess) {
+void MapModuleExtern(ldr::AbstractBinary *&module, BASE_PTR &baseAddr, void *hProcess) {
 	ldr::ExternMapper mLoader(hProcess);
-	module->Map(mLoader, mLoader, baseAddr);
+	module->Map(mLoader, mLoader, (ldr::DWORD &)baseAddr);
 }
 #endif
 
-void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName) {
+void *ManualGetProcAddress(ldr::AbstractBinary *module, BASE_PTR base, const char *funcName) {
 
 	DWORD rva;
 	if (!module->GetExport(funcName, rva)) {
@@ -78,4 +77,3 @@ DWORD GetEntryPoint(const char *elfName) {
 	return 0;
 }
 
-#endif

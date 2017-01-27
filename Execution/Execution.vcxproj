@@ -44,11 +44,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_EXECUTION_EXPORTS;BLOCK_CACHE_READ_ONLY;EXTERN_EXECUTION_ONLY;INPROCESS_EXECUTION_ONLYDUMP_BLOCKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_EXECUTION_EXPORTS;BLOCK_CACHE_READ_ONLY;INPROCESS_EXECUTION_ONLYDUMP_BLOCKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ntdll.lib;BinLoader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ntdll.lib;BinLoader.lib;wrapper.setup.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
     </Link>
@@ -66,13 +66,13 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
       <SDLCheck>true</SDLCheck>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <UndefineAllPreprocessorDefinitions>true</UndefineAllPreprocessorDefinitions>
-      <PreprocessorDefinitions>_WINDOWS;_EXECUTION_EXPORTS;BLOCK_CACHE_READ_ONLY;EXTERN_EXECUTION_ONLY;INPROCESS_EXECUTION_ONLY%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_EXECUTION_EXPORTS;BLOCK_CACHE_READ_ONLY;INPROCESS_EXECUTION_ONLY%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>ntdll.lib;BinLoader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ntdll.lib;BinLoader.lib;wrapper.setup.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -81,19 +81,15 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\ipclib\ShmTokenRing.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\ipclib\ShmTokenRingWin.cpp" />
     <ClCompile Include="..\revtracer\cb.cpp" />
     <ClCompile Include="..\revtracer\crc32.cpp" />
     <ClCompile Include="..\revtracer\sync.cpp" />
     <ClCompile Include="CommonExecutionController.cpp" />
-    <ClCompile Include="DualAllocator.cpp" />
-    <ClCompile Include="ExternExecutionController.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="DualAllocator.Linux.cpp" />
+    <ClCompile Include="DualAllocator.Windows.cpp" />
+    <ClCompile Include="ExternExecutionController.Linux.cpp" />
+    <ClCompile Include="ExternExecutionController.Windows.cpp" />
     <ClCompile Include="InprocessExecutionController.cpp" />
     <ClCompile Include="CommonExecutionController2.cpp" />
     <ClCompile Include="LargeStack.cpp" />

@@ -28,22 +28,22 @@ private:
 
 	DualAllocator* shmAlloc;
 
-	MODULE_PTR hLoaderModule;
+	ldr::AbstractBinary *hLoaderModule;
 	BASE_PTR hLoaderBase;
 	BYTE *pLoaderConfig;
 	BYTE *pLoaderPerform;
 
-	MODULE_PTR hIpcModule;
+	ldr::AbstractBinary *hIpcModule;
 	BASE_PTR hIpcBase;
 
-	MODULE_PTR hRevtracerModule;
+	ldr::AbstractBinary *hRevtracerModule;
 	BASE_PTR hRevtracerBase;
 
 	BYTE *pLdrMapMemory;
 
 	ldr::LoaderConfig loaderConfig;
 
-	MODULE_PTR hRevWrapperModule;
+	ldr::AbstractBinary *hRevWrapperModule;
 	BASE_PTR hRevWrapperBase;
 
 	ipc::RingBuffer<(1 << 20)> *debugLog;

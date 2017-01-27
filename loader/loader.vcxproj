@@ -80,6 +80,7 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="loader.cpp" />
+    <ClCompile Include="loader.linux.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="loader.h" />
