@@ -23,7 +23,7 @@ namespace ldr {
 		PAGE_READWRITE,				// 6 RW-
 		PAGE_EXECUTE_READWRITE		// 7 RWX
 	};
-#define VIRTUAL_ALLOC(addr, size, protect, fd, offset) VirtualAlloc((addr), (size), MEM_RESERVE | MEM_COMMIT, (protect))
+#define VIRTUAL_ALLOC(addr, size, protect) VirtualAlloc((addr), (size), MEM_RESERVE | MEM_COMMIT, (protect))
 #define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect) (TRUE == VirtualProtect((addr), (size), (newProtect), &(oldProtect)))
 
 #elif defined(__linux__)
@@ -38,14 +38,13 @@ namespace ldr {
 		PROT_EXEC | PROT_WRITE | PROT_READ,	// 7 RWX
 	};
 // virtual memory functions
-#define VIRTUAL_ALLOC(addr, size, protect, fd, offset) ({ int flags = ((fd) < 0) ? MAP_SHARED | MAP_ANONYMOUS : MAP_SHARED; \
-		addr = mmap(addr, (size), (protect), flags, (fd), (offset)); addr; })
+#define VIRTUAL_ALLOC(addr, size, protect) mmap(addr, (size), (protect), MAP_ANONYMOUS, -1, 0)
 #define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect) (0 == mprotect((addr), (size), (newProtect)))
 
 #endif
 
 	void *InprocMapper::CreateSection(void *lpAddress, SIZE_T dwSize, DWORD flProtect) {
-		return VIRTUAL_ALLOC(lpAddress, dwSize, PageProtections[flProtect], shmFd, offset);
+		return VIRTUAL_ALLOC(lpAddress, dwSize, PageProtections[flProtect]);
 	}
 
 	bool InprocMapper::ChangeProtect(void *lpAddress, SIZE_T dwSize, DWORD flProtect) {

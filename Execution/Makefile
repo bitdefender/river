@@ -13,12 +13,12 @@ CPP_FILES := $(LOADER_FILES) $(EXTERN_EXECUTION_CPP) $(INPROCESS_EXECUTION_CPP) 
 
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))
 LIB_BINLOADER_PATH := ../BinLoader/libbinloader.a
+LIB_WRAPPER_SETUP_PATH := ../wrapper.setup/libwrappersetup.a
 LD_FLAGS := -lrt
 
 CC_FLAGS_CROSS = -D__cdecl="" -D__stdcall=""
 CC_FLAGS += -g -m32 -std=c++11 -D_EXECUTION_EXPORTS \
 						-DBLOCK_CACHE_READ_ONLY  \
-						-DEXTERN_EXECUTION_ONLY \
 						$(INCLUDE_PATHS) $(CC_FLAGS_CROSS)
 
 prefix := /usr/local
@@ -29,7 +29,7 @@ install: $(lib_execution)
 	install -m 0755 $(lib_execution) -t $(prefix)/lib -D
 
 $(lib_execution): $(OBJ_FILES)
-	$(CXX) $(CC_FLAGS)  -shared -o $@ $^ $(LIB_BINLOADER_PATH) $(LD_FLAGS)
+	$(CXX) $(CC_FLAGS)  -shared -o $@ $^ $(LIB_BINLOADER_PATH) $(LIB_WRAPPER_SETUP_PATH) $(LD_FLAGS)
 
 %.o: %.cpp
 	   $(CXX) $(CC_FLAGS) -c -o $@ $<

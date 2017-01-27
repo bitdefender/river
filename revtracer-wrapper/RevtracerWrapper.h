@@ -32,10 +32,10 @@ namespace revwrapper {
 			unsigned int libcBase;
 			unsigned int librtBase;
 			unsigned int libpthreadBase;
-		} linux;
+		} linLib;
 		struct WindowsLayout {
 			unsigned int ntdllBase;
-		} windows;
+		} winLib;
 	};
 
 	struct ImportedApi {
@@ -66,7 +66,7 @@ namespace revwrapper {
 					unsigned int _sem_destroy;
 					unsigned int _sem_getvalue;
 				} libpthread;
-			} linux;
+			} linFunc;
 
 			struct {
 				struct {
@@ -91,7 +91,7 @@ namespace revwrapper {
 					unsigned int _createEvent;
 					unsigned int _setEvent;
 				} ntdll;
-			} windows;
+			} winFunc;
 		} functions;
 	};
 

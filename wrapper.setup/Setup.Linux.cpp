@@ -13,25 +13,25 @@ extern "C" bool InitFunctionOffsets(revwrapper::LibraryLayout *libs, revwrapper:
 	DWORD baselibrt = GET_LIB_BASE(hlibrt);
 	DWORD baselibpthread = GET_LIB_BASE(hlibpthread);
 
-	libs->linux.libcBase = baselibc;
-	api->functions.linux.libc._virtualAlloc = (unsigned int)LOAD_PROC(hlibc, "mmap") - baselibc;
-	api->functions.linux.libc._virtualFree = (unsigned int)LOAD_PROC(hlibc, "munmap") - baselibc;
-	api->functions.linux.libc._terminateProcess = (unsigned int)LOAD_PROC(hlibc, "exit") - baselibc;
-	api->functions.linux.libc._writeFile = (unsigned int)LOAD_PROC(hlibc, "write") - baselibc;
-	api->functions.linux.libc._formatPrint = (unsigned int)LOAD_PROC(hlibc, "vsnprintf") - baselibc;
-	api->functions.linux.libc._print = (unsigned int)LOAD_PROC(hlibc, "printf") - baselibc;
+	libs->linLib.libcBase = baselibc;
+	api->functions.linFunc.libc._virtualAlloc = (DWORD)LOAD_PROC(hlibc, "mmap") - baselibc;
+	api->functions.linFunc.libc._virtualFree = (DWORD)LOAD_PROC(hlibc, "munmap") - baselibc;
+	api->functions.linFunc.libc._terminateProcess = (DWORD)LOAD_PROC(hlibc, "exit") - baselibc;
+	api->functions.linFunc.libc._writeFile = (DWORD)LOAD_PROC(hlibc, "write") - baselibc;
+	api->functions.linFunc.libc._formatPrint = (DWORD)LOAD_PROC(hlibc, "vsnprintf") - baselibc;
+	api->functions.linFunc.libc._print = (DWORD)LOAD_PROC(hlibc, "printf") - baselibc;
 
-	libs->linux.librtBase = baselibrt;
-	api->functions.linux.librt._shm_open = (unsigned int)LOAD_PROC(hlibrt, "shm_open") - baselibrt;
-	api->functions.linux.librt._shm_unlink = (unsigned int)LOAD_PROC(hlibrt, "shm_unlink") - baselibrt;
+	libs->linLib.librtBase = baselibrt;
+	api->functions.linFunc.librt._shm_open = (DWORD)LOAD_PROC(hlibrt, "shm_open") - baselibrt;
+	api->functions.linFunc.librt._shm_unlink = (DWORD)LOAD_PROC(hlibrt, "shm_unlink") - baselibrt;
 
-	libs->linux.libpthreadBase = baselibpthread;
-	api->functions.linux.libpthread._yieldExecution = (unsigned int)LOAD_PROC(hlibpthread, "pthread_yield") - baselibpthread;
-	api->functions.linux.libpthread._sem_init = (unsigned int)LOAD_PROC(hlibpthread, "sem_init") - baselibpthread;
-	api->functions.linux.libpthread._sem_wait = (unsigned int)LOAD_PROC(hlibpthread, "sem_wait") - baselibpthread;
-	api->functions.linux.libpthread._sem_post = (unsigned int)LOAD_PROC(hlibpthread, "sem_post") - baselibpthread;
-	api->functions.linux.libpthread._sem_destroy = (unsigned int)LOAD_PROC(hlibpthread, "sem_destroy") - baselibpthread;
-	api->functions.linux.libpthread._sem_getvalue = (unsigned int)LOAD_PROC(hlibpthread, "sem_getvalue") - baselibpthread;
+	libs->linLib.libpthreadBase = baselibpthread;
+	api->functions.linFunc.libpthread._yieldExecution = (DWORD)LOAD_PROC(hlibpthread, "pthread_yield") - baselibpthread;
+	api->functions.linFunc.libpthread._sem_init = (DWORD)LOAD_PROC(hlibpthread, "sem_init") - baselibpthread;
+	api->functions.linFunc.libpthread._sem_wait = (DWORD)LOAD_PROC(hlibpthread, "sem_wait") - baselibpthread;
+	api->functions.linFunc.libpthread._sem_post = (DWORD)LOAD_PROC(hlibpthread, "sem_post") - baselibpthread;
+	api->functions.linFunc.libpthread._sem_destroy = (DWORD)LOAD_PROC(hlibpthread, "sem_destroy") - baselibpthread;
+	api->functions.linFunc.libpthread._sem_getvalue = (DWORD)LOAD_PROC(hlibpthread, "sem_getvalue") - baselibpthread;
 
 	return true;
 }

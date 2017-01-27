@@ -109,7 +109,7 @@ typedef struct event_t EVENT_T;
 // manual dynamic loading
 #include <dlfcn.h>
 #include <link.h>
-typedef void* lib_t;
+typedef void* LIB_T;
 #define GET_LIB_HANDLER(libname) dlopen((libname), RTLD_LAZY)
 #define GET_LIB_BASE(lib) ((struct link_map *)(lib))->l_addr
 #define CLOSE_LIB(libhandler) dlclose((libhandler))

@@ -9,11 +9,12 @@
 #include "../BinLoader/LoaderAPI.h"
 #include "../CommonCrossPlatform/Common.h"
 
+#define CALL_API(LIB, FUNC, TYPE) ((TYPE)((unsigned char *)revwrapper::wrapperImports.libraries->linLib.LIB##Base + revwrapper::wrapperImports.functions.linFunc.LIB.FUNC))
 
-typedef void* lib_t;
+/*typedef void* lib_t;
 
-DLL_LOCAL MODULE_PTR lpthreadModule;
-DLL_LOCAL lib_t lcModule, lrtModule;
+DLL_WRAPPER_LOCAL MODULE_PTR lpthreadModule;
+DLL_WRAPPER_LOCAL lib_t lcModule, lrtModule;*/
 
 typedef int (*PrintfHandler)(const char *format, ...);
 PrintfHandler _print;
@@ -28,10 +29,11 @@ typedef void* (*AllocateMemoryHandler)(
 	off_t offset
 );
 
-AllocateMemoryHandler _virtualAlloc;
+//AllocateMemoryHandler _virtualAlloc;
 
 void *LinAllocateVirtual(unsigned long size) {
-	return _virtualAlloc(NULL, size, 0x7, 0x21, 0, 0); // RWX shared anonymous
+	//return _virtualAlloc(NULL, size, 0x7, 0x21, 0, 0); // RWX shared anonymous
+	return CALL_API(libc, _virtualAlloc, AllocateMemoryHandler) (NULL, size, 0x7, 0x21, 0, 0); // RWX shared anonymous
 }
 
 // ------------------- Memory deallocation --------------------
@@ -40,17 +42,16 @@ typedef int (*FreeMemoryHandler)(
 	size_t length
 );
 
-FreeMemoryHandler _virtualFree;
-
 void LinFreeVirtual(void *address) {
 	// TODO: implement some size retrieval mechanism
+	// CALL_API(libc, _virtualFree, FreeMemoryHandler)
 }
 
 // ------------------- Memory mapping ------------------------
 typedef AllocateMemoryHandler MapMemoryHandler;
 
 void *LinMapMemory(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
-	void *addr =  _virtualAlloc(address, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, (int)mapHandler, offset);
+	void *addr =  CALL_API(libc, _virtualAlloc, AllocateMemoryHandler) (address, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, (int)mapHandler, offset);
 	_print("[RevtracerWrapper] LinMapMemory: received %p input shm %d size %lu address %p at offset %08lx\n", addr, (int)mapHandler, size, address, offset);
 	return addr;
 }
@@ -60,14 +61,12 @@ typedef void(*TerminateProcessHandler)(
 	int status
 );
 
-TerminateProcessHandler _terminateProcess;
-
 void LinTerminateProcess(int retCode) {
-	_terminateProcess(retCode);
+	CALL_API(libc, _terminateProcess, TerminateProcessHandler) (retCode);
 }
 
 void *LinGetTerminationCodeFunc() {
-	return (void *)_terminateProcess;
+	return CALL_API(libc, _terminateProcess, void *);
 }
 
 // ------------------- Write file -----------------------------
@@ -77,10 +76,8 @@ typedef ssize_t(*WriteFileHandler)(
 	size_t count
 );
 
-WriteFileHandler _writeFile;
-
 bool WinWriteFile(void *handle, void *buffer, size_t size, unsigned long *written) {
-	*written = _writeFile((int)handle, buffer, size);
+	*written = CALL_API(libc, _writeFile, WriteFileHandler) ((int)handle, buffer, size);
 	return (0 <= written);
 }
 
@@ -98,19 +95,15 @@ typedef int(*FormatPrintHandler)(
 	va_list argptr
 	);
 
-FormatPrintHandler _formatPrint;
-
 int LinFormatPrint(char *buffer, size_t sizeOfBuffer, const char *format, char *argptr) {
-	return _formatPrint(buffer, sizeOfBuffer - 1, format, (va_list)argptr);
+	return CALL_API(libc, _formatPrint, FormatPrintHandler) (buffer, sizeOfBuffer - 1, format, (va_list)argptr);
 }
 
 // ------------------- Yield execution ------------------------
 typedef int(*YieldExecutionHandler) (void);
 
-YieldExecutionHandler _yieldExecution;
-
 long LinYieldExecution(void) {
-	return (long) _yieldExecution();
+	return (long) CALL_API(libpthread, _yieldExecution, YieldExecutionHandler) ();
 }
 
 // ------------------- Flush instr cache ----------------------
@@ -118,8 +111,8 @@ void LinFlushInstructionCache(void) {
 }
 
 namespace revwrapper {
-	extern "C" int InitRevtracerWrapper(unsigned long _lcBase, unsigned long lpthreadBase) {
-		lcModule = dlopen("libc.so", RTLD_LAZY);
+	extern "C" int InitRevtracerWrapper(void *configPage) {
+		/*lcModule = dlopen("libc.so", RTLD_LAZY);
 		lrtModule = dlopen("librt.so", RTLD_LAZY);
 		CreateModule("libpthread.so", lpthreadModule);
 		//TODO find base addresses
@@ -140,7 +133,7 @@ namespace revwrapper {
 		_formatPrint = (FormatPrintHandler)LOAD_PROC(lcModule, "vsnprintf");
 		_print = (PrintfHandler)LOAD_PROC(lcModule, "printf");
 
-		LoadExportedName(lpthreadModule, lpthreadBase, "pthread_yield", _yieldExecution);
+		LoadExportedName(lpthreadModule, lpthreadBase, "pthread_yield", _yieldExecution);*/
 
 		// set global functionality
 		allocateVirtual = LinAllocateVirtual;
@@ -152,10 +145,10 @@ namespace revwrapper {
 
 		toErrno = LinToErrno;
 		formatPrint = LinFormatPrint;
-		_print("[RevtracerWrapper] InitRevtracerWrapper success\n");
+		//_print("[RevtracerWrapper] InitRevtracerWrapper success\n");
 
 		yieldExecution = LinYieldExecution;
-		LoadExportedName(lpthreadModule, lpthreadBase, "sem_init", initSemaphore);
+		/*LoadExportedName(lpthreadModule, lpthreadBase, "sem_init", initSemaphore);
 		_print("[RevtracerWrapper] Found InitSemaphoreFunc @address %08lx\n", (void*)initSemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_wait", waitSemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_post", postSemaphore);
@@ -163,7 +156,7 @@ namespace revwrapper {
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_getvalue", getvalueSemaphore);
 
 		openSharedMemory = (OpenSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_open");
-		unlinkSharedMemory = (UnlinkSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_unlink");
+		unlinkSharedMemory = (UnlinkSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_unlink");*/
 
 		flushInstructionCache = LinFlushInstructionCache;
 		return 0;
