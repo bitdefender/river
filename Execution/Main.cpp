@@ -1,16 +1,18 @@
-#ifdef EXTERN_EXECUTION_ONLY
+#ifndef DISABLE_EXTERN_EXECUTION
 #include "ExternExecutionController.h"
 #endif
-#ifdef INPROCESS_EXECUTION_ONLY
+
+#ifndef DISABLE_INPROCESS_EXECUTION
 #include "InprocessExecutionController.h"
 #endif
 
 DLL_EXECUTION_PUBLIC ExecutionController *NewExecutionController(uint32_t type) {
 	switch (type) {
-#ifdef EXTERN_EXECUTION_ONLY
+#ifndef DISABLE_EXTERN_EXECUTION
 		case EXECUTION_EXTERNAL:
 			return new ExternExecutionController();
-#elif defined(INPROCESS_EXECUTION_ONLY)
+#endif
+#ifndef DISABLE_INPROCESS_EXECUTION
 		case EXECUTION_INPROCESS:
 			return new InprocessExecutionController();
 #endif

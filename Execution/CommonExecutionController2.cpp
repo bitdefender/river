@@ -52,7 +52,7 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 	}
 
 	DWORD dwDirection = EXECUTION_ADVANCE;
-	if (/*(a == revtracerAPI.lowLevel.ntTerminateProcess) ||*/ (nextInstruction == (ADDR_TYPE)pEnv->exitAddr)) {
+	if (/*(a == revtracerAPI.lowLevel.ntTerminateProcess) ||*/ (nextInstruction == (rev::ADDR_TYPE)pEnv->exitAddr)) {
 		// TODO: verify parameters
 		dwDirection = exec->ExecutionEnd(pEnv);
 	}

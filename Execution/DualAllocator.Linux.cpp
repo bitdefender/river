@@ -1,3 +1,5 @@
+#ifdef  __linux__
+
 #include "DualAllocator.h"
 #include <stdio.h>
 #include <errno.h>
@@ -202,3 +204,5 @@ void DualAllocator::Free(void *ptr) {
 		}
 	}
 }
+
+#endif //  __linux__

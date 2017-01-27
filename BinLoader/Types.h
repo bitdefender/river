@@ -10,6 +10,7 @@ namespace ldr {
 	typedef unsigned long DWORD;
 	typedef unsigned long long QWORD;
 
+	// TODO: Make arch aware size_t
 	typedef unsigned int SIZE_T;
 }; // namespace ldr
 

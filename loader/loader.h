@@ -70,6 +70,7 @@ namespace ldr {
 	typedef unsigned long DWORD;
 	typedef unsigned short WORD;
 	typedef unsigned char BYTE;
+	typedef unsigned int SIZE_T;
 
 	typedef void *ADDR_TYPE;
 
@@ -107,7 +108,7 @@ namespace ldr {
 		//ADDR_TYPE rtlInitUnicodeStringEx;
 		//ADDR_TYPE rtlFreeUnicodeString;
 		unsigned long sharedMemoryAddress;
-		struct MappedObject mos[MAX_LIBS];
+		MappedObject mos[MAX_LIBS];
 		DWORD segments[MAX_SEGMENTS];
 	};
 

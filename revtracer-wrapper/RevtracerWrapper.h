@@ -96,10 +96,11 @@ namespace revwrapper {
 	};
 
 	extern "C" {
-		DLL_WRAPPER_PUBLIC extern LibraryLayout temporaryLayout;
+		//DLL_WRAPPER_PUBLIC extern LibraryLayout temporaryLayout;
+		DLL_WRAPPER_PUBLIC extern ImportedApi wrapperImports;
 
 		/** Initializes the API-wrapper */
-		DLL_REVTRACER_WRAPPER_PUBLIC extern int InitRevtracerWrapper();
+		DLL_WRAPPER_PUBLIC extern int InitRevtracerWrapper(void *configPage);
 
 		/** Allocates virtual memory */
 		DLL_REVTRACER_WRAPPER_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long);
