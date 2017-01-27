@@ -72,7 +72,7 @@ namespace revwrapper {
 		return initSemaphore(semaphore, shared, value);
 	}
 
-	DLL_PUBLIC extern int CallWaitSemaphore(void *semaphore, bool blocking) {
+	DLL_WRAPPER_PUBLIC extern int CallWaitSemaphore(void *semaphore, bool blocking) {
 		return waitSemaphore(semaphore, blocking);
 	}
 
