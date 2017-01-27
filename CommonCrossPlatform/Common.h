@@ -76,26 +76,31 @@ struct event_t {
   int exited;
 };
 
+//TODO clean this. Lots of components require changes
 typedef struct event_t EVENT_T;
-#define CREATE_EVENT(event) \
+#define CREATE_VALUE_EVENT(event, value) \
   ({ pthread_cond_init(&((event).cond), nullptr); \
    pthread_mutex_init(&(event).mutex, nullptr); \
-   (event).exited = false; \
+   (event).exited = (value); \
    })
+
+#define CREATE_EVENT(event) CREATE_VALUE_EVENT((event), false)
 
 #define SIGNAL_EVENT(event) \
   ({ pthread_mutex_lock(&(event).mutex); \
-   (event).exited = true; \
+   (event).exited = !(event).exited; \
    pthread_cond_signal(&(event).cond); \
    pthread_mutex_unlock(&(event).mutex); \
    })
 
 #define WAIT_FOR_SINGLE_OBJECT(event) \
   ({ pthread_mutex_lock(&(event).mutex); \
+   int ret = 0; \
    while (!(event).exited) { \
-   pthread_cond_wait(&(event).cond, &(event).mutex); \
+   ret = pthread_cond_wait(&(event).cond, &(event).mutex); \
    } \
    pthread_mutex_unlock(&(event).mutex); \
+   ret == 0; \
    })
 
 #include <unistd.h>
@@ -115,9 +120,10 @@ typedef HANDLE FILE_T;
 typedef void* THREAD_T;
 typedef void* EVENT_T;
 
-#define CREATE_EVENT(handle) do { handle = CreateEvent(nullptr, false, false, nullptr); } while (false)
+#define CREATE_VALUE_EVENT(handle, value) do { handle = CreateEvent(nullptr, false, (value), nullptr); } while (false)
+#define CREATE_EVENT(handle) CREATE_VALUE_EVENT((handle), false)
 #define SIGNAL_EVENT(handle) SetEvent((handle))
-#define WAIT_FOR_SINGLE_OBJECT(handle) WaitForSingleObject((handle), INFINITE)
+#define WAIT_FOR_SINGLE_OBJECT(handle) (WAIT_FOR_SINGLE_OBJECT == WaitForSingleObject((handle), INFINITE))
 
 #define SEEK_BEGIN_FILE FILE_BEGIN
 #define SEEK_END_FILE FILE_END
