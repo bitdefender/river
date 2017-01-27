@@ -39,7 +39,7 @@ void CreateModule(const char *libname, ldr::AbstractBinary *&module) {
 	module = fExec;
 }
 
-void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr,
+void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr,
 		bool callConstructors, int shmFd, unsigned long offset) {
 	ldr::ShmMapper mpr(shmFd, offset);
 	ldr::InprocNativeImporter imp;
