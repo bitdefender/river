@@ -3,7 +3,7 @@ lib_binloader := libbinloader.a
 CC := gcc
 CXX := g++
 LOADER_FILES := ELF.Loader.cpp PE.Loader.cpp Unified.Loader.cpp LoaderAPI.cpp
-MAPPER_FILES := Inproc.Mapper.cpp
+MAPPER_FILES := Inproc.Mapper.cpp Shm.Mapper.cpp
 IMPORTER_FILES := Inproc.Native.Importer.cpp
 CPP_FILES := Common.cpp $(LOADER_FILES) $(MAPPER_FILES) $(IMPORTER_FILES)
 OBJ_FILES := $(addprefix ,$(CPP_FILES:.cpp=.o))

@@ -1,13 +1,13 @@
 #if defined _WIN32 || defined __CYGWIN__
 
-#include <Windows.h>
+//#include <Windows.h>
 
 #include "Wrapper.Global.h"
 
 #include "RevtracerWrapper.h"
 #include "../CommonCrossPlatform/Common.h"
 
-#define CALL_API(LIB, FUNC, TYPE) ((TYPE)((unsigned char *)revwrapper::wrapperImports.libraries->windows.##LIB##Base + revwrapper::wrapperImports.functions.windows.##LIB##.##FUNC))
+#define CALL_API(LIB, FUNC, TYPE) ((TYPE)((unsigned char *)revwrapper::wrapperImports.libraries->winLib.##LIB##Base + revwrapper::wrapperImports.functions.winFunc.##LIB##.##FUNC))
 
 
 #ifndef NT_SUCCESS
@@ -345,6 +345,8 @@ bool WinWriteFile(void *handle, void *buffer, size_t size, unsigned long *writte
 }
 
 // ------------------- Events ---------------------------------
+
+//TODO: fix compilation warnings on windows (we _ARE_ including Windows.h here)
 
 #define CREATE_EVENT_MANUAL_RESET 1
 #define CREATE_EVENT_INITIAL_SET  2
