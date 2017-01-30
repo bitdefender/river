@@ -46,7 +46,7 @@ public :
 
 
 		const char module[] = "";
-		fprintf(fBlocks, "%-15s + %08lX (%4d)\n",
+		fprintf(fBlocks, "%-15s + %08lX (%4ld)\n",
 			(-1 == foundModule) ? unkmod : mInfo[foundModule].Name,
 			(DWORD)offset,
 			bbInfo.cost

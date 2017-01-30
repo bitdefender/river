@@ -15,7 +15,7 @@ void ManualLoadLibrary(const wchar_t *libName, ldr::AbstractBinary *&module, BAS
 	if (!module)
 		return;
 
-	MapModule(module, baseAddr);
+	MapModule(module, baseAddr, false, -1, 0);
 }
 
 void CreateModule(const wchar_t *libname, ldr::AbstractBinary *&module) {
