@@ -97,10 +97,10 @@ namespace revwrapper {
 
 	extern "C" {
 		//DLL_WRAPPER_PUBLIC extern LibraryLayout temporaryLayout;
-		DLL_WRAPPER_PUBLIC extern ImportedApi wrapperImports;
+		DLL_REVTRACER_WRAPPER_PUBLIC extern ImportedApi wrapperImports;
 
 		/** Initializes the API-wrapper */
-		DLL_WRAPPER_PUBLIC extern int InitRevtracerWrapper(void *configPage);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int InitRevtracerWrapper(void *configPage);
 
 		/** Allocates virtual memory */
 		DLL_REVTRACER_WRAPPER_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long);
@@ -109,7 +109,7 @@ namespace revwrapper {
 		DLL_REVTRACER_WRAPPER_PUBLIC extern void CallFreeMemoryHandler(void*);
 
 		/** Map memory at specified address */
-		DLL_WRAPPER_PUBLIC extern void *CallMapMemoryHandler(
+		DLL_REVTRACER_WRAPPER_PUBLIC extern void *CallMapMemoryHandler(
 				unsigned long mapHandler,
 				unsigned long access,
 				unsigned long offset,
@@ -137,31 +137,31 @@ namespace revwrapper {
 			unsigned long *written);
 
 		/** Yield the CPU */
-		DLL_WRAPPER_PUBLIC extern long CallYieldExecution(void);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern long CallYieldExecution(void);
 
 		/** Init semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value);
 
 		/** Wait for semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallWaitSemaphore(void *semaphore, bool blocking);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int CallWaitSemaphore(void *semaphore, bool blocking);
 
 		/** Post semaphore*/
-		DLL_WRAPPER_PUBLIC extern int CallPostSemaphore(void *semaphore);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int CallPostSemaphore(void *semaphore);
 
 		/** Destroy semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallDestroySemaphore(void *semaphore);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int CallDestroySemaphore(void *semaphore);
 
 		/** Get value semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *ret);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *ret);
 
 		/** Open shared mem */
-		DLL_WRAPPER_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode);
 
 		/** Unlink shared mem */
-		DLL_WRAPPER_PUBLIC extern int CallUnlinkSharedMemory(const char *name);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern int CallUnlinkSharedMemory(const char *name);
 
 		/** Flush contents of instruction cache */
-		DLL_WRAPPER_PUBLIC extern void CallFlushInstructionCache(void);
+		DLL_REVTRACER_WRAPPER_PUBLIC extern void CallFlushInstructionCache(void);
 	}
 }; //namespace revwrapper
 

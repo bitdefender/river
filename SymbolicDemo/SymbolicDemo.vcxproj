@@ -58,7 +58,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SymbolicEnvironment.lib;execution.lib;libz3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>revtracer.lib;SymbolicEnvironment.lib;execution.lib;libz3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)z3/bin/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Profile>true</Profile>
     </Link>

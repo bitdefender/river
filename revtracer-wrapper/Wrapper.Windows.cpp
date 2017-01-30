@@ -527,7 +527,7 @@ namespace revwrapper {
 
 
 	extern "C" {
-		DLL_WRAPPER_PUBLIC int InitRevtracerWrapper(void *configPage) {
+		DLL_REVTRACER_WRAPPER_PUBLIC int InitRevtracerWrapper(void *configPage) {
 			
 
 			// set global functionality

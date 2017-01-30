@@ -37,7 +37,8 @@ void *ManualGetProcAddress(ldr::AbstractBinary *module, BASE_PTR base, const cha
 DWORD GetEntryPoint(const char *elfName);
 void CreateModule(const wchar_t *libname, ldr::AbstractBinary *&module);
 void CreateModule(const char *libname, ldr::AbstractBinary *&module);
-void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr, int shmFd = -1, unsigned long offset = 0);
+void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr);
+void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr, bool callConstructors, int shmFd, unsigned long offset);
 void MapModuleExtern(ldr::AbstractBinary *&module, BASE_PTR &baseAddr, void *hProcess);
 
 template <typename T> bool LoadExportedName(ldr::AbstractBinary *&module, BASE_PTR &base, const char *name, T *&ptr) {
