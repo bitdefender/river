@@ -77,15 +77,26 @@ namespace ldr {
 	};
 
 
-	class ELFSymbolVersioning {
+	class ELFSymbolVersionNeeded {
 	public:
 		DWORD index;
 		std::string version;
 		std::string module;
 
-		ELFSymbolVersioning(DWORD idx, std::string v, std::string m) :
+		ELFSymbolVersionNeeded(DWORD idx, std::string v, std::string m) :
 			index(idx), version(v), module(m) {}
 	};
+
+	class ELFSymbolVersionDefined {
+	public :
+		WORD index;
+		std::string version;
+
+		ELFSymbolVersionDefined(WORD idx, std::string v) :
+			index(idx), version(v)
+		{}
+	};
+
 
 	class ELFSection {
 	public:
@@ -93,8 +104,11 @@ namespace ldr {
 		unsigned char *data;
 
 		ELFSection *versions;
-		std::vector<ELFSymbolVersioning> sVers;
-		std::vector<ELFSymbolVersioning *> idxSVers;
+		std::vector<ELFSymbolVersionNeeded> snVers;
+		std::vector<ELFSymbolVersionNeeded *> idxSnVers;
+
+		std::vector<ELFSymbolVersionDefined> sdVers;
+		std::vector<ELFSymbolVersionDefined *> idxSdVers;
 
 		ELFSection();
 		bool Load(FILE *fModule);
@@ -118,6 +132,15 @@ namespace ldr {
 
 	};
 
+	struct RelocData {
+		void *rValue;
+		DWORD address;
+		DWORD size;
+	};
+
+#define REL_INDEX 0
+#define PLTREL_INDEX 1
+
 	class FloatingELF32 : public AbstractBinary {
 	private:
 		ElfIdent ident;
@@ -126,12 +149,14 @@ namespace ldr {
 		std::vector<ELFProgramHeader> pHeaders;
 		std::vector<ELFSection> sections;
 		std::vector<std::string> libraries;
-		DWORD moduleBase;
-		void *rel, *rela;
-		DWORD relSz, relaSz, relEnt, relaEnt;
+		DWORD moduleBase, start, init_array;
+		RelocData rd[2];
+		void *rela;
+		DWORD relaSz, relEnt, relaEnt, init_array_sz;
 
 		ELFSection *names;
 		ELFSection *gnu_versions_r;
+		ELFSection *gnu_versions_d;
 
 		bool isValid;
 
@@ -144,6 +169,7 @@ namespace ldr {
 		bool RelocateSection(void *r, DWORD count, const ELFSection &symb, const ELFSection &names, DWORD offset);
 
 		bool ParseVerNeed(ELFSection &s);
+		bool ParseVerDef(ELFSection &s);
 		bool ParseDynamic(const ELFSection &section);
 
 		bool Relocate(DWORD newBase);
@@ -158,8 +184,14 @@ namespace ldr {
 		FloatingELF32(const wchar_t *moduleName);
 		~FloatingELF32();
 
-		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr);
+		DWORD GetEntryPoint() const;
+		DWORD GetRequiredSize() const;
+
+		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr, bool callConstructors = false);
 		virtual bool GetExport(const char *funcName, DWORD &funcRVA) const;
+
+
+		virtual void ForAllExports(std::function<void(const char *, const DWORD, const char *, const DWORD, const unsigned char *)> verb) const;
 
 		virtual bool IsValid() const {
 			return isValid;

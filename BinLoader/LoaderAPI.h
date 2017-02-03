@@ -1,11 +1,17 @@
 #ifndef _LOADER_API
 #define _LOADER_API
 
-#ifdef __linux__
+#if defined(__linux__) || defined(EXTERN_EXECUTION_ONLY)
+#include <string>
 #include "Abstract.Loader.h"
 typedef unsigned long DWORD;
 typedef ldr::AbstractBinary *MODULE_PTR;
 typedef DWORD BASE_PTR;
+struct mappedObject {
+	MODULE_PTR module;
+	BASE_PTR base;
+	DWORD size;
+};
 
 #define LOAD_LIBRARYW(libName, module, base) ManualLoadLibrary((libName), (module), (base))
 #define GET_PROC_ADDRESS(module, base, name) ManualGetProcAddress((module), (base), (name))
@@ -14,6 +20,19 @@ typedef DWORD BASE_PTR;
 
 void ManualLoadLibrary(const wchar_t *libName, MODULE_PTR &module, BASE_PTR &baseAddr);
 void *ManualGetProcAddress(MODULE_PTR module, BASE_PTR base, const char *funcName);
+DWORD GetEntryPoint(const char *elfName);
+void CreateModule(const wchar_t *libname, MODULE_PTR &module);
+void CreateModule(const char *libname, MODULE_PTR &module);
+void MapModule(MODULE_PTR &module, BASE_PTR &baseAddr,
+		bool callConstructors = false, int shmFd = -1,
+		unsigned long offset = 0);
+void MapModuleExtern(MODULE_PTR &module, BASE_PTR &baseAddr, void *hProcess);
+
+template <typename T> bool LoadExportedName(MODULE_PTR &module, BASE_PTR &base, const char *name, T *&ptr) {
+	ptr = (T *)GET_PROC_ADDRESS(module, base, name);
+	return ptr != NULL;
+}
+
 
 #elif defined(_WIN32)
 typedef HMODULE BASE_PTR;

@@ -1,12 +1,14 @@
 #ifndef _EXTERN_MAPPER_H_
 #define _EXTERN_MAPPER_H_
+#ifdef _WIN32
 
 #include <Windows.h>
 
 #include "Abstract.Mapper.h"
+#include "Abstract.Importer.h"
 
 namespace ldr {
-	class ExternMapper : public AbstractMapper {
+	class ExternMapper : public AbstractMapper, public AbstractImporter {
 	private:
 		HANDLE hProc;
 		bool ownProcess;
@@ -23,7 +25,8 @@ namespace ldr {
 
 		virtual DWORD FindImport(const char *moduleName, const char *funcName);
 		virtual DWORD FindImport(const char *moduleName, const unsigned int funcOrdinal);
+		virtual DWORD FindImport(const char *moduleName, const char *funcName, const char* version);
 	};
 };
-
+#endif
 #endif

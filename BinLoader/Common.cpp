@@ -106,8 +106,10 @@ bool find_module(const char *moduleName, char *dirname, char *path) {
 
 bool find_in_env(const char *moduleName, char *path) {
 	const char* env = getenv("LD_LIBRARY_PATH");
-	if (!env)
+	if (!env) {
+		printf("[Binloader] Export LD_LIBRARY_PATH accordingly to find %s\n", moduleName);
 		return false;
+	}
 
 	// iterate thourgh it
 	const char *it = env;
@@ -147,22 +149,34 @@ bool find_in_env(const wchar_t *moduleName, wchar_t *path) {
 #elif defined(_WIN32)
 #include <string.h>
 bool find_in_env(const char *moduleName, char *path) {
-	strcpy_s(path, strlen(moduleName), moduleName);
+	strcpy_s(path, strlen(moduleName) + 1, moduleName);
 	return true;
 }
 
 bool find_in_env(const wchar_t *moduleName, wchar_t *path) {
-	wcscpy_s(path, wcslen(moduleName), moduleName);
+	wcscpy_s(path, wcslen(moduleName) + 1, moduleName);
 	return true;
 }
 #endif
 
 void solve_path(const char *moduleName, char *path) {
 	memset(path, 0, MAX_PATH_NAME);
-	find_in_env(moduleName, path);
+	FILE *fModule = nullptr;
+	if (0 != FOPEN(fModule, moduleName, "rb")) {
+		find_in_env(moduleName, path);
+	} else {
+		strcpy(path, moduleName);
+		fclose(fModule);
+	}
 }
 
 void solve_path(const wchar_t *moduleName, wchar_t *path) {
 	memset(path, 0, MAX_PATH_NAME);
-	find_in_env(moduleName, path);
+	FILE *fModule = nullptr;
+	if (0 != W_FOPEN(fModule, moduleName, L"rb")) {
+		find_in_env(moduleName, path);
+	} else {
+		wcscpy(path, moduleName);
+		fclose(fModule);
+	}
 }

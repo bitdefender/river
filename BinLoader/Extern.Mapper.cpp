@@ -124,4 +124,8 @@ namespace ldr {
 		return (DWORD)pFunc - (DWORD)lMod + (DWORD)rMod;
 	}
 
+	DWORD ExternMapper::FindImport(const char *moduleName, const char *funcName, const char* version) {
+		return FindImport(moduleName, funcName);
+	}
+
 };

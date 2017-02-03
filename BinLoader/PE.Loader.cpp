@@ -234,7 +234,7 @@ namespace ldr {
 		return true;
 	}
 
-	void FloatingPE::ForAllExports(std::function<void(const char *, const DWORD, const DWORD, const unsigned char *)> verb) const {
+	void FloatingPE::ForAllExports(std::function<void(const char *, const DWORD, const char *, const DWORD, const unsigned char *)> verb) const {
 		DWORD exportRVA = 0;
 
 		switch (peHdr.Machine) {
@@ -266,6 +266,7 @@ namespace ldr {
 			verb(
 				(char *)RVA(names[i]),
 				ordinals[i] + (WORD)exprt->Base,
+				"",
 				exportTable[ordinals[i]],
 				(const unsigned char *)RVA(exportTable[ordinals[i]])
 			);
@@ -534,7 +535,7 @@ namespace ldr {
 		}
 	}
 
-	bool FloatingPE::Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr) {
+	bool FloatingPE::Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr, bool callConstructors) {
 
 
 		FixImports(impr);
