@@ -53,6 +53,7 @@ namespace rev {
 #define EXECUTION_ADVANCE					0x00000000
 #define EXECUTION_BACKTRACK					0x00000001
 #define EXECUTION_TERMINATE					0x00000002
+#define EXECUTION_RESTART					0x00000003
 
 	typedef void(*InitializeContextFunc)(void *context);
 	typedef void(*CleanupContextFunc)(void *context);
