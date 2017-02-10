@@ -99,6 +99,7 @@ typedef struct event_t EVENT_T;
    while (!(event).exited) { \
    ret = pthread_cond_wait(&(event).cond, &(event).mutex); \
    } \
+   (event).exited = !(event).exited; \
    pthread_mutex_unlock(&(event).mutex); \
    ret == 0; \
    })
