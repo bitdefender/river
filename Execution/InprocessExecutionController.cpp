@@ -9,8 +9,27 @@
 #endif
 
 #ifdef __linux__
+#define MAX_FUNC_LIST 32
+struct libc_ifunc_impl
+{
+	/* The name of function to be tested.  */
+	const char *name;
+	/* The address of function to be tested.  */
+	void (*fn) (void);
+	/* True if this implementation is usable on this machine.  */
+	bool usable;
+};
+
+typedef size_t (*__libc_ifunc_impl_list_handle)(const char *name,
+                       struct libc_ifunc_impl *array,
+                       size_t max);
+__libc_ifunc_impl_list_handle my__libc_ifunc_impl_list;
+#endif
+
+#ifdef __linux__
 #define CREATE_THREAD(tid, func, params, ret) do { ret = pthread_create((&tid), nullptr, (func), (params)); ret = (0 == ret); } while(false)
 #define JOIN_THREAD(tid, ret) do { ret = pthread_join(tid, nullptr); ret = (0 == ret); } while (false)
+
 #else
 #define CREATE_THREAD(tid, func, params, ret) do { tid = CreateThread(nullptr, 0, (func), (params), 0, nullptr); ret = (tid != nullptr); } while (false)
 #define JOIN_THREAD(tid, ret) do { ret = WaitForSingleObject(tid, INFINITE); ret = (WAIT_FAILED != ret); } while (false)
@@ -25,6 +44,68 @@ bool InprocessExecutionController::SetPath() {
 bool InprocessExecutionController::SetCmdLine() {
 	return false;
 }
+
+bool InprocessExecutionController::PatchProcess() {
+	lib_t libcHandler;
+	struct libc_ifunc_impl func_list[MAX_FUNC_LIST];
+
+	std::vector<std::string> func_names = {
+		"bcopy", "bzero", "memchr", "memcmp", "__memmove_chk",
+		"memmove", "memrchr", "__memset_chk", "memset",
+		"rawmemchr", "stpncpy", "stpcpy", "strcasecmp",
+		"strcasecmp_l", "strcat", "strchr", "strcmp",
+		"strcpy", "strcspn", "strncasecmp", "strncasecmp_l",
+		"strncat", "strncpy", "strnlen", "strpbrk", "strrchr",
+		"strspn", "wcschr", "wcscmp", "wcscpy", "wcslen", "wcsrchr",
+		"wmemcmp", "__memcpy_chk", "memcpy", "__mempcpy_chk",
+		"mempcpy", "strlen", "strncmp"
+	};
+
+	libcHandler = GET_LIB_HANDLER("libc.so.6");
+	if (nullptr == libcHandler) {
+		DEBUG_BREAK;
+		return false;
+	}
+
+	my__libc_ifunc_impl_list = (__libc_ifunc_impl_list_handle)dlsym(
+			libcHandler, "__libc_ifunc_impl_list");
+	if (nullptr == my__libc_ifunc_impl_list) {
+		DEBUG_BREAK;
+		return false;
+	}
+
+	for (auto it = func_names.begin(); it != func_names.end(); ++it) {
+		ADDR_TYPE detourAddr = nullptr;
+		memset(func_list, 0,
+				MAX_FUNC_LIST * sizeof(struct libc_ifunc_impl));
+		(my__libc_ifunc_impl_list)(it->c_str(), func_list, MAX_FUNC_LIST);
+		for (int i = 0; i < MAX_FUNC_LIST; ++i) {
+			if (!func_list[i].name || !func_list[i].fn)
+				break;
+			char *ia32 = strstr((char*)func_list[i].name, "ia32");
+			if (nullptr != ia32 && (strlen(ia32) == strlen("ia32"))) {
+				detourAddr = (ADDR_TYPE)func_list[i].fn;
+				break;
+			}
+		}
+
+		if (nullptr == detourAddr) {
+			DEBUG_BREAK;
+			return false;
+		}
+		for (int i = 0; i < MAX_FUNC_LIST; ++i) {
+			if (!func_list[i].name || !func_list[i].fn)
+				break;
+			if ((ADDR_TYPE)func_list[i].fn != detourAddr) {
+				revCfg->hooks[revCfg->hookCount].originalAddr = (ADDR_TYPE)func_list[i].fn;
+				revCfg->hooks[revCfg->hookCount].detourAddr = detourAddr;
+				revCfg->hookCount++;
+			}
+		}
+
+	}
+}
+
 
 THREAD_T InprocessExecutionController::GetProcessHandle() {
 	return GET_CURRENT_PROC();
@@ -142,9 +223,12 @@ bool InprocessExecutionController::Execute() {
 	revCfg->entryPoint = entryPoint;
 	revCfg->featureFlags = featureFlags;
 	revCfg->context = this;
+	revCfg->hookCount = 0;
 	
 	revtracerInitialize = (InitializeFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "Initialize");
 	revtraceExecute = (ExecuteFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "Execute");
+
+	PatchProcess();
 
 	int ret;
 	CREATE_THREAD(hThread, ThreadProc, this, ret);

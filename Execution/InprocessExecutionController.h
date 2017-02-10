@@ -19,6 +19,8 @@ public :
 	virtual bool SetPath();
 	virtual bool SetCmdLine();
 
+	bool PatchProcess();
+
 	virtual THREAD_T GetProcessHandle();
 
 	/*virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
