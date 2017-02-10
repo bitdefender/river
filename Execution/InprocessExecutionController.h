@@ -35,6 +35,8 @@ public :
 	virtual bool SetPath(const wstring &p);
 	virtual bool SetCmdLine(const wstring &c);
 
+	bool PatchProcess();
+
 	virtual THREAD_T GetProcessHandle();
 	virtual rev::ADDR_TYPE GetTerminationCode();
 
