@@ -139,7 +139,7 @@ namespace rev {
 		void *pRuntime;
 
 		DWORD hookCount;
-		CodeHooks hooks[0x10];
+		CodeHooks hooks[0x100];
 	};
 
 	struct ExecutionRegs {
