@@ -6,21 +6,21 @@
 #include "RelocableCodeBuffer.h"
 
 /* Opcode assembler functions */
-void AssembleUnkInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
-void AssembleDefaultInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
-void AssemblePlusRegInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter);
+void AssembleUnkInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter);
+void AssembleDefaultInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter);
+void AssemblePlusRegInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter);
 
 /* Operand helper funcs */
-void AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::BYTE extra);
-void AssembleImmOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::BYTE immSize);
-void AssembleMoffs(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::BYTE immSize);
+void AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::BYTE extra);
+void AssembleImmOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::BYTE immSize);
+void AssembleMoffs(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::BYTE immSize);
 
 
 /* Operand assembler functions */
 void AssembleUnknownOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 void AssembleNoOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 
-template <rev::BYTE opIdx, rev::BYTE immSize> void AssembleImmOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
+template <nodep::BYTE opIdx, nodep::BYTE immSize> void AssembleImmOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
 	AssembleImmOp(opIdx, ri, px86, immSize);
 }
 
@@ -44,11 +44,11 @@ void AssembleModRMRegImm8Op(const RiverInstruction &ri, RelocableCodeBuffer &px8
 
 void AssembleRiverAddSubOp(const RiverInstruction &ri, RelocableCodeBuffer &px86);
 
-template <rev::BYTE opIdx> void AssembleMoffs8(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
+template <nodep::BYTE opIdx> void AssembleMoffs8(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
 	AssembleMoffs(opIdx, ri, px86, RIVER_OPSIZE_32);
 }
 
-template <rev::BYTE opIdx> void AssembleMoffs32(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
+template <nodep::BYTE opIdx> void AssembleMoffs32(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
 	AssembleMoffs(opIdx, ri, px86, RIVER_OPSIZE_32);
 }
 

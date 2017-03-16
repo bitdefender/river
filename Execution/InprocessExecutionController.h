@@ -14,8 +14,8 @@ class InprocessExecutionController : public CommonExecutionController {
 private :
 	THREAD_T hThread;
 
-	revwrapper::LibraryLayout libLayout, **expLayout;
-	revwrapper::ImportedApi *wrapperImports;
+	ext::LibraryLayout libLayout, **expLayout;
+	revwrapper::WrapperImports *wrapperImports;
 	rev::RevtracerConfig *revCfg;
 public :
 	virtual bool SetPath();

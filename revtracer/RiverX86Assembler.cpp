@@ -7,7 +7,7 @@
 
 using namespace rev;
 
-extern const BYTE specAssemblerTbl[2][0x100];
+extern const nodep::BYTE specAssemblerTbl[2][0x100];
 
 #define X86_OPZISE_PREFIX			0x66
 
@@ -33,11 +33,11 @@ extern const BYTE specAssemblerTbl[2][0x100];
 #define FLAG_GENERATE_RIVER			0x20
 
 
-extern DWORD dwSysHandler; // = 0; // &SysHandler
-extern DWORD dwSysEndHandler; // = 0; // &SysEndHandler
-extern DWORD dwBranchHandler; // = 0; // &BranchHandler
+extern nodep::DWORD dwSysHandler; // = 0; // &SysHandler
+extern nodep::DWORD dwSysEndHandler; // = 0; // &SysEndHandler
+extern nodep::DWORD dwBranchHandler; // = 0; // &BranchHandler
 
-void RiverX86Assembler::SwitchToRiver(BYTE *&px86, DWORD &instrCounter) {
+void RiverX86Assembler::SwitchToRiver(nodep::BYTE *&px86, nodep::DWORD &instrCounter) {
 	static const unsigned char code[] = { 0x87, 0x25, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg esp, large ds:<dwVirtualStack>}
 
 	rev_memcpy(px86, code, sizeof(code));
@@ -47,7 +47,7 @@ void RiverX86Assembler::SwitchToRiver(BYTE *&px86, DWORD &instrCounter) {
 	instrCounter++;
 }
 
-void RiverX86Assembler::SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE repReg) {
+void RiverX86Assembler::SwitchToRiverEsp(nodep::BYTE *&px86, nodep::DWORD &instrCounter, nodep::BYTE repReg) {
 	static const unsigned char code[] = { 0x87, 0x05, 0x00, 0x00, 0x00, 0x00 };			// 0x00 - xchg eax, large ds:<dwVirtualStack>}
 
 	rev_memcpy(px86, code, sizeof(code));
@@ -58,8 +58,8 @@ void RiverX86Assembler::SwitchToRiverEsp(BYTE *&px86, DWORD &instrCounter, BYTE 
 	instrCounter++;
 }
 
-bool RiverX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
-	DWORD dwTable = 0;
+bool RiverX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter, nodep::BYTE outputType) {
+	nodep::DWORD dwTable = 0;
 
 	if (ri.modifiers & RIVER_MODIFIER_EXT) {
 		*px86.cursor = 0x0F;
@@ -114,7 +114,7 @@ bool RiverX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffe
 }
 
 
-void RiverX86Assembler::AssembleRiverAddSubInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void RiverX86Assembler::AssembleRiverAddSubInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
 	*px86.cursor = 0x8d; // add and sub are converted to lea
 	px86.cursor++;
 	instrCounter++;
@@ -149,6 +149,6 @@ void RiverX86Assembler::AssembleRegModRMOp(const RiverInstruction &ri, Relocable
 	AssembleModRMOp(1, ri, px86, ri.operands[0].asRegister.name);
 }
 
-void RiverX86Assembler::AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, BYTE extra) {
+void RiverX86Assembler::AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::BYTE extra) {
 	ri.operands[opIdx].asAddress->EncodeTox86(px86.cursor, extra, ri.family, ri.modifiers);
 }

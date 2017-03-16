@@ -131,6 +131,7 @@
     <ClCompile Include="Wrapper.Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\CommonCrossPlatform\LibraryLayout.h" />
     <ClInclude Include="RevtracerWrapper.h" />
     <ClInclude Include="Wrapper.Global.h" />
   </ItemGroup>

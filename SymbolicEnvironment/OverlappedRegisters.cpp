@@ -1,17 +1,17 @@
 #include "OverlappedRegisters.h"
 
 // offsets from the lsb
-const rev::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rOff[5] = { 0, 0, 16, 0, 8 };
-const rev::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rSize[5] = { 32, 16, 16, 8, 8 };
-const rev::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rParent[5] = { 0xFF, 0, 0, 1, 1 };
-const rev::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rLChild[5] = { 1, 3, 0xFF, 0xFF, 0xFF };
-const rev::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rMChild[5] = { 2, 4, 0xFF, 0xFF, 0xFF };
-const rev::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rSeed[4] = { 0, 1, 3, 4 };
+const nodep::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rOff[5] = { 0, 0, 16, 0, 8 };
+const nodep::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rSize[5] = { 32, 16, 16, 8, 8 };
+const nodep::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rParent[5] = { 0xFF, 0, 0, 1, 1 };
+const nodep::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rLChild[5] = { 1, 3, 0xFF, 0xFF, 0xFF };
+const nodep::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rMChild[5] = { 2, 4, 0xFF, 0xFF, 0xFF };
+const nodep::DWORD OverlappedRegistersEnvironment::OverlappedRegister::rSeed[4] = { 0, 1, 3, 4 };
 
-rev::DWORD OverlappedRegistersEnvironment::OverlappedRegister::needConcat = 0xdeadbeef;
-rev::DWORD OverlappedRegistersEnvironment::OverlappedRegister::needExtract = 0xdeadbeef;
+nodep::DWORD OverlappedRegistersEnvironment::OverlappedRegister::needConcat = 0xdeadbeef;
+nodep::DWORD OverlappedRegistersEnvironment::OverlappedRegister::needExtract = 0xdeadbeef;
 
-static rev::BYTE _GetFundamentalRegister(rev::BYTE reg) {
+static nodep::BYTE _GetFundamentalRegister(nodep::BYTE reg) {
 	if (reg < 0x20) {
 		return reg & 0x07;
 	}
@@ -24,8 +24,8 @@ OverlappedRegistersEnvironment::OverlappedRegister::OverlappedRegister() {
 	}
 }
 
-void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedExtract(rev::DWORD node, bool doRefCount) {
-	rev::DWORD c = rLChild[node];
+void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedExtract(nodep::DWORD node, bool doRefCount) {
+	nodep::DWORD c = rLChild[node];
 	if (c != 0xFF) {
 		if ((doRefCount) && (nullptr != subRegs[c]) && (&needExtract != subRegs[c]) && (&needConcat != subRegs[c])) {
 			parent->decRefFunc(subRegs[c]);
@@ -44,8 +44,8 @@ void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedExtract(rev::DW
 	}
 }
 
-void OverlappedRegistersEnvironment::OverlappedRegister::MarkUnset(rev::DWORD node, bool doRefCount) {
-	rev::DWORD c = rLChild[node]; 
+void OverlappedRegistersEnvironment::OverlappedRegister::MarkUnset(nodep::DWORD node, bool doRefCount) {
+	nodep::DWORD c = rLChild[node];
 	if (c != 0xFF) {
 		if ((doRefCount) && (nullptr != subRegs[c]) && (&needExtract != subRegs[c]) && (&needConcat != subRegs[c])) {
 			parent->decRefFunc(subRegs[c]);
@@ -66,9 +66,9 @@ void OverlappedRegistersEnvironment::OverlappedRegister::MarkUnset(rev::DWORD no
 	}
 }
 
-void *OverlappedRegistersEnvironment::OverlappedRegister::Get(rev::DWORD node, rev::DWORD concreteValue) {
+void *OverlappedRegistersEnvironment::OverlappedRegister::Get(nodep::DWORD node, nodep::DWORD concreteValue) {
 	if (subRegs[node] == &needExtract) {
-		rev::DWORD c;
+		nodep::DWORD c;
 		c = node;
 		while ((c != 0xFF) && (subRegs[c] == &needExtract)) {
 			c = rParent[c];
@@ -85,11 +85,11 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(rev::DWORD node, r
 		);
 	}
 	else if (subRegs[node] == &needConcat) {
-		rev::DWORD msz = rSize[rMChild[node]];
+		nodep::DWORD msz = rSize[rMChild[node]];
 
-		rev::DWORD msk = (1 << msz) - 1;
-		rev::DWORD mVal = (concreteValue >> msz) & msk;
-		rev::DWORD lVal = concreteValue & msk;
+		nodep::DWORD msk = (1 << msz) - 1;
+		nodep::DWORD mVal = (concreteValue >> msz) & msk;
+		nodep::DWORD lVal = concreteValue & msk;
 
 		void *ms = Get(rMChild[node], mVal);
 		if (nullptr == ms) {
@@ -118,14 +118,14 @@ void OverlappedRegistersEnvironment::OverlappedRegister::SetParent(OverlappedReg
 	parent = p;
 }
 
-void *OverlappedRegistersEnvironment::OverlappedRegister::Get(RiverRegister &reg, rev::DWORD &concreteValue) {
-	rev::BYTE idx = (reg.name >> 3);
+void *OverlappedRegistersEnvironment::OverlappedRegister::Get(RiverRegister &reg, nodep::DWORD &concreteValue) {
+	nodep::BYTE idx = (reg.name >> 3);
 
 	if (idx > 3) {
 		DEBUG_BREAK; // do not handle special registers yet
 	}
 
-	rev::DWORD seed = rSeed[idx];
+	nodep::DWORD seed = rSeed[idx];
 	void *ret = Get(seed, concreteValue);
 
 	concreteValue >>= rOff[idx];
@@ -134,7 +134,7 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(RiverRegister &reg
 	return ret;
 }
 
-void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedConcat(rev::DWORD node, bool doRefCount) {
+void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedConcat(nodep::DWORD node, bool doRefCount) {
 	if (&needExtract == subRegs[node]) {
 		MarkNeedConcat(rParent[node], doRefCount);
 	}
@@ -173,13 +173,13 @@ void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedConcat(rev::DWO
 }
 
 void OverlappedRegistersEnvironment::OverlappedRegister::Set(RiverRegister &reg, void *value, bool doRefCount) {
-	rev::BYTE idx = (reg.name >> 3);
+	nodep::BYTE idx = (reg.name >> 3);
 
 	if (idx > 3) {
 		DEBUG_BREAK; // do not handle special registers yet
 	}
 
-	rev::DWORD seed = rSeed[idx];
+	nodep::DWORD seed = rSeed[idx];
 
 	// set the current register
 	if (doRefCount) {
@@ -206,18 +206,18 @@ void OverlappedRegistersEnvironment::OverlappedRegister::Set(RiverRegister &reg,
 }
 
 bool OverlappedRegistersEnvironment::OverlappedRegister::Unset(RiverRegister &reg, bool doRefCount) {
-	rev::BYTE idx = (reg.name >> 3);
+	nodep::BYTE idx = (reg.name >> 3);
 
 	if (idx > 3) {
 		DEBUG_BREAK; // do not handle special registers yet
 	}
 
-	rev::DWORD seed = rSeed[idx];
+	nodep::DWORD seed = rSeed[idx];
 	// set the current register
 	subRegs[seed] = nullptr;
 
 	// unset parents if both children are unset
-	for (rev::DWORD c = rParent[seed]; c != 0xFF; c = rParent[c]) {
+	for (nodep::DWORD c = rParent[seed]; c != 0xFF; c = rParent[c]) {
 		if ((nullptr == subRegs[rMChild[c]]) || (nullptr == subRegs[rLChild[c]])) {
 			subRegs[c] = nullptr;
 		}
@@ -272,7 +272,7 @@ OverlappedRegistersEnvironment::OverlappedRegistersEnvironment() {
 	}
 }
 
-bool OverlappedRegistersEnvironment::GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue) {
+bool OverlappedRegistersEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
 	//return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
 
 	OverlappedRegister *reg;
@@ -308,7 +308,7 @@ bool OverlappedRegistersEnvironment::GetOperand(rev::BYTE opIdx, rev::BOOL &isTr
 	};
 }
 
-bool OverlappedRegistersEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount) {
+bool OverlappedRegistersEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount) {
 
 	OverlappedRegister *reg;
 
@@ -333,7 +333,7 @@ bool OverlappedRegistersEnvironment::SetOperand(rev::BYTE opIdx, void *symbolicV
 	}
 }
 
-bool OverlappedRegistersEnvironment::UnsetOperand(rev::BYTE opIdx, bool doRefCount) {
+bool OverlappedRegistersEnvironment::UnsetOperand(nodep::BYTE opIdx, bool doRefCount) {
 	OverlappedRegister *reg;
 
 	switch (RIVER_OPTYPE(current->opTypes[opIdx])) {

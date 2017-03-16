@@ -16,7 +16,7 @@
 #define FLAG_PFX	0x40000000
 #define FLAG_BRANCH	0x80000000
 
-DWORD GetModrmSize (DWORD, BYTE *pI);
+nodep::DWORD GetModrmSize (nodep::DWORD, nodep::BYTE *pI);
 
 #endif //  _MODRM32_H
 

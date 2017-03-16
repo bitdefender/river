@@ -3,6 +3,40 @@
 #include <psapi.h>
 
 namespace ldr {
+#ifdef _WIN32
+
+	// virtual memory functions
+	static const DWORD PageProtections[8] = {
+		PAGE_NOACCESS,				// 0 ---
+		PAGE_EXECUTE,				// 1 --X
+		PAGE_READWRITE,				// 2 -W- (specified as RW)
+		PAGE_EXECUTE_READWRITE,		// 3 -WX (specified as RWX)
+		PAGE_READONLY,				// 4 R--
+		PAGE_EXECUTE_READ,			// 5 R-X
+		PAGE_READWRITE,				// 6 RW-
+		PAGE_EXECUTE_READWRITE		// 7 RWX
+	};
+//#define VIRTUAL_ALLOC(addr, size, protect, fd, offset) VirtualAlloc((addr), (size), MEM_RESERVE | MEM_COMMIT, (protect))
+//#define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect) (TRUE == VirtualProtect((addr), (size), (newProtect), &(oldProtect)))
+
+#elif defined(__linux__)
+	static const DWORD PageProtections[8] = {
+		PROT_NONE,							// 0 ---
+		PROT_EXEC,							// 1 --X
+		PROT_WRITE,							// 2 -W-
+		PROT_EXEC | PROT_WRITE,				// 3 -WX
+		PROT_READ,							// 4 R--
+		PROT_EXEC | PROT_READ,				// 5 R-X
+		PROT_WRITE | PROT_READ,				// 6 RW-
+		PROT_EXEC | PROT_WRITE | PROT_READ,	// 7 RWX
+	};
+	// virtual memory functions
+//#define VIRTUAL_ALLOC(addr, size, protect, fd, offset) ({ int flags = ((fd) < 0) ? MAP_SHARED | MAP_ANONYMOUS : MAP_SHARED; \
+//		addr = mmap(addr, (size), (protect), flags, (fd), (offset)); addr; })
+//#define VIRTUAL_PROTECT(addr, size, newProtect, oldProtect) (0 == mprotect((addr), (size), (newProtect)))
+
+#endif
+
 	bool SameFile(const char *s1, int l1, const char *s2, int l2) {
 		/*int cLen = l1;
 		if (l2 < cLen) cLen = l2;
@@ -82,12 +116,12 @@ namespace ldr {
 	}
 
 	void *ExternMapper::CreateSection(void *lpAddress, SIZE_T dwSize, DWORD flProtect) {
-		return VirtualAllocEx(hProc, lpAddress, dwSize, MEM_RESERVE | MEM_COMMIT, flProtect);
+		return VirtualAllocEx(hProc, lpAddress, dwSize, MEM_RESERVE | MEM_COMMIT, PageProtections[flProtect]);
 	}
 
 	bool ExternMapper::ChangeProtect(void *lpAddress, SIZE_T dwSize, DWORD flProtect) {
 		DWORD oldProtect;
-		return TRUE == VirtualProtectEx(hProc, lpAddress, dwSize, flProtect, &oldProtect);
+		return TRUE == VirtualProtectEx(hProc, lpAddress, dwSize, PageProtections[flProtect], &oldProtect);
 	}
 
 	bool ExternMapper::WriteBytes(void *lpAddress, void *lpBuffer, SIZE_T nSize) {

@@ -5,10 +5,13 @@
 
 #include "AbstractShmTokenRing.h"
 
-namespace ipc {
-	typedef long NTSTATUS;
-	typedef NTSTATUS(*CallYieldExecutionHandler)();
+#ifdef __linux__
+#include "ShmTokenRingLin.h"
+#else
+#include "ShmTokenRingWin.h"
+#endif
 
+namespace ipc {
 	typedef char *va_list;
 #define _ADDRESSOF(v)   ( (unsigned int *)&v )
 #define _INTSIZEOF(n)   ( (sizeof(n) + sizeof(int) - 1) & ~(sizeof(int) - 1) )
@@ -20,10 +23,12 @@ namespace ipc {
 
 	RingBuffer<(1 << 20)> debugLog;
 #ifdef __linux__
-	ShmTokenRingLin ipcToken;
+	ShmTokenRingLin __ipcToken;
 #else
-	ShmTokenRingWin ipcToken;
+	ShmTokenRingWin __ipcToken;
 #endif
+
+	AbstractTokenRing *ipcToken = &__ipcToken;
 
 //	AbstractShmTokenRing *ipcToken;
 
@@ -33,18 +38,11 @@ namespace ipc {
 
 	DLL_IPC_PUBLIC IpcData ipcData;
 
-	typedef int (*_vsnprintf_sFunc)(
-		char *buffer,
-		size_t count,
-		const char *format,
-		char *argptr
-	);
-
 	int GeneratePrefix(char *buff, int size, ...) {
 		va_list va;
 
 		va_start(va, size);
-		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_s)(
+		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_sFunc)(
 			buff, 
 			size - 1, 
 			"[%3s|%5s|%3s|%c] ",
@@ -107,7 +105,7 @@ namespace ipc {
 		}
 
 		va_start(va, fmt);
-		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_s)(tmpBuff, sizeof(tmpBuff)-1, fmt, va);
+		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_sFunc)(tmpBuff, sizeof(tmpBuff)-1, fmt, va);
 		va_end(va);
 
 		if (sz) {
@@ -129,15 +127,15 @@ namespace ipc {
 	DLL_IPC_PUBLIC void *MemoryAllocFunc(DWORD dwSize) {
 		ipcData.type = REQUEST_MEMORY_ALLOC;
 		ipcData.data.asMemoryAllocRequest = dwSize;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 		// remote execution here
 
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_MEMORY_ALLOC) {
 			DEBUG_BREAK;
 		}
 
-		void *ptr = ((LdrMapMemory)ipcAPI.ldrMapMemory)(
+		void *ptr = (ipcAPI.mapMemory)(
 			FILE_MAP_READ | FILE_MAP_WRITE | FILE_MAP_EXECUTE,
 			ipcData.data.asMemoryAllocReply.offset,
 			dwSize,
@@ -155,10 +153,10 @@ namespace ipc {
 	DLL_IPC_PUBLIC void MemoryFreeFunc(void *ptr) {
 		ipcData.type = REQUEST_MEMORY_FREE;
 		ipcData.data.asMemoryFreeRequest = ptr;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 		// remote execution here
 
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_MEMORY_FREE) {
 			DEBUG_BREAK;
 		}
@@ -166,10 +164,10 @@ namespace ipc {
 
 	DLL_IPC_PUBLIC QWORD TakeSnapshot() {
 		ipcData.type = REQUEST_TAKE_SNAPSHOT;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 		// remote execution here
 		
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_TAKE_SNAPSHOT) {
 			DEBUG_BREAK;
 		}
@@ -179,10 +177,10 @@ namespace ipc {
 
 	DLL_IPC_PUBLIC QWORD RestoreSnapshot() {
 		ipcData.type = REQUEST_RESTORE_SNAPSHOT;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 		// remote execution here
 
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_RESTORE_SNAPSHOT) {
 			DEBUG_BREAK;
 		}
@@ -193,10 +191,10 @@ namespace ipc {
 	DLL_IPC_PUBLIC void InitializeContextFunc(void *context) {
 		ipcData.type = REQUEST_INITIALIZE_CONTEXT;
 		ipcData.data.asInitializeContextRequest = context;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 		// remote execution here
 
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_INITIALIZE_CONTEXT) {
 			DEBUG_BREAK;
 		}
@@ -205,10 +203,10 @@ namespace ipc {
 	DLL_IPC_PUBLIC void CleanupContextFunc(void *context) {
 		ipcData.type = REQUEST_CLEANUP_CONTEXT;
 		ipcData.data.asCleanupContextRequest = context;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 		// remote execution here
 
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_CLEANUP_CONTEXT) {
 			DEBUG_BREAK;
 		}
@@ -266,9 +264,9 @@ namespace ipc {
 		ipcData.data.asBranchHandlerRequest.executionEnv = context;
 		ipcData.data.asBranchHandlerRequest.userContext = userContext;
 		ipcData.data.asBranchHandlerRequest.nextInstruction = nextInstruction;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_BRANCH_HANDLER) {
 			DEBUG_BREAK;
 		}
@@ -280,10 +278,10 @@ namespace ipc {
 		ipcData.type = REQUEST_SYSCALL_CONTROL;
 		ipcData.data.asSyscallControlRequest.context = context;
 		ipcData.data.asSyscallControlRequest.userContext = userContext;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 		// remote execution here
 
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_SYSCALL_CONTROL) {
 			DEBUG_BREAK;
 		}
@@ -291,10 +289,10 @@ namespace ipc {
 
 	DLL_IPC_PUBLIC void DummyFunc() {
 		ipcData.type = REQUEST_DUMMY;
-		ipcToken.Release(INPROC_TOKEN_USER);
+		ipcToken->Release(INPROC_TOKEN_USER);
 		// remote execution here
 
-		ipcToken.Wait(INPROC_TOKEN_USER);
+		ipcToken->Wait(INPROC_TOKEN_USER);
 		if (ipcData.type != REPLY_DUMMY) {
 			DEBUG_BREAK;
 		}
@@ -304,13 +302,8 @@ namespace ipc {
 	DLL_IPC_PUBLIC void Initialize() {
 		debugLog.Init();
 		//TODO handle Windows case accordingly
-		ipcToken.Use(INPROC_TOKEN_USER);
+		//ipcToken.Use(INPROC_TOKEN_USER);
 	}
-
-	void NtDllNtYieldExecution() {
-		((CallYieldExecutionHandler)ipcAPI.ntYieldExecution)();
-	}
-
 
 #define FALSE 0
 #define TRUE 1

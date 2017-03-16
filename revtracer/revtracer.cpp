@@ -18,7 +18,7 @@ namespace rev {
 	typedef void *HANDLE;
 	typedef int BOOL;
 	typedef const void *LPCVOID;
-	typedef DWORD *LPDWORD;
+	typedef nodep::DWORD *LPDWORD;
 
 	typedef unsigned long ULONG;
 
@@ -40,31 +40,31 @@ namespace rev {
 	}
 
 	typedef struct {
-		WORD    LimitLow;
-		WORD    BaseLow;
+		nodep::WORD    LimitLow;
+		nodep::WORD    BaseLow;
 		union {
 			struct {
-				BYTE    BaseMid;
-				BYTE    Flags1;     // Declare as bytes to avoid alignment
-				BYTE    Flags2;     // Problems.
-				BYTE    BaseHi;
+				nodep::BYTE    BaseMid;
+				nodep::BYTE    Flags1;     // Declare as bytes to avoid alignment
+				nodep::BYTE    Flags2;     // Problems.
+				nodep::BYTE    BaseHi;
 			} Bytes;
 			struct {
-				DWORD   BaseMid : 8;
-				DWORD   Type : 5;
-				DWORD   Dpl : 2;
-				DWORD   Pres : 1;
-				DWORD   LimitHi : 4;
-				DWORD   Sys : 1;
-				DWORD   Reserved_0 : 1;
-				DWORD   Default_Big : 1;
-				DWORD   Granularity : 1;
-				DWORD   BaseHi : 8;
+				nodep::DWORD   BaseMid : 8;
+				nodep::DWORD   Type : 5;
+				nodep::DWORD   Dpl : 2;
+				nodep::DWORD   Pres : 1;
+				nodep::DWORD   LimitHi : 4;
+				nodep::DWORD   Sys : 1;
+				nodep::DWORD   Reserved_0 : 1;
+				nodep::DWORD   Default_Big : 1;
+				nodep::DWORD   Granularity : 1;
+				nodep::DWORD   BaseHi : 8;
 			} Bits;
 		} HighWord;
 	} LDT_ENTRY, *LPLDT_ENTRY;
 
-	typedef DWORD THREADINFOCLASS;
+	typedef nodep::DWORD THREADINFOCLASS;
 
 
 
@@ -83,37 +83,37 @@ namespace rev {
 		//TODO: implement VirtualFree
 	}
 
-	QWORD DefaultTakeSnapshot() {
+	nodep::QWORD DefaultTakeSnapshot() {
 		return 0;
 	}
 
-	QWORD DefaultRestoreSnapshot() {
+	nodep::QWORD DefaultRestoreSnapshot() {
 		return 0;
 	}
 
 	void DefaultInitializeContextFunc(void *context) { }
 	void DefaultCleanupContextFunc(void *context) { }
 
-	DWORD DefaultExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
+	nodep::DWORD DefaultExecutionBeginFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
 		return EXECUTION_ADVANCE;
 	}
 
-	DWORD DefaultExecutionControlFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
+	nodep::DWORD DefaultExecutionControlFunc(void *context, ADDR_TYPE nextInstruction, void *cbCtx) {
 		return EXECUTION_ADVANCE;
 	}
 
-	DWORD DefaultExecutionEndFunc(void *context, void *cbCtx) {
+	nodep::DWORD DefaultExecutionEndFunc(void *context, void *cbCtx) {
 		return EXECUTION_TERMINATE;
 	}
 
-	DWORD DefaultBranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction) {
+	nodep::DWORD DefaultBranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction) {
 		return EXECUTION_ADVANCE;
 	}
 
 	void DefaultSyscallControlFunc(void *context, void *userContext) { }
 
-	void DefaultTrackCallback(DWORD value, DWORD address, DWORD segSel) { }
-	void DefaultMarkCallback(DWORD oldValue, DWORD newValue, DWORD address, DWORD segSel) { }
+	void DefaultTrackCallback(nodep::DWORD value, nodep::DWORD address, nodep::DWORD segSel) { }
+	void DefaultMarkCallback(nodep::DWORD oldValue, nodep::DWORD newValue, nodep::DWORD address, nodep::DWORD segSel) { }
 
 	void DefaultNtAllocateVirtualMemory() {
 		DEBUG_BREAK;
@@ -148,7 +148,7 @@ namespace rev {
 
 	void *GetMemoryInfo(void *ctx, ADDR_TYPE addr) {
 		struct ExecutionEnvironment *pEnv = (struct ExecutionEnvironment *)ctx;
-		DWORD ret = pEnv->ac.Get((DWORD)addr/* + revtracerConfig.segmentOffsets[segSel & 0xFFFF]*/);
+		nodep::DWORD ret = pEnv->ac.Get((nodep::DWORD)addr/* + revtracerConfig.segmentOffsets[segSel & 0xFFFF]*/);
 		return (void *)ret;
 	}
 
@@ -204,16 +204,16 @@ namespace rev {
 		0
 	};
 
-	DWORD miniStack[4096];
-	DWORD shadowStack = (DWORD)&(miniStack[4090]);
+	nodep::DWORD miniStack[4096];
+	nodep::DWORD shadowStack = (nodep::DWORD)&(miniStack[4090]);
 
 	struct ExecutionEnvironment *pEnv = NULL;
 
 	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
-		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)orig);
-		pBlock->address = (DWORD)det;
+		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((nodep::UINT_PTR)orig);
+		pBlock->address = (nodep::DWORD)det;
 		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
-		pBlock->address = (DWORD)orig;
+		pBlock->address = (nodep::DWORD)orig;
 		pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
 
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Added detour from 0x%08x to 0x%08x\n", orig, det);
@@ -226,21 +226,21 @@ namespace rev {
 #endif
 
 	void TracerInitialization() { // parameter is not initialized (only used to get the 
-		UINT_PTR rgs = (UINT_PTR)ADDR_OF_RET_ADDR() + sizeof(void *);
+		nodep::UINT_PTR rgs = (nodep::UINT_PTR)ADDR_OF_RET_ADDR() + sizeof(void *);
 		
 		Initialize();
 
 		pEnv->runtimeContext.registers = rgs;
 
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (DWORD)revtracerConfig.entryPoint);
-		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)revtracerConfig.entryPoint);
-		pBlock->address = (DWORD)revtracerConfig.entryPoint;
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (nodep::DWORD)revtracerConfig.entryPoint);
+		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((nodep::UINT_PTR)revtracerConfig.entryPoint);
+		pBlock->address = (nodep::DWORD)revtracerConfig.entryPoint;
 		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
 
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "New entry point @%08x\n", (DWORD)pBlock->pFwCode);
+		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "New entry point @%08x\n", (nodep::DWORD)pBlock->pFwCode);
 		
 		// TODO: replace with address of the actual terminate process
-		pEnv->exitAddr = (DWORD)revtracerAPI.lowLevel.ntTerminateProcess;
+		pEnv->exitAddr = (nodep::DWORD)revtracerAPI.lowLevel.ntTerminateProcess;
 
 		/*pEnv->runtimeContext.execBuff -= 4;
 		*((DWORD *)pEnv->runtimeContext.execBuff) = (DWORD)revtracerConfig.entryPoint;*/
@@ -249,10 +249,10 @@ namespace rev {
 		switch (revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
 			case EXECUTION_ADVANCE :
 				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
-				for (DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
+				for (nodep::DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
 					CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
 				}
-				pEnv->lastFwBlock = (UINT_PTR)revtracerConfig.entryPoint;
+				pEnv->lastFwBlock = (nodep::UINT_PTR)revtracerConfig.entryPoint;
 				pEnv->bForward = 1;
 				pBlock->MarkForward();
 
@@ -383,7 +383,7 @@ namespace rev {
 	}
 
 	void Execute(int argc, char *argv[]) {
-		DWORD ret;
+		nodep::DWORD ret;
 		//if (EXECUTION_ADVANCE == revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
 		if (EXECUTION_ADVANCE == revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
 			ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
@@ -391,9 +391,9 @@ namespace rev {
 		}
 	}
 
-	DWORD __stdcall MarkAddr(void *pEnv, DWORD dwAddr, DWORD value, DWORD segSel);
-	void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value) {
-		MarkAddr((ExecutionEnvironment *)ctx, (DWORD)addr, value, 0x2B);
+	nodep::DWORD __stdcall MarkAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel);
+	void MarkMemoryValue(void *ctx, ADDR_TYPE addr, nodep::DWORD value) {
+		MarkAddr((ExecutionEnvironment *)ctx, (nodep::DWORD)addr, value, 0x2B);
 	}
 
 };

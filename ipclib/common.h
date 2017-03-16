@@ -44,10 +44,7 @@ namespace ipc {
 	typedef int (*DestroySemaphoreHandler)(void *);
 	typedef int (*GetvalueSemaphoreHandler)(void *, int*);
 
-	struct IpcAPI {
-		/*ADDR_TYPE ntWaitForSingleObject;
-		  ADDR_TYPE ntSetEvent;
-		  ADDR_TYPE ntDelayExecution;*/
+	/*struct IpcAPI {
 		ADDR_TYPE ntYieldExecution;
 		ADDR_TYPE initSemaphore;
 		ADDR_TYPE waitSemaphore;
@@ -57,7 +54,7 @@ namespace ipc {
 		ADDR_TYPE vsnprintf_s;
 
 		ADDR_TYPE ldrMapMemory;
-	};
+	};*/
 } //namespace ipc
 
 #endif

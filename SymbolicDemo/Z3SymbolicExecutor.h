@@ -18,13 +18,13 @@ private:
 	stk::LargeStack *ls;
 
 	struct SymbolicOperands {
-		rev::DWORD av;
-		rev::BOOL tr[4];
-		rev::DWORD cv[4];
+		nodep::DWORD av;
+		nodep::BOOL tr[4];
+		nodep::DWORD cv[4];
 		void *sv[4];
 
-		rev::BOOL trf[7];
-		rev::BYTE cvf[7];
+		nodep::BOOL trf[7];
+		nodep::BYTE cvf[7];
 		void *svf[7];
 	};
 
@@ -51,7 +51,7 @@ private:
 	typedef Z3_ast (Z3SymbolicExecutor::*IntegerFunc)(Z3_ast o1, Z3_ast o2);
 	template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void SymbolicExecuteInteger(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	void GetSymbolicValues(SymbolicOperands *ops, rev::DWORD mask);
+	void GetSymbolicValues(SymbolicOperands *ops, nodep::DWORD mask);
 public:
 	int symIndex;
 
@@ -102,9 +102,9 @@ public:
 	//void Lock(Z3_ast t);
 
 
-	virtual void *CreateVariable(const char *name, rev::DWORD size);
-	virtual void *MakeConst(rev::DWORD value, rev::DWORD bits);
-	virtual void *ExtractBits(void *expr, rev::DWORD lsb, rev::DWORD size);
+	virtual void *CreateVariable(const char *name, nodep::DWORD size);
+	virtual void *MakeConst(nodep::DWORD value, nodep::DWORD bits);
+	virtual void *ExtractBits(void *expr, nodep::DWORD lsb, nodep::DWORD size);
 	virtual void *ConcatBits(void *expr1, void *expr2);
 	virtual void Execute(RiverInstruction *instruction);
 };

@@ -5,8 +5,8 @@
 
 namespace rev {
 #ifndef _NO_TRACK_CALLBACKS_
-	DWORD __stdcall TrackAddr(void *pEnv, DWORD dwAddr, DWORD segSel) {
-		DWORD ret = ((::ExecutionEnvironment *)pEnv)->ac.Get(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF]);
+	nodep::DWORD __stdcall TrackAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD segSel) {
+		nodep::DWORD ret = ((::ExecutionEnvironment *)pEnv)->ac.Get(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF]);
 		
 		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "TrackAddr 0x%08x => %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
 
@@ -17,9 +17,9 @@ namespace rev {
 		return ret;
 	}
 
-	DWORD __stdcall MarkAddr(void *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
+	nodep::DWORD __stdcall MarkAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel) {
 		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "MarkAddr 0x%08x <= %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
-		DWORD ret = ((::ExecutionEnvironment *)pEnv)->ac.Set(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
+		nodep::DWORD ret = ((::ExecutionEnvironment *)pEnv)->ac.Set(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
 
 		if (0 != ret) {
 			revtracerAPI.markCallback(ret, value, dwAddr, segSel);
@@ -29,11 +29,11 @@ namespace rev {
 	}
 #else
 
-	DWORD __stdcall TrackAddr(void *pEnv, DWORD dwAddr, DWORD segSel) {
+	nodep::DWORD __stdcall TrackAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD segSel) {
 		return ((::ExecutionEnvironment *)pEnv)->ac.Get(dwAddr);
 	}
 
-	DWORD __stdcall MarkAddr(void *pEnv, DWORD dwAddr, DWORD value, DWORD segSel) {
+	nodep::DWORD __stdcall MarkAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel) {
 		return ((::ExecutionEnvironment *)pEnv)->ac.Set(dwAddr, value);
 	}
 

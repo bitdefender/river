@@ -22,3 +22,9 @@ Release/
 *.opensdf
 *.VC.db
 *.VC.opendb
+
+# node.js deps
+node_modules/
+
+#z3 subdir
+z3/

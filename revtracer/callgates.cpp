@@ -10,7 +10,7 @@
 
 #include "revtracer.h"
 
-using namespace rev;
+using namespace nodep;
 
 //void DbgPrint(const char *fmt, ...);
 int Translate(struct ExecutionEnvironment *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags);
@@ -30,7 +30,7 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 #define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : "=r" (addr)); addr; })
 #endif
 
-rev::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
+nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
 	RiverBasicBlock *pBlock;
 	DWORD ret;
 

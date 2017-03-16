@@ -6,14 +6,14 @@
 #define MAX_CONTAINER_PAGES			1024
 
 struct ContainerPage {
-	rev::DWORD mem[1024];
+	nodep::DWORD mem[1024];
 };
 
 class AddressContainer {
 private :
 	ContainerPage pages[MAX_CONTAINER_PAGES];
 	ContainerPage *freePages[MAX_CONTAINER_PAGES];
-	rev::DWORD freePageCount;
+	nodep::DWORD freePageCount;
 	
 	void InitPageAllocator();
 	ContainerPage *AllocPage();
@@ -21,14 +21,14 @@ private :
 
 	ContainerPage *root;
 
-	rev::DWORD RecursiveSet(ContainerPage *&page, rev::DWORD dwAddress, rev::DWORD value, rev::DWORD mask, rev::DWORD shift);
-	void RecursivePrintAddreses(ContainerPage *page, rev::DWORD prefix, rev::DWORD shift) const;
+	nodep::DWORD RecursiveSet(ContainerPage *&page, nodep::DWORD dwAddress, nodep::DWORD value, nodep::DWORD mask, nodep::DWORD shift);
+	void RecursivePrintAddreses(ContainerPage *page, nodep::DWORD prefix, nodep::DWORD shift) const;
 public :
 	//AddressContainer();
 	void Init();
 
-	rev::DWORD Set(rev::DWORD dwAddress, rev::DWORD value);
-	rev::DWORD Get(rev::DWORD dwAddress) const;
+	nodep::DWORD Set(nodep::DWORD dwAddress, nodep::DWORD value);
+	nodep::DWORD Get(nodep::DWORD dwAddress) const;
 
 	void PrintAddreses() const;
 };

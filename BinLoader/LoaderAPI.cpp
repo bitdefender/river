@@ -1,6 +1,7 @@
 #include "Abstract.Importer.h"
 #include "Shm.Mapper.h"
 #include "Inproc.Mapper.h"
+#include "Mem.Mapper.h"
 #include "Inproc.Native.Importer.h"
 #include "Extern.Mapper.h"
 #include "ELF.Loader.h"
@@ -53,6 +54,16 @@ void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr, bool callConstr
 #ifdef _WIN32
 void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr) {
 	ldr::InprocMapper mpr;
+	ldr::InprocNativeImporter imp;
+
+	if (!module->Map(mpr, imp, (ldr::DWORD &)baseAddr, false)) {
+		delete module;
+		return;
+	}
+}
+
+void MapModule2(ldr::AbstractBinary *&module, BASE_PTR &baseAddr) {
+	ldr::MemMapper mpr;
 	ldr::InprocNativeImporter imp;
 
 	if (!module->Map(mpr, imp, (ldr::DWORD &)baseAddr, false)) {

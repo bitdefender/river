@@ -18,7 +18,7 @@ bool SymbopSaveTranslator::Init(RiverCodeGen *cg) {
 
 }
 
-void SymbopSaveTranslator::MakePushFlg(BYTE flags, RiverInstruction *&rOut, DWORD &instrCount) {
+void SymbopSaveTranslator::MakePushFlg(nodep::BYTE flags, RiverInstruction *&rOut, nodep::DWORD &instrCount) {
 	rOut->opCode = 0x9C;
 	rOut->subOpCode = 0;
 	rOut->modifiers = 0;
@@ -33,7 +33,7 @@ void SymbopSaveTranslator::MakePushFlg(BYTE flags, RiverInstruction *&rOut, DWOR
 	instrCount++;
 }
 
-void SymbopSaveTranslator::MakePushReg(RiverRegister reg, RiverInstruction *&rOut, DWORD &instrCount) {
+void SymbopSaveTranslator::MakePushReg(RiverRegister reg, RiverInstruction *&rOut, nodep::DWORD &instrCount) {
 	rOut->opCode = 0x50;
 	rOut->subOpCode = 0;
 	rOut->modifiers = 0;
@@ -48,7 +48,7 @@ void SymbopSaveTranslator::MakePushReg(RiverRegister reg, RiverInstruction *&rOu
 	instrCount++;
 }
 
-void SymbopSaveTranslator::MakePushMem(const RiverInstruction &rIn, RiverInstruction *&rOut, DWORD &instrCount) {
+void SymbopSaveTranslator::MakePushMem(const RiverInstruction &rIn, RiverInstruction *&rOut, nodep::DWORD &instrCount) {
 	rOut->opCode = 0xFF;
 	rOut->subOpCode = 6;
 	rOut->modifiers = 0;
@@ -66,7 +66,7 @@ void SymbopSaveTranslator::MakePushMem(const RiverInstruction &rIn, RiverInstruc
 	instrCount++;
 }
 
-bool SymbopSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
+bool SymbopSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount) {
 	if (RIVER_FAMILY_TRACK != RIVER_FAMILY(rIn.family)) {
 		DEBUG_BREAK;
 	}

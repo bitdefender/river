@@ -7,7 +7,7 @@ RelocableCodeBuffer::RelocableCodeBuffer() {
 	Reset();
 }
 
-void RelocableCodeBuffer::Init(BYTE *buff) {
+void RelocableCodeBuffer::Init(nodep::BYTE *buff) {
 	buffer = buff;
 	Reset();
 }
@@ -18,17 +18,17 @@ void RelocableCodeBuffer::Reset() {
 	cursor = buffer;
 }
 
-void RelocableCodeBuffer::SetRelocation(BYTE *reloc) {
+void RelocableCodeBuffer::SetRelocation(nodep::BYTE *reloc) {
 	needsRAFix = true;
 	rvAddress = reloc;
 }
 
-void RelocableCodeBuffer::CopyToFixed(BYTE *dst) const {
+void RelocableCodeBuffer::CopyToFixed(nodep::BYTE *dst) const {
 	rev_memcpy(dst, buffer, cursor - buffer);
 	if (needsRAFix) {
-		DWORD offset = (rvAddress - buffer);
+		nodep::DWORD offset = (rvAddress - buffer);
 
-		*(DWORD *)(&dst[offset]) -= (DWORD)buffer;
-		*(DWORD *)(&dst[offset]) += (DWORD)dst;
+		*(nodep::DWORD *)(&dst[offset]) -= (nodep::DWORD)buffer;
+		*(nodep::DWORD *)(&dst[offset]) += (nodep::DWORD)dst;
 	}
 }

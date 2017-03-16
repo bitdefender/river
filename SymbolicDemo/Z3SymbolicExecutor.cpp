@@ -2,7 +2,7 @@
 
 #include "TrackingCookie.h"
 
-void *Z3SymbolicExecutor::CreateVariable(const char *name, rev::DWORD size) {
+void *Z3SymbolicExecutor::CreateVariable(const char *name, nodep::DWORD size) {
 	Z3_symbol s = Z3_mk_string_symbol(context, name);
 	Z3_sort srt;
 	Z3_ast zro;
@@ -63,11 +63,11 @@ void *Z3SymbolicExecutor::CreateVariable(const char *name, rev::DWORD size) {
 
 	symIndex++;
 
-	printf("<sym> var %08x <= %s\n", ret, name);
+	printf("<sym> var %08p <= %s\n", ret, name);
 	return ret;
 }
 
-void *Z3SymbolicExecutor::MakeConst(rev::DWORD value, rev::DWORD bits) {
+void *Z3SymbolicExecutor::MakeConst(nodep::DWORD value, nodep::DWORD bits) {
 	Z3_sort type;
 
 	switch (bits) {
@@ -93,19 +93,19 @@ void *Z3SymbolicExecutor::MakeConst(rev::DWORD value, rev::DWORD bits) {
 		type
 	);
 
-	printf("<sym> const %08x <= %08x\n", ret, value);
+	printf("<sym> const %08p <= %08x\n", ret, value);
 
 	return (void *)ret;
 }
 
-void *Z3SymbolicExecutor::ExtractBits(void *expr, rev::DWORD lsb, rev::DWORD size) {
+void *Z3SymbolicExecutor::ExtractBits(void *expr, nodep::DWORD lsb, nodep::DWORD size) {
 	Z3_ast ret = Z3_mk_extract(
 		context,
 		lsb + size - 1,
 		lsb,
 		(Z3_ast)expr
 	);
-	printf("<sym> extract %08x <= %08x, %d, %d\n", ret, expr, lsb+size-1, lsb);
+	printf("<sym> extract %08p <= %08p, %d, %d\n", ret, expr, lsb+size-1, lsb);
 	return (void *)ret;
 }
 
@@ -116,7 +116,7 @@ void *Z3SymbolicExecutor::ConcatBits(void *expr1, void *expr2) {
 		(Z3_ast)expr2
 	);
 
-	printf("<sym> concat %08x <= %08x, %08x\n", ret, expr1, expr2);
+	printf("<sym> concat %08p <= %08p, %08p\n", ret, expr1, expr2);
 	return (void *)ret;
 }
 
@@ -247,7 +247,7 @@ void Z3SymbolicExecutor::SymbolicExecuteUnk(RiverInstruction *instruction, Symbo
 }
 
 template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops) {
-	printf("<sym> jcc %08x\n", ops->svf[flag]);
+	printf("<sym> jcc %08p\n", ops->svf[flag]);
 	
 	Z3_ast cond = Z3_mk_eq(
 		context,
@@ -262,7 +262,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteAdd(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvadd(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> add %08x <= %08x, %08x\n", r, o1, o2);
+	printf("<sym> add %08p <= %08p, %08p\n", r, o1, o2);
 	return r;
 }
 
@@ -270,7 +270,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteOr(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvor(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> or %08x <= %08x, %08x\n", r, o1, o2);
+	printf("<sym> or %08p <= %08p, %08p\n", r, o1, o2);
 	return r;
 }
 
@@ -290,7 +290,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteAnd(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvand(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> and %08x <= %08x, %08x\n", r, o1, o2);
+	printf("<sym> and %08p <= %08p, %08p\n", r, o1, o2);
 	return r;
 }
 
@@ -298,7 +298,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteSub(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> sub %08x <= %08x, %08x\n", r, o1, o2);
+	printf("<sym> sub %08p <= %08p, %08p\n", r, o1, o2);
 	return r;
 }
 
@@ -310,19 +310,19 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvxor(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> xor %08x <= %08x, %08x\n", r, o1, o2);
+	printf("<sym> xor %08p <= %08p, %08p\n", r, o1, o2);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
-	printf("<sym> cmp %08x <= %08x, %08x\n", r, o1, o2);
+	printf("<sym> cmp %08p <= %08p, %08p\n", r, o1, o2);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteTest(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvand(context, o1, o2);
-	printf("<sym> test %08x <= %08x, %08x\n", r, o1, o2);
+	printf("<sym> test %08p <= %08p, %08p\n", r, o1, o2);
 	return r;
 }
 
@@ -340,7 +340,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMovSx(RiverInstruction *instruction, Sym
 		Z3_ast dst = Z3_mk_sign_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)ops->sv[1]));
 		env->SetOperand(0, (void *)dst);
 
-		printf("<sym> movsx %08x <= %08x\n", dst, ops->sv[1]);
+		printf("<sym> movsx %08p <= %08p\n", dst, ops->sv[1]);
 	}
 	else {
 		env->UnsetOperand(0);
@@ -352,7 +352,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMovZx(RiverInstruction *instruction, Sym
 		Z3_ast dst = Z3_mk_zero_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)ops->sv[1]));
 		env->SetOperand(0, (void *)dst);
 
-		printf("<sym> movsx %08x <= %08x\n", dst, ops->sv[1]);
+		printf("<sym> movsx %08p <= %08p\n", dst, ops->sv[1]);
 	}
 	else {
 		env->UnsetOperand(0);
@@ -374,7 +374,7 @@ template <Z3SymbolicExecutor::SymbolicExecute fSubOps[8]> void Z3SymbolicExecuto
 	(this->*fSubOps[instruction->subOpCode])(instruction, ops);
 }
 
-void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, rev::DWORD mask) {
+void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, nodep::DWORD mask) {
 	static const unsigned char flagList[] = {
 		RIVER_SPEC_FLAG_CF,
 		RIVER_SPEC_FLAG_PF,
@@ -385,7 +385,7 @@ void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, rev::DWORD mas
 	};
 
 	static const int flagCount = sizeof(flagList) / sizeof(flagList[0]);
-	rev::DWORD m = mask & ops->av;
+	nodep::DWORD m = mask & ops->av;
 
 	for (int i = 0; i < 4; ++i) {
 		if ((OPERAND_BITMASK(i) & m) && !ops->tr[i]) {
@@ -423,8 +423,8 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 	SymbolicOperands ops;
 
 	ops.av = 0;
-	rev::BOOL uo[4], uof[flagCount];
-	rev::BOOL isSymb = false;
+	nodep::BOOL uo[4], uof[flagCount];
+	nodep::BOOL isSymb = false;
 
 	for (int i = 0; i < 4; ++i) {
 		ops.tr[i] = false;
@@ -446,7 +446,7 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		// This functionality must be moved into individual functions if the need arises
 		GetSymbolicValues(&ops, ops.av);
 
-		rev::DWORD dwTable = (instruction->modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
+		nodep::DWORD dwTable = (instruction->modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
 		(this->*executeFuncs[dwTable][instruction->opCode])(instruction, &ops);
 	} else {
 		// unset all modified operands

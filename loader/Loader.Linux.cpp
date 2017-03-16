@@ -146,6 +146,9 @@ void init() {
 	loaderAPI.sharedMemoryAddress = MapSharedLibraries(shmFd);
 	InitSegmentDescriptors();
 
+	//entryPoint = Returnaddres();
+	//__asm int 3;
+
 	if ((int)loaderAPI.sharedMemoryAddress == -1)
 		printf("[Child] Failed to map the shared mem\n");
 	printf("[Child] Shared mem address is %p. Fd is [%d]\n", (void*)loaderAPI.sharedMemoryAddress, shmFd);
@@ -153,6 +156,8 @@ void init() {
 
 	// disable sse mmx
 	patch__rtld_global_ro();
+
+
 }
 
 void destroy() {

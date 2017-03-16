@@ -21,8 +21,8 @@ extern "C" void rev_memset(void *dest, int val, unsigned int size) {
 struct HeapZone {
 	HeapZone *Prev; // 0xFFFFFFFF if this is the first block
 	HeapZone *Next; // 0xFFFFFFFF if this is the last block
-	rev::DWORD Size; // size of this block
-	rev::DWORD Type; // 0 - free, 1 - allocated
+	nodep::DWORD Size; // size of this block
+	nodep::DWORD Type; // 0 - free, 1 - allocated
 };
 
 RiverHeap::RiverHeap() {
@@ -37,7 +37,7 @@ RiverHeap::~RiverHeap() {
 	}
 }
 
-bool RiverHeap::Init(rev::DWORD heapSize) {
+bool RiverHeap::Init(nodep::DWORD heapSize) {
 	HeapZone *fz;
 	unsigned char *tHeap;
 
@@ -75,19 +75,19 @@ bool RiverHeap::Destroy() {
 
 
 void RiverHeap::PrintInfo(HeapZone *fz) {
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "FirstFree: %08X.\n", (rev::DWORD)pFirstFree);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz  Addr : %08X.\n", (rev::DWORD)fz);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Next : %08X.\n", (rev::DWORD)fz->Next);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Prev : %08X.\n", (rev::DWORD)fz->Prev);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Type : %08X.\n", (rev::DWORD)fz->Type);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Size : %08X.\n", (rev::DWORD)fz->Size);
+	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "FirstFree: %08X.\n", (nodep::DWORD)pFirstFree);
+	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz  Addr : %08X.\n", (nodep::DWORD)fz);
+	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Next : %08X.\n", (nodep::DWORD)fz->Next);
+	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Prev : %08X.\n", (nodep::DWORD)fz->Prev);
+	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Type : %08X.\n", (nodep::DWORD)fz->Type);
+	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Size : %08X.\n", (nodep::DWORD)fz->Size);
 	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "\n");
 }
 
 
-void *RiverHeap::Alloc(rev::DWORD sz) {
-	rev::BYTE *b;
-	rev::DWORD first;
+void *RiverHeap::Alloc(nodep::DWORD sz) {
+	nodep::BYTE *b;
+	nodep::DWORD first;
 	HeapZone *fz, *nfz;
 
 	sz += 3;
@@ -106,9 +106,9 @@ void *RiverHeap::Alloc(rev::DWORD sz) {
 			if (sz + sizeof (HeapZone) <= fz->Size) {
 			//	printf("Found a block of %d bytes. We need only %d.\n", fz->Size, sz);
 
-				b = (rev::BYTE *) fz + sizeof (HeapZone);
+				b = (nodep::BYTE *) fz + sizeof (HeapZone);
 
-				nfz = (HeapZone *) ((rev::BYTE *) fz + sizeof (HeapZone) + sz);
+				nfz = (HeapZone *) ((nodep::BYTE *) fz + sizeof (HeapZone) + sz);
 
 				if (fz->Next != (HeapZone *) 0xFFFFFFFF)
 				{
@@ -147,7 +147,7 @@ void *RiverHeap::Alloc(rev::DWORD sz) {
 }
 
 void RiverHeap::List() {
-	rev::DWORD dwMaxSize;
+	nodep::DWORD dwMaxSize;
 	HeapZone *fz;
 
 	fz = (HeapZone *)pHeap;
@@ -180,7 +180,7 @@ void RiverHeap::Free(void *p) {
 
 //	SC_Lock (&dwMMLock);
 
-	fz = (HeapZone *) ((rev::BYTE *)p - sizeof (HeapZone));
+	fz = (HeapZone *) ((nodep::BYTE *)p - sizeof (HeapZone));
 
 //	SC_PrintInfo (fz);
 

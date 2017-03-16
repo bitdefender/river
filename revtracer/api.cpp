@@ -7,6 +7,8 @@
 #include "AddressContainer.h"
 #include "Tracking.h"
 
+using namespace nodep;
+
 #define PRINT_RUNTIME_TRACKING	PRINT_INFO | PRINT_RUNTIME | PRINT_TRACKING
 #define PRINT_BRANCHING_ERROR	PRINT_ERROR | PRINT_BRANCH_HANDLER
 #define PRINT_BRANCHING_DEBUG	PRINT_DEBUG | PRINT_BRANCH_HANDLER
@@ -101,12 +103,12 @@ extern "C" {
 			// go forwards
 			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Going Forwards from %08X!!!\n", a);
 			revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Looking for block\n");
-			pCB = pEnv->blockCache.FindBlock((rev::UINT_PTR)a);
+			pCB = pEnv->blockCache.FindBlock((UINT_PTR)a);
 			if (pCB) {
 				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Block found\n");
 			} else {
 				revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_INFO, "Not Found\n");
-				pCB = pEnv->blockCache.NewBlock((rev::UINT_PTR)a);
+				pCB = pEnv->blockCache.NewBlock((UINT_PTR)a);
 
 				pEnv->codeGen.Translate(pCB, pEnv->generationFlags);
 

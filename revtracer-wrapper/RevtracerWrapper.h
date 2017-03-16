@@ -1,6 +1,8 @@
 #ifndef _REVTRACER_WRAPPER_H
 #define _REVTRACER_WRAPPER_H
 
+#include "../CommonCrossPlatform/LibraryLayout.h"
+
 namespace revwrapper {
 	#if defined _WIN32 || defined __CYGWIN__
 		#ifdef _BUILDING_REVTRACER_WRAPPER_DLL
@@ -27,19 +29,10 @@ namespace revwrapper {
 		#endif
 	#endif
 
-	union LibraryLayout {
-		struct LinuxLayout {
-			unsigned int libcBase;
-			unsigned int librtBase;
-			unsigned int libpthreadBase;
-		} linLib;
-		struct WindowsLayout {
-			unsigned int ntdllBase;
-		} winLib;
-	};
+	#define WAIT_INFINITE 0x3FFFFFFF
 
-	struct ImportedApi {
-		LibraryLayout *libraries;
+	struct WrapperImports {
+		ext::LibraryLayout *libraries;
 
 		union {
 			struct {
@@ -95,74 +88,105 @@ namespace revwrapper {
 		} functions;
 	};
 
+	/** Initializes the API-wrapper */
+	typedef bool(*InitRevtracerWrapperFunc)(void *configPage);
+
+	/** Allocates virtual memory */
+	typedef void *(*AllocateMemoryFunc)(unsigned long);
+
+	/** Frees virtual memory */
+	typedef void (*FreeMemoryFunc)(void*);
+
+	/** Terminates the current process */
+	typedef void (*TerminateProcessFunc)(int);
+
+	/** Gets the address of the last executed basic block (before the process is terminated) */
+	typedef void *(*GetTerminationCodeFunc)(void);
+
+	/** Formatted print utility function */
+	typedef int (*FormattedPrintFunc)(
+		char *buffer,
+		unsigned int sizeOfBuffer,
+		const char *format,
+		char *argptr
+	);
+
+	/** Write to file utility function (used only for basic block logging) */
+	typedef bool (*WriteFileFunc)(
+		void *handle,
+		void *buffer,
+		unsigned int size,
+		unsigned long *written
+	);
+
+	/** Init semaphore */
+	typedef bool (*InitEventFunc)(
+		void *handle,
+		bool isSet
+	);
+
+	/** Wait for semaphore, set timeout to 0 for trywait, or WAIT_INFINITE for a permanent wait */
+	typedef bool (*WaitEventFunc)(
+		void *handle,
+		int timeout
+	);
+
+	/** Post semaphore */
+	typedef bool (*PostEventFunc)(
+		void *handle
+	);
+
+	/** Destroy semaphore */
+	typedef void (*DestroyEventFunc)(
+		void *handle
+	);
+
+	/** Get value semaphore */
+	typedef void (*GetValueEventFunc)(
+		void *handle,
+		int *ret
+	);
+
+	/** Open shared mem */
+	typedef int (*OpenSharedMemoryFunc)(
+		const char *name,
+		int oflag,
+		int mode
+	);
+
+	/** Unlink shared mem */
+	typedef int (*UnlinkSharedMemoryFunc)(
+		const char *name
+	);
+
+	/** Flush contents of instruction cache */
+	typedef void (*FlushInstructionCacheFunc)(void);
+
+	struct WrapperExports {
+		InitRevtracerWrapperFunc initRevtracerWrapper;
+		AllocateMemoryFunc allocateMemory;
+		FreeMemoryFunc freeMemory;
+
+		TerminateProcessFunc terminateProcess;
+		GetTerminationCodeFunc getTerminationCode;
+
+		FormattedPrintFunc formattedPrint;
+
+		WriteFileFunc writeFile;
+
+		InitEventFunc initEvent;
+		WaitEventFunc waitEvent;
+		PostEventFunc postEvent;
+		DestroyEventFunc destroyEvent;
+		GetValueEventFunc getValueEvent;
+		OpenSharedMemoryFunc openSharedMemory;
+		UnlinkSharedMemoryFunc unlinkSharedMemory;
+	};
+
 	extern "C" {
-		//DLL_WRAPPER_PUBLIC extern LibraryLayout temporaryLayout;
-		DLL_WRAPPER_PUBLIC extern ImportedApi wrapperImports;
-
-		/** Initializes the API-wrapper */
-		DLL_WRAPPER_PUBLIC extern int InitRevtracerWrapper(void *configPage);
-
-		/** Allocates virtual memory */
-		DLL_WRAPPER_PUBLIC extern void *CallAllocateMemoryHandler(unsigned long);
-
-		/** Frees virtual memory */
-		DLL_WRAPPER_PUBLIC extern void CallFreeMemoryHandler(void*);
-
-		/** Map memory at specified address */
-		DLL_WRAPPER_PUBLIC extern void *CallMapMemoryHandler(
-				unsigned long mapHandler,
-				unsigned long access,
-				unsigned long offset,
-				unsigned long size,
-				void *address);
-
-		/** Terminates the current process */
-		DLL_WRAPPER_PUBLIC extern void CallTerminateProcessHandler(void);
-
-		/** Gets the address of the last executed basic block (before the process is terminated) */
-		DLL_WRAPPER_PUBLIC extern void *CallGetTerminationCodeHandler(void);
-
-		/** Formatted print utility function */
-		DLL_WRAPPER_PUBLIC extern int CallFormattedPrintHandler(
-			char *buffer,
-			unsigned int sizeOfBuffer,
-			const char *format,
-			char *argptr);
-
-		/** Write to file utility function (used only for basic block logging) */
-		DLL_WRAPPER_PUBLIC extern bool CallWriteFile(
-			void *handle,
-			void *buffer,
-			unsigned int size,
-			unsigned long *written);
-
-		/** Yield the CPU */
-		DLL_WRAPPER_PUBLIC extern long CallYieldExecution(void);
-
-		/** Init semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallInitSemaphore(void *semaphore, int shared, int value);
-
-		/** Wait for semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallWaitSemaphore(void *semaphore, bool blocking);
-
-		/** Post semaphore*/
-		DLL_WRAPPER_PUBLIC extern int CallPostSemaphore(void *semaphore);
-
-		/** Destroy semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallDestroySemaphore(void *semaphore);
-
-		/** Get value semaphore */
-		DLL_WRAPPER_PUBLIC extern int CallGetValueSemaphore(void *semaphore, int *ret);
-
-		/** Open shared mem */
-		DLL_WRAPPER_PUBLIC extern int CallOpenSharedMemory(const char *name, int oflag, int mode);
-
-		/** Unlink shared mem */
-		DLL_WRAPPER_PUBLIC extern int CallUnlinkSharedMemory(const char *name);
-
-		/** Flush contents of instruction cache */
-		DLL_WRAPPER_PUBLIC extern void CallFlushInstructionCache(void);
-	}
+		DLL_WRAPPER_PUBLIC extern WrapperImports wrapperImports;
+		DLL_WRAPPER_PUBLIC extern WrapperExports wrapperExports;
+	};
 }; //namespace revwrapper
 
 #endif

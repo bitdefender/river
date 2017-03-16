@@ -10,17 +10,17 @@
 #define PRINT_BRANCHING_DEBUG	PRINT_DEBUG | PRINT_BRANCH_HANDLER
 #define PRINT_BRANCHING_INFO	PRINT_INFO | PRINT_BRANCH_HANDLER
 
-static DWORD TopFromExecutionBuffer(ExecutionEnvironment *pEnv) {
-	return *((DWORD *)pEnv->runtimeContext.execBuff);
+static nodep::DWORD TopFromExecutionBuffer(ExecutionEnvironment *pEnv) {
+	return *((nodep::DWORD *)pEnv->runtimeContext.execBuff);
 }
 
 static bool ExecutionBufferEmpty(ExecutionEnvironment *pEnv) {
-	return (DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
+	return (nodep::DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
 }
 
-typedef void(*SymbolicPayloadFunc)(DWORD trackBuffer);
+typedef void(*SymbolicPayloadFunc)(nodep::DWORD trackBuffer);
 
-rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction) {
+nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction) {
 	ExecutionEnvironment *pEnv = (ExecutionEnvironment *)context;
 	ExecutionController *exec = (ExecutionController *)userContext;
 
@@ -28,7 +28,7 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 
 	if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
 		if (pEnv->bForward) {
-			DWORD dwLastBlock = pEnv->lastFwBlock; //TopFromExecutionBuffer(pEnv);
+			nodep::DWORD dwLastBlock = pEnv->lastFwBlock; //TopFromExecutionBuffer(pEnv);
 			RiverBasicBlock *pLast = pEnv->blockCache.FindBlock(dwLastBlock);
 			if (NULL != pLast) {
 				((SymbolicPayloadFunc)pLast->pTrackCode)(pEnv->runtimeContext.trackBase - 4);
@@ -51,7 +51,7 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 		);
 	}
 
-	DWORD dwDirection = EXECUTION_ADVANCE;
+	nodep::DWORD dwDirection = EXECUTION_ADVANCE;
 	if (/*(a == revtracerAPI.lowLevel.ntTerminateProcess) ||*/ (nextInstruction == (rev::ADDR_TYPE)pEnv->exitAddr)) {
 		// TODO: verify parameters
 		dwDirection = exec->ExecutionEnd(pEnv);
@@ -71,7 +71,7 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 	if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
 		if (EXECUTION_BACKTRACK == dwDirection) {
 			// go backwards
-			DWORD addr = TopFromExecutionBuffer(pEnv);
+			nodep::DWORD addr = TopFromExecutionBuffer(pEnv);
 			RiverBasicBlock *pCB = pEnv->blockCache.FindBlock(addr);
 			if (pCB) {
 				exec->DebugPrintf(PRINT_BRANCHING_INFO, "Block found\n");

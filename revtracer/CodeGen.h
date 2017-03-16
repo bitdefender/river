@@ -42,7 +42,7 @@ private :
 	SymbopSaveTranslator symbopSaveTranslator;
 	SymbopReverseTranslator symbopReverseTranslator;
 
-	rev::DWORD TranslateBasicBlock(rev::BYTE *px86, rev::DWORD &dwInst, rev::BYTE *&disasm, rev::DWORD dwTranslationFlags);
+	nodep::DWORD TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags);
 public :
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];
@@ -52,8 +52,8 @@ public :
 
 	struct RiverAddress32 trRiverAddr[16384];
 	
-	rev::DWORD trInstCount, fwInstCount, bkInstCount, /*srInstCount,*/ sfInstCount, sbInstCount, addrCount, outBufferSize;
-	rev::DWORD symbopInstCount;
+	nodep::DWORD trInstCount, fwInstCount, bkInstCount, /*srInstCount,*/ sfInstCount, sbInstCount, addrCount, outBufferSize;
+	nodep::DWORD symbopInstCount;
 
 	unsigned char *outBuffer;
 	unsigned int regVersions[8];
@@ -63,20 +63,20 @@ public :
 	RiverCodeGen();
 	~RiverCodeGen();
 
-	bool Init(RiverHeap *hp, RiverRuntime *rt, rev::DWORD buffSz, rev::DWORD dwTranslationFlags);
+	bool Init(RiverHeap *hp, RiverRuntime *rt, nodep::DWORD buffSz, nodep::DWORD dwTranslationFlags);
 	bool Destroy();
 	void Reset();
 
-	struct RiverAddress *AllocAddr(rev::WORD flags);
-	struct RiverAddress *CloneAddress(const RiverAddress &mem, rev::WORD flags);
+	struct RiverAddress *AllocAddr(nodep::WORD flags);
+	struct RiverAddress *CloneAddress(const RiverAddress &mem, nodep::WORD flags);
 
 	unsigned int GetCurrentReg(unsigned char regName) const;
 	unsigned int GetPrevReg(unsigned char regName) const;
 
 	unsigned int NextReg(unsigned char regName);
 
-	bool Translate(RiverBasicBlock *pCB, rev::DWORD dwTranslationFlags);
-	bool DisassembleSingle(rev::BYTE *&px86, RiverInstruction *rOut, rev::DWORD &count, rev::DWORD &dwFlags);
+	bool Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFlags);
+	bool DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut, nodep::DWORD &count, nodep::DWORD &dwFlags);
 };
 
 #endif

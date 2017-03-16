@@ -13,7 +13,7 @@ extern const char PrintMnemonicExt[][8][10];
 extern const char RegNames[][4];
 extern const char MemSizes[][6];
 
-void PrintPrefixes(DWORD printMask, struct RiverInstruction *ri) {
+void PrintPrefixes(nodep::DWORD printMask, struct RiverInstruction *ri) {
 	if (ri->modifiers & RIVER_MODIFIER_REP) {
 		revtracerAPI.dbgPrintFunc(printMask, "rep ");
 	}
@@ -57,7 +57,7 @@ void PrintPrefixes(DWORD printMask, struct RiverInstruction *ri) {
 	}
 }
 
-void PrintMnemonic(DWORD printMask, struct RiverInstruction *ri) {
+void PrintMnemonic(nodep::DWORD printMask, struct RiverInstruction *ri) {
 	const char (*mTable)[10] = PrintMnemonicTable00;
 
 	if (RIVER_MODIFIER_EXT & ri->modifiers) {
@@ -71,11 +71,11 @@ void PrintMnemonic(DWORD printMask, struct RiverInstruction *ri) {
 	}
 }
 
-void PrintRegister(DWORD printMask, struct RiverInstruction *ri, union RiverRegister *reg) {
+void PrintRegister(nodep::DWORD printMask, struct RiverInstruction *ri, union RiverRegister *reg) {
 	revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[reg->name], reg->versioned >> 8);
 }
 
-void PrintOperand(DWORD printMask, struct RiverInstruction *ri, DWORD idx) {
+void PrintOperand(nodep::DWORD printMask, struct RiverInstruction *ri, nodep::DWORD idx) {
 	bool bWr = false;
 
 	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
@@ -160,7 +160,7 @@ void PrintOperand(DWORD printMask, struct RiverInstruction *ri, DWORD idx) {
 	}
 }
 
-void PrintOperands(DWORD printMask, struct RiverInstruction *ri) {
+void PrintOperands(nodep::DWORD printMask, struct RiverInstruction *ri) {
 	PrintOperand(printMask, ri, 0);
 
 	for (int i = 1; i < 4; ++i) {
@@ -171,7 +171,7 @@ void PrintOperands(DWORD printMask, struct RiverInstruction *ri) {
 	}
 }
 
-void RiverPrintInstruction(DWORD printMask, struct RiverInstruction *ri) {
+void RiverPrintInstruction(nodep::DWORD printMask, struct RiverInstruction *ri) {
 	if (ri->family & RIVER_FAMILY_FLAG_IGNORE) {
 		return;
 	}

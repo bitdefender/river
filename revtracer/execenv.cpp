@@ -2,7 +2,6 @@
 #include "mm.h"
 #include "cb.h"
 
-//#include "lup.h" //for now
 #include "revtracer.h"
 
 void *ExecutionEnvironment::operator new(size_t sz){
@@ -15,10 +14,10 @@ void *ExecutionEnvironment::operator new(size_t sz){
 }
 
 void ExecutionEnvironment::operator delete(void *ptr) {
-	revtracerAPI.memoryFreeFunc((BYTE *)ptr);
+	revtracerAPI.memoryFreeFunc((nodep::BYTE *)ptr);
 }
 
-ExecutionEnvironment::ExecutionEnvironment(DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize) {
+ExecutionEnvironment::ExecutionEnvironment(nodep::DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize) {
 	bValid = false;
 	generationFlags = flags;
 	exitAddr = 0xFFFFCAFE;
@@ -32,7 +31,7 @@ ExecutionEnvironment::ExecutionEnvironment(DWORD flags, unsigned int heapSize, u
 		return;
 	}
 
-	if (0 == (executionBuffer = (UINT_PTR *)revtracerAPI.memoryAllocFunc(executionSize + trackSize + 4096))) {
+	if (0 == (executionBuffer = (nodep::UINT_PTR *)revtracerAPI.memoryAllocFunc(executionSize + trackSize + 4096))) {
 		blockCache.Destroy();
 		heap.Destroy();
 		return;
@@ -56,17 +55,17 @@ ExecutionEnvironment::ExecutionEnvironment(DWORD flags, unsigned int heapSize, u
 
 	rev_memset(pStack, 0, 0x100000);
 
-	runtimeContext.execBuff = (DWORD)executionBuffer + executionSize - 4; //TODO: make independant track buffer 
+	runtimeContext.execBuff = (nodep::DWORD)executionBuffer + executionSize - 4; //TODO: make independant track buffer 
 	executionBase = runtimeContext.execBuff;
 
-	runtimeContext.trackStack = (DWORD)executionBuffer + executionSize + trackSize - 4;
-	runtimeContext.trackBuff = runtimeContext.trackBase = (DWORD)executionBuffer + executionSize + trackSize + 4096;
-	runtimeContext.virtualStack = (DWORD)pStack + 0xFFFF0;
+	runtimeContext.trackStack = (nodep::DWORD)executionBuffer + executionSize + trackSize - 4;
+	runtimeContext.trackBuff = runtimeContext.trackBase = (nodep::DWORD)executionBuffer + executionSize + trackSize + 4096;
+	runtimeContext.virtualStack = (nodep::DWORD)pStack + 0xFFFF0;
 
 	ac.Init();
 	//this is a major hack...
 	// remove after addres tracking is completely decoupled from the reversible tracking
-	runtimeContext.taintedAddresses = (UINT_PTR)this;
+	runtimeContext.taintedAddresses = (nodep::UINT_PTR)this;
 
 	bValid = true;
 }
@@ -92,9 +91,9 @@ ExecutionEnvironment::~ExecutionEnvironment() {
 	blockCache.Destroy(); 
 	heap.Destroy();
 
-	revtracerAPI.memoryFreeFunc((BYTE *)executionBuffer);
+	revtracerAPI.memoryFreeFunc((nodep::BYTE *)executionBuffer);
 
-	revtracerAPI.memoryFreeFunc((BYTE *)pStack);
+	revtracerAPI.memoryFreeFunc((nodep::BYTE *)pStack);
 	pStack = NULL;
 }
 

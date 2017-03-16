@@ -13,20 +13,20 @@ struct HeapZone;
 /* A self contained heap */
 class RiverHeap {
 private :
-	rev::BYTE *pHeap;
+	nodep::BYTE *pHeap;
 	HeapZone *pFirstFree;
-	rev::DWORD size;
+	nodep::DWORD size;
 public :
 	RiverHeap();
 	~RiverHeap();
 
-	bool Init(rev::DWORD heapSize);
+	bool Init(nodep::DWORD heapSize);
 	bool Destroy();
 
 	void PrintInfo(HeapZone *fz);
 	void List();
 
-	void *Alloc(rev::DWORD size);
+	void *Alloc(nodep::DWORD size);
 	void Free(void *ptr);
 };
 

@@ -9,8 +9,8 @@ class RevSymbolicEnvironment : public sym::SymbolicEnvironment {
 private :
 	RiverInstruction *current;
 	ExecutionController *ctrl;
-	rev::DWORD *opBase;
-	rev::DWORD addressOffsets[4], valueOffsets[4], flagOffset;
+	nodep::DWORD *opBase;
+	nodep::DWORD addressOffsets[4], valueOffsets[4], flagOffset;
 
 	AddRefFunc addRefFunc;
 	DecRefFunc decRefFunc;
@@ -19,20 +19,20 @@ private :
 
 	void GetOperandLayout(const RiverInstruction &rIn);
 
-	typedef void *(RevSymbolicEnvironment::*GetSubExpFunc)(rev::DWORD address);
-	template <rev::BYTE offset, rev::BYTE size> void *GetSubexpression(rev::DWORD address);
-	void *GetSubexpressionInvalid(rev::DWORD address);
+	typedef void *(RevSymbolicEnvironment::*GetSubExpFunc)(nodep::DWORD address);
+	template <nodep::BYTE offset, nodep::BYTE size> void *GetSubexpression(nodep::DWORD address);
+	void *GetSubexpressionInvalid(nodep::DWORD address);
 	static GetSubExpFunc subExpsGet[4][5];
 
-	typedef void (RevSymbolicEnvironment::*SetSubExpFunc)(void *expr, rev::DWORD address, void *value);
-	template <rev::BYTE offset, rev::BYTE size> void SetSubexpression(void *expr, rev::DWORD address, void *value);
-	template <rev::BYTE size> void SetSubexpressionOff0(void *expr, rev::DWORD address, void *value);
-	template <rev::BYTE size> void SetSubexpressionOffM(void *expr, rev::DWORD address, void *value);
-	void SetSubexpressionInvalid(void *expr, rev::DWORD address, void *value);
+	typedef void (RevSymbolicEnvironment::*SetSubExpFunc)(void *expr, nodep::DWORD address, void *value);
+	template <nodep::BYTE offset, nodep::BYTE size> void SetSubexpression(void *expr, nodep::DWORD address, void *value);
+	template <nodep::BYTE size> void SetSubexpressionOff0(void *expr, nodep::DWORD address, void *value);
+	template <nodep::BYTE size> void SetSubexpressionOffM(void *expr, nodep::DWORD address, void *value);
+	void SetSubexpressionInvalid(void *expr, nodep::DWORD address, void *value);
 	static SetSubExpFunc subExpsSet[4][5];
 
-	void *GetExpression(rev::DWORD address, rev::DWORD size);
-	void SetExpression(void *exp, rev::DWORD address, rev::DWORD size, rev::DWORD *values);
+	void *GetExpression(nodep::DWORD address, nodep::DWORD size);
+	void SetExpression(void *exp, nodep::DWORD address, nodep::DWORD size, nodep::DWORD *values);
 
 
 public :
@@ -44,14 +44,14 @@ public :
 	virtual void PushState(stk::LargeStack &stack);
 	virtual void PopState(stk::LargeStack &stack);
 
-	virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue);
-	virtual bool GetFlgValue(rev::BYTE flg, rev::BOOL &isTracked, rev::BYTE &concreteValue, void *&symbolicValue);
-	virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount);
-	virtual bool UnsetOperand(rev::BYTE opIdx, bool doRefCount);
-	virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue, bool doRefCount);
-	virtual void UnsetFlgValue(rev::BYTE flg, bool doRefCount);
+	virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+	virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
+	virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
+	virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
+	virtual void SetFlgValue(nodep::BYTE flg, void *symbolicValue, bool doRefCount);
+	virtual void UnsetFlgValue(nodep::BYTE flg, bool doRefCount);
 
-	virtual void SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, rev::DWORD size);
+	virtual void SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, nodep::DWORD size);
 };
 
 #endif

@@ -99,10 +99,10 @@ bool InprocessExecutionController::Execute() {
 		api->symbolicHandler = symbCb;
 	}
 
-	wrapperImports = (revwrapper::ImportedApi *)GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "wrapperImports");
+	wrapperImports = (revwrapper::WrapperImports *)GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "wrapperImports");
 	
 	wrapperImports->libraries = &libLayout;
-	InitFunctionOffsets(&libLayout, wrapperImports);
+	InitWrapperOffsets(&libLayout, wrapperImports);
 
 	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "InitRevtracerWrapper");
 	if (!initHandler) {

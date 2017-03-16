@@ -2,8 +2,9 @@
 #include "common.h"
 #include "AddressContainer.h"
 
-static const rev::DWORD printMask = PRINT_INFO | PRINT_INSPECTION;
+static const nodep::DWORD printMask = PRINT_INFO | PRINT_INSPECTION;
 
+using namespace nodep;
 using namespace rev;
 
 void AddressContainer::InitPageAllocator() {

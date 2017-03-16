@@ -40,7 +40,7 @@ void InitSegment(HANDLE hThread, DWORD dwSeg, DWORD &offset) {
 }
 
 
-void InitSegments(void *hThread, rev::DWORD *segments) {
+void InitSegments(void *hThread, nodep::DWORD *segments) {
 	for (DWORD i = 0; i < 0x100; ++i) {
 		InitSegment((HANDLE)hThread, i, segments[i]);
 	}
@@ -448,6 +448,6 @@ bool CommonExecutionController::GetLastBasicBlockInfo(void *ctx, rev::BasicBlock
 	return glbbc(ctx, bbInfo);
 }
 
-void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) {
+void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value) {
 	mmv(ctx, addr, value);
 }

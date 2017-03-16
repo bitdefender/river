@@ -2,7 +2,7 @@
 #define _REVTRACER_H
 
 #include "DebugPrintFlags.h"
-#include "BasicTypes.h"
+#include "../CommonCrossPlatform/BasicTypes.h"
 #include "common.h"
 
 #define TRACER_FEATURE_REVERSIBLE				0x00000001
@@ -44,11 +44,11 @@ namespace rev {
 	typedef void *ADDR_TYPE;
 
 	typedef void(*DbgPrintFunc)(const unsigned int dwMask, const char *fmt, ...);
-	typedef void *(*MemoryAllocFunc)(DWORD dwSize);
+	typedef void *(*MemoryAllocFunc)(nodep::DWORD dwSize);
 	typedef void(*MemoryFreeFunc)(void *ptr);
 
-	typedef QWORD(*TakeSnapshotFunc)();
-	typedef QWORD(*RestoreSnapshotFunc)();
+	typedef nodep::QWORD(*TakeSnapshotFunc)();
+	typedef nodep::QWORD(*RestoreSnapshotFunc)();
 
 #define EXECUTION_ADVANCE					0x00000000
 #define EXECUTION_BACKTRACK					0x00000001
@@ -57,12 +57,12 @@ namespace rev {
 	typedef void(*InitializeContextFunc)(void *context);
 	typedef void(*CleanupContextFunc)(void *context);
 
-	typedef DWORD(*BranchHandlerFunc)(void *context, void *userContext, ADDR_TYPE nextInstruction);
+	typedef nodep::DWORD(*BranchHandlerFunc)(void *context, void *userContext, ADDR_TYPE nextInstruction);
 	typedef void(*SyscallControlFunc)(void *context, void *userContext);
 	typedef void(*IpcLibInitFunc)();
 
-	typedef void(*TrackCallbackFunc)(DWORD value, DWORD address, DWORD segment);
-	typedef void(*MarkCallbackFunc)(DWORD oldValue, DWORD newValue, DWORD address, DWORD segment);
+	typedef void(*TrackCallbackFunc)(nodep::DWORD value, nodep::DWORD address, nodep::DWORD segment);
+	typedef void(*MarkCallbackFunc)(nodep::DWORD oldValue, nodep::DWORD newValue, nodep::DWORD address, nodep::DWORD segment);
 
 	typedef void(__stdcall *SymbolicHandlerFunc)(void *context, void *offset, void *instr);
 
@@ -131,35 +131,35 @@ namespace rev {
 		ADDR_TYPE entryPoint;
 		ADDR_TYPE mainModule;
 		ADDR_TYPE context;
-		DWORD segmentOffsets[0x100];
+		nodep::DWORD segmentOffsets[0x100];
 
-		DWORD featureFlags;
+		nodep::DWORD featureFlags;
 
-		BOOL dumpBlocks;
-		HANDLE hBlocks;
+		nodep::BOOL dumpBlocks;
+		nodep::HANDLE hBlocks;
 
 		void *pRuntime;
 
-		DWORD hookCount;
+		nodep::DWORD hookCount;
 		CodeHooks hooks[0x10];
 	};
 
 	struct ExecutionRegs {
-		DWORD edi;
-		DWORD esi;
-		DWORD ebp;
-		DWORD esp;
+		nodep::DWORD edi;
+		nodep::DWORD esi;
+		nodep::DWORD ebp;
+		nodep::DWORD esp;
 
-		DWORD ebx;
-		DWORD edx;
-		DWORD ecx;
-		DWORD eax;
-		DWORD eflags;
+		nodep::DWORD ebx;
+		nodep::DWORD edx;
+		nodep::DWORD ecx;
+		nodep::DWORD eax;
+		nodep::DWORD eflags;
 	};
 
 	struct BasicBlockInfo {
 		ADDR_TYPE address;
-		DWORD cost;
+		nodep::DWORD cost;
 	};
 
 	extern "C" {
@@ -168,7 +168,7 @@ namespace rev {
 		DLL_REVTRACER_PUBLIC void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
 		DLL_REVTRACER_PUBLIC void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
 		DLL_REVTRACER_PUBLIC bool GetLastBasicBlockInfo(void *ctx, BasicBlockInfo *info);
-		DLL_REVTRACER_PUBLIC void MarkMemoryValue(void *ctx, ADDR_TYPE addr, DWORD value);
+		DLL_REVTRACER_PUBLIC void MarkMemoryValue(void *ctx, ADDR_TYPE addr, nodep::DWORD value);
 
 		/* In process API *********************************/
 		DLL_REVTRACER_PUBLIC extern RevtracerAPI revtracerAPI;

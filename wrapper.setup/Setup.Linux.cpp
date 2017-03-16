@@ -3,7 +3,7 @@
 #include "../CommonCrossPlatform/Common.h"
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 
-extern "C" bool InitFunctionOffsets(revwrapper::LibraryLayout *libs, revwrapper::ImportedApi *api) {
+extern "C" bool InitWrapperOffsets(ext::LibraryLayout *libs, revwrapper::WrapperAPI *api) {
 
 	LIB_T hlibc = GET_LIB_HANDLER("libc.so");
 	LIB_T hlibrt = GET_LIB_HANDLER("librt.so");

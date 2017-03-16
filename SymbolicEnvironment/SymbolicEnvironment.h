@@ -34,7 +34,7 @@ namespace sym {
 		virtual void PushState(stk::LargeStack &stack) = 0;
 		virtual void PopState(stk::LargeStack &stack) = 0;
 
-		virtual void SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, rev::DWORD size) = 0;
+		virtual void SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, nodep::DWORD size) = 0;
 
 		/**
 		*	The GetOperand function returns an operand by index.
@@ -48,7 +48,7 @@ namespace sym {
 		*		false - if the operand can't be interogated, (if the operand type is RIVER_OPERAND_NONE, or if
 		*				the RIVER_SPEC_IGNORES_OP(opIdx) flag is specified).
 		*/
-		virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue) = 0;
+		virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
 
 		/**
 		*	The GetFlgValue function returns a flag by flag value.
@@ -61,7 +61,7 @@ namespace sym {
 		*		true - if the flag can be interogated
 		*		false - if the flag can't be interogated, (if the flag is not in the modFlags bitmask).
 		*/
-		virtual bool GetFlgValue(rev::BYTE flg, rev::BOOL &isTracked, rev::BYTE &concreteValue, void *&symbolicValue) = 0;
+		virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue) = 0;
 
 		/**
 		*  The SetOperand function binds a symbolic expression to an operand.
@@ -72,14 +72,14 @@ namespace sym {
 		*		true - if the expression was bound successfully
 		*		false - otherwise
 		*/
-		virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount = true) = 0;
+		virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount = true) = 0;
 
 		/**
 		*  The UnsetOperand unbinds the symbolic expression from the specified operand.
 		*  Params:
 		*		opIdx - input, specifies the operand index.
 		*/
-		virtual bool UnsetOperand(rev::BYTE opIdx, bool doRefCount = true) = 0;
+		virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount = true) = 0;
 
 		/**
 		*  The SetFlgValue function binds a symbolic expression to flag.
@@ -90,14 +90,14 @@ namespace sym {
 		*		true - if the expression was bound successfully
 		*		false - otherwise
 		*/
-		virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue, bool doRefCount = true) = 0;
+		virtual void SetFlgValue(nodep::BYTE flg, void *symbolicValue, bool doRefCount = true) = 0;
 
 		/**
 		*  The UnsetFlgValue unbinds the symbolic expression from the specified operand.
 		*  Params:
 		*		flg - input, one of the RIVER_SPEC_FLAG_?F constants.
 		*/
-		virtual void UnsetFlgValue(rev::BYTE flg, bool doRefCount = true) = 0;
+		virtual void UnsetFlgValue(nodep::BYTE flg, bool doRefCount = true) = 0;
 	};
 
 	class ScopedSymbolicEnvironment : public SymbolicEnvironment {
@@ -117,19 +117,19 @@ namespace sym {
 		virtual void PushState(stk::LargeStack &stack);
 		virtual void PopState(stk::LargeStack &stack);
 
-		virtual void SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, rev::DWORD size);
+		virtual void SetSymbolicVariable(const char *name, rev::ADDR_TYPE addr, nodep::DWORD size);
 
 		virtual bool SetSubEnvironment(SymbolicEnvironment *env);
 
 		virtual void SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef);
 		virtual bool SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer);
 
-		virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue);
-		virtual bool GetFlgValue(rev::BYTE flg, rev::BOOL &isTracked, rev::BYTE &concreteValue, void *&symbolicValue);
-		virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount);
-		virtual bool UnsetOperand(rev::BYTE opIdx, bool doRefCount);
-		virtual void SetFlgValue(rev::BYTE flg, void *symbolicValue, bool doRefCount);
-		virtual void UnsetFlgValue(rev::BYTE flg, bool doRefCount);
+		virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+		virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
+		virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
+		virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
+		virtual void SetFlgValue(nodep::BYTE flg, void *symbolicValue, bool doRefCount);
+		virtual void UnsetFlgValue(nodep::BYTE flg, bool doRefCount);
 	};
 
 	/** Executor class. Inherit this class to provide bindings to a SMT solver. */
@@ -143,13 +143,13 @@ namespace sym {
 		}
 
 		// Create a new symbolic variable
-		virtual void *CreateVariable(const char *name, rev::DWORD size) = 0;
+		virtual void *CreateVariable(const char *name, nodep::DWORD size) = 0;
 
 		// Make a new constant
-		virtual void *MakeConst(rev::DWORD value, rev::DWORD bits) = 0;
+		virtual void *MakeConst(nodep::DWORD value, nodep::DWORD bits) = 0;
 
 		// Extract bits from an expression
-		virtual void *ExtractBits(void *expr, rev::DWORD lsb, rev::DWORD size) = 0;
+		virtual void *ExtractBits(void *expr, nodep::DWORD lsb, nodep::DWORD size) = 0;
 
 		virtual void *ConcatBits(void *expr1, void *expr2) = 0;
 

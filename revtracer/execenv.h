@@ -13,7 +13,7 @@
 struct ExecutionEnvironment {
 	RiverRuntime runtimeContext;
 
-	rev::UINT_PTR saveLog;
+	nodep::UINT_PTR saveLog;
 	
 	unsigned int /*heapSize,*/ historySize /*, logHashSize*/, outBufferSize;
 
@@ -25,11 +25,11 @@ struct ExecutionEnvironment {
 	//struct _cb_info **hashTable; // = 0
 	RiverBasicBlockCache blockCache;
 
-	rev::UINT_PTR lastFwBlock;
+	nodep::UINT_PTR lastFwBlock;
 	//UINT_PTR *history;
 	//unsigned long posHist, totHist; // = 0;
 
-	rev::UINT_PTR *executionBuffer, executionBase;
+	nodep::UINT_PTR *executionBuffer, executionBase;
 
 	//unsigned char *saveBuffer;
 
@@ -37,19 +37,19 @@ struct ExecutionEnvironment {
 
 	RiverCodeGen codeGen;
 
-	rev::DWORD exitAddr;
+	nodep::DWORD exitAddr;
 
 	bool bValid;
 	void *userContext;
 
 	AddressContainer ac;
 
-	rev::DWORD generationFlags;
+	nodep::DWORD generationFlags;
 public :
 	void* operator new(size_t);
 	void operator delete(void*);
 
-	ExecutionEnvironment(rev::DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize);
+	ExecutionEnvironment(nodep::DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize);
 	~ExecutionEnvironment();
 };
 

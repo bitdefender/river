@@ -24,7 +24,7 @@ void RiverReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstruc
 		return;
 	}
 
-	DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
+	nodep::DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
 	(this->*translateOpcodes[dwTable][rIn.opCode])(rOut, rIn);
 }
 

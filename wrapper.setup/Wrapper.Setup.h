@@ -3,6 +3,6 @@
 
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 
-extern "C" bool InitFunctionOffsets(revwrapper::LibraryLayout *libs, revwrapper::ImportedApi *api);
+extern "C" bool InitWrapperOffsets(ext::LibraryLayout *libs, revwrapper::WrapperImports *api);
 
 #endif

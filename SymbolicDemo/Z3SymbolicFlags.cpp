@@ -27,7 +27,7 @@ Z3_ast Z3SymbolicExecutor::Z3SymbolicCpuFlag::GetValue() {
 
 // Zero flag - simple compare with zero
 Z3_ast Z3FlagZF::Eval() {
-	printf("<sym> lazyZF %08x\n", source);
+	printf("<sym> lazyZF %08p\n", source);
 
 	return Z3_mk_ite(parent->context,
 		Z3_mk_eq(
@@ -56,7 +56,7 @@ void Z3FlagZF::LoadState(stk::LargeStack &stack) {
 
 // Sign flag - extract msb
 Z3_ast Z3FlagSF::Eval() {
-	printf("<sym> lazySF %08x\n", source);
+	printf("<sym> lazySF %08p\n", source);
 
 	return Z3_mk_extract(
 		parent->context,
@@ -123,7 +123,7 @@ Z3_ast Z3FlagPF::Eval() {
 		)
 	);
 
-	printf("<sym> lazyPF %08x\n", source);
+	printf("<sym> lazyPF %08p\n", source);
 
 	return Z3_mk_extract(
 		parent->context,
@@ -219,7 +219,7 @@ Z3_ast Z3FlagCF::Eval() {
 		);
 	}
 
-	printf("<sym> lazyCF %08x <= %08x, %08x\n", source, p[0], p[1]);
+	printf("<sym> lazyCF %08p <= %08p, %08p\n", source, p[0], p[1]);
 
 	return c;
 }
@@ -293,7 +293,7 @@ Z3_ast Z3FlagOF::Eval() {
 		);
 	}
 
-	printf("<sym> lazyOF %08x <= %08x, %08x\n", source, p[0], p[1]);
+	printf("<sym> lazyOF %08p <= %08p, %08p\n", source, p[0], p[1]);
 
 	return Z3_mk_bvand(
 		parent->context,

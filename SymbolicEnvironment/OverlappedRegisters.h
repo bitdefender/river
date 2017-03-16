@@ -11,23 +11,23 @@ private :
 	class OverlappedRegister {
 	private:
 		void *subRegs[5];
-		static const rev::DWORD rOff[5], rSize[5], rParent[5], rMChild[5], rLChild[5];
-		static const rev::DWORD rSeed[4];
-		static rev::DWORD needConcat, needExtract;
+		static const nodep::DWORD rOff[5], rSize[5], rParent[5], rMChild[5], rLChild[5];
+		static const nodep::DWORD rSeed[4];
+		static nodep::DWORD needConcat, needExtract;
 		OverlappedRegistersEnvironment *parent;
 
 		// marks children as need extraction
-		void MarkNeedExtract(rev::DWORD node, bool doRefCount);
-		void MarkNeedConcat(rev::DWORD node, bool doRefCount);
-		void MarkUnset(rev::DWORD node, bool doRefCount);
+		void MarkNeedExtract(nodep::DWORD node, bool doRefCount);
+		void MarkNeedConcat(nodep::DWORD node, bool doRefCount);
+		void MarkUnset(nodep::DWORD node, bool doRefCount);
 
-		void *Get(rev::DWORD node, rev::DWORD concreteValue);
+		void *Get(nodep::DWORD node, nodep::DWORD concreteValue);
 	public:
 		OverlappedRegister();
 
 		void SetParent(OverlappedRegistersEnvironment *p);
 
-		void *Get(RiverRegister &reg, rev::DWORD &concreteValue);
+		void *Get(RiverRegister &reg, nodep::DWORD &concreteValue);
 		void Set(RiverRegister &reg, void *value, bool doRefCount);
 		bool Unset(RiverRegister &reg, bool doRefCount);
 
@@ -50,9 +50,9 @@ protected :
 public :
 	OverlappedRegistersEnvironment();
 
-	virtual bool GetOperand(rev::BYTE opIdx, rev::BOOL &isTracked, rev::DWORD &concreteValue, void *&symbolicValue);
-	virtual bool SetOperand(rev::BYTE opIdx, void *symbolicValue, bool doRefCount);
-	virtual bool UnsetOperand(rev::BYTE opIdx, bool doRefCount);
+	virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+	virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
+	virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
 };
 
 #endif

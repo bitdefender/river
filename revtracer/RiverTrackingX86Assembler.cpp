@@ -2,42 +2,42 @@
 
 using namespace rev;
 
-extern DWORD dwAddressTrackHandler;
-extern DWORD dwAddressMarkHandler;
+extern nodep::DWORD dwAddressTrackHandler;
+extern nodep::DWORD dwAddressMarkHandler;
 
-void RiverTrackingX86Assembler::AssemblePushFlg(DWORD testFlags, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const BYTE markFlagInstr[] = { 0xFF, 0x35, 0x00, 0x00, 0x00, 0x00 };
+void RiverTrackingX86Assembler::AssemblePushFlg(nodep::DWORD testFlags, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
+	const nodep::BYTE markFlagInstr[] = { 0xFF, 0x35, 0x00, 0x00, 0x00, 0x00 };
 
-	for (BYTE c = 0, m = 1; m < RIVER_SPEC_FLAG_EXT; ++c, m <<= 1) {
+	for (nodep::BYTE c = 0, m = 1; m < RIVER_SPEC_FLAG_EXT; ++c, m <<= 1) {
 		if (m & testFlags) {
 			rev_memcpy(px86.cursor, markFlagInstr, sizeof(markFlagInstr));
-			*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
+			*(nodep::DWORD *)(&px86.cursor[0x02]) = (nodep::DWORD)&runtime->taintedFlags[c];
 			px86.cursor += sizeof(markFlagInstr);
 			instrCounter++;
 		}
 	}
 }
 
-void RiverTrackingX86Assembler::AssemblePushReg(const RiverRegister &reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const BYTE markRegInstr[] = { 0xFF, 0x35, 0x00, 0x00, 0x00, 0x00 };
+void RiverTrackingX86Assembler::AssemblePushReg(const RiverRegister &reg, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
+	const nodep::BYTE markRegInstr[] = { 0xFF, 0x35, 0x00, 0x00, 0x00, 0x00 };
 
 	rev_memcpy(px86.cursor, markRegInstr, sizeof(markRegInstr));
-	*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedRegisters[GetFundamentalRegister(reg.name)];
+	*(nodep::DWORD *)(&px86.cursor[0x02]) = (nodep::DWORD)&runtime->taintedRegisters[GetFundamentalRegister(reg.name)];
 	px86.cursor += sizeof(markRegInstr);
 	instrCounter++;
 }
 
-void RiverTrackingX86Assembler::AssemblePushMem(const RiverAddress *addr, BYTE offset, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const BYTE trackMemInstr[] = {
+void RiverTrackingX86Assembler::AssemblePushMem(const RiverAddress *addr, nodep::BYTE offset, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
+	const nodep::BYTE trackMemInstr[] = {
 		0xFF, 0x76, 0x00,								// 0x00 - push [esi + 0x00] - effective address
 		0x50											// 0x03
 	};
 
-	const BYTE trackSegInstr[] = {
+	const nodep::BYTE trackSegInstr[] = {
 		0xFF, 0x76, 0x00								// 0x00 - push [esi + 0x00] - segment index
 	};
 
-	const BYTE trackImmInstr[] = {
+	const nodep::BYTE trackImmInstr[] = {
 		0x6A, 0x00										// 0x00 - push 0 - no segment
 	};
 
@@ -67,30 +67,30 @@ void RiverTrackingX86Assembler::AssemblePushMem(const RiverAddress *addr, BYTE o
 	instrCounter += 1;
 }*/
 
-void RiverTrackingX86Assembler::AssemblePopFlg(DWORD testFlags, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const BYTE unmarkFlagInstr[] = { 0x8F, 0x05, 0x00, 0x00, 0x00, 0x00 };
+void RiverTrackingX86Assembler::AssemblePopFlg(nodep::DWORD testFlags, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
+	const nodep::BYTE unmarkFlagInstr[] = { 0x8F, 0x05, 0x00, 0x00, 0x00, 0x00 };
 
-	for (BYTE c = 7, m = RIVER_SPEC_FLAG_EXT; m > 0; --c, m >>= 1) {
+	for (nodep::BYTE c = 7, m = RIVER_SPEC_FLAG_EXT; m > 0; --c, m >>= 1) {
 		if (m & testFlags) {
 			rev_memcpy(px86.cursor, unmarkFlagInstr, sizeof(unmarkFlagInstr));
-			*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedFlags[c];
+			*(nodep::DWORD *)(&px86.cursor[0x02]) = (nodep::DWORD)&runtime->taintedFlags[c];
 			px86.cursor += sizeof(unmarkFlagInstr);
 			instrCounter++;
 		}
 	}
 }
 
-void RiverTrackingX86Assembler::AssemblePopReg(const RiverRegister &reg, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
-	const BYTE unmarkRegInstr[] = { 0x8F, 0x05, 0x00, 0x00, 0x00, 0x00 };
+void RiverTrackingX86Assembler::AssemblePopReg(const RiverRegister &reg, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
+	const nodep::BYTE unmarkRegInstr[] = { 0x8F, 0x05, 0x00, 0x00, 0x00, 0x00 };
 
 	rev_memcpy(px86.cursor, unmarkRegInstr, sizeof(unmarkRegInstr));
-	*(DWORD *)(&px86.cursor[0x02]) = (DWORD)&runtime->taintedRegisters[GetFundamentalRegister(reg.name)];
+	*(nodep::DWORD *)(&px86.cursor[0x02]) = (nodep::DWORD)&runtime->taintedRegisters[GetFundamentalRegister(reg.name)];
 	px86.cursor += sizeof(unmarkRegInstr);
 	instrCounter++;
 }
 
-void RiverTrackingX86Assembler::AssemblePopMem(const RiverAddress *addr, BYTE offset, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter)  {
-	const BYTE unmarkRegMem[] = {
+void RiverTrackingX86Assembler::AssemblePopMem(const RiverAddress *addr, nodep::BYTE offset, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter)  {
+	const nodep::BYTE unmarkRegMem[] = {
 		0x58,											// 0x06 - pop eax
 		0x5F,											// 0x07 - pop edi
 		0x5E											// 0x08 - pop esi
@@ -101,7 +101,7 @@ void RiverTrackingX86Assembler::AssemblePopMem(const RiverAddress *addr, BYTE of
 	instrCounter += 3;
 }
 
-bool RiverTrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
+bool RiverTrackingX86Assembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter, nodep::BYTE outputType) {
 	switch (ri.opCode) {
 		case 0x9C : // push flags
 			AssemblePushFlg(ri.operands[0].asImm8, px86, pFlags, instrCounter);

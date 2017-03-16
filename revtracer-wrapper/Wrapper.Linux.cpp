@@ -172,7 +172,7 @@ int LinWaitSemaphoreNonBlocking(void *semaphore) {
 
 
 namespace revwrapper {
-	extern "C" int InitRevtracerWrapper(void *configPage) {
+	extern "C" bool InitRevtracerWrapper(void *configPage) {
 		/*lcModule = dlopen("libc.so", RTLD_LAZY);
 		lrtModule = dlopen("librt.so", RTLD_LAZY);
 		CreateModule("libpthread.so", lpthreadModule);
@@ -223,7 +223,7 @@ namespace revwrapper {
 		unlinkSharedMemory = (UnlinkSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_unlink");*/
 
 		flushInstructionCache = LinFlushInstructionCache;
-		return 0;
+		return true;
 	}
 };
 

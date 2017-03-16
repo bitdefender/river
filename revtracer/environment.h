@@ -16,20 +16,20 @@ extern "C" {
 	);
 	void __cdecl   SysEndHandler(
 		struct ExecutionEnvironment *, 
-		rev::DWORD, 
-		rev::DWORD, 
-		rev::DWORD, 
-		rev::DWORD, 
-		rev::DWORD, 
-		rev::DWORD, 
-		rev::DWORD, 
-		rev::DWORD, 
-		rev::DWORD
+		nodep::DWORD, 
+		nodep::DWORD, 
+		nodep::DWORD, 
+		nodep::DWORD, 
+		nodep::DWORD, 
+		nodep::DWORD, 
+		nodep::DWORD, 
+		nodep::DWORD, 
+		nodep::DWORD
 	);
 };
 
 int dbg0(char *pFormat);
-int dbg1(char *pFormat, rev::DWORD p1);
-int dbg2(char *pFormat, rev::DWORD p1, rev::DWORD p2);
+int dbg1(char *pFormat, nodep::DWORD p1);
+int dbg2(char *pFormat, nodep::DWORD p1, nodep::DWORD p2);
 
 #endif

@@ -21,28 +21,28 @@ private :
 	TrackingX86Assembler tAsm;
 	RiverTrackingX86Assembler rtAsm;
 
-	void SwitchToRiver(rev::BYTE *&px86, rev::DWORD &instrCounter);
-	void SwitchToRiverEsp(rev::BYTE *&px86, rev::DWORD &instrCounter, rev::BYTE repReg);
-	void EndRiverConversion(RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter);
+	void SwitchToRiver(nodep::BYTE *&px86, nodep::DWORD &instrCounter);
+	void SwitchToRiverEsp(nodep::BYTE *&px86, nodep::DWORD &instrCounter, nodep::BYTE repReg);
+	void EndRiverConversion(RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter);
 
-	void SwitchEspWithReg(RelocableCodeBuffer &px86, rev::DWORD &instrCounter, rev::BYTE repReg, rev::DWORD dwStack);
-	void SwitchToStack(RelocableCodeBuffer &px86, rev::DWORD &instrCounter, rev::DWORD dwStack);
-	bool SwitchToNative(RelocableCodeBuffer &px86, rev::BYTE &currentFamily, rev::BYTE repReg, rev::DWORD &instrCounter, rev::DWORD dwStack);
+	void SwitchEspWithReg(RelocableCodeBuffer &px86, nodep::DWORD &instrCounter, nodep::BYTE repReg, nodep::DWORD dwStack);
+	void SwitchToStack(RelocableCodeBuffer &px86, nodep::DWORD &instrCounter, nodep::DWORD dwStack);
+	bool SwitchToNative(RelocableCodeBuffer &px86, nodep::BYTE &currentFamily, nodep::BYTE repReg, nodep::DWORD &instrCounter, nodep::DWORD dwStack);
 
-	bool GenerateTransitionsNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter);
-	bool GenerateTransitionsTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter);
+	bool GenerateTransitionsNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter);
+	bool GenerateTransitionsTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter);
 
-	void AssembleTrackingEnter(RelocableCodeBuffer &px86, rev::DWORD &instrCounter);
-	void AssembleTrackingLeave(RelocableCodeBuffer &px86, rev::DWORD &instrCounter);
+	void AssembleTrackingEnter(RelocableCodeBuffer &px86, nodep::DWORD &instrCounter);
+	void AssembleTrackingLeave(RelocableCodeBuffer &px86, nodep::DWORD &instrCounter);
 
-	//bool GenerateTransitions(const RiverInstruction &ri, rev::BYTE *&px86, rev::DWORD &pFlags, rev::BYTE &repReg, rev::DWORD &instrCounter);
-	bool TranslateNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);
-	bool TranslateTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::BYTE &currentFamily, rev::BYTE &repReg, rev::DWORD &instrCounter, rev::BYTE outputType);
+	//bool GenerateTransitions(const RiverInstruction &ri, nodep::BYTE *&px86, nodep::DWORD &pFlags, nodep::BYTE &repReg, nodep::DWORD &instrCounter);
+	bool TranslateNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter, nodep::BYTE outputType);
+	bool TranslateTracking(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter, nodep::BYTE outputType);
 public :
-	virtual bool Init(RiverRuntime *rt, rev::DWORD dwTranslationFlags);
+	virtual bool Init(RiverRuntime *rt, nodep::DWORD dwTranslationFlags);
 
-	virtual bool Assemble(RiverInstruction *pRiver, rev::DWORD dwInstrCount, RelocableCodeBuffer &px86, rev::DWORD flg, rev::DWORD &instrCounter, rev::DWORD &byteCounter, rev::BYTE outputType);
-	//bool AssembleTracking(RiverInstruction *pRiver, rev::DWORD dwInstrCount, RelocableCodeBuffer &px86, rev::DWORD flg, rev::DWORD &instrCounter, rev::DWORD &byteCounter);
+	virtual bool Assemble(RiverInstruction *pRiver, nodep::DWORD dwInstrCount, RelocableCodeBuffer &px86, nodep::DWORD flg, nodep::DWORD &instrCounter, nodep::DWORD &byteCounter, nodep::BYTE outputType);
+	//bool AssembleTracking(RiverInstruction *pRiver, nodep::DWORD dwInstrCount, RelocableCodeBuffer &px86, nodep::DWORD flg, nodep::DWORD &instrCounter, nodep::DWORD &byteCounter);
 };
 
 

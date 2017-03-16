@@ -10,21 +10,21 @@
 class RiverBasicBlock {
 public :
 	/* informations about the real block */
-	rev::UINT_PTR			address; // original address
-	rev::DWORD				dwSize;  // block size
-	rev::DWORD				dwCRC;   // block crc
-	rev::DWORD				dwFlags; // block flags
+	nodep::UINT_PTR			address; // original address
+	nodep::DWORD				dwSize;  // block size
+	nodep::DWORD				dwCRC;   // block crc
+	nodep::DWORD				dwFlags; // block flags
 
 	/* statistical translation information */
-	rev::DWORD				dwOrigOpCount; // number of instructions in the original block
-	rev::DWORD				dwFwOpCount; // number of instructions in the translated block
-	rev::DWORD				dwBkOpCount; // number of instructions in the reverse block
-	rev::DWORD				dwTrOpCount; // number of instructions in the tracking code
-	rev::DWORD				dwRtOpCount; // number of instructions in the reverse trakcing code
+	nodep::DWORD				dwOrigOpCount; // number of instructions in the original block
+	nodep::DWORD				dwFwOpCount; // number of instructions in the translated block
+	nodep::DWORD				dwBkOpCount; // number of instructions in the reverse block
+	nodep::DWORD				dwTrOpCount; // number of instructions in the tracking code
+	nodep::DWORD				dwRtOpCount; // number of instructions in the reverse trakcing code
 
 	/* statistical runtime information */
-	rev::DWORD				dwFwPasses; // number of block executions
-	rev::DWORD				dwBkPasses; // number of reverse block executions
+	nodep::DWORD				dwFwPasses; // number of block executions
+	nodep::DWORD				dwBkPasses; // number of reverse block executions
 
 	/* actual code information */
 	unsigned char		*pCode; // deprecated
@@ -50,16 +50,16 @@ private :
 public :
 	RiverMutex cbLock; //  = 0;
 	RiverBasicBlock **hashTable; // = 0
-	rev::DWORD historySize, logHashSize;
+	nodep::DWORD historySize, logHashSize;
 
 	RiverBasicBlockCache();
 	~RiverBasicBlockCache();
 
-	bool Init(RiverHeap *hp, rev::DWORD logHSize, rev::DWORD histSize);
+	bool Init(RiverHeap *hp, nodep::DWORD logHSize, nodep::DWORD histSize);
 	bool Destroy();
 
-	RiverBasicBlock *NewBlock(rev::UINT_PTR addr);
-	RiverBasicBlock *FindBlock(rev::UINT_PTR addr);
+	RiverBasicBlock *NewBlock(nodep::UINT_PTR addr);
+	RiverBasicBlock *FindBlock(nodep::UINT_PTR addr);
 
 	typedef void(*BlockCallback)(void *, RiverBasicBlock *);
 	void ForEachBlock(void *ctx, BlockCallback cb);
@@ -71,7 +71,7 @@ public :
 //void AddBlock(struct _exec_env *pEnv, RiverBasicBlock*);
 
 void PrintHistory(struct ExecutionEnvironment *pEnv);
-rev::DWORD DumpHistory(struct ExecutionEnvironment *pEnv, unsigned char *o, unsigned long s, unsigned long *sz);
+nodep::DWORD DumpHistory(struct ExecutionEnvironment *pEnv, unsigned char *o, unsigned long s, unsigned long *sz);
 
 #endif
 

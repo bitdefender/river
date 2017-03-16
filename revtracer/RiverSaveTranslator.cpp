@@ -16,8 +16,8 @@ bool RiverSaveTranslator::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
-	DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
+void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount) {
+	nodep::DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
 
 	if (RIVER_FAMILY(rIn.family) == RIVER_FAMILY_NATIVE) {
 		(this->*translateOpcodes[dwTable][rIn.opCode])(rOut, rIn, instrCount);
@@ -133,7 +133,7 @@ void RiverSaveTranslator::MakeSaveAtxSP(RiverInstruction *rOut, const RiverInstr
 	MakeSaveMem(rOut, rTmp, RIVER_FAMILY_FLAG_ORIG_xSP, rIn);
 }
 
-void RiverSaveTranslator::SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::SaveOperands(RiverInstruction *rOut, const RiverInstruction &rIn, nodep::DWORD &instrCount) {
 	if (RIVER_SPEC_MODIFIES_FLG & rIn.specifiers) {
 		MakeSaveFlags(rOut);
 		instrCount++;
@@ -154,11 +154,11 @@ void RiverSaveTranslator::SaveOperands(RiverInstruction *rOut, const RiverInstru
 
 /* Opcode translators */
 
-void RiverSaveTranslator::TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, nodep::DWORD &instrCount) {
 	DEBUG_BREAK;
 }
 
-void RiverSaveTranslator::TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::TranslateDefault(RiverInstruction *rOut, const RiverInstruction &rIn, nodep::DWORD &instrCount) {
 	/*if (RIVER_SPEC_MODIFIES_xSP & rIn.specifiers) {
 		DEBUG_BREAK;
 	}*/
@@ -166,7 +166,7 @@ void RiverSaveTranslator::TranslateDefault(RiverInstruction *rOut, const RiverIn
 	SaveOperands(rOut, rIn, instrCount);
 }
 
-void RiverSaveTranslator::TranslateSaveCPUID(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::TranslateSaveCPUID(RiverInstruction *rOut, const RiverInstruction &rIn, nodep::DWORD &instrCount) {
 	RiverRegister tmpReg;
 
 	tmpReg.name = RIVER_REG_xAX;
@@ -194,7 +194,7 @@ void RiverSaveTranslator::TranslateSaveCPUID(RiverInstruction *rOut, const River
 	rOut++;
 }
 
-void RiverSaveTranslator::TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
+void RiverSaveTranslator::TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const RiverInstruction &rIn, nodep::DWORD &instrCount) {
 	RiverRegister tmpReg; 
 
 	MakeSaveFlags(rOut);

@@ -1,9 +1,9 @@
 #ifndef __linux__
 
 #include "../CommonCrossPlatform/Common.h"
-#include "../revtracer-wrapper/RevtracerWrapper.h"
+#include "Wrapper.Setup.h"
 
-extern "C" bool InitFunctionOffsets(revwrapper::LibraryLayout *libs, revwrapper::ImportedApi *api) {
+extern "C" bool InitWrapperOffsets(ext::LibraryLayout *libs, revwrapper::WrapperImports *api) {
 
 	LIB_T hNtDll = GET_LIB_HANDLER(L"ntdll.dll");
 	DWORD baseNtDll = GET_LIB_BASE(hNtDll);

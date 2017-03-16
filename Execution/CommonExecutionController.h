@@ -8,15 +8,15 @@
 using namespace std;
 
 void DebugPrintf(const unsigned int printMask, const char *fmt, ...);
-rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction);
-void InitSegments(void *hThread, rev::DWORD *segments);
+nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction);
+void InitSegments(void *hThread, nodep::DWORD *segments);
 
 typedef void(*GetCurrentRegistersFunc)(void *ctx, rev::ExecutionRegs *regs);
 typedef void *(*GetMemoryInfoFunc)(void *ctx, void *ptr);
 typedef void (*SetSymbolicExecutorFunc)(rev::SymbolicExecutorConstructor);
 typedef bool(*GetLastBasicBlockInfoFunc)(void *ctx, rev::BasicBlockInfo *);
 
-typedef void (*MarkMemoryValueFunc)(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value);
+typedef void (*MarkMemoryValueFunc)(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value);
 
 class CommonExecutionController : public ExecutionController {
 private :
@@ -86,7 +86,7 @@ public :
 
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);
-	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value);
+	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value);
 };
 
 #endif // !_COMMON_EXECUTION_CONTROLLER_H

@@ -3,7 +3,12 @@
 #include "../BinLoader/LoaderAPI.h"
 #include "../BinLoader/Extern.Mapper.h"
 
+#include "ShmTokenRingWinInit.h"
+
 #include "RiverStructs.h"
+
+#include "../wrapper.setup/Wrapper.Setup.h"
+#include "../loader.setup/Loader.Setup.h"
 
 //#define DUMP_BLOCKS
 
@@ -12,16 +17,15 @@
 #include <fcntl.h>
 
 typedef long NTSTATUS;
-typedef NTSTATUS(*NtYieldExecutionFunc)();
-typedef HANDLE(*GetHandlerCallback)(void);
+typedef bool(*GetHandlerCallback)(void *);
 
-NtYieldExecutionFunc ntdllYieldExecution;
+//NtYieldExecutionFunc ntdllYieldExecution;
 
-namespace ipc {
+/*namespace ipc {
 	void NtDllNtYieldExecution() {
 		::ntdllYieldExecution();
 	}
-};
+};*/
 
 ExternExecutionController::ExternExecutionController() {
 	shmAlloc = NULL;
@@ -91,6 +95,70 @@ BYTE *GetFreeRegion(HANDLE hProcess, DWORD size) {
 	return (BYTE *)dwCandidate;
 }
 
+BYTE *GetFreeRegion(HANDLE hProcess1, HANDLE hProcess2, DWORD size) {
+	printf("Looking for a 0x%08x block\n", size);
+
+	size = (size + 0xFFF) & ~0xFFF;
+	DWORD dwGran = 0x10000;
+
+	// now look for a suitable address;
+
+	DWORD dwOffset = 0x01000000; // dwGran;
+	DWORD dwCandidate = 0, dwCandidateSize = 0xFFFFFFFF;
+		
+	HANDLE hProcess[2] = { hProcess1, hProcess2 };
+
+	while (dwOffset < 0x2FFF0000) {
+		MEMORY_BASIC_INFORMATION32 mbi;
+		DWORD regionSize = 0xFFFFFFFF;
+		bool regionFree = true;
+
+		for (int i = 0; i < 2; ++i) {
+			if (0 == VirtualQueryEx(hProcess[i], (LPCVOID)dwOffset, (PMEMORY_BASIC_INFORMATION)&mbi, sizeof(mbi))) {
+				return NULL;
+			}
+
+			DWORD dwSize = mbi.RegionSize - (dwOffset - mbi.BaseAddress); // or allocationbase
+			if (regionSize > dwSize) {
+				regionSize = dwSize;
+			}
+
+			//printf("        Proc %d offset: 0x%08x, size 0x%08x\n", i, dwOffset, dwSize);
+
+			regionFree &= (MEM_FREE == mbi.State);
+		}
+
+		if (regionFree & (regionSize >= size) & (regionSize < dwCandidateSize)) {
+			printf("    Candidate found @0x%08x size 0x%08x\n", dwOffset, regionSize);
+			dwCandidate = dwOffset;
+			dwCandidateSize = regionSize;
+
+			if (regionSize == size) {
+				break;
+			}
+		}
+
+		dwOffset += regionSize;
+		dwOffset += dwGran - 1;
+		dwOffset &= ~(dwGran - 1);
+	}
+
+	if (0 == dwCandidate) {
+		return NULL;
+	}
+
+	return (BYTE *)dwCandidate;
+}
+
+bool ExternExecutionController::InitLibraryLayout() {
+	libraryLayout = (ext::LibraryLayout *)GetFreeRegion(hProcess, GetCurrentProcess(), sizeof(*libraryLayout));
+
+	void *ret1 = VirtualAllocEx(hProcess, libraryLayout, sizeof(*libraryLayout), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	void *ret2 = VirtualAlloc(libraryLayout, sizeof(*libraryLayout), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+	return true;
+}
+
 bool ExternExecutionController::MapLoader() {
 	CreateModule(L"loader.dll", hLoaderModule);
 	DWORD dwWritten;
@@ -107,7 +175,12 @@ bool ExternExecutionController::MapLoader() {
 
 		FlushInstructionCache(hProcess, (LPVOID)hLoaderBase, hLoaderModule->GetRequiredSize());
 
-		wchar_t revWrapperPath[] = L"revtracer-wrapper.dll";
+		if (!InitLibraryLayout()) {
+			DEBUG_BREAK;
+			break;
+		}
+
+		/*wchar_t revWrapperPath[] = L"revtracer-wrapper.dll";
 
 		LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
 
@@ -117,44 +190,42 @@ bool ExternExecutionController::MapLoader() {
 			return false;
 		}
 
-		if (nullptr == ((GetHandlerCallback)initHandler)()) {
+		if (false == ((GetHandlerCallback)initHandler)(nullptr)) {
 			DEBUG_BREAK;
 			return false;
-		}
+		}*/
 
-		ldr::LoaderAPI ldrAPI;
-
-		//ldrAPI.ntOpenSection = GetProcAddress(hNtDll, "NtOpenSection");
-		ldrAPI.ntMapViewOfSection = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallMapMemoryHandler");
-
-		//ldrAPI.ntOpenDirectoryObject = GetProcAddress(hNtDll, "NtOpenDirectoryObject");
-		//ldrAPI.ntClose = GetProcAddress(hNtDll, "NtClose");
-
+		ldr::LoaderImports ldrAPI;
+		/*ldrAPI.ntMapViewOfSection = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallMapMemoryHandler");
 		ldrAPI.ntFlushInstructionCache = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFlushInstructionCache");
 		ldrAPI.ntFreeVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFreeMemoryHandler");
 
-		//ldrAPI.rtlInitUnicodeStringEx = GetProcAddress(hNtDll, "RtlInitUnicodeStringEx");
-		//ldrAPI.rtlFreeUnicodeString = GetProcAddress(hNtDll, "RtlFreeUnicodeString");
+		InitLoaderOffsets()*/
 
+		InitLoaderOffsets(libraryLayout, &ldrAPI);
+		ldrAPI.libraries = libraryLayout;
 
-		BYTE *ldrAPIPtr;
-		if (!LoadExportedName(hLoaderModule, hLoaderBase, "loaderAPI", ldrAPIPtr) ||
-			!LoadExportedName(hLoaderModule, hLoaderBase, "loaderConfig", pLoaderConfig) ||
-			!LoadExportedName(hLoaderModule, hLoaderBase, "MapMemory", pLdrMapMemory) ||
-			!LoadExportedName(hLoaderModule, hLoaderBase, "LoaderPerform", pLoaderPerform)
+		if (!LoadExportedName(hLoaderModule, hLoaderBase, "loaderConfig", loader.pConfig) ||
+			!LoadExportedName(hLoaderModule, hLoaderBase, "loaderImports", loader.pImports) ||
+			!LoadExportedName(hLoaderModule, hLoaderBase, "loaderExports", loader.pExports)
 		) {
 			DEBUG_BREAK;
 			break;
 		}
 
-		if (FALSE == WriteProcessMemory(hProcess, ldrAPIPtr, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
+		if (FALSE == WriteProcessMemory(hProcess, libraryLayout, (LPCVOID)libraryLayout, sizeof(*libraryLayout), &dwWritten)) {
+			DEBUG_BREAK;
+			break;
+		}
+
+		if (FALSE == WriteProcessMemory(hProcess, loader.pImports, &ldrAPI, sizeof(ldrAPI), &dwWritten)) {
 			DEBUG_BREAK;
 			break;
 		}
 
 
-		memset(&loaderConfig, 0, sizeof(loaderConfig));
-		loaderConfig.sharedMemory = shmAlloc->CloneTo(hProcess);
+		memset(&loader.localConfig, 0, sizeof(loader.localConfig));
+		loader.localConfig.sharedMemory = shmAlloc->CloneTo(hProcess);
 
 		bRet = true;
 	} while (false);
@@ -171,6 +242,18 @@ DWORD CharacteristicsToDesiredAccess(DWORD c) {
 	return r;
 }
 
+bool ExternExecutionController::InitializeWrapper() {
+	if (!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "wrapperImports", wrapper.pImports) ||
+		!LoadExportedName(hRevWrapperModule, hRevWrapperBase, "wrapperExports", wrapper.pExports)
+	) {
+		return false;
+	}
+
+	InitWrapperOffsets(libraryLayout, wrapper.pImports);
+
+	//wrapper.pImports->functions
+}
+
 bool ExternExecutionController::InitializeIpcLib() {
 	/* Imports */
 	ipc::IpcAPI *ipcAPI;
@@ -178,11 +261,11 @@ bool ExternExecutionController::InitializeIpcLib() {
 		return false;
 	}
 
-	ipcAPI->ntYieldExecution = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallYieldExecution");
+	/*ipcAPI->ntYieldExecution = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallYieldExecution");
 	ntdllYieldExecution = (NtYieldExecutionFunc)ipcAPI->ntYieldExecution;
 	ipcAPI->vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
 
-	ipcAPI->ldrMapMemory = pLdrMapMemory;
+	ipcAPI->ldrMapMemory = pLdrMapMemory;*/
 
 
 	/* Exports */
@@ -203,7 +286,14 @@ bool ExternExecutionController::InitializeIpcLib() {
 	) {
 		return false;
 	}
-		
+	
+	unsigned int pids[2] = {
+		GetCurrentProcessId(),
+		pid
+	};
+
+	ipc::InitTokenRingWin(ipcToken, 2, pids, 1, nullptr, nullptr);
+	
 	return true;
 }
 
@@ -299,32 +389,60 @@ bool ExternExecutionController::InitializeRevtracer() {
 }
 
 bool ExternExecutionController::MapTracer() {
+	CreateModule(L"revtracer-wrapper.dll", hRevWrapperModule);
 	CreateModule(L"ipclib.dll", hIpcModule);
 	CreateModule(L"revtracer.dll", hRevtracerModule);
 	bool bRet = false;
 	do {
+		DWORD dwWrapperSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwIpcLibSize = (hIpcModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
 		DWORD dwRevTracerSize = (hRevtracerModule->GetRequiredSize() + 0xFFFF) & ~0xFFFF;
-		DWORD dwTotalSize = dwIpcLibSize + dwRevTracerSize;
+		DWORD dwTotalSize = dwWrapperSize + dwIpcLibSize + dwRevTracerSize;
 
 		DWORD dwOffset;
 
+		// Bases are module bases int the child/parent process address space
 		DWORD libs = (DWORD)shmAlloc->Allocate(dwTotalSize, dwOffset);
-		hIpcBase = (BASE_PTR)libs;
-		hRevtracerBase = (BASE_PTR)(libs + dwIpcLibSize);
-		DWORD ipcLibOffset = dwOffset;
-		DWORD revTracerOffset = dwOffset + dwIpcLibSize;
+		hRevWrapperBase = (BASE_PTR)libs;
+		hIpcBase = (BASE_PTR)(libs + dwWrapperSize);
+		hRevtracerBase = (BASE_PTR)(libs + dwWrapperSize + dwIpcLibSize);
+
+		// Offsets are displacements relative to the shared memory
+		DWORD wrapperOffset = dwOffset;
+		DWORD ipcLibOffset = wrapperOffset + dwWrapperSize;
+		DWORD revTracerOffset = ipcLibOffset + dwIpcLibSize;
 
 		//TODO fix this map
-		MapModule(hIpcModule, hIpcBase);
-		MapModule(hRevtracerModule, hRevtracerBase);
+		MapModule2(hRevWrapperModule, hRevWrapperBase);
+		MapModule2(hIpcModule, hIpcBase);
+		MapModule2(hRevtracerModule, hRevtracerBase);
 
-		printf("ipclib@0x%08x\nrevtracer@0x%08x\n", (DWORD)hIpcBase, (DWORD)hRevtracerBase);
+		printf(
+			"wrapper@0x%08x\nipclib@0x%08x\nrevtracer@0x%08x\n", 
+			(DWORD)hRevWrapperBase, 
+			(DWORD)hIpcBase, 
+			(DWORD)hRevtracerBase
+		);
 		FlushInstructionCache(hProcess, (BYTE*)libs, dwTotalSize);
 
 
 		DWORD sCount = 0;
 		//TODO implement GetSectionCount for Elf loader
+		DWORD dwWrapperSections = dynamic_cast<ldr::FloatingPE*>(hRevtracerModule)->GetSectionCount();
+		for (DWORD i = 0; i < dwWrapperSections; ++i) {
+			const ldr::PESection *sec = dynamic_cast<ldr::FloatingPE*>(hRevtracerModule)->GetSection(i);
+
+			if (sec->header.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) {
+				continue;
+			}
+
+			loader.localConfig.sections[sCount].mappingAddress = (ldr::ADDR_TYPE)(hRevWrapperBase + sec->header.VirtualAddress);
+			loader.localConfig.sections[sCount].mappingSize = (sec->header.VirtualSize + 0xFFF) & ~0xFFF;
+			loader.localConfig.sections[sCount].sectionOffset = wrapperOffset + sec->header.VirtualAddress;
+			loader.localConfig.sections[sCount].desiredAccess = CharacteristicsToDesiredAccess(sec->header.Characteristics);
+			sCount++;
+		}
+
 		DWORD dwIpcLibSections = dynamic_cast<ldr::FloatingPE*>(hIpcModule)->GetSectionCount();
 		for (DWORD i = 0; i < dwIpcLibSections; ++i) {
 			const ldr::PESection *sec = dynamic_cast<ldr::FloatingPE*>(hIpcModule)->GetSection(i);
@@ -333,10 +451,10 @@ bool ExternExecutionController::MapTracer() {
 				continue;
 			}
 
-			loaderConfig.sections[sCount].mappingAddress = (ldr::ADDR_TYPE)(hIpcBase + sec->header.VirtualAddress);
-			loaderConfig.sections[sCount].mappingSize = (sec->header.VirtualSize + 0xFFF) & ~0xFFF;
-			loaderConfig.sections[sCount].sectionOffset = ipcLibOffset + sec->header.VirtualAddress;
-			loaderConfig.sections[sCount].desiredAccess = CharacteristicsToDesiredAccess(sec->header.Characteristics);
+			loader.localConfig.sections[sCount].mappingAddress = (ldr::ADDR_TYPE)(hIpcBase + sec->header.VirtualAddress);
+			loader.localConfig.sections[sCount].mappingSize = (sec->header.VirtualSize + 0xFFF) & ~0xFFF;
+			loader.localConfig.sections[sCount].sectionOffset = ipcLibOffset + sec->header.VirtualAddress;
+			loader.localConfig.sections[sCount].desiredAccess = CharacteristicsToDesiredAccess(sec->header.Characteristics);
 			sCount++;
 		}
 
@@ -348,15 +466,16 @@ bool ExternExecutionController::MapTracer() {
 				continue;
 			}
 
-			loaderConfig.sections[sCount].mappingAddress = (ldr::ADDR_TYPE)(hRevtracerBase + sec->header.VirtualAddress);
-			loaderConfig.sections[sCount].mappingSize = (sec->header.VirtualSize + 0xFFF) & ~0xFFF;
-			loaderConfig.sections[sCount].sectionOffset = revTracerOffset + sec->header.VirtualAddress;
-			loaderConfig.sections[sCount].desiredAccess = CharacteristicsToDesiredAccess(sec->header.Characteristics);
+			loader.localConfig.sections[sCount].mappingAddress = (ldr::ADDR_TYPE)(hRevtracerBase + sec->header.VirtualAddress);
+			loader.localConfig.sections[sCount].mappingSize = (sec->header.VirtualSize + 0xFFF) & ~0xFFF;
+			loader.localConfig.sections[sCount].sectionOffset = revTracerOffset + sec->header.VirtualAddress;
+			loader.localConfig.sections[sCount].desiredAccess = CharacteristicsToDesiredAccess(sec->header.Characteristics);
 			sCount++;
 		}
-		loaderConfig.sectionCount = sCount;
-		loaderConfig.shmBase = (ldr::ADDR_TYPE)libs;
+		loader.localConfig.sectionCount = sCount;
+		loader.localConfig.shmBase = (ldr::ADDR_TYPE)libs;
 
+		// Reserve this memory chunk to prevent the windows loader on using it before our loader can do its job
 		if (NULL == VirtualAllocEx(
 			hProcess,
 			(BYTE*)libs,
@@ -364,6 +483,10 @@ bool ExternExecutionController::MapTracer() {
 			MEM_RESERVE,
 			PAGE_READONLY
 		)) {
+			break;
+		}
+
+		if (!InitializeWrapper()) {
 			break;
 		}
 
@@ -375,7 +498,7 @@ bool ExternExecutionController::MapTracer() {
 			break;
 		}
 
-		loaderConfig.entryPoint = revtracerPerform;
+		loader.localConfig.entryPoint = revtracerPerform;
 
 		bRet = true;
 	} while (false);
@@ -387,7 +510,7 @@ bool ExternExecutionController::MapTracer() {
 
 bool ExternExecutionController::WriteLoaderConfig() {
 	DWORD dwWritten;
-	if (FALSE == WriteProcessMemory(hProcess, pLoaderConfig, &loaderConfig, sizeof(loaderConfig), &dwWritten)) {
+	if (FALSE == WriteProcessMemory(hProcess, loader.pConfig, &loader.localConfig, sizeof(loader.localConfig), &dwWritten)) {
 		return false;
 	}
 
@@ -404,7 +527,7 @@ bool ExternExecutionController::SwitchEntryPoint() {
 
 	revCfg->entryPoint = (rev::ADDR_TYPE)ctx.Eip;
 
-	ctx.Eip = (DWORD)pLoaderPerform;
+	ctx.Eip = (DWORD)loader.pExports->perform;
 	if (FALSE == SetThreadContext(hMainThread, &ctx)) {
 		return false;
 	}

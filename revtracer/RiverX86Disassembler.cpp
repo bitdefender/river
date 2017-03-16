@@ -1,13 +1,13 @@
 #include "RiverX86Disassembler.h"
 #include "CodeGen.h"
 
-extern const WORD specTbl[2][0x100];
-extern const WORD _specTblExt[][8];
+extern const nodep::WORD specTbl[2][0x100];
+extern const nodep::WORD _specTblExt[][8];
 
-WORD GetSpecifiers(RiverInstruction &ri) {
+nodep::WORD GetSpecifiers(RiverInstruction &ri) {
 	//const WORD *specTbl = specTbl00;
-	DWORD dwTable = (RIVER_MODIFIER_EXT & ri.modifiers) ? 1 : 0;
-	WORD tmp = specTbl[dwTable][ri.opCode];
+	nodep::DWORD dwTable = (RIVER_MODIFIER_EXT & ri.modifiers) ? 1 : 0;
+	nodep::WORD tmp = specTbl[dwTable][ri.opCode];
 
 	if (tmp == 0xFF) {
 		DEBUG_BREAK;
@@ -41,8 +41,8 @@ void RiverX86Disassembler::TrackModifiedRegisters(RiverInstruction &ri) {
 }
 
 void RiverX86Disassembler::TrackFlagUsage(RiverInstruction &ri) {
-	DWORD dwTable = (RIVER_MODIFIER_EXT & ri.modifiers) ? 1 : 0;
-	BYTE tmp = modFlags[dwTable][ri.opCode];
+	nodep::DWORD dwTable = (RIVER_MODIFIER_EXT & ri.modifiers) ? 1 : 0;
+	nodep::BYTE tmp = modFlags[dwTable][ri.opCode];
 
 	if (tmp == 0xFF) {
 		DEBUG_BREAK;
@@ -80,15 +80,15 @@ bool RiverX86Disassembler::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD &flags) {
-	DWORD dwTable = 0;
+bool RiverX86Disassembler::Translate(nodep::BYTE *&px86, RiverInstruction &rOut, nodep::DWORD &flags) {
+	nodep::DWORD dwTable = 0;
 	
 	rOut.modifiers = 0;
 	rOut.specifiers = 0;
 	rOut.family = 0;
 	rOut.subOpCode = 0;
 	rOut.opTypes[0] = rOut.opTypes[1] = rOut.opTypes[2] = rOut.opTypes[3] = RIVER_OPTYPE_NONE;
-	rOut.instructionAddress = (DWORD)px86;
+	rOut.instructionAddress = (nodep::DWORD)px86;
 	rOut.modFlags = 0;
 	rOut.testFlags = 0;
 
@@ -114,9 +114,9 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 /* Opcode disassemblers                        */
 /* =========================================== */
 
-void RiverX86Disassembler::DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags) {
-	static BYTE opcode, extPrefix;
-	static DWORD address;
+void RiverX86Disassembler::DisassembleUnkInstr(nodep::BYTE *&px86, RiverInstruction &ri, nodep::DWORD &flags) {
+	static nodep::BYTE opcode, extPrefix;
+	static nodep::DWORD address;
 
 	revtracerAPI.dbgPrintFunc(PRINT_ERROR | PRINT_DISASSEMBLY, "Disassembling unknown instruction %02x %02x \n", ri.modifiers & RIVER_MODIFIER_EXT ? 0x0F : 0x00, *px86);
 	opcode = *px86;
@@ -131,31 +131,31 @@ void RiverX86Disassembler::DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri
 /* Operand helpers                             */
 /* =========================================== */
 
-void RiverX86Disassembler::DisassembleImmOp(BYTE opIdx, BYTE *&px86, RiverInstruction &ri, BYTE immSize) {
+void RiverX86Disassembler::DisassembleImmOp(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri, nodep::BYTE immSize) {
 	ri.opTypes[opIdx] = RIVER_OPTYPE_IMM | immSize;
 	switch (immSize) {
 	case RIVER_OPSIZE_8:
-		ri.operands[opIdx].asImm8 = *((BYTE *)px86);
+		ri.operands[opIdx].asImm8 = *((nodep::BYTE *)px86);
 		px86++;
 		break;
 	case RIVER_OPSIZE_16:
-		ri.operands[opIdx].asImm16 = *((WORD *)px86);
+		ri.operands[opIdx].asImm16 = *((nodep::WORD *)px86);
 		px86 += 2;
 		break;
 	case RIVER_OPSIZE_32:
 		if (ri.modifiers & RIVER_MODIFIER_O16) {
-			ri.operands[opIdx].asImm16 = *((WORD *)px86);
+			ri.operands[opIdx].asImm16 = *((nodep::WORD *)px86);
 			px86 += 2;
 		} else {
-			ri.operands[opIdx].asImm32 = *((DWORD *)px86);
+			ri.operands[opIdx].asImm32 = *((nodep::DWORD *)px86);
 			px86 += 4;
 		}
 		break;
 	}
 }
 
-void RiverX86Disassembler::DisassembleRegOp(BYTE opIdx, RiverInstruction &ri, BYTE reg) {
-	BYTE opType = RIVER_OPTYPE_REG;
+void RiverX86Disassembler::DisassembleRegOp(nodep::BYTE opIdx, RiverInstruction &ri, nodep::BYTE reg) {
+	nodep::BYTE opType = RIVER_OPTYPE_REG;
 	if (RIVER_MODIFIER_O8 & ri.modifiers) {
 		opType |= RIVER_OPSIZE_8;
 	}
@@ -167,15 +167,15 @@ void RiverX86Disassembler::DisassembleRegOp(BYTE opIdx, RiverInstruction &ri, BY
 	ri.operands[opIdx].asRegister.versioned = codegen->GetCurrentReg(reg);
 }
 
-void RiverX86Disassembler::DisassembleModRMOp(BYTE opIdx, BYTE *&px86, RiverInstruction &ri, BYTE &extra) {
+void RiverX86Disassembler::DisassembleModRMOp(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri, nodep::BYTE &extra) {
 	RiverAddress *rAddr;
-	BYTE mod = *px86 >> 6;
-	BYTE rm = *px86 & 0x07;
+	nodep::BYTE mod = *px86 >> 6;
+	nodep::BYTE rm = *px86 & 0x07;
 	
 	rAddr = codegen->AllocAddr(ri.modifiers); //new RiverAddress;
 	rAddr->DecodeFromx86(*codegen, px86, extra, ri.modifiers);
 
-	BYTE opType = RIVER_OPTYPE_MEM;
+	nodep::BYTE opType = RIVER_OPTYPE_MEM;
 	if (RIVER_MODIFIER_O8 & ri.modifiers) {
 		opType |= RIVER_OPSIZE_8;
 	}
@@ -187,14 +187,14 @@ void RiverX86Disassembler::DisassembleModRMOp(BYTE opIdx, BYTE *&px86, RiverInst
 	ri.operands[opIdx].asAddress = rAddr;
 }
 
-void RiverX86Disassembler::DisassembleSzModRMOp(BYTE opIdx, BYTE *&px86, RiverInstruction &ri, BYTE &extra, WORD sz) {
+void RiverX86Disassembler::DisassembleSzModRMOp(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri, nodep::BYTE &extra, nodep::WORD sz) {
 	RiverAddress *rAddr;
-	BYTE mod = *px86 >> 6;
-	BYTE rm = *px86 & 0x07;
+	nodep::BYTE mod = *px86 >> 6;
+	nodep::BYTE rm = *px86 & 0x07;
 
-	WORD tmpMod = 0;
+	nodep::WORD tmpMod = 0;
 
-	BYTE opType = RIVER_OPTYPE_MEM;
+	nodep::BYTE opType = RIVER_OPTYPE_MEM;
 	if (RIVER_MODIFIER_O8 & sz) {
 		opType |= RIVER_OPSIZE_8;
 		tmpMod |= RIVER_MODIFIER_O8;
@@ -210,7 +210,7 @@ void RiverX86Disassembler::DisassembleSzModRMOp(BYTE opIdx, BYTE *&px86, RiverIn
 	ri.operands[opIdx].asAddress = rAddr;
 }
 
-void RiverX86Disassembler::DisassembleMoffs8(BYTE opIdx, BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleMoffs8(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri) {
 	RiverAddress *rAddr;
 
 	rAddr = codegen->AllocAddr(ri.modifiers); //new RiverAddress;
@@ -218,7 +218,7 @@ void RiverX86Disassembler::DisassembleMoffs8(BYTE opIdx, BYTE *&px86, RiverInstr
 	rAddr->type = RIVER_ADDR_DISP8 | RIVER_ADDR_DIRTY;
 	rAddr->disp.d8 = *px86;
 
-	BYTE opType = RIVER_OPTYPE_MEM;
+	nodep::BYTE opType = RIVER_OPTYPE_MEM;
 	if (RIVER_MODIFIER_O8 & ri.modifiers) {
 		opType |= RIVER_OPSIZE_8;
 	}
@@ -232,7 +232,7 @@ void RiverX86Disassembler::DisassembleMoffs8(BYTE opIdx, BYTE *&px86, RiverInstr
 	ri.operands[opIdx].asAddress = rAddr;
 }
 
-void RiverX86Disassembler::DisassembleMoffs32(BYTE opIdx, BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleMoffs32(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri) {
 	RiverAddress *rAddr;
 
 	rAddr = codegen->AllocAddr(ri.modifiers); //new RiverAddress;
@@ -241,14 +241,14 @@ void RiverX86Disassembler::DisassembleMoffs32(BYTE opIdx, BYTE *&px86, RiverInst
 	rAddr->type = RIVER_ADDR_DISP | RIVER_ADDR_DIRTY;
 	
 	if (ri.modifiers & RIVER_MODIFIER_A16) {
-		rAddr->disp.d32 = *(WORD *)px86;
+		rAddr->disp.d32 = *(nodep::WORD *)px86;
 		px86 += 2;
 	} else {
-		rAddr->disp.d32 = *(DWORD *)px86;
+		rAddr->disp.d32 = *(nodep::DWORD *)px86;
 		px86 += 4;
 	}
 	
-	BYTE opType = RIVER_OPTYPE_MEM;
+	nodep::BYTE opType = RIVER_OPTYPE_MEM;
 	if (RIVER_MODIFIER_O8 & ri.modifiers) {
 		opType |= RIVER_OPSIZE_8;
 	}
@@ -264,84 +264,84 @@ void RiverX86Disassembler::DisassembleMoffs32(BYTE opIdx, BYTE *&px86, RiverInst
 /* Operand disassemblers                       */
 /* =========================================== */
 
-void RiverX86Disassembler::DisassembleUnkOp(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleUnkOp(nodep::BYTE *&px86, RiverInstruction &ri) {
 	DEBUG_BREAK;
 }
 
-void RiverX86Disassembler::DisassembleNoOp(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleNoOp(nodep::BYTE *&px86, RiverInstruction &ri) {
 }
 
-void RiverX86Disassembler::DisassembleRegModRM(BYTE *&px86, RiverInstruction &ri) {
-	BYTE sec;
+void RiverX86Disassembler::DisassembleRegModRM(nodep::BYTE *&px86, RiverInstruction &ri) {
+	nodep::BYTE sec;
 	DisassembleModRMOp(1, px86, ri, sec);
 	DisassembleRegOp(0, ri, sec);
 }
 
-void RiverX86Disassembler::DisassembleModRMReg(BYTE *&px86, RiverInstruction &ri) {
-	BYTE sec;
+void RiverX86Disassembler::DisassembleModRMReg(nodep::BYTE *&px86, RiverInstruction &ri) {
+	nodep::BYTE sec;
 	DisassembleModRMOp(0, px86, ri, sec);
 	DisassembleRegOp(1, ri, sec);
 }
 
-void RiverX86Disassembler::DisassembleModRMImm8(BYTE *&px86, RiverInstruction &ri) {
-	BYTE sec;
+void RiverX86Disassembler::DisassembleModRMImm8(nodep::BYTE *&px86, RiverInstruction &ri) {
+	nodep::BYTE sec;
 	DisassembleModRMOp(0, px86, ri, sec);
 	DisassembleImmOp(1, px86, ri, RIVER_OPSIZE_8);
 }
 
-void RiverX86Disassembler::DisassembleModRMImm32(BYTE *&px86, RiverInstruction &ri) {
-	BYTE sec;
+void RiverX86Disassembler::DisassembleModRMImm32(nodep::BYTE *&px86, RiverInstruction &ri) {
+	nodep::BYTE sec;
 	DisassembleModRMOp(0, px86, ri, sec);
 	DisassembleImmOp(1, px86, ri, RIVER_OPSIZE_32);
 }
 
-void RiverX86Disassembler::DisassembleSubOpModRM(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleSubOpModRM(nodep::BYTE *&px86, RiverInstruction &ri) {
 	DisassembleModRMOp(0, px86, ri, ri.subOpCode);
 }
 
-void RiverX86Disassembler::DisassembleSubOpModRMImm8(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleSubOpModRMImm8(nodep::BYTE *&px86, RiverInstruction &ri) {
 	DisassembleModRMOp(0, px86, ri, ri.subOpCode);
 	DisassembleImmOp(1, px86, ri, RIVER_OPSIZE_8);
 }
 
-void RiverX86Disassembler::DisassembleSubOpModRMImm32(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleSubOpModRMImm32(nodep::BYTE *&px86, RiverInstruction &ri) {
 	DisassembleModRMOp(0, px86, ri, ri.subOpCode);
 	DisassembleImmOp(1, px86, ri, RIVER_OPSIZE_32);
 }
 
-void RiverX86Disassembler::DisassembleImm8(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleImm8(nodep::BYTE *&px86, RiverInstruction &ri) {
 	DisassembleImmOp(0, px86, ri, RIVER_OPSIZE_8);
 }
 
-void RiverX86Disassembler::DisassembleImm16(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleImm16(nodep::BYTE *&px86, RiverInstruction &ri) {
 	DisassembleImmOp(0, px86, ri, RIVER_OPSIZE_16);
 }
 
-void RiverX86Disassembler::DisassembleImm32(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleImm32(nodep::BYTE *&px86, RiverInstruction &ri) {
 	DisassembleImmOp(0, px86, ri, RIVER_OPSIZE_32);
 }
 
-void RiverX86Disassembler::DisassembleImm32Imm16(BYTE *&px86, RiverInstruction &ri) {
+void RiverX86Disassembler::DisassembleImm32Imm16(nodep::BYTE *&px86, RiverInstruction &ri) {
 	DisassembleImmOp(0, px86, ri, RIVER_OPSIZE_32);
 	DisassembleImmOp(1, px86, ri, RIVER_OPSIZE_16);
 }
 
-void RiverX86Disassembler::DisassembleModRMRegImm8(BYTE *&px86, RiverInstruction &ri) {
-	BYTE sec;
+void RiverX86Disassembler::DisassembleModRMRegImm8(nodep::BYTE *&px86, RiverInstruction &ri) {
+	nodep::BYTE sec;
 	DisassembleModRMOp(0, px86, ri, sec);
 	DisassembleRegOp(1, ri, sec);
 	DisassembleImmOp(2, px86, ri, RIVER_OPSIZE_8);
 }
 
-void RiverX86Disassembler::DisassembleRegModRMImm8(BYTE *&px86, RiverInstruction &ri) {
-	BYTE sec;
+void RiverX86Disassembler::DisassembleRegModRMImm8(nodep::BYTE *&px86, RiverInstruction &ri) {
+	nodep::BYTE sec;
 	DisassembleModRMOp(1, px86, ri, sec);
 	DisassembleRegOp(0, ri, sec);
 	DisassembleImmOp(2, px86, ri, RIVER_OPSIZE_8);
 }
 
-void RiverX86Disassembler::DisassembleRegModRMImm32(BYTE *&px86, RiverInstruction &ri) {
-	BYTE sec;
+void RiverX86Disassembler::DisassembleRegModRMImm32(nodep::BYTE *&px86, RiverInstruction &ri) {
+	nodep::BYTE sec;
 	DisassembleModRMOp(1, px86, ri, sec);
 	DisassembleRegOp(0, ri, sec);
 	DisassembleImmOp(2, px86, ri, RIVER_OPSIZE_32);
@@ -351,7 +351,7 @@ void RiverX86Disassembler::DisassembleRegModRMImm32(BYTE *&px86, RiverInstructio
 /* Specifier tables                            */
 /* =========================================== */
 
-const WORD specTbl[2][0x100] = {
+const nodep::WORD specTbl[2][0x100] = {
 		{
 			/*0x00*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG,
 			/*0x01*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG,
@@ -869,7 +869,7 @@ const WORD specTbl[2][0x100] = {
 		}
 };
 
-const WORD _specTblExt[][8] = {
+const nodep::WORD _specTblExt[][8] = {
 		{ 
 			RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, 
 			RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, 

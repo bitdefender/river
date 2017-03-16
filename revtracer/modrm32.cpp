@@ -3,7 +3,7 @@
 #include "modrm32.h"
 
 
-BYTE Modrm16 [0x100] = 
+nodep::BYTE Modrm16 [0x100] = 
 			{
 				01, 01, 01, 01, 01, 01, 03, 01, 
 				01, 01, 01, 01, 01, 01, 03, 01, 
@@ -43,14 +43,14 @@ BYTE Modrm16 [0x100] =
 			};
 
 
-DWORD GetModrmSize (DWORD dwFlags, BYTE *pI)
+nodep::DWORD GetModrmSize (nodep::DWORD dwFlags, nodep::BYTE *pI)
 {
-	DWORD dwExtra;
-	BYTE bModRM, bRM, bMod, bSIB;
+	nodep::DWORD dwExtra;
+	nodep::BYTE bModRM, bRM, bMod, bSIB;
 
 	if (dwFlags & FLAG_A16)
 	{
-		return (DWORD) (Modrm16 [pI[1]] - 1);
+		return (nodep::DWORD) (Modrm16 [pI[1]] - 1);
 	}
 
 	bModRM 		= * (pI + 1);

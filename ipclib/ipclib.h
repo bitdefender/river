@@ -1,31 +1,60 @@
 #ifndef _IPCLIB_H_
 #define _IPCLIB_H_
 
-#include "common.h"
-
-#ifdef __linux__
-#include "ShmTokenRingLin.h"
-#else
-#include "ShmTokenRingWin.h"
-#endif
+#include "AbstractShmTokenRing.h"
 #include "RingBuffer.h"
+
+#include "../CommonCrossPlatform/LibraryLayout.h"
+
+#ifdef _MSC_VER
+#define DEBUG_BREAK __asm \
+{ __asm int 3 }
+#else
+#define DEBUG_BREAK asm volatile("int $0x3")
+typedef unsigned int size_t;
+#endif
+
+#if defined _WIN32 || defined __CYGWIN__
+	#ifdef _BUILDING_IPC_DLL
+		#ifdef __GNUC__
+			#define DLL_IPC_PUBLIC __attribute__ ((dllexport))
+		#else
+			#define DLL_IPC_PUBLIC __declspec(dllexport)
+		#endif
+	#else
+		#ifdef __GNUC__
+			#define DLL_IPC_PUBLIC __attribute__ ((dllimport))
+		#else
+			#define DLL_IPC_PUBLIC __declspec(dllimport)
+		#endif
+	#endif
+	#define DLL_IPC_LOCAL
+#else
+	#if __GNUC__ >= 4
+		#define DLL_IPC_PUBLIC __attribute__ ((visibility ("default")))
+		#define DLL_IPC_LOCAL  __attribute__ ((visibility ("hidden")))
+	#else
+		#define DLL_IPC_PUBLIC
+		#define DLL_IPC_LOCAL
+	#endif
+#endif
 
 namespace ipc {
 /* Define NULL pointer value */
 #ifndef NULL
-#ifdef __cplusplus
-#define NULL    0
-#else  /* __cplusplus */
-#define NULL    ((void *)0)
-#endif  /* __cplusplus */
+	#ifdef __cplusplus
+		#define NULL    0
+	#else  /* __cplusplus */
+		#define NULL    ((void *)0)
+	#endif  /* __cplusplus */
 #endif  /* NULL */
 
 #if !defined(_W64)
-#if !defined(__midl) && (defined(_X86_) || defined(_M_IX86) || defined(_ARM_) || defined(_M_ARM)) && _MSC_VER >= 1300
-#define _W64 __w64
-#else
-#define _W64
-#endif
+	#if !defined(__midl) && (defined(_X86_) || defined(_M_IX86) || defined(_ARM_) || defined(_M_ARM)) && _MSC_VER >= 1300
+		#define _W64 __w64
+	#else
+		#define _W64
+	#endif
 #endif
 
 #if defined(_WIN64)
@@ -125,19 +154,47 @@ namespace ipc {
 #define INPROC_TOKEN_USER 1
 #define REMOTE_TOKEN_USER 0
 
+	typedef void(*DbgPrintFunc)(const unsigned int dwMask, const char *fmt, ...);
+
+	typedef void *(*MapMemoryFunc)(
+		//unsigned long mapHandler,
+		unsigned long access,
+		unsigned long offset,
+		unsigned long size,
+		void *address);
+
+	typedef int(*_vsnprintf_sFunc)(
+		char *buffer,
+		size_t count,
+		const char *format,
+		char *argptr
+	);
+
+	struct IpcAPI {
+		WaitEventFunc waitEventFunc;
+		PostEventFunc postEventFunc;
+
+		MapMemoryFunc mapMemory;
+
+		_vsnprintf_sFunc vsnprintf_sFunc;
+	};
+
 	extern "C" {
+	
 		DLL_IPC_PUBLIC extern RingBuffer<(1 << 20)> debugLog;
 
 		DLL_IPC_PUBLIC extern IpcAPI ipcAPI;
 		DLL_IPC_PUBLIC extern IpcData ipcData;
 
-#ifdef __linux__
+/*#ifdef __linux__
 		DLL_IPC_PUBLIC extern ShmTokenRingLin ipcToken;
 #else
 		DLL_IPC_PUBLIC extern ShmTokenRingWin ipcToken;
-#endif
+#endif*/
 
-		DLL_IPC_PUBLIC void DebugPrint(DWORD printMask, const char *fmt, ...);
+		DLL_IPC_PUBLIC extern AbstractTokenRing *ipcToken;
+
+		DLL_IPC_PUBLIC extern void DebugPrint(DWORD printMask, const char *fmt, ...);
 
 		DLL_IPC_PUBLIC extern void *MemoryAllocFunc(DWORD dwSize);
 		DLL_IPC_PUBLIC extern void MemoryFreeFunc(void *ptr);

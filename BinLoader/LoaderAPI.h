@@ -38,12 +38,22 @@ DWORD GetEntryPoint(const char *elfName);
 void CreateModule(const wchar_t *libname, ldr::AbstractBinary *&module);
 void CreateModule(const char *libname, ldr::AbstractBinary *&module);
 void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr);
+void MapModule2(ldr::AbstractBinary *&module, BASE_PTR &baseAddr);
 void MapModule(ldr::AbstractBinary *&module, BASE_PTR &baseAddr, bool callConstructors, int shmFd, unsigned long offset);
 void MapModuleExtern(ldr::AbstractBinary *&module, BASE_PTR &baseAddr, void *hProcess);
 
 template <typename T> bool LoadExportedName(ldr::AbstractBinary *&module, BASE_PTR &base, const char *name, T *&ptr) {
-	ptr = (T *)GET_PROC_ADDRESS(module, base, name);
-	return ptr != NULL;
+	//ptr = (T *)GET_PROC_ADDRESS(module, base, name);
+	//return ptr != NULL;
+	ldr::DWORD rva;
+
+	if (module->GetExport(name, rva)) {
+		ptr = (T*)(rva + (DWORD)base);
+		return true;
+	}
+
+	ptr = nullptr;
+	return false;
 }
 
 

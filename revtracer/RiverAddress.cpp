@@ -1,22 +1,22 @@
 #include "river.h"
 #include "CodeGen.h"
 
-BYTE GetFundamentalRegister(BYTE reg) {
+nodep::BYTE GetFundamentalRegister(nodep::BYTE reg) {
 	if (reg < 0x20) {
 		return reg & 0x07;
 	}
 	return reg;
 }
 
-void RiverAddress::DecodeFlags(WORD flags) {
+void RiverAddress::DecodeFlags(nodep::WORD flags) {
 	if (flags & 0x0007) {
-		SetSegment((BYTE)flags);
+		SetSegment((nodep::BYTE)flags);
 	}
 }
 
-BYTE RiverAddress::GetUnusedRegisters() const {
-	BYTE ret = 0x0F;
-	BYTE tmp;
+nodep::BYTE RiverAddress::GetUnusedRegisters() const {
+	nodep::BYTE ret = 0x0F;
+	nodep::BYTE tmp;
 
 	if ((0 == type) || (type & RIVER_ADDR_BASE)) {
 		tmp = GetFundamentalRegister(base.name);
@@ -31,7 +31,7 @@ BYTE RiverAddress::GetUnusedRegisters() const {
 	return ret;
 }
 
-BYTE RiverAddress32::DecodeRegister(BYTE id, WORD flags) {
+nodep::BYTE RiverAddress32::DecodeRegister(nodep::BYTE id, nodep::WORD flags) {
 	if (flags & RIVER_MODIFIER_O8) { // we expect a 8 byte register
 		return (id & 0x03) | ((id & 0x04) ? RIVER_REG_SZ8_H : RIVER_REG_SZ8_L);
 	} else if (flags & RIVER_MODIFIER_O16) { // we expect a 16 byte register
@@ -41,7 +41,7 @@ BYTE RiverAddress32::DecodeRegister(BYTE id, WORD flags) {
 	}
 }
 
-BYTE RiverAddress32::EncodeRegister(WORD flags) {
+nodep::BYTE RiverAddress32::EncodeRegister(nodep::WORD flags) {
 	if (flags & RIVER_MODIFIER_O8) { // we expect a 8 byte register
 		return (base.name & 0x03) + (((base.name & 0x04) == RIVER_REG_SZ8_H) ? 4 : 0);
 	} else {
@@ -52,9 +52,9 @@ BYTE RiverAddress32::EncodeRegister(WORD flags) {
 bool RiverAddress32::DecodeSib(RiverCodeGen &cg, unsigned char *&px86) {
 	sib = *px86;
 
-	BYTE ss = sib >> 6;
-	BYTE idx = (sib >> 3) & 0x7;
-	BYTE bs = sib & 0x7;
+	nodep::BYTE ss = sib >> 6;
+	nodep::BYTE idx = (sib >> 3) & 0x7;
+	nodep::BYTE bs = sib & 0x7;
 
 	type |= RIVER_ADDR_SCALE;
 	CopyScale(ss);
@@ -65,7 +65,7 @@ bool RiverAddress32::DecodeSib(RiverCodeGen &cg, unsigned char *&px86) {
 	}
 
 	if (5 == bs) {
-		BYTE mod = modRM >> 6;
+		nodep::BYTE mod = modRM >> 6;
 
 		type |= (1 & mod) ? RIVER_ADDR_DISP8 : RIVER_ADDR_DISP;
 		if (0 != mod) {
@@ -81,7 +81,7 @@ bool RiverAddress32::DecodeSib(RiverCodeGen &cg, unsigned char *&px86) {
 	return true;
 }
 
-bool RiverAddress32::DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, BYTE &extra, WORD flags) {
+bool RiverAddress32::DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, nodep::BYTE &extra, nodep::WORD flags) {
 	scaleAndSegment = 0;
 	DecodeFlags(flags);
 	index.versioned = RIVER_REG_NONE;
@@ -93,7 +93,7 @@ bool RiverAddress32::DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, BYTE 
 	modRM = *px86;
 	px86++;
 
-	BYTE mod = modRM >> 6, rm = modRM & 0x07;
+	nodep::BYTE mod = modRM >> 6, rm = modRM & 0x07;
 	extra = (modRM >> 3) & 0x07;
 
 	switch (mod) {
@@ -125,7 +125,7 @@ bool RiverAddress32::DecodeFromx86(RiverCodeGen &cg, unsigned char *&px86, BYTE 
 		disp.d8 = *px86;
 		px86++;
 	} else if (type & RIVER_ADDR_DISP) {
-		disp.d32 = *(DWORD *)px86;
+		disp.d32 = *(nodep::DWORD *)px86;
 		px86 += 4;
 	}
 
@@ -150,7 +150,7 @@ void RiverAddress32::FixEsp() {
 	}
 }
 
-bool RiverAddress32::CleanAddr(WORD flags) {
+bool RiverAddress32::CleanAddr(nodep::WORD flags) {
 	unsigned char mod, rm;
 	
 	if (0 == type) {
@@ -234,7 +234,7 @@ bool RiverAddress32::CleanAddr(WORD flags) {
 }
 
 
-bool RiverAddress32::EncodeTox86(unsigned char *&px86, BYTE extra, BYTE family, WORD modifiers) {
+bool RiverAddress32::EncodeTox86(unsigned char *&px86, nodep::BYTE extra, nodep::BYTE family, nodep::WORD modifiers) {
 	if (family & RIVER_FAMILY_FLAG_ORIG_xSP) {
 		RiverAddress32 rAddr;
 		rev_memcpy(&rAddr, this, sizeof(rAddr));
@@ -261,7 +261,7 @@ bool RiverAddress32::EncodeTox86(unsigned char *&px86, BYTE extra, BYTE family, 
 		*px86 = disp.d8;
 		px86++;
 	} else if (type & RIVER_ADDR_DISP) {
-		*(DWORD *)px86 = disp.d32;
+		*(nodep::DWORD *)px86 = disp.d32;
 		px86 += 4;
 	}
 

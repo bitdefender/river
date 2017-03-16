@@ -2,17 +2,17 @@
 
 using namespace rev;
 
-void AssembleUnkInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void AssembleUnkInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
 	DEBUG_BREAK;
 }
 
-void AssembleDefaultInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void AssembleDefaultInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
 	*px86.cursor = ri.opCode;
 	px86.cursor++;
 	instrCounter++;
 }
 
-void AssemblePlusRegInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, DWORD &instrCounter) {
+void AssemblePlusRegInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter) {
 	unsigned char regName = ri.operands[0].asRegister.name & 0x07; // verify if 8 bit operand
 	*px86.cursor = ri.opCode + regName;
 	px86.cursor++;
@@ -23,45 +23,45 @@ void AssemblePlusRegInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86,
 /* Operand helpers                             */
 /* =========================================== */
 
-void AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, BYTE extra) {
+void AssembleModRMOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::BYTE extra) {
 	ri.operands[opIdx].asAddress->EncodeTox86(px86.cursor, extra, ri.family, ri.modifiers);
 }
 
-void AssembleImmOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, BYTE immSize) {
+void AssembleImmOp(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::BYTE immSize) {
 	switch (immSize) {
 	case RIVER_OPSIZE_8:
-		*((BYTE *)px86.cursor) = ri.operands[opIdx].asImm8;
+		*((nodep::BYTE *)px86.cursor) = ri.operands[opIdx].asImm8;
 		px86.cursor++;
 		break;
 	case RIVER_OPSIZE_16:
-		*((WORD *)px86.cursor) = (WORD)ri.operands[opIdx].asImm16;
+		*((nodep::WORD *)px86.cursor) = (nodep::WORD)ri.operands[opIdx].asImm16;
 		px86.cursor += 2;
 		break;
 	case RIVER_OPSIZE_32:
 		if (ri.modifiers & RIVER_MODIFIER_O16) {
-			*((WORD *)px86.cursor) = (WORD)ri.operands[opIdx].asImm16;
+			*((nodep::WORD *)px86.cursor) = (nodep::WORD)ri.operands[opIdx].asImm16;
 			px86.cursor += 2;
 		}
 		else {
-			*((DWORD *)px86.cursor) = ri.operands[opIdx].asImm32;
+			*((nodep::DWORD *)px86.cursor) = ri.operands[opIdx].asImm32;
 			px86.cursor += 4;
 		}
 		break;
 	}
 }
 
-void AssembleMoffs(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, BYTE immSize) {
+void AssembleMoffs(unsigned int opIdx, const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::BYTE immSize) {
 	switch (immSize) {
 	case RIVER_OPSIZE_8:
-		*((BYTE *)px86.cursor) = ri.operands[opIdx].asAddress->disp.d8;
+		*((nodep::BYTE *)px86.cursor) = ri.operands[opIdx].asAddress->disp.d8;
 		px86.cursor++;
 		break;
 	case RIVER_OPSIZE_16:
-		*((WORD *)px86.cursor) = (WORD)ri.operands[opIdx].asAddress->disp.d32;
+		*((nodep::WORD *)px86.cursor) = (nodep::WORD)ri.operands[opIdx].asAddress->disp.d32;
 		px86.cursor += 2;
 		break;
 	case RIVER_OPSIZE_32:
-		*((DWORD *)px86.cursor) = ri.operands[opIdx].asAddress->disp.d32;
+		*((nodep::DWORD *)px86.cursor) = ri.operands[opIdx].asAddress->disp.d32;
 		px86.cursor += 4;
 		break;
 	}

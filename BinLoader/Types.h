@@ -11,7 +11,7 @@ namespace ldr {
 	typedef unsigned long long QWORD;
 
 	// TODO: Make arch aware size_t
-	typedef unsigned int SIZE_T;
+	typedef unsigned long SIZE_T;
 }; // namespace ldr
 
 #endif

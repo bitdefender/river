@@ -150,7 +150,7 @@ public:
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers) = 0;
 	virtual void *GetMemoryInfo(void *ctx, void *ptr) = 0;
 	virtual bool GetLastBasicBlockInfo(void *ctx, rev::BasicBlockInfo *bbInfo) = 0;
-	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, rev::DWORD value) = 0;
+	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value) = 0;
 
 };
 

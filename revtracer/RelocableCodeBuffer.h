@@ -6,18 +6,18 @@
 
 class RelocableCodeBuffer {
 private :
-	rev::BYTE *buffer;
+	nodep::BYTE *buffer;
 	bool needsRAFix;
-	rev::BYTE *rvAddress;
+	nodep::BYTE *rvAddress;
 public :
-	rev::BYTE *cursor;
+	nodep::BYTE *cursor;
 
 	RelocableCodeBuffer();
-	void Init(rev::BYTE *buff);
+	void Init(nodep::BYTE *buff);
 
 	void Reset();
-	void SetRelocation(rev::BYTE *reloc);
-	void CopyToFixed(rev::BYTE *dst) const;
+	void SetRelocation(nodep::BYTE *reloc);
+	void CopyToFixed(nodep::BYTE *dst) const;
 };
 
 #endif

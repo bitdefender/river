@@ -14,11 +14,11 @@ typedef bool (*WriteFileFunc)(void *, void *, size_t, unsigned long *);
 typedef long (*ToErrnoFunc)(long);
 
 typedef long (*YieldExecutionFunc)(void);
-typedef int (*InitSemaphoreFunc)(void *, int, int);
-typedef int (*WaitSemaphoreFunc)(void *, bool);
-typedef int (*PostSemaphoreFunc)(void *);
-typedef int (*DestroySemaphoreFunc)(void *);
-typedef int (*GetValueSemaphoreFunc) (void *, int *);
+typedef bool (*InitEventFunc)(void *, bool);
+typedef bool (*WaitEventFunc)(void *, int);
+typedef bool (*PostEventFunc)(void *);
+typedef void (*DestroyEventFunc)(void *);
+typedef int (*GetValueEventFunc) (void *);
 
 typedef int (*OpenSharedMemoryFunc) (const char *, int, int);
 typedef int (*UnlinkSharedMemoryFunc) (const char *);
@@ -39,11 +39,11 @@ extern WriteFileFunc writeFile;
 extern ToErrnoFunc toErrno;
 
 extern YieldExecutionFunc yieldExecution;
-extern InitSemaphoreFunc initSemaphore;
-extern WaitSemaphoreFunc waitSemaphore;
-extern PostSemaphoreFunc postSemaphore;
-extern DestroySemaphoreFunc destroySemaphore;
-extern GetValueSemaphoreFunc getvalueSemaphore;
+extern InitEventFunc initEvent;
+extern WaitEventFunc waitEvent;
+extern PostEventFunc postEvent;
+extern DestroyEventFunc destroyEvent;
+extern GetValueEventFunc getvalueEvent;
 
 extern OpenSharedMemoryFunc openSharedMemory;
 extern UnlinkSharedMemoryFunc unlinkSharedMemory;

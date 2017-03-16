@@ -23,7 +23,7 @@ ExecutionController *ctrl;
 		fflush(stdout); \
 	} while (false);
 
-void DebugPrint(rev::DWORD printMask, const char *fmt, ...) {
+void DebugPrint(nodep::DWORD printMask, const char *fmt, ...) {
 	va_list va;
 	char tmpBuff[512];
 
@@ -104,7 +104,7 @@ private:
 	TrackedVariableData vars[8];
 public :
 	TrackedVariableData *GetVariable(rev::ADDR_TYPE addr) {
-		DWORD idx = (rev::BYTE *)addr - bufferByte;
+		DWORD idx = (nodep::BYTE *)addr - bufferByte;
 
 		if (idx < 8) {
 			return &vars[idx];
@@ -253,7 +253,7 @@ public:
 			liSymTotal.QuadPart = 0;
 		}
 
-		rev::DWORD ret = EXECUTION_ADVANCE;
+		nodep::DWORD ret = EXECUTION_ADVANCE;
 
 		if (cec.BACKTRACKING == cec.executionState) {
 			QueryPerformanceCounter(&liStop);
@@ -290,7 +290,7 @@ public:
 	}
 
 	virtual unsigned int ExecutionControl(void *ctx, rev::ADDR_TYPE addr) {
-		rev::DWORD ret = EXECUTION_ADVANCE;
+		nodep::DWORD ret = EXECUTION_ADVANCE;
 		TrackedCondition *lastCondition;
 
 		QueryPerformanceCounter(&liSymStart);
@@ -362,7 +362,7 @@ public:
 										&val
 									);
 
-									rev::DWORD ret;
+									nodep::DWORD ret;
 									Z3_bool p = Z3_get_numeral_uint(executor->context, val, (unsigned int *)&ret);
 
 									newPass[r[2] - '0'] = (unsigned char)ret;
@@ -538,7 +538,7 @@ public:
 
 } symbolicExecution;
 
-void TrackCallback(rev::DWORD value, rev::DWORD address, rev::DWORD segSel) {
+void TrackCallback(nodep::DWORD value, nodep::DWORD address, nodep::DWORD segSel) {
 	if (EXECUTION_ADVANCE == lastDirection) {
 		TrackedVariableData *tvd = tvdTracker.GetVariable((rev::ADDR_TYPE)address);
 
@@ -549,7 +549,7 @@ void TrackCallback(rev::DWORD value, rev::DWORD address, rev::DWORD segSel) {
 	}
 }
 
-void MarkCallback(rev::DWORD oldValue, rev::DWORD newValue, rev::DWORD address, rev::DWORD segSel) {
+void MarkCallback(nodep::DWORD oldValue, nodep::DWORD newValue, nodep::DWORD address, nodep::DWORD segSel) {
 	//__asm int 3;
 }
 

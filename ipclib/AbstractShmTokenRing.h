@@ -1,23 +1,31 @@
-#ifndef _ABSTRACT_SHM_TOKEN_RING_
-#define	_ABSTRACT_SHM_TOKEN_RING_
-
-
-typedef signed int pid_t;
+#ifndef _ABSTRACT_TOKEN_RING_
+#define	_ABSTRACT_TOKEN_RING_
 
 namespace ipc {
-	class AbstractShmTokenRing {
+	
+	typedef bool(*WaitEventFunc)(void *handle, int timeout);
+	typedef bool(*PostEventFunc)(void *handle);
 
+	class AbstractTokenRing;
+	typedef bool(*TokenRingWaitFunc)(AbstractTokenRing *ring, long userId, bool blocking);
+	typedef void(*TokenRingReleaseFunc)(AbstractTokenRing *ring, long userId);
+	
+	class AbstractTokenRing {
+	protected:
+		WaitEventFunc wait;
+		PostEventFunc post;
+
+		TokenRingWaitFunc trw;
+		TokenRingReleaseFunc trr;
 	public:
-		virtual void Init() = 0;
-		virtual void Init(long presetUsers) = 0;
+		bool Wait(long userId, bool blocking = true) {
+			return trw(this, userId, blocking);
+		}
 
-		virtual long Use(pid_t pid = -1) = 0;
-
-		virtual bool Wait(long userId, bool blocking = true) const = 0;
-		virtual void Release(long userId) = 0;
+		void Release(long userId) {
+			trr(this, userId);
+		}
 	};
-
-	AbstractShmTokenRing *AbstractShmTokenRingFactory(void);
 } //namespace ipc
 
 #endif

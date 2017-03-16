@@ -4,19 +4,19 @@
 
 using namespace rev;
 
-void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal, BYTE riverFamily, RelocableCodeBuffer &px86, DWORD &instrCounter) {
-	const BYTE regByte[] = { 0x05, 0x0D, 0x15, 0x1D };
+void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal, nodep::BYTE riverFamily, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
+	const nodep::BYTE regByte[] = { 0x05, 0x0D, 0x15, 0x1D };
 
-	const BYTE preTrackMemPrefix[] = {
+	const nodep::BYTE preTrackMemPrefix[] = {
 		0x89, 0x05, 0x00, 0x00, 0x00, 0x00
 	};
 
-	const BYTE preTrackMemSuffix[] = {
+	const nodep::BYTE preTrackMemSuffix[] = {
 		0x8B, 0x05, 0x00, 0x00, 0x00, 0x00
 	};
 
-	BYTE unusedRegisters = addr->GetUnusedRegisters();
-	BYTE cReg;
+	nodep::BYTE unusedRegisters = addr->GetUnusedRegisters();
+	nodep::BYTE cReg;
 
 	if (unusedRegisters & 0x03) {
 		if (unusedRegisters & 0x01) {
@@ -36,7 +36,7 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 
 	rev_memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
 	px86.cursor[1] = regByte[cReg];
-	*(DWORD *)(&px86.cursor[2]) = (DWORD)&runtime->returnRegister;
+	*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->returnRegister;
 	px86.cursor += sizeof(preTrackMemPrefix);
 	instrCounter++;
 
@@ -87,7 +87,7 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 		instrCounter++;
 	}
 
-	DWORD flags = 0;
+	nodep::DWORD flags = 0;
 	GeneratePrefixes(rLea, px86.cursor);
 	AssembleDefaultInstr(rLea, px86, flags, instrCounter);
 	AssembleRegModRMOp(rLea, px86);
@@ -97,10 +97,10 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 	instrCounter++;
 
 	if (saveVal) {
-		const BYTE andRegVal[] = { 0x9C, 0x83, 0xE0, 0xFC, 0x9D };
-		const BYTE pushEax4[] = { 0xFF, 0x70, 0x04 };
-		const BYTE pushEax[] = { 0xFF, 0x30 };
-		const BYTE segmentPrefix[] = { 0x00, 0x26, 0x2E, 0x36, 0x3E, 0x64, 0x65 };
+		const nodep::BYTE andRegVal[] = { 0x9C, 0x83, 0xE0, 0xFC, 0x9D };
+		const nodep::BYTE pushEax4[] = { 0xFF, 0x70, 0x04 };
+		const nodep::BYTE pushEax[] = { 0xFF, 0x30 };
+		const nodep::BYTE segmentPrefix[] = { 0x00, 0x26, 0x2E, 0x36, 0x3E, 0x64, 0x65 };
 
 		rev_memcpy(px86.cursor, andRegVal, sizeof(andRegVal));
 		px86.cursor[2] += cReg;
@@ -127,12 +127,12 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 
 	rev_memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
 	px86.cursor[1] = regByte[cReg];
-	*(DWORD *)(&px86.cursor[2]) = (DWORD)&runtime->returnRegister;
+	*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->returnRegister;
 	px86.cursor += sizeof(preTrackMemSuffix);
 	instrCounter++;
 }
 
-bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, DWORD &pFlags, BYTE &currentFamily, BYTE &repReg, DWORD &instrCounter, BYTE outputType) {
+bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter, nodep::BYTE outputType) {
 	switch (ri.opCode) {
 		case 0x9C :
 			::AssembleDefaultInstr(ri, px86, pFlags, instrCounter);

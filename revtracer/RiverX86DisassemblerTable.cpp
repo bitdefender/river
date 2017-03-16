@@ -6,7 +6,7 @@
 /* Disassembly tables                          */
 /* =========================================== */
 
-template <rev::BYTE opIdx, rev::BYTE opFlg, rev::BYTE base, rev::BYTE disp8, RiverX86Disassembler::DisassembleOperandsFunc cont> void RiverX86Disassembler::DisassembleConstMemOperand(rev::BYTE *&px86, RiverInstruction &ri) {
+template <nodep::BYTE opIdx, nodep::BYTE opFlg, nodep::BYTE base, nodep::BYTE disp8, RiverX86Disassembler::DisassembleOperandsFunc cont> void RiverX86Disassembler::DisassembleConstMemOperand(nodep::BYTE *&px86, RiverInstruction &ri) {
 		(this->*cont)(px86, ri);
 
 		RiverAddress32 *rAddr = (RiverAddress32 *)codegen->AllocAddr(ri.modifiers); //new RiverAddress;
@@ -15,7 +15,7 @@ template <rev::BYTE opIdx, rev::BYTE opFlg, rev::BYTE base, rev::BYTE disp8, Riv
 		rAddr->type = RIVER_ADDR_BASE | RIVER_ADDR_DIRTY;
 		rAddr->type |= (disp8 != 0) ? RIVER_ADDR_DISP8 : 0;
 		
-		rev::BYTE opType = RIVER_OPTYPE_MEM | opFlg;
+		nodep::BYTE opType = RIVER_OPTYPE_MEM | opFlg;
 		if (RIVER_MODIFIER_O8 & ri.modifiers) {
 			opType |= RIVER_OPSIZE_8;
 		}
@@ -866,7 +866,7 @@ RiverX86Disassembler::DisassembleOperandsFunc RiverX86Disassembler::disassemble0
 
 
 
-BYTE RiverX86Disassembler::testFlags[2][0x100] = {
+nodep::BYTE RiverX86Disassembler::testFlags[2][0x100] = {
 	{
 		/*0x00*/ 0,
 		/*0x01*/ 0,
@@ -1385,7 +1385,7 @@ BYTE RiverX86Disassembler::testFlags[2][0x100] = {
 	}
 };
 
-BYTE RiverX86Disassembler::modFlags[2][0x100] = {
+nodep::BYTE RiverX86Disassembler::modFlags[2][0x100] = {
 	{
 		/*0x00*/ RIVER_SPEC_FLAG_OSZAPC,
 		/*0x01*/ RIVER_SPEC_FLAG_OSZAPC,

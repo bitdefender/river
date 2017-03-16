@@ -1,31 +1,32 @@
 #ifndef _LOADER_H
 #define _LOADER_H
 
-#include "../BinLoader/LoaderAPI.h"
+//#include "../BinLoader/LoaderAPI.h"
+#include "../CommonCrossPlatform/LibraryLayout.h"
 
 namespace ldr {
 #if defined _WIN32 || defined __CYGWIN__
 	#ifdef _BUILDING_LOADER_DLL
 		#ifdef __GNUC__
-			#define DLL_PUBLIC __attribute__ ((dllexport))
+			#define DLL_LOADER_PUBLIC __attribute__ ((dllexport))
 		#else
-			#define DLL_PUBLIC __declspec(dllexport)
+			#define DLL_LOADER_PUBLIC __declspec(dllexport)
 		#endif
 	#else
 		#ifdef __GNUC__
-			#define DLL_PUBLIC __attribute__ ((dllimport))
+			#define DLL_LOADER_PUBLIC __attribute__ ((dllimport))
 		#else
-			#define DLL_PUBLIC __declspec(dllimport)
+			#define DLL_LOADER_PUBLIC __declspec(dllimport)
 		#endif
 	#endif
-	#define DLL_LOCAL
+	#define DLL_LOADER_LOCAL
 #else
 	#if __GNUC__ >= 4
-		#define DLL_PUBLIC __attribute__ ((visibility ("default")))
-		#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+		#define DLL_LOADER_PUBLIC __attribute__ ((visibility ("default")))
+		#define DLL_LOADER_LOCAL  __attribute__ ((visibility ("hidden")))
 	#else
-		#define DLL_PUBLIC
-		#define DLL_LOCAL
+		#define DLL_LOADER_PUBLIC
+		#define DLL_LOADER_LOCAL
 	#endif
 #endif
 
@@ -70,7 +71,7 @@ namespace ldr {
 	typedef unsigned long DWORD;
 	typedef unsigned short WORD;
 	typedef unsigned char BYTE;
-	typedef unsigned int SIZE_T;
+	//typedef unsigned int SIZE_T;
 
 	typedef void *ADDR_TYPE;
 
@@ -94,32 +95,44 @@ namespace ldr {
 #define MAX_LIBS 0x10
 #define MAX_SEGMENTS 0x100
 
-	struct LoaderAPI {
-		//ADDR_TYPE ntOpenSection;
-		ADDR_TYPE ntMapViewOfSection;
+	struct LoaderImports {
+		ext::LibraryLayout *libraries;
 
-		//ADDR_TYPE ntOpenDirectoryObject;
-		//ADDR_TYPE ntClose;
+		union {
+			struct {
+				struct {
+					unsigned int dummy;
+				} libc;
+			} linFunc;
 
-		ADDR_TYPE ntFlushInstructionCache;
+			struct {
+				struct {
+					unsigned int _ntMapViewOfSection;
+					unsigned int _ntFlushInstructionCache;
+					unsigned int _ntFreeVirtualMemory;
+				} ntdll;
+			} winFunc;
+		} functions;
+		
 
-		ADDR_TYPE ntFreeVirtualMemory;
-
-		//ADDR_TYPE rtlInitUnicodeStringEx;
-		//ADDR_TYPE rtlFreeUnicodeString;
-		unsigned long sharedMemoryAddress;
-		MappedObject mos[MAX_LIBS];
-		DWORD segments[MAX_SEGMENTS];
+		//unsigned long sharedMemoryAddress;
+		//MappedObject mos[MAX_LIBS];
+		//DWORD segments[MAX_SEGMENTS];
 	};
 
+	typedef void *(*MapMemoryFunc)(unsigned long access, unsigned long offset, unsigned long size, void *address);
+	typedef void (*PerformFunc)();
+
+	struct LoaderExports {
+		MapMemoryFunc mapMemory;
+		PerformFunc perform;
+	};
 
 	extern "C" {
-		DLL_PUBLIC extern LoaderConfig loaderConfig;
-		DLL_PUBLIC extern LoaderAPI loaderAPI;
-
-		DLL_PUBLIC void *MapMemory(unsigned long access, unsigned long offset, unsigned long size, void *address);
-		DLL_PUBLIC void LoaderPerform();
-	}
+		DLL_LOADER_PUBLIC extern LoaderConfig loaderConfig;
+		DLL_LOADER_PUBLIC extern LoaderImports loaderImports;
+		DLL_LOADER_PUBLIC extern LoaderExports loaderExports;
+	};
 
 };
 

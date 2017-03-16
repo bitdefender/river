@@ -5,11 +5,12 @@
 #include "Wrapper.Global.h"
 
 #include "RevtracerWrapper.h"
-#include "../CommonCrossPlatform/Common.h"
+#include "../CommonCrossPlatform/BasicTypes.h"
+using namespace nodep;
 
 #define CALL_API(LIB, FUNC, TYPE) ((TYPE)((unsigned char *)revwrapper::wrapperImports.libraries->winLib.##LIB##Base + revwrapper::wrapperImports.functions.winFunc.##LIB##.##FUNC))
 
-
+typedef long NTSTATUS;
 #ifndef NT_SUCCESS
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 #endif
@@ -19,11 +20,11 @@ typedef NTSTATUS(__stdcall *AllocateMemoryHandler)(
 	HANDLE               ProcessHandle,
 	LPVOID               *BaseAddress,
 	DWORD                ZeroBits,
-	size_t               *RegionSize,
+	SIZE_T               *RegionSize,
 	DWORD                AllocationType,
 	DWORD                Protect);
 
-LPVOID __stdcall Kernel32VirtualAllocEx(HANDLE hProcess, LPVOID lpAddress, size_t dwSize, DWORD flAllocationType, DWORD flProtect) {
+LPVOID __stdcall Kernel32VirtualAllocEx(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect) {
 	LPVOID addr = lpAddress;
 	if (lpAddress && (unsigned int)lpAddress < 0x10000) {
 		//RtlSetLastWin32Error(87);
@@ -41,14 +42,26 @@ LPVOID __stdcall Kernel32VirtualAllocEx(HANDLE hProcess, LPVOID lpAddress, size_
 		if (NT_SUCCESS(ret)) {
 			return addr;
 		}
-		SetLastError(ret);
+		//SetLastError(ret);
 	}
 	return 0;
 }
 
 LPVOID __stdcall Kernel32VirtualAlloc(LPVOID lpAddress, size_t dwSize, DWORD flAllocationType, DWORD flProtect) {
 	return Kernel32VirtualAllocEx((HANDLE)0xFFFFFFFF, lpAddress, dwSize, flAllocationType, flProtect);
+
+	//unsigned long access, unsigned long offset, unsigned long size, void *address
 }
+
+#define MEM_COMMIT                  0x1000      
+#define MEM_RESERVE                 0x2000  
+#define MEM_DECOMMIT                0x4000      
+#define MEM_RELEASE                 0x8000  
+
+#define PAGE_EXECUTE           0x10     
+#define PAGE_EXECUTE_READ      0x20     
+#define PAGE_EXECUTE_READWRITE 0x40     
+#define PAGE_EXECUTE_WRITECOPY 0x80    
 
 void *WinAllocateVirtual(unsigned long size) {
 	return Kernel32VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -57,14 +70,14 @@ void *WinAllocateVirtual(unsigned long size) {
 // -------------------- Flush Memory Cache --------------------
 
 typedef BOOL(*RtlFlushSecureMemoryCacheHandler)(
-		PVOID 	MemoryCache,
+		LPVOID 	MemoryCache,
 		SIZE_T 	MemoryLength
 	);
 
 // ------------------- Memory deallocation --------------------
 typedef NTSTATUS(*FreeMemoryHandler)(
 	HANDLE ProcessHandle,
-	PVOID *BaseAddress,
+	LPVOID *BaseAddress,
 	PULONG RegionSize,
 	ULONG FreeType
 );
@@ -111,95 +124,6 @@ void WinFreeVirtual(void *address) {
 	Kernel32VirtualFreeEx((HANDLE)0xFFFFFFFF, &address, 0, MEM_RELEASE);
 }
 
-// ------------------- Memory mapping -------------------------
-
-typedef enum _SECTION_INHERIT {
-		ViewShare = 1,
-		ViewUnmap = 2
-	} SECTION_INHERIT, *PSECTION_INHERIT;
-
-typedef NTSTATUS(*MapMemoryHandler) (
-		HANDLE          SectionHandle,
-		HANDLE          ProcessHandle,
-		PVOID           *BaseAddress,
-		ULONG_PTR       ZeroBits,
-		SIZE_T          CommitSize,
-		PLARGE_INTEGER  SectionOffset,
-		PSIZE_T         ViewSize,
-		SECTION_INHERIT InheritDisposition,
-		ULONG           AllocationType,
-		ULONG           Win32Protect
-	);
-
-LPVOID Kernel32MapViewOfFileEx(
-		HANDLE hFileMappingObject,
-		DWORD dwDesiredAccess,
-		DWORD dwFileOffsetHigh,
-		DWORD dwFileOffsetLow,
-		SIZE_T dwNumberOfBytesToMap,
-		LPVOID lpBaseAddress
-		) {
-	NTSTATUS Status;
-	LARGE_INTEGER SectionOffset;
-	SIZE_T ViewSize;
-	ULONG Protect;
-	LPVOID ViewBase;
-
-	/* Convert the offset */
-	SectionOffset.LowPart = dwFileOffsetLow;
-	SectionOffset.HighPart = dwFileOffsetHigh;
-
-	/* Save the size and base */
-	ViewBase = lpBaseAddress;
-	ViewSize = dwNumberOfBytesToMap;
-
-	/* Convert flags to NT Protection Attributes */
-	if (dwDesiredAccess == FILE_MAP_COPY) {
-		Protect = PAGE_WRITECOPY;
-	} else if (dwDesiredAccess & FILE_MAP_WRITE) {
-		Protect = (dwDesiredAccess & FILE_MAP_EXECUTE) ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE;
-	} else if (dwDesiredAccess & FILE_MAP_READ) {
-		Protect = (dwDesiredAccess & FILE_MAP_EXECUTE) ? PAGE_EXECUTE_READ : PAGE_READONLY;
-	} else {
-		Protect = PAGE_NOACCESS;
-	}
-
-	/* Map the section */
-	Status = CALL_API(ntdll, _mapMemory, MapMemoryHandler) (
-		hFileMappingObject,
-		(HANDLE)0xFFFFFFFF,
-		&ViewBase,
-		0,
-		0,
-		&SectionOffset,
-		&ViewSize,
-		ViewShare,
-		0,
-		Protect
-	);
-
-	if (!NT_SUCCESS(Status)) {
-		/* We failed */
-		__asm int 3;
-		return NULL;
-	}
-
-	/* Return the base */
-	return ViewBase;
-}
-
-void *WinMapMemory(unsigned long mapHandler, unsigned long access, unsigned long offset, unsigned long size, void *address) {
-	return Kernel32MapViewOfFileEx(
-		(void *)mapHandler,
-		access,
-		0,
-		offset,
-		size,
-		address
-	);
-}
-
-
 // ------------------- Process termination --------------------
 typedef NTSTATUS(__stdcall *TerminateProcessHandler)(
 	HANDLE ProcessHandle,
@@ -207,7 +131,7 @@ typedef NTSTATUS(__stdcall *TerminateProcessHandler)(
 );
 
 void WinTerminateProcess(int retCode) {
-	CALL_API(ntdll, _terminateProcess, TerminateProcessHandler) ((HANDLE)0xFFFFFFFF, retCode);
+	CALL_API(ntdll, _terminateProcess, TerminateProcessHandler) ((HANDLE)0xFFFFFFFF, (NTSTATUS)retCode);
 }
 
 void *WinGetTerminationCodeFunc() {
@@ -233,17 +157,17 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS
 	ULONG Length;
 	ULONG Flags;
 	ULONG DebugFlags;
-	PVOID ConsoleHandle;
+	LPVOID ConsoleHandle;
 	ULONG ConsoleFlags;
-	PVOID StandardInput;
-	PVOID StandardOutput;
-	PVOID StandardError;
+	LPVOID StandardInput;
+	LPVOID StandardOutput;
+	LPVOID StandardError;
 } RTL_USER_PROCESS_PARAMETERS, *PRTL_USER_PROCESS_PARAMETERS;
 
 typedef struct _IO_STATUS_BLOCK {
 	union {
 		NTSTATUS Status;
-		PVOID    Pointer;
+		LPVOID    Pointer;
 	};
 	ULONG_PTR Information;
 } IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
@@ -255,28 +179,32 @@ PRTL_USER_PROCESS_PARAMETERS GetUserProcessParameters(void *peb) {
 typedef NTSTATUS(__stdcall *WriteFileHandler)(
 	HANDLE FileHandle,
 	HANDLE Event,
-	PVOID ApcRoutine,
-	PVOID ApcContext,
+	LPVOID ApcRoutine,
+	LPVOID ApcContext,
 	PIO_STATUS_BLOCK IoStatusBlock,
-	PVOID Buffer,
+	LPVOID Buffer,
 	ULONG Length,
-	PVOID ByteOffset,
-	PVOID Key
+	LPVOID ByteOffset,
+	LPVOID Key
 );
 
 typedef NTSTATUS(__stdcall *NtWaitForSingleObjectFunc)(
 	HANDLE Handle,
 	BOOL Alertable,
-	PVOID Timeout
+	LPVOID Timeout
 );
 
-//#define STATUS_PENDING 0x103
+#define STATUS_WAIT_0                           ((DWORD   )0x00000000L) 
+#define STATUS_ABANDONED_WAIT_0          ((DWORD   )0x00000080L)    
+#define STATUS_USER_APC                  ((DWORD   )0x000000C0L)    
+#define STATUS_TIMEOUT                   ((DWORD   )0x00000102L)    
+#define STATUS_PENDING                   ((DWORD   )0x00000103L) 
 
 BOOL Kernel32WriteFile(
 	HANDLE hFile,
-	PVOID lpBuffer,
+	LPVOID lpBuffer,
 	DWORD nNumberOfBytesToWrite,
-	LPDWORD lpNumberOfBytesWritten
+	DWORD *lpNumberOfBytesWritten
 ) {
 	IO_STATUS_BLOCK ioStatus;
 
@@ -364,8 +292,8 @@ typedef struct _OBJECT_ATTRIBUTES {
 	HANDLE          RootDirectory;
 	PUNICODE_STRING ObjectName;
 	ULONG           Attributes;
-	PVOID           SecurityDescriptor;
-	PVOID           SecurityQualityOfService;
+	LPVOID           SecurityDescriptor;
+	LPVOID           SecurityQualityOfService;
 }  OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
 
 int __stdcall BaseFormatObjectAttributes(OBJECT_ATTRIBUTES *objectAttributes)
@@ -399,8 +327,10 @@ typedef enum _EVENT_TYPE {
 	SynchronizationEvent
 } EVENT_TYPE;
 
+typedef DWORD ACCESS_MASK;
+
 typedef NTSTATUS(__stdcall *NtCreateEventFunc)(
-	PHANDLE            EventHandle,
+	HANDLE             *EventHandle,
 	ACCESS_MASK        DesiredAccess,
 	POBJECT_ATTRIBUTES ObjectAttributes,
 	EVENT_TYPE         EventType,
@@ -470,9 +400,41 @@ BOOL __stdcall SetEvent(HANDLE hEvent) {
 	if (ret < 0) {
 		return FALSE;
 	}
+	return TRUE;
+}
+
+bool WinInitEvent(void *handle, bool isSet) {
+	*(HANDLE *)handle = CreateEventW(false, isSet);
 	return true;
 }
 
+bool WinWaitEvent(void *handle, int timeout) {
+	LARGE_INTEGER liWait, *pliWait = nullptr;
+
+	if (timeout != WAIT_INFINITE) {
+		liWait.QuadPart = -10000 * timeout; //hundreds of nanoseconds
+		pliWait = &liWait;
+	}
+
+	return STATUS_WAIT_0 == CALL_API(ntdll, _waitForSingleObject, NtWaitForSingleObjectFunc) (
+		*(HANDLE *) handle,
+		FALSE,
+		pliWait
+	);
+}
+
+bool WinPostEvent(void *handle) {
+	return TRUE == SetEvent(*(HANDLE *)handle);
+}
+
+void WinDestroyEvent(void *handle) {
+	// NOT IMPLEMENTED
+}
+
+void WinGetValueEvent(void *handle, int *value) {
+	// NOT IMPLEMENTED
+	*value = -1;
+}
 
 
 // ------------------- Error codes ----------------------------
@@ -487,6 +449,8 @@ long WinToErrno(long ntStatus) {
 
 // ------------------- Formatted print ------------------------
 
+#define _TRUNCATE ((size_t)-1)
+typedef char* va_list;
 typedef int (*FormatPrintHandler)(
 	char *buffer,
 	size_t sizeOfBuffer,
@@ -497,15 +461,6 @@ typedef int (*FormatPrintHandler)(
 
 int WinFormatPrint(char *buffer, size_t sizeOfBuffer, const char *format, char *argptr) {
 	return CALL_API(ntdll, _formatPrint, FormatPrintHandler) (buffer, sizeOfBuffer, _TRUNCATE, format, (va_list)argptr);
-}
-
-// ------------------- Yield Execution ------------------------
-
-typedef long NTSTATUS;
-typedef NTSTATUS(*NtYieldExecutionHandler)();
-
-long WinYieldExecution(void) {
-	return CALL_API(ntdll, _ntYieldExecution, NtYieldExecutionHandler) ();
 }
 
 // ------------------- Flush instruction cache ----------------
@@ -525,25 +480,33 @@ void WinFlushInstructionCache(void) {
 
 namespace revwrapper {
 
-
 	extern "C" {
-		DLL_WRAPPER_PUBLIC int InitRevtracerWrapper(void *configPage) {
-			
-
-			// set global functionality
-			allocateVirtual = WinAllocateVirtual;
-			freeVirtual = WinFreeVirtual;
-			mapMemory = WinMapMemory;
-
-			terminateProcess = WinTerminateProcess;
-			getTerminationCode = WinGetTerminationCodeFunc;
-			writeFile = WinWriteFile;
-			toErrno = WinToErrno;
-			formatPrint = WinFormatPrint;
+		bool InitRevtracerWrapper(void *configPage) {
 
 			flushInstructionCache = WinFlushInstructionCache;
-			return 0;
+			return true;
 		}
+	};
+
+	DLL_WRAPPER_PUBLIC WrapperExports wrapperExports = {
+		InitRevtracerWrapper, // remove if unused in linux
+		WinAllocateVirtual,
+		WinFreeVirtual,
+
+		WinTerminateProcess,
+		WinGetTerminationCodeFunc,
+
+		WinFormatPrint,
+
+		WinWriteFile,
+
+		WinInitEvent,
+		WinWaitEvent,
+		WinPostEvent,
+		WinDestroyEvent,
+		WinGetValueEvent,
+		nullptr, //CallOpenSharedMemory,
+		nullptr //CallUnlinkSharedMemory
 	};
 }; // namespace revwrapper
 
