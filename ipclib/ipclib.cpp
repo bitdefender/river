@@ -32,7 +32,7 @@ namespace ipc {
 
 //	AbstractShmTokenRing *ipcToken;
 
-	DLL_IPC_PUBLIC IpcAPI ipcAPI = {
+	DLL_IPC_PUBLIC IpcImports ipcImports = {
 		NULL
 	};
 
@@ -42,7 +42,7 @@ namespace ipc {
 		va_list va;
 
 		va_start(va, size);
-		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_sFunc)(
+		int sz = ((_vsnprintf_sFunc)ipcImports.vsnprintf_sFunc)(
 			buff, 
 			size - 1, 
 			"[%3s|%5s|%3s|%c] ",
@@ -105,7 +105,7 @@ namespace ipc {
 		}
 
 		va_start(va, fmt);
-		int sz = ((_vsnprintf_sFunc)ipcAPI.vsnprintf_sFunc)(tmpBuff, sizeof(tmpBuff)-1, fmt, va);
+		int sz = ((_vsnprintf_sFunc)ipcImports.vsnprintf_sFunc)(tmpBuff, sizeof(tmpBuff)-1, fmt, va);
 		va_end(va);
 
 		if (sz) {
@@ -135,7 +135,7 @@ namespace ipc {
 			DEBUG_BREAK;
 		}
 
-		void *ptr = (ipcAPI.mapMemory)(
+		void *ptr = (ipcImports.mapMemory)(
 			FILE_MAP_READ | FILE_MAP_WRITE | FILE_MAP_EXECUTE,
 			ipcData.data.asMemoryAllocReply.offset,
 			dwSize,
@@ -304,6 +304,10 @@ namespace ipc {
 		//TODO handle Windows case accordingly
 		//ipcToken.Use(INPROC_TOKEN_USER);
 	}
+
+	DLL_IPC_PUBLIC IpcExports ipcExports = {
+
+	};
 
 #define FALSE 0
 #define TRUE 1

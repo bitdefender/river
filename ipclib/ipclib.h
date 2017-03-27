@@ -170,7 +170,7 @@ namespace ipc {
 		char *argptr
 	);
 
-	struct IpcAPI {
+	struct IpcImports {
 		WaitEventFunc waitEventFunc;
 		PostEventFunc postEventFunc;
 
@@ -179,12 +179,51 @@ namespace ipc {
 		_vsnprintf_sFunc vsnprintf_sFunc;
 	};
 
-	extern "C" {
-	
-		DLL_IPC_PUBLIC extern RingBuffer<(1 << 20)> debugLog;
+	typedef void (*DebugPrintFunc)(DWORD printMask, const char *fmt, ...);
 
-		DLL_IPC_PUBLIC extern IpcAPI ipcAPI;
-		DLL_IPC_PUBLIC extern IpcData ipcData;
+	typedef void *(*MemoryAllocFunc)(DWORD dwSize);
+	typedef void (*MemoryFreeFunc)(void *ptr);
+
+	typedef QWORD (*TakeSnapshotFunc)();
+	typedef QWORD (*RestoreSnapshotFunc)();
+
+	typedef void (*InitializeContextFunc)(void *context);
+	typedef void (*CleanupContextFunc)(void *context);
+
+	typedef DWORD (*BranchHandlerFunc)(void *context, void *userContext, ADDR_TYPE nextInstruction);
+	typedef void (*SyscallControlFunc)(void *context, void *userContext);
+
+	//typedef void InitializeIpcToken();
+	typedef void (*InitializeFunc)();
+
+	struct IpcExports {
+		RingBuffer<(1 << 20)> debugLog;
+		IpcData ipcData;
+
+		// can we actually do this?
+		AbstractTokenRing *ipcToken;
+		
+		DebugPrintFunc debugPrint;
+		MemoryAllocFunc memoryAlloc;
+		MemoryFreeFunc memoryFree;
+
+		TakeSnapshotFunc takeSnapshot;
+		RestoreSnapshotFunc restoreSnapshot;
+
+		InitializeContextFunc initializeContext;
+		CleanupContextFunc cleanupContext;
+
+		BranchHandlerFunc branchHandler;
+		SyscallControlFunc syscallControl;
+
+		InitializeFunc initialize;
+	};
+
+	extern "C" {
+		DLL_IPC_PUBLIC extern IpcImports ipcImports;
+		DLL_IPC_PUBLIC extern IpcExports ipcExports;
+
+		//DLL_IPC_PUBLIC extern IpcData ipcData;
 
 /*#ifdef __linux__
 		DLL_IPC_PUBLIC extern ShmTokenRingLin ipcToken;
@@ -192,24 +231,9 @@ namespace ipc {
 		DLL_IPC_PUBLIC extern ShmTokenRingWin ipcToken;
 #endif*/
 
-		DLL_IPC_PUBLIC extern AbstractTokenRing *ipcToken;
 
-		DLL_IPC_PUBLIC extern void DebugPrint(DWORD printMask, const char *fmt, ...);
+		//DLL_IPC_PUBLIC extern void InitializeIpcToken();
 
-		DLL_IPC_PUBLIC extern void *MemoryAllocFunc(DWORD dwSize);
-		DLL_IPC_PUBLIC extern void MemoryFreeFunc(void *ptr);
-
-		DLL_IPC_PUBLIC extern QWORD TakeSnapshot();
-		DLL_IPC_PUBLIC extern QWORD RestoreSnapshot();
-
-		DLL_IPC_PUBLIC extern void InitializeContextFunc(void *context);
-		DLL_IPC_PUBLIC extern void CleanupContextFunc(void *context);
-
-		DLL_IPC_PUBLIC extern DWORD BranchHandlerFunc(void *context, void *userContext, ADDR_TYPE nextInstruction);
-		DLL_IPC_PUBLIC extern void SyscallControlFunc(void *context, void *userContext);
-
-		DLL_IPC_PUBLIC extern void InitializeIpcToken();
-		DLL_IPC_PUBLIC extern void Initialize();
 
 		DLL_IPC_PUBLIC BOOL IsProcessorFeaturePresent(DWORD ProcessorFeature);
 	}

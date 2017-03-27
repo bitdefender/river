@@ -256,7 +256,7 @@ bool ExternExecutionController::InitializeWrapper() {
 
 bool ExternExecutionController::InitializeIpcLib() {
 	/* Imports */
-	ipc::IpcAPI *ipcAPI;
+	ipc::IpcImports *ipcAPI;
 	if (!LoadExportedName(hIpcModule, hIpcBase, "ipcAPI", ipcAPI)) {
 		return false;
 	}
