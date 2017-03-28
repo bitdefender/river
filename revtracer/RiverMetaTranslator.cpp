@@ -544,7 +544,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0x02 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x03 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x04 */ &RiverMetaTranslator::TranslateUnk,
-		/* 0x05 */ &RiverMetaTranslator::TranslateUnk,
+		/* 0x05 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x06 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x07 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x08 */ &RiverMetaTranslator::TranslateUnk,

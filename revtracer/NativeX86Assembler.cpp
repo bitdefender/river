@@ -374,6 +374,7 @@ void NativeX86Assembler::AssembleFFJumpInstr(const RiverInstruction &ri, Relocab
 //}
 
 
+template <rev::BYTE opcode>
 void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 
 	//<__kernel_vsyscall>:push   ecx
@@ -393,7 +394,7 @@ void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableC
 		0xA3, 0x00, 0x00, 0x00, 0x00,                     // 0x09 - mov [<espSave>], eax
 		0xA1, 0x00, 0x00, 0x00, 0x00,                     // 0x0e - mov eax, [<eaxSave>]
 		0xC7, 0x44, 0x24, 0x0C, 0x00, 0x00, 0x00, 0x00, // 0x13 - mov DWORD PTR [esp+0xc],0x0
-		0x0F, 0x34,                                     // 0x1b - sysenter
+		0x0F, 0x05,                                     // 0x1b - sysenter
 		0xA3, 0x00, 0x00, 0x00, 0x00,                     // 0x1d - mov [<eaxSave>], eax
 		0xA1, 0x00, 0x00, 0x00, 0x00,                     // 0x22 - mov eax, [<espSave>]
 		0x89, 0x44, 0x24, 0xFC,                         // 0x27 - mov [esp - 4], eax
@@ -405,6 +406,7 @@ void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableC
 	*(unsigned int *)(&(px86.cursor[0x0A])) = (unsigned int)&runtime->jumpBuff;
 	*(unsigned int *)(&(px86.cursor[0x0F])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86.cursor[0x17])) = ((unsigned int)px86.cursor) + 0x1D;
+	px86.cursor[0x1C] = opcode;
 	*(unsigned int *)(&(px86.cursor[0x1E])) = (unsigned int)&runtime->returnRegister;
 	*(unsigned int *)(&(px86.cursor[0x23])) = (unsigned int)&runtime->jumpBuff;
 	*(unsigned int *)(&(px86.cursor[0x2C])) = (unsigned int)&runtime->returnRegister;
@@ -418,10 +420,11 @@ void NativeX86Assembler::AssembleSyscall2(const RiverInstruction &ri, RelocableC
 }
 
 
+template <rev::BYTE opcode>
 void NativeX86Assembler::AssembleSyscall(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
 	px86.cursor--;
 	ClearPrefixes(ri, px86.cursor);
-	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &NativeX86Assembler::AssembleSyscall2, &NativeX86Assembler::AssembleNoOp);
+	AssembleLeaveForSyscall(ri, px86, pFlags, instrCounter, &NativeX86Assembler::AssembleSyscall2<opcode>, &NativeX86Assembler::AssembleNoOp);
 }
 
 void NativeX86Assembler::AssembleFarJump2(const RiverInstruction &ri, RelocableCodeBuffer &px86, rev::DWORD &pFlags, rev::DWORD &instrCounter) {
@@ -797,7 +800,7 @@ NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assembleOpcodes[2][0x
 		/*0xFC*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleSubOpInstr<assemble0xFFInstr>
 	}, {
 		/*0x00*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr,
-		/*0x04*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
+		/*0x04*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleSyscall<0x05>, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 		/*0x08*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 		/*0x0C*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 
@@ -812,7 +815,7 @@ NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assembleOpcodes[2][0x
 		/*0x2C*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 
 		/*0x30*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
-		/*0x34*/ &NativeX86Assembler::AssembleSyscall, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
+		/*0x34*/ &NativeX86Assembler::AssembleSyscall<0x34>, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 		/*0x38*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 		/*0x3C*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 
@@ -961,7 +964,7 @@ NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assembleOperands[2]
 		/*0xFC*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleSubOpModRMOp, &NativeX86Assembler::AssembleSubOpOp<assemble0xFFOp>
 	}, {
 		/*0x00*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleRegModRMOp, &NativeX86Assembler::AssembleRegModRMOp,
-		/*0x04*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
+		/*0x04*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 		/*0x08*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 		/*0x0C*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 

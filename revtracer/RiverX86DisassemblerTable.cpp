@@ -113,7 +113,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 			/*0xFC*/ &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleSubOpInstr<disassemble0xFFInstr>
 		}, {
 			/*0x00*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr,
-			/*0x04*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+			/*0x04*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleRelJmpInstr<1>, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0x08*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0x0C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
@@ -530,7 +530,7 @@ RiverX86Disassembler::DisassembleOperandsFunc RiverX86Disassembler::disassembleO
 		/*0x02*/ &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x03*/ &RiverX86Disassembler::DisassembleRegModRM,
 		/*0x04*/ &RiverX86Disassembler::DisassembleUnkOp,
-		/*0x05*/ &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x05*/ &RiverX86Disassembler::DisassembleNoOp,
 		/*0x06*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0x07*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0x08*/ &RiverX86Disassembler::DisassembleUnkOp,
@@ -1649,7 +1649,7 @@ BYTE RiverX86Disassembler::modFlags[2][0x100] = {
 		/*0x02*/ 0xFF,
 		/*0x03*/ RIVER_SPEC_FLAG_ZF,
 		/*0x04*/ 0xFF,
-		/*0x05*/ 0xFF,
+		/*0x05*/ 0, // should be 0xFF
 		/*0x06*/ 0xFF,
 		/*0x07*/ 0xFF,
 		/*0x08*/ 0xFF,
