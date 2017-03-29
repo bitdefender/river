@@ -675,12 +675,12 @@ void NativeX86Assembler::AssembleModRMRegImm8Op(const RiverInstruction &ri, Relo
 
 NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assemble0xF6Instr[8] = {
 	/*0x00*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr,
-	/*0x04*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr
+	/*0x04*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr
 };
 
 NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assemble0xF6Op[8] = {
 	/*0x00*/ &NativeX86Assembler::AssembleSubOpModRMImm8Op, &NativeX86Assembler::AssembleSubOpModRMImm8Op, &NativeX86Assembler::AssembleModRMOp<3>, &NativeX86Assembler::AssembleModRMOp<4>,
-	/*0x04*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
+	/*0x04*/ &NativeX86Assembler::AssembleModRMOp<4>, &NativeX86Assembler::AssembleModRMOp<5>, &NativeX86Assembler::AssembleModRMOp<6>, &NativeX86Assembler::AssembleModRMOp<7>,
 };
 
 NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assemble0xF7Instr[8] = {
@@ -690,7 +690,7 @@ NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assemble0xF7Instr[8] 
 
 NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assemble0xF7Op[8] = {
 	/*0x00*/ &NativeX86Assembler::AssembleSubOpModRMImm32Op, &NativeX86Assembler::AssembleSubOpModRMImm32Op, &NativeX86Assembler::AssembleModRMOp<2>, &NativeX86Assembler::AssembleModRMOp<3>,
-	/*0x04*/ &NativeX86Assembler::AssembleModRMOp<4>, &NativeX86Assembler::AssembleModRMOp<5>, &NativeX86Assembler::AssembleModRMOp<6>, &NativeX86Assembler::AssembleModRMOp<7>,
+	/*0x04*/ &NativeX86Assembler::AssembleModRMOp<4>, &NativeX86Assembler::AssembleModRMOp<5>, &NativeX86Assembler::AssembleModRMOp<6>, &NativeX86Assembler::AssembleModRMOp<6>,
 };
 
 NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assemble0xFFInstr[8] = {
