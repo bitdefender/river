@@ -570,7 +570,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0x1C */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x1D */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x1E */ &RiverMetaTranslator::TranslateUnk,
-		/* 0x1F */ &RiverMetaTranslator::TranslateUnk,
+		/* 0x1F */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x20 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x21 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x22 */ &RiverMetaTranslator::TranslateUnk,
