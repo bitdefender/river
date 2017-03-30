@@ -144,7 +144,7 @@ bool RiverMetaTranslator::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-void RiverMetaTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
+bool RiverMetaTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
 	DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
 
 	if (rIn.family == RIVER_FAMILY_NATIVE) {
@@ -154,6 +154,7 @@ void RiverMetaTranslator::Translate(const RiverInstruction &rIn, RiverInstructio
 		CopyInstruction(rOut[0], rIn);
 		instrCount++;
 	}
+	return true;
 }
 
 void RiverMetaTranslator::TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, DWORD &instrCount) {
