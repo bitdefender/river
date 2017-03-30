@@ -19,7 +19,7 @@ private :
 
 public :
 	bool Init(RiverCodeGen *cg);
-	void Translate(const RiverInstruction &rIn, RiverInstruction *rOut, rev::DWORD &instrCount);
+	bool Translate(const RiverInstruction &rIn, RiverInstruction *rOut, rev::DWORD &instrCount);
 
 private :
 	/* Translation helpers */

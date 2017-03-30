@@ -16,7 +16,7 @@ bool RiverSaveTranslator::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
+bool RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, DWORD &instrCount) {
 	DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
 
 	if (RIVER_FAMILY(rIn.family) == RIVER_FAMILY_NATIVE) {
@@ -25,6 +25,8 @@ void RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstructio
 		CopyInstruction(rOut[0], rIn);
 		instrCount++;
 	}
+
+	return true;
 }
 
 /* =========================================== */

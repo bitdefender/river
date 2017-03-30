@@ -15,7 +15,7 @@ private :
 
 public :
 	bool Init(RiverCodeGen *cg);
-	void Translate(const RiverInstruction &rIn, RiverInstruction &rOut);
+	bool Translate(const RiverInstruction &rIn, RiverInstruction &rOut);
 
 private :
 	void TranslatePushReg(RiverInstruction &rOut, const RiverInstruction &rIn);

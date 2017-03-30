@@ -113,7 +113,12 @@ extern "C" {
 				pCB = pEnv->blockCache.NewBlock((rev::UINT_PTR)a);
 
 				RevtracerError rerror;
-				pEnv->codeGen.Translate(pCB, pEnv->generationFlags, &rerror);
+				bool ret = pEnv->codeGen.Translate(pCB, pEnv->generationFlags, &rerror);
+
+				if (!ret && rerror.errorCode != RERROR_OK) {
+					revtracerAPI.errorHandler(pEnv->userContext, &rerror);
+					// TODO read errorhandler result and continue branch handling
+				}
 
 				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river saving code ===========================================================\n");
 				for (DWORD i = 0; i < pEnv->codeGen.fwInstCount; ++i) {

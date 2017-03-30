@@ -76,7 +76,7 @@ public :
 	unsigned int NextReg(unsigned char regName);
 
 	bool Translate(RiverBasicBlock *pCB, rev::DWORD dwTranslationFlags, RevtracerError *rerror);
-	bool DisassembleSingle(rev::BYTE *&px86, RiverInstruction *rOut, rev::DWORD &count, rev::DWORD &dwFlags);
+	bool DisassembleSingle(rev::BYTE *&px86, RiverInstruction *rOut, rev::DWORD &count, rev::DWORD &dwFlags, RevtracerError *rerror);
 };
 
 #endif
