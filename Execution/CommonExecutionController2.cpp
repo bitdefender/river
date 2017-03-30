@@ -90,6 +90,17 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 	return dwDirection;
 }
 
+rev::DWORD ErrorHandlerFunc(void *userContext, rev::RevtracerError *rerror) {
+	ExecutionController *exec = (ExecutionController *)userContext;
+
+	if (rerror->errorCode == RERROR_UNK_INSTRUCTION) {
+		exec->DebugPrintf(PRINT_ERROR, "Disassembling unknown instruction %02x %02x at address %08x\n",
+				rerror->prefix, rerror->opcode, rerror->instructionAddress);
+	}
+
+	return EXECUTION_RESTART;
+}
+
 void SyscallControlFunc(void *context, void *userContext) {
 	// *_this = (InprocessExecutionController *)context;
 }

@@ -180,6 +180,7 @@ bool InprocessExecutionController::Execute() {
 	api->dbgPrintFunc = ::DebugPrintf;
 
 	api->branchHandler = BranchHandlerFunc;
+	api->errorHandler = ErrorHandlerFunc;
 	api->syscallControl = SyscallControlFunc;
 
 	if (nullptr != trackCb) {

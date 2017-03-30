@@ -42,6 +42,7 @@ namespace rev {
 
 
 	typedef void *ADDR_TYPE;
+	typedef struct RevtracerError RevtracerError;
 
 	typedef void(*DbgPrintFunc)(const unsigned int dwMask, const char *fmt, ...);
 	typedef void *(*MemoryAllocFunc)(DWORD dwSize);
@@ -59,6 +60,7 @@ namespace rev {
 	typedef void(*CleanupContextFunc)(void *context);
 
 	typedef DWORD(*BranchHandlerFunc)(void *context, void *userContext, ADDR_TYPE nextInstruction);
+	typedef DWORD(*ErrorHandlerFunc)(void *userContext, RevtracerError *rerror);
 	typedef void(*SyscallControlFunc)(void *context, void *userContext);
 	typedef void(*IpcLibInitFunc)();
 
@@ -101,6 +103,7 @@ namespace rev {
 		//ExecutionControlFunc executionControl;
 		//ExecutionEndFunc executionEnd;
 		BranchHandlerFunc branchHandler;
+		ErrorHandlerFunc errorHandler;
 		SyscallControlFunc syscallControl;
 
 		/* IpcLib initialization */
@@ -141,6 +144,18 @@ namespace rev {
 		DWORD hookCount;
 		CodeHooks hooks[0x100];
 	};
+
+#define RERROR_OK			   0x000000
+#define RERROR_UNK_INSTRUCTION 0x000001
+
+	struct RevtracerError {
+		BYTE prefix;
+		BYTE opcode;
+		DWORD instructionAddress;
+
+		DWORD errorCode;
+	};
+
 
 	struct ExecutionRegs {
 		DWORD edi;

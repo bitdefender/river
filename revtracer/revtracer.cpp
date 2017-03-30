@@ -110,6 +110,10 @@ namespace rev {
 		return EXECUTION_ADVANCE;
 	}
 
+	DWORD DefaultErrorHandlerFunc(void *userContext, RevtracerError *rerror) {
+		return EXECUTION_RESTART;
+	}
+
 	void DefaultSyscallControlFunc(void *context, void *userContext) { }
 
 	void DefaultTrackCallback(DWORD value, DWORD address, DWORD segSel) { }
@@ -179,6 +183,7 @@ namespace rev {
 		DefaultCleanupContextFunc,
 		
 		DefaultBranchHandlerFunc,
+		DefaultErrorHandlerFunc,
 		DefaultSyscallControlFunc,
 
 		DefaultIpcInitialize,
