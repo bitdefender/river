@@ -145,12 +145,17 @@ namespace rev {
 		CodeHooks hooks[0x100];
 	};
 
-#define RERROR_OK			   0x000000
-#define RERROR_UNK_INSTRUCTION 0x000001
+#define RERROR_OK              0x00000000
+#define RERROR_UNK_INSTRUCTION 0x00000001
+
+#define RIVER_NONE_ID             0x00000001
+#define RIVER_DISASSEMBLER_ID     0x00000001
+#define RIVER_META_TRANSLATOR_ID  0x00000002
 
 	struct RevtracerError {
 		BYTE prefix;
 		BYTE opcode;
+		DWORD translatorId;
 		DWORD instructionAddress;
 
 		DWORD errorCode;
