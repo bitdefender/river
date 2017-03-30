@@ -335,7 +335,7 @@ bool SaveToStream(
 	return true;
 }
 
-bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags) {
+bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags, RevtracerError *rerror) {
 	if (dwTranslationFlags & 0x80000000) {
 		pCB->dwSize = 0;
 		pCB->dwCRC = (DWORD)crc32(0xEDB88320, (BYTE *)pCB->address, 0);

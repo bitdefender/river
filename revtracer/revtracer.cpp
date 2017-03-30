@@ -221,9 +221,11 @@ namespace rev {
 	struct ExecutionEnvironment *pEnv = NULL;
 
 	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
+		RevtracerError rerror;
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)orig);
+
 		pBlock->address = (DWORD)det;
-		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
+		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags, &rerror);
 		pBlock->address = (DWORD)orig;
 		pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
 
@@ -245,8 +247,9 @@ namespace rev {
 
 		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", revtracerConfig.entryPoint);
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((UINT_PTR)revtracerConfig.entryPoint);
+		RevtracerError rerror;
 		pBlock->address = (DWORD)revtracerConfig.entryPoint;
-		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
+		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags, &rerror);
 		
 		// TODO: replace with address of the actual terminate process
 		pEnv->exitAddr = (DWORD)revtracerAPI.lowLevel.ntTerminateProcess;

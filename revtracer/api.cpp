@@ -112,7 +112,8 @@ extern "C" {
 				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Not Found\n");
 				pCB = pEnv->blockCache.NewBlock((rev::UINT_PTR)a);
 
-				pEnv->codeGen.Translate(pCB, pEnv->generationFlags);
+				RevtracerError rerror;
+				pEnv->codeGen.Translate(pCB, pEnv->generationFlags, &rerror);
 
 				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river saving code ===========================================================\n");
 				for (DWORD i = 0; i < pEnv->codeGen.fwInstCount; ++i) {
