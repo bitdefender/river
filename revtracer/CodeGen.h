@@ -42,7 +42,7 @@ private :
 	SymbopSaveTranslator symbopSaveTranslator;
 	SymbopReverseTranslator symbopReverseTranslator;
 
-	rev::DWORD TranslateBasicBlock(rev::BYTE *px86, rev::DWORD &dwInst, rev::BYTE *&disasm, rev::DWORD dwTranslationFlags);
+	rev::DWORD TranslateBasicBlock(rev::BYTE *px86, rev::DWORD &dwInst, rev::BYTE *&disasm, rev::DWORD dwTranslationFlags, RevtracerError *rerror);
 public :
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];
