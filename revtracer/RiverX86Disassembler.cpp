@@ -94,10 +94,15 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 
 	flags = 0;
 	do {
+		auto currentInstr = px86;
 		dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
 
 		flags &= ~RIVER_FLAG_PFX;
 		(this->*disassembleOpcodes[dwTable][*px86])(px86, rOut, flags);
+		if (px86 == 0) {
+			px86 = currentInstr;
+			return false;
+		}
 	} while (flags & RIVER_FLAG_PFX);
 
 	dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
@@ -118,13 +123,10 @@ void RiverX86Disassembler::DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri
 	static BYTE opcode, extPrefix;
 	static DWORD address;
 
-	revtracerAPI.dbgPrintFunc(PRINT_ERROR | PRINT_DISASSEMBLY, "Disassembling unknown instruction %02x %02x at address %08x\n", ri.modifiers & RIVER_MODIFIER_EXT ? 0x0F : 0x00, *px86, ri.instructionAddress);
 	opcode = *px86;
 	extPrefix = (ri.modifiers & RIVER_MODIFIER_EXT) ? 0x0F : 0x00;
 	address = ri.instructionAddress;
-	DEBUG_BREAK;
-	/*exit(0);*/
-	px86++;
+	px86 = 0;
 }
 
 /* =========================================== */
@@ -265,7 +267,7 @@ void RiverX86Disassembler::DisassembleMoffs32(BYTE opIdx, BYTE *&px86, RiverInst
 /* =========================================== */
 
 void RiverX86Disassembler::DisassembleUnkOp(BYTE *&px86, RiverInstruction &ri) {
-	DEBUG_BREAK;
+	px86 = 0;
 }
 
 void RiverX86Disassembler::DisassembleNoOp(BYTE *&px86, RiverInstruction &ri) {

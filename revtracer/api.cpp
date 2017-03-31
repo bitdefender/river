@@ -94,6 +94,36 @@ template<DWORD Direction>
 bool ProcessDirection(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction);
 
 template<>
+bool ProcessDirection<EXECUTION_TERMINATE>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
+	//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++ Tainted addresses +++ \n");
+	pEnv->ac.PrintAddreses();
+	//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++++++++++++++++++++++++ \n");
+
+	//((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
+
+	pEnv->runtimeContext.jumpBuff = pEnv->exitAddr;
+	return true;
+}
+
+template<>
+bool ProcessDirection<EXECUTION_RESTART>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
+	BRANCHING_PRINT(PRINT_BRANCHING_INFO, "RESTART Requested\n", revtracerConfig.entryPoint);
+	pEnv->lastFwBlock = 0;
+	ClearExecutionBuffer(pEnv);
+
+	// need to push the return address again
+	DWORD nextDirection = revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint);
+	if (nextDirection == EXECUTION_ADVANCE) {
+		pEnv->runtimeContext.virtualStack -= 4;
+		*((ADDR_TYPE *)pEnv->runtimeContext.virtualStack) = revtracerConfig.entryPoint;
+		DirectionHandler(nextDirection, pEnv, revtracerConfig.entryPoint);
+	} else {
+		pEnv->runtimeContext.jumpBuff = (UINT_PTR)revtracerAPI.lowLevel.ntTerminateProcess;
+	}
+	return true;
+}
+
+template<>
 bool ProcessDirection<EXECUTION_ADVANCE>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
 	RiverBasicBlock *pCB;
 	// go forwards
@@ -112,8 +142,13 @@ bool ProcessDirection<EXECUTION_ADVANCE>(ExecutionEnvironment *pEnv, ADDR_TYPE n
 		bool ret = pEnv->codeGen.Translate(pCB, pEnv->generationFlags, &rerror);
 
 		if (!ret && rerror.errorCode != RERROR_OK) {
-			revtracerAPI.errorHandler(pEnv->userContext, &rerror);
-			// TODO read errorhandler result and continue branch handling
+			auto nextDirection = revtracerAPI.errorHandler(pEnv->userContext, &rerror);
+			if (nextDirection == EXECUTION_RESTART) {
+				ProcessDirection<EXECUTION_RESTART>(pEnv, nextInstruction);
+			} else {
+				ProcessDirection<EXECUTION_TERMINATE>(pEnv, nextInstruction);
+			}
+			return false;
 		}
 
 		TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river saving code ===========================================================\n");
@@ -159,36 +194,6 @@ bool ProcessDirection<EXECUTION_BACKTRACK>(ExecutionEnvironment *pEnv, ADDR_TYPE
 	else {
 		revtracerAPI.dbgPrintFunc(PRINT_BRANCHING_ERROR, "No reverse block found!");
 		return false;
-	}
-	return true;
-}
-
-template<>
-bool ProcessDirection<EXECUTION_TERMINATE>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
-	//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++ Tainted addresses +++ \n");
-	pEnv->ac.PrintAddreses();
-	//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++++++++++++++++++++++++ \n");
-
-	//((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
-
-	pEnv->runtimeContext.jumpBuff = pEnv->exitAddr;
-	return true;
-}
-
-template<>
-bool ProcessDirection<EXECUTION_RESTART>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
-	BRANCHING_PRINT(PRINT_BRANCHING_INFO, "RESTART Requested\n", revtracerConfig.entryPoint);
-	pEnv->lastFwBlock = 0;
-	ClearExecutionBuffer(pEnv);
-
-	// need to push the return address again
-	DWORD nextDirection = revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint);
-	if (nextDirection == EXECUTION_ADVANCE) {
-		pEnv->runtimeContext.virtualStack -= 4;
-		*((ADDR_TYPE *)pEnv->runtimeContext.virtualStack) = revtracerConfig.entryPoint;
-		DirectionHandler(nextDirection, pEnv, revtracerConfig.entryPoint);
-	} else {
-		pEnv->runtimeContext.jumpBuff = (UINT_PTR)revtracerAPI.lowLevel.ntTerminateProcess;
 	}
 	return true;
 }
