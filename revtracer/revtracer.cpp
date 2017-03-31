@@ -110,8 +110,8 @@ namespace rev {
 		return EXECUTION_ADVANCE;
 	}
 
-	DWORD DefaultErrorHandlerFunc(void *userContext, RevtracerError *rerror) {
-		return EXECUTION_RESTART;
+	DWORD DefaultErrorHandlerFunc(void *context, void *userContext, RevtracerError *rerror) {
+		return EXECUTION_TERMINATE;
 	}
 
 	void DefaultSyscallControlFunc(void *context, void *userContext) { }

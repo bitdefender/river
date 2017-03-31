@@ -142,7 +142,7 @@ bool ProcessDirection<EXECUTION_ADVANCE>(ExecutionEnvironment *pEnv, ADDR_TYPE n
 		bool ret = pEnv->codeGen.Translate(pCB, pEnv->generationFlags, &rerror);
 
 		if (!ret && rerror.errorCode != RERROR_OK) {
-			auto nextDirection = revtracerAPI.errorHandler(pEnv->userContext, &rerror);
+			auto nextDirection = revtracerAPI.errorHandler(pEnv, pEnv->userContext, &rerror);
 			if (nextDirection == EXECUTION_RESTART) {
 				ProcessDirection<EXECUTION_RESTART>(pEnv, nextInstruction);
 			} else {

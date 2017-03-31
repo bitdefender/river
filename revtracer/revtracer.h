@@ -60,7 +60,7 @@ namespace rev {
 	typedef void(*CleanupContextFunc)(void *context);
 
 	typedef DWORD(*BranchHandlerFunc)(void *context, void *userContext, ADDR_TYPE nextInstruction);
-	typedef DWORD(*ErrorHandlerFunc)(void *userContext, RevtracerError *rerror);
+	typedef DWORD(*ErrorHandlerFunc)(void *context, void *userContext, RevtracerError *rerror);
 	typedef void(*SyscallControlFunc)(void *context, void *userContext);
 	typedef void(*IpcLibInitFunc)();
 
