@@ -114,6 +114,7 @@ public :
 	virtual unsigned int ExecutionBegin(void *ctx, void *address) = 0;
 	virtual unsigned int ExecutionControl(void *ctx, void *address) = 0;
 	virtual unsigned int ExecutionEnd(void *ctx) = 0;
+	virtual unsigned int TranslationError(void *ctx, void *address) = 0;
 
 	virtual void TerminationNotification(void *ctx) = 0;
 };
@@ -144,6 +145,7 @@ public:
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionEnd(void *cbCtx) = 0;
+	virtual unsigned int TranslationError(void *address, void *cbCtx) = 0;
 
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
 

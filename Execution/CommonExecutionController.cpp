@@ -61,6 +61,10 @@ public :
 		return EXECUTION_TERMINATE;
 	}
 
+	unsigned int TranslationError(void *ctx, void *address) {
+		return EXECUTION_TERMINATE;
+	}
+
 	void TerminationNotification(void *ctx) { }
 } defaultObserver;
 
@@ -153,6 +157,10 @@ unsigned int CommonExecutionController::ExecutionControl(void *address, void *cb
 unsigned int CommonExecutionController::ExecutionEnd(void *cbCtx) {
 	execState = SUSPENDED_AT_TERMINATION;
 	return observer->ExecutionEnd(cbCtx);
+}
+
+unsigned int CommonExecutionController::TranslationError(void *address, void *cbCtx) {
+	return observer->TranslationError(cbCtx, address);
 }
 
 struct _VM_COUNTERS_ {

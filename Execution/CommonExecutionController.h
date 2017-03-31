@@ -78,6 +78,7 @@ public :
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx);
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx);
 	virtual unsigned int ExecutionEnd(void *cbCtx);
+	virtual unsigned int TranslationError(void *address, void *cbCtx);
 
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers);
 	virtual void *GetMemoryInfo(void *ctx, void *ptr);

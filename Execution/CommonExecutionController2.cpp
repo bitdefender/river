@@ -90,7 +90,8 @@ rev::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE ne
 	return dwDirection;
 }
 
-rev::DWORD ErrorHandlerFunc(void *userContext, rev::RevtracerError *rerror) {
+rev::DWORD ErrorHandlerFunc(void *context, void *userContext, rev::RevtracerError *rerror) {
+	ExecutionEnvironment *pEnv = (ExecutionEnvironment *)context;
 	ExecutionController *exec = (ExecutionController *)userContext;
 
 	if (rerror->errorCode == RERROR_UNK_INSTRUCTION) {
@@ -98,7 +99,9 @@ rev::DWORD ErrorHandlerFunc(void *userContext, rev::RevtracerError *rerror) {
 				rerror->prefix, rerror->opcode, rerror->instructionAddress);
 	}
 
-	return EXECUTION_RESTART;
+	auto direction = exec->TranslationError((void*)rerror->instructionAddress, pEnv);
+
+	return direction;
 }
 
 void SyscallControlFunc(void *context, void *userContext) {
