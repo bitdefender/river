@@ -107,7 +107,12 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 
 	dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
 	
+	auto currentInstr = px86;
 	(this->*disassembleOperands[dwTable][rOut.opCode])(px86, rOut);
+	if (px86 == 0) {
+		px86 = currentInstr;
+		return false;
+	}
 	TrackModifiedRegisters(rOut);
 	TrackFlagUsage(rOut);
 	rOut.TrackEspAsParameter();

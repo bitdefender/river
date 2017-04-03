@@ -13,7 +13,6 @@
 using namespace rev;
 
 //void DbgPrint(const char *fmt, ...);
-int Translate(struct ExecutionEnvironment *pEnv, struct _cb_info *pCB, DWORD dwTranslationFlags);
 
 void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 	RiverBasicBlock *pStop;

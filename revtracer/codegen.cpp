@@ -379,6 +379,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags, Rev
 		pCB->pCode = pCB->pFwCode = (unsigned char *)pCB->address;
 		pCB->pBkCode = NULL;
 
+		rerror->errorCode = RERROR_OK;
 		return true;
 	} else {
 
