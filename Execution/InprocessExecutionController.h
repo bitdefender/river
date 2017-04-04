@@ -9,19 +9,34 @@
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 #include "../revtracer/revtracer.h"
 #include "../CommonCrossPlatform/Common.h"
+#include "../BinLoader/LoaderAPI.h"
 
 class InprocessExecutionController : public CommonExecutionController {
 private :
 	THREAD_T hThread;
 
 	ext::LibraryLayout libLayout, **expLayout;
-	revwrapper::WrapperImports *wrapperImports;
-	rev::RevtracerConfig *revCfg;
+	
+	struct {
+		MODULE_PTR module;
+		BASE_PTR base;
+		revwrapper::WrapperImports *pImports;
+		revwrapper::WrapperExports *pExports;
+	} wrapper;
+
+	struct {
+		MODULE_PTR module;
+		BASE_PTR base;
+		rev::RevtracerConfig *pConfig;
+		rev::RevtracerImports *pImports;
+		rev::RevtracerExports *pExports;
+	} revtracer;
 public :
 	virtual bool SetPath();
 	virtual bool SetCmdLine();
 
 	virtual THREAD_T GetProcessHandle();
+	virtual rev::ADDR_TYPE GetTerminationCode();
 
 	/*virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);*/

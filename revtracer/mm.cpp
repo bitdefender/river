@@ -41,7 +41,7 @@ bool RiverHeap::Init(nodep::DWORD heapSize) {
 	HeapZone *fz;
 	unsigned char *tHeap;
 
-	tHeap = pHeap = (unsigned char *)rev::revtracerAPI.memoryAllocFunc(heapSize);
+	tHeap = pHeap = (unsigned char *)rev::revtracerImports.memoryAllocFunc(heapSize);
 
 	if (!tHeap) {
 		return false;
@@ -64,7 +64,7 @@ bool RiverHeap::Init(nodep::DWORD heapSize) {
 
 bool RiverHeap::Destroy() {
 	if (pHeap) {
-		rev::revtracerAPI.memoryFreeFunc(pHeap);
+		rev::revtracerImports.memoryFreeFunc(pHeap);
 		pHeap = NULL;
 		pFirstFree = NULL;
 		size = 0;
@@ -75,13 +75,13 @@ bool RiverHeap::Destroy() {
 
 
 void RiverHeap::PrintInfo(HeapZone *fz) {
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "FirstFree: %08X.\n", (nodep::DWORD)pFirstFree);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz  Addr : %08X.\n", (nodep::DWORD)fz);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Next : %08X.\n", (nodep::DWORD)fz->Next);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Prev : %08X.\n", (nodep::DWORD)fz->Prev);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Type : %08X.\n", (nodep::DWORD)fz->Type);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Size : %08X.\n", (nodep::DWORD)fz->Size);
-	rev::revtracerAPI.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "\n");
+	rev::revtracerImports.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "FirstFree: %08X.\n", (nodep::DWORD)pFirstFree);
+	rev::revtracerImports.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz  Addr : %08X.\n", (nodep::DWORD)fz);
+	rev::revtracerImports.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Next : %08X.\n", (nodep::DWORD)fz->Next);
+	rev::revtracerImports.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Prev : %08X.\n", (nodep::DWORD)fz->Prev);
+	rev::revtracerImports.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Type : %08X.\n", (nodep::DWORD)fz->Type);
+	rev::revtracerImports.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "fz->Size : %08X.\n", (nodep::DWORD)fz->Size);
+	rev::revtracerImports.dbgPrintFunc(PRINT_INSPECTION | PRINT_DEBUG, "\n");
 }
 
 

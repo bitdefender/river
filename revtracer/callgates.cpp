@@ -18,7 +18,7 @@ int Translate(struct ExecutionEnvironment *pEnv, struct _cb_info *pCB, DWORD dwT
 void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 	RiverBasicBlock *pStop;
 
-	revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "STOPPER: %p.\n", s);
+	revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "STOPPER: %p.\n", s);
 	pStop = pEnv->blockCache.NewBlock((UINT_PTR)s);
 	pEnv->codeGen.Translate(pStop, 0x80000000); // this will fix pStop->CRC and pStop->Size
 	pEnv->exitAddr = (DWORD)s;

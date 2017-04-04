@@ -7,7 +7,7 @@
 
 
 #ifdef ENABLE_DEBUG_TRANSLATIONS
-#define TRANSLATE_PRINT revtracerAPI.dbgPrintFunc
+#define TRANSLATE_PRINT revtracerImports.dbgPrintFunc
 #define TRANSLATE_PRINT_INSTRUCTION RiverPrintInstruction
 #else
 #define TRANSLATE_PRINT
@@ -15,7 +15,7 @@
 #endif
 
 #ifdef ENABLE_DEBUG_TRACKING
-#define TRACKING_PRINT revtracerAPI.dbgPrintFunc
+#define TRACKING_PRINT revtracerImports.dbgPrintFunc
 #define LIB_TRACKING_PRINT exec->DebugPrintf
 #else
 #define TRACKING_PRINT
@@ -23,7 +23,7 @@
 #endif
 
 #ifdef ENABLE_DEBUG_BRANCHING
-#define BRANCHING_PRINT revtracerAPI.dbgPrintFunc
+#define BRANCHING_PRINT revtracerImports.dbgPrintFunc
 #else
 #define BRANCHING_PRINT
 #endif

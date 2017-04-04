@@ -87,22 +87,11 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ipclib.cpp" />
-    <ClCompile Include="ShmTokenRingLin.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="ShmTokenRingWin.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AbstractShmTokenRing.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="ipclib.h" />
     <ClInclude Include="RingBuffer.h" />
-    <ClInclude Include="ShmTokenRingLin.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="ShmTokenRingWin.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -15,44 +15,44 @@ extern const char MemSizes[][6];
 
 void PrintPrefixes(nodep::DWORD printMask, struct RiverInstruction *ri) {
 	if (ri->modifiers & RIVER_MODIFIER_REP) {
-		revtracerAPI.dbgPrintFunc(printMask, "rep ");
+		revtracerImports.dbgPrintFunc(printMask, "rep ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REPZ) {
-		revtracerAPI.dbgPrintFunc(printMask, "repz ");
+		revtracerImports.dbgPrintFunc(printMask, "repz ");
 	}
 
 	if (ri->modifiers & RIVER_MODIFIER_REPNZ) {
-		revtracerAPI.dbgPrintFunc(printMask, "repnz ");
+		revtracerImports.dbgPrintFunc(printMask, "repnz ");
 	}
 
 
 	if (ri->family & RIVER_FAMILY_FLAG_IGNORE) {
-		revtracerAPI.dbgPrintFunc(printMask, "ignore");
+		revtracerImports.dbgPrintFunc(printMask, "ignore");
 	}
 
 	if (ri->family & RIVER_FAMILY_FLAG_ORIG_xSP) {
-		revtracerAPI.dbgPrintFunc(printMask, "esp");
+		revtracerImports.dbgPrintFunc(printMask, "esp");
 	}
 
 	switch (RIVER_FAMILY(ri->family)) {
 		case RIVER_FAMILY_RIVER:
-			revtracerAPI.dbgPrintFunc(printMask, "river");
+			revtracerImports.dbgPrintFunc(printMask, "river");
 			break;
 		case RIVER_FAMILY_TRACK :
-			revtracerAPI.dbgPrintFunc(printMask, "track");
+			revtracerImports.dbgPrintFunc(printMask, "track");
 			break;
 		case RIVER_FAMILY_PRETRACK :
-			revtracerAPI.dbgPrintFunc(printMask, "pretrack");
+			revtracerImports.dbgPrintFunc(printMask, "pretrack");
 			break;
 		case RIVER_FAMILY_PREMETA :
-			revtracerAPI.dbgPrintFunc(printMask, "premeta");
+			revtracerImports.dbgPrintFunc(printMask, "premeta");
 			break;
 		case RIVER_FAMILY_POSTMETA:
-			revtracerAPI.dbgPrintFunc(printMask, "postmeta");
+			revtracerImports.dbgPrintFunc(printMask, "postmeta");
 			break;
 		case RIVER_FAMILY_RIVER_TRACK:
-			revtracerAPI.dbgPrintFunc(printMask, "rivertrack");
+			revtracerImports.dbgPrintFunc(printMask, "rivertrack");
 			break;
 	}
 }
@@ -65,98 +65,98 @@ void PrintMnemonic(nodep::DWORD printMask, struct RiverInstruction *ri) {
 	}
 
 	if ('a' <= mTable[ri->opCode][0]) {
-		revtracerAPI.dbgPrintFunc(printMask, "%s ", mTable[ri->opCode]);
+		revtracerImports.dbgPrintFunc(printMask, "%s ", mTable[ri->opCode]);
 	} else {
-		revtracerAPI.dbgPrintFunc(printMask, "%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
+		revtracerImports.dbgPrintFunc(printMask, "%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
 	}
 }
 
 void PrintRegister(nodep::DWORD printMask, struct RiverInstruction *ri, union RiverRegister *reg) {
-	revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[reg->name], reg->versioned >> 8);
+	revtracerImports.dbgPrintFunc(printMask, "%s$%d", RegNames[reg->name], reg->versioned >> 8);
 }
 
 void PrintOperand(nodep::DWORD printMask, struct RiverInstruction *ri, nodep::DWORD idx) {
 	bool bWr = false;
 
 	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
-		revtracerAPI.dbgPrintFunc(printMask, "{");
+		revtracerImports.dbgPrintFunc(printMask, "{");
 	}
 
 	switch (RIVER_OPTYPE(ri->opTypes[idx])) {
 		case RIVER_OPTYPE_IMM :
 			switch (ri->opTypes[idx] & 0x03) {
 				case RIVER_OPSIZE_8 :
-					revtracerAPI.dbgPrintFunc(printMask, "0x%02x", ri->operands[idx].asImm8);
+					revtracerImports.dbgPrintFunc(printMask, "0x%02x", ri->operands[idx].asImm8);
 					break;
 				case RIVER_OPSIZE_16:
-					revtracerAPI.dbgPrintFunc(printMask, "0x%04x", ri->operands[idx].asImm16);
+					revtracerImports.dbgPrintFunc(printMask, "0x%04x", ri->operands[idx].asImm16);
 					break;
 				case RIVER_OPSIZE_32:
-					revtracerAPI.dbgPrintFunc(printMask, "0x%08x", ri->operands[idx].asImm32);
+					revtracerImports.dbgPrintFunc(printMask, "0x%08x", ri->operands[idx].asImm32);
 					break;
 			};
 			break;
 
 		case RIVER_OPTYPE_REG :
-			revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asRegister.name], ri->operands[idx].asRegister.versioned >> 8);
+			revtracerImports.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asRegister.name], ri->operands[idx].asRegister.versioned >> 8);
 			break;
 
 		case RIVER_OPTYPE_MEM :
 			if (0 == ri->operands[idx].asAddress->type) {
-				revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				revtracerImports.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
 				break;
 			}
 
-			revtracerAPI.dbgPrintFunc(printMask, "%s ptr ", MemSizes[ri->opTypes[idx] & 0x03]);
+			revtracerImports.dbgPrintFunc(printMask, "%s ptr ", MemSizes[ri->opTypes[idx] & 0x03]);
 
 			if (ri->operands[idx].asAddress->HasSegment()) {
-				revtracerAPI.dbgPrintFunc(printMask, "%s:", RegNames[RIVER_REG_SEGMENT | (ri->operands[idx].asAddress->GetSegment() - 1)]);
+				revtracerImports.dbgPrintFunc(printMask, "%s:", RegNames[RIVER_REG_SEGMENT | (ri->operands[idx].asAddress->GetSegment() - 1)]);
 			}
 
-			revtracerAPI.dbgPrintFunc(printMask, "[");
+			revtracerImports.dbgPrintFunc(printMask, "[");
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_BASE) {
-				revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
+				revtracerImports.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->base.name], ri->operands[idx].asAddress->base.versioned >> 8);
 				bWr = true;
 			}
 
 			if (ri->operands[idx].asAddress->type & RIVER_ADDR_INDEX) {
 				if (bWr) {
-					revtracerAPI.dbgPrintFunc(printMask, "+");
+					revtracerImports.dbgPrintFunc(printMask, "+");
 				}
 
 				if (ri->operands[idx].asAddress->type & RIVER_ADDR_SCALE) {
-					revtracerAPI.dbgPrintFunc(printMask, "%d*", ri->operands[idx].asAddress->GetScale());
+					revtracerImports.dbgPrintFunc(printMask, "%d*", ri->operands[idx].asAddress->GetScale());
 				}
 
-				revtracerAPI.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->index.name], ri->operands[idx].asAddress->index.versioned >> 8);
+				revtracerImports.dbgPrintFunc(printMask, "%s$%d", RegNames[ri->operands[idx].asAddress->index.name], ri->operands[idx].asAddress->index.versioned >> 8);
 				bWr = true;
 			}
 
 			if (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 				if (bWr) {
-					revtracerAPI.dbgPrintFunc(printMask, "+");
+					revtracerImports.dbgPrintFunc(printMask, "+");
 				}
 
 				switch (ri->operands[idx].asAddress->type & (RIVER_ADDR_DISP8 | RIVER_ADDR_DISP)) {
 					case RIVER_ADDR_DISP8 :
-						revtracerAPI.dbgPrintFunc(printMask, "0x%02x", ri->operands[idx].asAddress->disp.d8);
+						revtracerImports.dbgPrintFunc(printMask, "0x%02x", ri->operands[idx].asAddress->disp.d8);
 						break;
 					/*case RIVER_ADDR_DISP16:
 						DbgPrint("0x%04x", ri->operands[idx].asAddress->disp.d16);
 						break;*/
 					case RIVER_ADDR_DISP:
-						revtracerAPI.dbgPrintFunc(printMask, "0x%08x", ri->operands[idx].asAddress->disp.d32);
+						revtracerImports.dbgPrintFunc(printMask, "0x%08x", ri->operands[idx].asAddress->disp.d32);
 						break;
 				}
 			}
 				 
 
-			revtracerAPI.dbgPrintFunc(printMask, "]");
+			revtracerImports.dbgPrintFunc(printMask, "]");
 			break;
 	}
 
 	if (RIVER_OPFLAG_IMPLICIT & ri->opTypes[idx]) {
-		revtracerAPI.dbgPrintFunc(printMask, "}");
+		revtracerImports.dbgPrintFunc(printMask, "}");
 	}
 }
 
@@ -165,7 +165,7 @@ void PrintOperands(nodep::DWORD printMask, struct RiverInstruction *ri) {
 
 	for (int i = 1; i < 4; ++i) {
 		if (ri->opTypes[i] != RIVER_OPTYPE_NONE) {
-			revtracerAPI.dbgPrintFunc(printMask, ", ");
+			revtracerImports.dbgPrintFunc(printMask, ", ");
 			PrintOperand(printMask, ri, i);
 		}
 	}
@@ -178,7 +178,7 @@ void RiverPrintInstruction(nodep::DWORD printMask, struct RiverInstruction *ri) 
 	PrintPrefixes(printMask, ri);
 	PrintMnemonic(printMask, ri);
 	PrintOperands(printMask, ri);
-	revtracerAPI.dbgPrintFunc(printMask, "\n");
+	revtracerImports.dbgPrintFunc(printMask, "\n");
 	//printf("%s", )
 }
 

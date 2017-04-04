@@ -11,7 +11,7 @@ namespace rev {
 		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "TrackAddr 0x%08x => %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
 
 		if (0 != ret) {
-			revtracerAPI.trackCallback(ret, dwAddr, segSel);
+			revtracerImports.trackCallback(ret, dwAddr, segSel);
 		}
 
 		return ret;
@@ -22,7 +22,7 @@ namespace rev {
 		nodep::DWORD ret = ((::ExecutionEnvironment *)pEnv)->ac.Set(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], value);
 
 		if (0 != ret) {
-			revtracerAPI.markCallback(ret, value, dwAddr, segSel);
+			revtracerImports.markCallback(ret, value, dwAddr, segSel);
 		}
 
 		return ret;

@@ -200,7 +200,7 @@ void TrackingX86Assembler::AssembleSymbolicCall(nodep::DWORD address, nodep::BYT
 	rev_memcpy(px86.cursor, symCall, sizeof(symCall));
 	*(nodep::DWORD *)(&px86.cursor[0x03]) = address;
 	*(nodep::DWORD *)(&px86.cursor[0x09]) = (nodep::DWORD)runtime;
-	*(nodep::DWORD *)(&px86.cursor[0x0F]) = (nodep::DWORD)&revtracerAPI.symbolicHandler;
+	*(nodep::DWORD *)(&px86.cursor[0x0F]) = (nodep::DWORD)&revtracerImports.symbolicHandler;
 	px86.cursor += sizeof(symCall);
 	instrCounter += 5;
 }

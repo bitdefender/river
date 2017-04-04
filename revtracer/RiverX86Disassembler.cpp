@@ -118,7 +118,7 @@ void RiverX86Disassembler::DisassembleUnkInstr(nodep::BYTE *&px86, RiverInstruct
 	static nodep::BYTE opcode, extPrefix;
 	static nodep::DWORD address;
 
-	revtracerAPI.dbgPrintFunc(PRINT_ERROR | PRINT_DISASSEMBLY, "Disassembling unknown instruction %02x %02x \n", ri.modifiers & RIVER_MODIFIER_EXT ? 0x0F : 0x00, *px86);
+	revtracerImports.dbgPrintFunc(PRINT_ERROR | PRINT_DISASSEMBLY, "Disassembling unknown instruction %02x %02x \n", ri.modifiers & RIVER_MODIFIER_EXT ? 0x0F : 0x00, *px86);
 	opcode = *px86;
 	extPrefix = (ri.modifiers & RIVER_MODIFIER_EXT) ? 0x0F : 0x00;
 	address = ri.instructionAddress;

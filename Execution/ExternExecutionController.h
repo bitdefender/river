@@ -19,7 +19,6 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#include "../ipclib/ShmTokenRingWin.h"
 #elif defined(__linux__)
 #endif
 
@@ -32,44 +31,41 @@ private:
 
 	DualAllocator* shmAlloc;
 
-	ldr::AbstractBinary *hLoaderModule;
-	BASE_PTR hLoaderBase;
+	ext::LibraryLayout *libraryLayout;
+
 	struct {
-		ldr::LoaderConfig localConfig;
+		ldr::AbstractBinary *module;
+		BASE_PTR base;
+		ldr::LoaderConfig vConfig;
 		ldr::LoaderConfig *pConfig;
 		ldr::LoaderImports *pImports;
+		ldr::LoaderExports vExports; 
 		ldr::LoaderExports *pExports;
 	} loader;
 
-	ldr::AbstractBinary *hRevWrapperModule;
-	BASE_PTR hRevWrapperBase;
 	struct {
+		ldr::AbstractBinary *module;
+		BASE_PTR base;
 		revwrapper::WrapperImports *pImports;
 		revwrapper::WrapperExports *pExports;
 	} wrapper;
 
-	ldr::AbstractBinary *hIpcModule;
-	BASE_PTR hIpcBase;
+	struct {
+		ldr::AbstractBinary *module;
+		BASE_PTR base;
+		ipc::IpcImports *pImports;
+		ipc::IpcExports *pExports;
 
-	ldr::AbstractBinary *hRevtracerModule;
-	BASE_PTR hRevtracerBase;
-
-	ext::LibraryLayout *libraryLayout;
-
-
-
-	ipc::RingBuffer<(1 << 20)> *debugLog;
-#ifdef __linux__
-	ipc::ShmTokenRingLin *ipcToken;
-#else
-	ipc::ShmTokenRingWin *ipcToken;
-#endif
-	ipc::IpcData *ipcData;
-	BYTE *pIPFPFunc;
-
-	rev::RevtracerAPI tmpRevApi;
-	rev::RevtracerConfig *revCfg;
-	BYTE *revtracerPerform;
+		BYTE *pIPFPFunc;
+	} ipc;
+	
+	struct {
+		ldr::AbstractBinary *module;
+		BASE_PTR base;
+		rev::RevtracerConfig *pConfig;
+		rev::RevtracerImports *pImports;
+		rev::RevtracerExports *pExports;
+	} revtracer;
 
 	char debugBuffer[4096];
 
@@ -102,6 +98,7 @@ public:
 	DWORD ControlThread();
 
 	virtual THREAD_T GetProcessHandle();
+	virtual rev::ADDR_TYPE GetTerminationCode();
 
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
 

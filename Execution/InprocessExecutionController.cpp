@@ -21,6 +21,10 @@ THREAD_T InprocessExecutionController::GetProcessHandle() {
 	return GET_CURRENT_PROC();
 }
 
+rev::ADDR_TYPE InprocessExecutionController::GetTerminationCode() {
+	return wrapper.pExports->getTerminationCode();
+}
+
 /*bool InprocessExecutionController::GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) {
 	return false;
 }
@@ -47,7 +51,7 @@ DWORD __stdcall ThreadProc(LPVOID p) {
 }
 #endif
 
-//unsigned int BranchHandlerFunc(void *context, void *userContext, void *nextInstruction);
+//unsigned int BranchHandler(void *context, void *userContext, void *nextInstruction);
 void SyscallControlFunc(void *context, void *userContext);
 
 typedef void(*InitializeFunc)();
@@ -57,75 +61,67 @@ InitializeFunc revtracerInitialize = nullptr;
 ExecuteFunc revtraceExecute = nullptr;
 
 bool InprocessExecutionController::Execute() {
-	MODULE_PTR hRevTracerModule, hRevWrapperModule;
-	BASE_PTR hRevTracerBase, hRevWrapperBase;
 #ifdef _WIN32
 	wchar_t revWrapperPath[] = L"revtracer-wrapper.dll";
 #else
 	wchar_t revWrapperPath[] = L"librevtracerwrapper.so";
 #endif
 
-	LOAD_LIBRARYW(L"revtracer.dll", hRevTracerModule, hRevTracerBase);
-	LOAD_LIBRARYW(revWrapperPath, hRevWrapperModule, hRevWrapperBase);
+	LOAD_LIBRARYW(L"revtracer.dll", revtracer.module, revtracer.base);
+	LOAD_LIBRARYW(revWrapperPath, wrapper.module, wrapper.base);
 
-	if (((0 == hRevTracerModule) && (0 == hRevTracerBase)) || 
-            ((0 == hRevWrapperModule) && (0 == hRevWrapperBase))) {
+	if (((0 == revtracer.module) && (0 == revtracer.base)) ||
+        ((0 == wrapper.module) && (0 == wrapper.base))) {
 		DEBUG_BREAK;
 		return false;
 	}
 
-	rev::RevtracerAPI *api = (rev::RevtracerAPI *)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "revtracerAPI");
-	revCfg = (rev::RevtracerConfig *)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "revtracerConfig");
-
-	if (nullptr == api) {
+	revtracer.pConfig = (rev::RevtracerConfig *)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "revtracerConfig");
+	revtracer.pImports = (rev::RevtracerImports *)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "revtracerImports");
+	revtracer.pExports = (rev::RevtracerExports *)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "revtracerExports");
+	
+	if ((nullptr == revtracer.pConfig) || (nullptr == revtracer.pImports) || (nullptr == revtracer.pExports)) {
 		DEBUG_BREAK;
 		return false;
 	}
 
-	api->dbgPrintFunc = ::DebugPrintf;
+	revtracer.pImports->dbgPrintFunc = ::DebugPrintf;
 
-	api->branchHandler = BranchHandlerFunc;
-	api->syscallControl = SyscallControlFunc;
+	revtracer.pImports->branchHandler = BranchHandlerFunc;
+	revtracer.pImports->syscallControl = SyscallControlFunc;
 
 	if (nullptr != trackCb) {
-		api->trackCallback = trackCb;
+		revtracer.pImports->trackCallback = trackCb;
 	}
 
 	if (nullptr != markCb) {
-		api->markCallback = markCb;
+		revtracer.pImports->markCallback = markCb;
 	}
 
 	if (nullptr != symbCb) {
-		api->symbolicHandler = symbCb;
+		revtracer.pImports->symbolicHandler = symbCb;
 	}
 
-	wrapperImports = (revwrapper::WrapperImports *)GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "wrapperImports");
-	
-	wrapperImports->libraries = &libLayout;
-	InitWrapperOffsets(&libLayout, wrapperImports);
+	wrapper.pImports = (revwrapper::WrapperImports *)GET_PROC_ADDRESS(wrapper.module, wrapper.base, "wrapperImports");
+	wrapper.pExports = (revwrapper::WrapperExports *)GET_PROC_ADDRESS(wrapper.module, wrapper.base, "wrapperExports");
 
-	ADDR_TYPE initHandler = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "InitRevtracerWrapper");
-	if (!initHandler) {
+	wrapper.pImports->libraries = &libLayout;
+	InitWrapperOffsets(&libLayout, wrapper.pImports);
+
+	if (0 != (wrapper.pExports->initRevtracerWrapper(nullptr))) {
 		DEBUG_BREAK;
 		return false;
 	}
 
-	if (0 != ((RevWrapperInitCallback)initHandler)()) {
-		DEBUG_BREAK;
-		return false;
-	}
+	revtracer.pImports->memoryAllocFunc = wrapper.pExports->allocateMemory;
+	revtracer.pImports->memoryFreeFunc = wrapper.pExports->freeMemory;
+	revtracer.pImports->lowLevel.ntTerminateProcess = wrapper.pExports->terminateProcess;
+	revtracer.pImports->lowLevel.vsnprintf_s = wrapper.pExports->formattedPrint;
 
-	api->lowLevel.ntAllocateVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallAllocateMemoryHandler");
-	api->lowLevel.ntFreeVirtualMemory = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFreeMemoryHandler");
-	api->lowLevel.ntQueryInformationThread = nullptr;
-	api->lowLevel.ntTerminateProcess = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallTerminateProcessHandler");
-	api->lowLevel.rtlNtStatusToDosError = nullptr;
-	api->lowLevel.vsnprintf_s = GET_PROC_ADDRESS(hRevWrapperModule, hRevWrapperBase, "CallFormattedPrintHandler");
-
-	gcr = (GetCurrentRegistersFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetCurrentRegisters");
-	gmi = (GetMemoryInfoFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetMemoryInfo");
-	mmv = (MarkMemoryValueFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "MarkMemoryValue");
-	glbbc = (GetLastBasicBlockInfoFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "GetLastBasicBlockInfo");
+	gcr = revtracer.pExports->getCurrentRegisters;
+	gmi = revtracer.pExports->getMemoryInfo;
+	mmv = revtracer.pExports->markMemoryValue;
+	glbbc = revtracer.pExports->getLastBasicBlockInfo;
 
 	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv)) {
 		DEBUG_BREAK;
@@ -133,22 +129,22 @@ bool InprocessExecutionController::Execute() {
 	}
 
 	//config->contextSize = sizeof(CustomExecutionContext);
-	revCfg->entryPoint = entryPoint;
-	revCfg->featureFlags = featureFlags;
-	revCfg->context = this;
-	//revCfg->sCons = symbolicConstructor;
+	revtracer.pConfig->entryPoint = entryPoint;
+	revtracer.pConfig->featureFlags = featureFlags;
+	revtracer.pConfig->context = this;
+	//revtracer.pConfig->sCons = symbolicConstructor;
 
 
-	//config->sCons = SymExeConstructor;
+	//revtracer.pConfig->sCons = SymExeConstructor;
 
-	revtracerInitialize = (InitializeFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "Initialize");
-	revtraceExecute = (ExecuteFunc)GET_PROC_ADDRESS(hRevTracerModule, hRevTracerBase, "Execute");
+	revtracerInitialize = (InitializeFunc)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "Initialize");
+	revtraceExecute = (ExecuteFunc)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "Execute");
 
 	int ret;
 	CREATE_THREAD(hThread, ThreadProc, this, ret);
 
 #ifdef _WIN32
-	InitSegments(hThread, revCfg->segmentOffsets);
+	InitSegments(hThread, revtracer.pConfig->segmentOffsets);
 #endif
 
 	return TRUE == ret;

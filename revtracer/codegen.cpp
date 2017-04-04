@@ -27,7 +27,7 @@ RiverCodeGen::~RiverCodeGen() {
 
 bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, nodep::DWORD buffSz, nodep::DWORD dwTranslationFlags) {
 	heap = hp;
-	if (NULL == (outBuffer = (unsigned char *)revtracerAPI.memoryAllocFunc(buffSz))) {
+	if (NULL == (outBuffer = (unsigned char *)revtracerImports.memoryAllocFunc(buffSz))) {
 		return false;
 	}
 	outBufferSize = buffSz;
@@ -48,7 +48,7 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, nodep::DWORD buffSz, no
 }
 
 bool RiverCodeGen::Destroy() {
-	revtracerAPI.memoryFreeFunc(outBuffer);
+	revtracerImports.memoryFreeFunc(outBuffer);
 	outBuffer = NULL;
 	outBufferSize = 0;
 	heap = NULL;
@@ -289,7 +289,7 @@ bool SerializeInstructions(const RiverInstruction *code, int count) {
 	nodep::BOOL ret;
 	for (int i = 0; i < count; ++i) {
 		GetSerializableInstruction(code[i], tmp);
-		ret = ((rev::WriteFileCall)revtracerAPI.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, 0, &tmp, sizeof(tmp), &dwWr);
+		ret = ((rev::WriteFileCall)revtracerImports.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, 0, &tmp, sizeof(tmp), &dwWr);
 		if (0 == ret) {
 			//debug print something
 			return false;
@@ -297,7 +297,7 @@ bool SerializeInstructions(const RiverInstruction *code, int count) {
 
 		for (int j = 0; j < 4; ++j) {
 			if (RIVER_OPTYPE(code[i].opTypes[j]) == RIVER_OPTYPE_MEM) {
-				ret = ((rev::WriteFileCall)revtracerAPI.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, 0,
+				ret = ((rev::WriteFileCall)revtracerImports.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, 0,
 					&code[i].operands[j].asAddress->type, sizeof(*code[i].operands[j].asAddress) - sizeof(void *), &dwWr);
 				if (0 == ret) {
 					//debug print something
@@ -318,7 +318,7 @@ bool SaveToStream(
 	nodep::DWORD dwWr;
 	BOOL ret;
 
-	ret = ((rev::WriteFileCall)revtracerAPI.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, header, sizeof(header), &dwWr);
+	ret = ((rev::WriteFileCall)revtracerImports.lowLevel.ntWriteFile)(revtracerConfig.hBlocks, header, sizeof(header), &dwWr);
 	if (0 == ret) {
 		//debug print something
 		return false;
@@ -354,11 +354,11 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFla
 		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (nodep::DWORD)crc32(0xEDB88320, (nodep::BYTE *)pCB->address, pCB->dwSize);
 
-		revtracerAPI.dbgPrintFunc(PRINT_DEBUG, "## this: %08x\n", (nodep::DWORD)this);
+		revtracerImports.dbgPrintFunc(PRINT_DEBUG, "## this: %08x\n", (nodep::DWORD)this);
 
 		if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
 			// generate the reverse basic block representations
-			revtracerAPI.dbgPrintFunc(PRINT_DEBUG, "##Rev: %08x %d instructions\n", fwRiverInst, fwInstCount);
+			revtracerImports.dbgPrintFunc(PRINT_DEBUG, "##Rev: %08x %d instructions\n", fwRiverInst, fwInstCount);
 			for (nodep::DWORD i = 0; i < fwInstCount; ++i) {
 				//TranslateReverse(this, &fwRiverInst[fwInstCount - 1 - i], &bkRiverInst[i], &tmp);
 				revTranslator.Translate(fwRiverInst[fwInstCount - 1 - i], bkRiverInst[i]);

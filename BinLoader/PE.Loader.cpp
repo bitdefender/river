@@ -280,7 +280,7 @@ namespace ldr {
 				continue;
 			}
 
-			DWORD maxSec = ((sections[i].header.VirtualAddress + sections[i].header.VirtualSize) + 0xFFF) & (~0xFFF);
+			DWORD maxSec = ((sections[i].header.VirtualAddress + sections[i].header.VirtualSize) + 0xFFFF) & (~0xFFFF);
 			if (maxSec > maxAddr) {
 				maxAddr = maxSec;
 			}

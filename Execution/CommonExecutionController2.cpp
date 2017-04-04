@@ -23,8 +23,9 @@ typedef void(*SymbolicPayloadFunc)(nodep::DWORD trackBuffer);
 nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction) {
 	ExecutionEnvironment *pEnv = (ExecutionEnvironment *)context;
 	ExecutionController *exec = (ExecutionController *)userContext;
+	rev::ADDR_TYPE termCode = exec->GetTerminationCode();
 
-	printf("[BranchHandlerFunc] next instr %p\n", nextInstruction);
+	printf("[BranchHandler] next instr %p\n", nextInstruction);
 
 	if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
 		if (pEnv->bForward) {
@@ -52,7 +53,7 @@ nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE 
 	}
 
 	nodep::DWORD dwDirection = EXECUTION_ADVANCE;
-	if (/*(a == revtracerAPI.lowLevel.ntTerminateProcess) ||*/ (nextInstruction == (rev::ADDR_TYPE)pEnv->exitAddr)) {
+	if ((nextInstruction == termCode) || (nextInstruction == (rev::ADDR_TYPE)pEnv->exitAddr)) {
 		// TODO: verify parameters
 		dwDirection = exec->ExecutionEnd(pEnv);
 	}

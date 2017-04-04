@@ -81,7 +81,6 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\ipclib\ShmTokenRingWin.cpp" />
     <ClCompile Include="..\revtracer\cb.cpp" />
     <ClCompile Include="..\revtracer\crc32.cpp" />
     <ClCompile Include="..\revtracer\sync.cpp" />

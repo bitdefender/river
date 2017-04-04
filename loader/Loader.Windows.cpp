@@ -174,6 +174,43 @@ namespace ldr {
 		);
 	}
 
+	typedef NTSTATUS(*NtFreeVirtualMemoryFunc)(
+		HANDLE ProcessHandle,
+		PVOID *BaseAddress,
+		PULONG RegionSize,
+		ULONG FreeType
+	);
+
+	BOOL Kernel32VirtualFreeEx(
+		HANDLE hProcess,
+		LPVOID lpAddress,
+		SIZE_T dwSize,
+		DWORD  dwFreeType
+	) {
+		NTSTATUS ret;
+
+		if ((unsigned __int16)(dwFreeType & 0x8000) && dwSize) {
+			return FALSE;
+		}
+		else {
+			ret = CALL_API(ntdll, _ntFreeVirtualMemory, NtFreeVirtualMemoryFunc) (hProcess, &lpAddress, (PULONG)&dwSize, dwFreeType);
+				
+			if (ret >= 0) {
+				return TRUE;
+			}
+
+			/*if ((0xC0000045 == ret) && ((HANDLE)0xFFFFFFFF == hProcess)) {
+				if (FALSE == ((RtlFlushSecureMemoryCacheFunc)loaderAPI.rtlFlushSecureMemoryCache)(lpAddress, dwSize)) {
+					return FALSE;
+				}
+				ret = ((NtFreeVirtualMemoryFunc)loaderAPI.ntFreeVirtualMemory)((HANDLE)0xFFFFFFFF, &lpAddress, (PULONG)&dwSize, dwFreeType);
+				return (ret >= 0) ? TRUE : FALSE;
+			}
+			else {
+				return FALSE;
+			}*/
+		}
+	}
 
 
 	LoaderConfig loaderConfig = {
@@ -212,7 +249,14 @@ namespace ldr {
 
 		SimulateDebugger();
 
-		CALL_API(ntdll, _ntMapViewOfSection, FreeMemoryCall) (loaderConfig.shmBase);
+		//CALL_API(ntdll, _ntFreeVirtualMemory, FreeMemoryCall) (loaderConfig.shmBase);
+
+		Kernel32VirtualFreeEx(
+			(HANDLE)0xFFFFFFFF,
+			loaderConfig.shmBase,
+			0,
+			MEM_RELEASE
+		);
 		
 		for (DWORD s = 0; s < loaderConfig.sectionCount; ++s) {
 			void *addr = MapMemory(

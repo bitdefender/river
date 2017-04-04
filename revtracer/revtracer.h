@@ -71,20 +71,16 @@ namespace rev {
 
 	struct LowLevelRevtracerAPI {
 		/* Low level ntdll.dll functions */
-		ADDR_TYPE ntAllocateVirtualMemory;
-		ADDR_TYPE ntFreeVirtualMemory;
-		ADDR_TYPE ntQueryInformationThread;
+		//ADDR_TYPE ntAllocateVirtualMemory;
+		//ADDR_TYPE ntFreeVirtualMemory;
+		//ADDR_TYPE ntQueryInformationThread;
 		ADDR_TYPE ntTerminateProcess;
 
 		ADDR_TYPE ntWriteFile;
-		ADDR_TYPE ntWaitForSingleObject;
-
-		ADDR_TYPE rtlNtStatusToDosError;
-
 		ADDR_TYPE vsnprintf_s;
 	};
 
-	struct RevtracerAPI {
+	struct RevtracerImports {
 		/* Logging function */
 		DbgPrintFunc dbgPrintFunc;
 
@@ -99,9 +95,6 @@ namespace rev {
 		/* Execution callbacks */
 		InitializeContextFunc initializeContext;
 		CleanupContextFunc cleanupContext;
-		//ExecutionBeginFunc executionBegin;
-		//ExecutionControlFunc executionControl;
-		//ExecutionEndFunc executionEnd;
 		BranchHandlerFunc branchHandler;
 		SyscallControlFunc syscallControl;
 
@@ -162,19 +155,27 @@ namespace rev {
 		nodep::DWORD cost;
 	};
 
-	extern "C" {
+	typedef void (*GetCurrentRegistersFunc)(void *ctx, ExecutionRegs *regs);
+	typedef void *(*GetMemoryInfoFunc)(void *ctx, ADDR_TYPE addr);
+	typedef bool (*GetLastBasicBlockInfoFunc)(void *ctx, BasicBlockInfo *info);
+	typedef void (*MarkMemoryValueFunc)(void *ctx, ADDR_TYPE addr, nodep::DWORD value);
+	typedef void (*RevtracerPerformFunc)();
 
-		/* Execution context callbacks ********************/
-		DLL_REVTRACER_PUBLIC void GetCurrentRegisters(void *ctx, ExecutionRegs *regs);
-		DLL_REVTRACER_PUBLIC void *GetMemoryInfo(void *ctx, ADDR_TYPE addr);
-		DLL_REVTRACER_PUBLIC bool GetLastBasicBlockInfo(void *ctx, BasicBlockInfo *info);
-		DLL_REVTRACER_PUBLIC void MarkMemoryValue(void *ctx, ADDR_TYPE addr, nodep::DWORD value);
+	struct RevtracerExports {
+		GetCurrentRegistersFunc getCurrentRegisters;
+		GetMemoryInfoFunc getMemoryInfo;
+		GetLastBasicBlockInfoFunc getLastBasicBlockInfo;
+		MarkMemoryValueFunc markMemoryValue;
 
-		/* In process API *********************************/
-		DLL_REVTRACER_PUBLIC extern RevtracerAPI revtracerAPI;
-		DLL_REVTRACER_PUBLIC extern RevtracerConfig revtracerConfig;
 		/* Can be used as an EP for in process execution  */
-		DLL_REVTRACER_PUBLIC void RevtracerPerform();
+		RevtracerPerformFunc revtracerPerform;
+	};
+
+	extern "C" {
+		/* In process API *********************************/
+		DLL_REVTRACER_PUBLIC extern RevtracerConfig revtracerConfig;
+		DLL_REVTRACER_PUBLIC extern RevtracerImports revtracerImports;
+		DLL_REVTRACER_PUBLIC extern RevtracerExports revtracerExports;
 
 
 		/* DLL API ****************************************/

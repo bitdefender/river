@@ -3,6 +3,8 @@
 //#include <Windows.h>
 
 #include "Wrapper.Global.h"
+#include "TokenRing.h"
+#include "TokenRing.Windows.h"
 
 #include "RevtracerWrapper.h"
 #include "../CommonCrossPlatform/BasicTypes.h"
@@ -410,7 +412,7 @@ bool WinInitEvent(void *handle, bool isSet) {
 
 bool WinWaitEvent(void *handle, int timeout) {
 	LARGE_INTEGER liWait, *pliWait = nullptr;
-
+	
 	if (timeout != WAIT_INFINITE) {
 		liWait.QuadPart = -10000 * timeout; //hundreds of nanoseconds
 		pliWait = &liWait;
@@ -476,6 +478,27 @@ void WinFlushInstructionCache(void) {
 }
 
 
+// ------------------- Token ring -----------------------------
+
+namespace revwrapper {
+
+	bool TokenRingWait(TokenRing *_this, long userId, bool blocking) {
+		//ShmTokenRingWin *_this = (ShmTokenRingWin *)ring;
+		//TokenRingWinData *_data = (TokenRingWinData *)_this->osData;
+		return WinWaitEvent(&((TokenRingOsData *)_this->osData)->waitSem[userId], blocking ? WAIT_INFINITE : 1000);
+	}
+
+	void TokenRingRelease(TokenRing *_this, long userId) {
+		long nextId = userId + 1;
+		if (((TokenRingOsData *)_this->osData)->userCount == nextId) {
+			nextId = 0;
+		}
+
+		WinPostEvent(&((TokenRingOsData *)_this->osData)->postSem[nextId]);
+	}
+};
+
+
 // ------------------- Initialization -------------------------
 
 namespace revwrapper {
@@ -487,6 +510,13 @@ namespace revwrapper {
 			return true;
 		}
 	};
+
+	TokenRingOps trOps = {
+		TokenRingWait,
+		TokenRingRelease
+	};
+
+	TokenRing tokenRing = { &trOps };
 
 	DLL_WRAPPER_PUBLIC WrapperExports wrapperExports = {
 		InitRevtracerWrapper, // remove if unused in linux
@@ -500,13 +530,15 @@ namespace revwrapper {
 
 		WinWriteFile,
 
-		WinInitEvent,
-		WinWaitEvent,
-		WinPostEvent,
-		WinDestroyEvent,
-		WinGetValueEvent,
+		nullptr, //WinInitEvent,
+		nullptr, //WinWaitEvent,
+		nullptr, //WinPostEvent,
+		nullptr, //WinDestroyEvent,
+		nullptr, //WinGetValueEvent,
 		nullptr, //CallOpenSharedMemory,
-		nullptr //CallUnlinkSharedMemory
+		nullptr, //CallUnlinkSharedMemory
+
+		&tokenRing
 	};
 }; // namespace revwrapper
 

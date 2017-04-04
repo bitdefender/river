@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #include "ShmTokenRingLin.h"
 #include <signal.h>
 #include <stdio.h>
@@ -15,7 +17,7 @@
 
 #define DEBUG_BREAK asm volatile("int $0x3")
 
-namespace ipc {
+namespace revwrapper {
 
 	ShmTokenRingLin::~ShmTokenRingLin() {
 		dbg_log("[ShmTokenRingLin] Destructor is called\n");
@@ -114,3 +116,5 @@ namespace ipc {
 		dbg_log("[ShmTokenRingLin] User %lu unlocks sem for %lu ret %d\n", userId, localCurrentOwner, ret);
 	}
 } //namespace ipc
+
+#endif

@@ -61,7 +61,7 @@ int main() {
 	ctrl = NewExecutionController(EXECUTION_EXTERNAL);
 	ctrl->SetPath(L"D:\\wrk\\evaluators\\lzo\\a.exe");
 	
-	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING);
+	ctrl->SetExecutionFeatures(0 /*EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_TRACKING*/);
 
 	ctrl->SetExecutionObserver(&observer);
 	//ctrl->SetExecutionControlNotification(ExecControl);

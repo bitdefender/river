@@ -1,11 +1,12 @@
 #ifndef _SHM_TOKEN_RING_LIN
 #define _SHM_TOKEN_RING_LIN
 
+#ifdef __linux__
 #include <semaphore.h>
 #include "common.h"
 #define MAX_USER_COUNT 2
 
-namespace ipc {
+namespace revwrapper {
 	class ShmTokenRingLin {
 	private:
 		sem_t semaphores[MAX_USER_COUNT];
@@ -26,6 +27,8 @@ namespace ipc {
 		void Release(long userId);
 	};
 
-} //namespace ipc
+} //namespace revwrapper
+
+#endif
 
 #endif

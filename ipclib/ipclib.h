@@ -1,8 +1,8 @@
 #ifndef _IPCLIB_H_
 #define _IPCLIB_H_
 
-#include "AbstractShmTokenRing.h"
 #include "RingBuffer.h"
+#include "../revtracer-wrapper/TokenRing.h"
 
 #include "../CommonCrossPlatform/LibraryLayout.h"
 
@@ -151,8 +151,8 @@ namespace ipc {
 		} data;
 	};
 
-#define INPROC_TOKEN_USER 1
-#define REMOTE_TOKEN_USER 0
+#define DEBUGGED_PROCESS_TOKENID 1
+#define CONTROL_PROCESS_TOKENID 0
 
 	typedef void(*DbgPrintFunc)(const unsigned int dwMask, const char *fmt, ...);
 
@@ -171,12 +171,12 @@ namespace ipc {
 	);
 
 	struct IpcImports {
-		WaitEventFunc waitEventFunc;
-		PostEventFunc postEventFunc;
+		//WaitEventFunc waitEventFunc;
+		//PostEventFunc postEventFunc;
 
 		MapMemoryFunc mapMemory;
-
 		_vsnprintf_sFunc vsnprintf_sFunc;
+		revwrapper::TokenRing *ipcToken;
 	};
 
 	typedef void (*DebugPrintFunc)(DWORD printMask, const char *fmt, ...);
@@ -197,12 +197,6 @@ namespace ipc {
 	typedef void (*InitializeFunc)();
 
 	struct IpcExports {
-		RingBuffer<(1 << 20)> debugLog;
-		IpcData ipcData;
-
-		// can we actually do this?
-		AbstractTokenRing *ipcToken;
-		
 		DebugPrintFunc debugPrint;
 		MemoryAllocFunc memoryAlloc;
 		MemoryFreeFunc memoryFree;
@@ -217,6 +211,9 @@ namespace ipc {
 		SyscallControlFunc syscallControl;
 
 		InitializeFunc initialize;
+
+		RingBuffer<(1 << 20)> *debugLog;
+		IpcData *ipcData;
 	};
 
 	extern "C" {

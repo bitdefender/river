@@ -65,7 +65,7 @@ bool RiverBasicBlockCache::Init(RiverHeap *hp, nodep::DWORD logHSize, nodep::DWO
 
 	logHashSize = logHSize;
 	historySize = histSize;
-	hashTable = (RiverBasicBlock **)rev::revtracerAPI.memoryAllocFunc((1 << logHashSize) * sizeof(hashTable[0]));
+	hashTable = (RiverBasicBlock **)rev::revtracerImports.memoryAllocFunc((1 << logHashSize) * sizeof(hashTable[0]));
 
 	if (0 == hashTable) {
 		return false;
@@ -116,7 +116,7 @@ bool RiverBasicBlockCache::Destroy() {
 
 	//	SC_Unlock (&dwCBLock);
 
-	rev::revtracerAPI.memoryFreeFunc((nodep::BYTE *)hashTable);
+	rev::revtracerImports.memoryFreeFunc((nodep::BYTE *)hashTable);
 	hashTable = NULL;
 	logHashSize = 0;
 

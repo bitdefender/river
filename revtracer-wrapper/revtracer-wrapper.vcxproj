@@ -77,11 +77,13 @@
       <PreprocessorDefinitions>_BUILDING_REVTRACER_WRAPPER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>DllEntry</EntryPointSymbol>
+      <SectionAlignment>65536</SectionAlignment>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -102,6 +104,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -127,12 +130,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="RevtracerWrapper.cpp" />
+    <ClCompile Include="ShmTokenRingLin.cpp" />
     <ClCompile Include="Wrapper.Linux.cpp" />
     <ClCompile Include="Wrapper.Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CommonCrossPlatform\LibraryLayout.h" />
     <ClInclude Include="RevtracerWrapper.h" />
+    <ClInclude Include="ShmTokenRingLin.h" />
+    <ClInclude Include="TokenRing.h" />
+    <ClInclude Include="TokenRing.Windows.h" />
     <ClInclude Include="Wrapper.Global.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

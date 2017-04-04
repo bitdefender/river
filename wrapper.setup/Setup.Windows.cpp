@@ -14,6 +14,8 @@ extern "C" bool InitWrapperOffsets(ext::LibraryLayout *libs, revwrapper::Wrapper
 
 	libs->winLib.ntdllBase = baseNtDll;
 
+	api->libraries = libs;
+
 	api->functions.winFunc.ntdll._virtualAlloc = (DWORD)LOAD_PROC(hNtDll, "NtAllocateVirtualMemory") - baseNtDll;
 	api->functions.winFunc.ntdll._virtualFree = (DWORD)LOAD_PROC(hNtDll, "NtFreeVirtualMemory") - baseNtDll;
 	api->functions.winFunc.ntdll._mapMemory = (DWORD)LOAD_PROC(hNtDll, "NtMapViewOfSection") - baseNtDll;

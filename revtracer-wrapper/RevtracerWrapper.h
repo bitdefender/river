@@ -2,6 +2,7 @@
 #define _REVTRACER_WRAPPER_H
 
 #include "../CommonCrossPlatform/LibraryLayout.h"
+#include "TokenRing.h"
 
 namespace revwrapper {
 	#if defined _WIN32 || defined __CYGWIN__
@@ -181,6 +182,8 @@ namespace revwrapper {
 		GetValueEventFunc getValueEvent;
 		OpenSharedMemoryFunc openSharedMemory;
 		UnlinkSharedMemoryFunc unlinkSharedMemory;
+
+		TokenRing *tokenRing;
 	};
 
 	extern "C" {

@@ -76,11 +76,12 @@ namespace rev {
 	}
 
 	void *DefaultMemoryAlloc(unsigned long dwSize) {
-		return ((AllocateMemoryCall)revtracerAPI.lowLevel.ntAllocateVirtualMemory)(dwSize);
+		DEBUG_BREAK;
+		return nullptr;
 	}
 
 	void DefaultMemoryFree(void *ptr) {
-		//TODO: implement VirtualFree
+		DEBUG_BREAK;
 	}
 
 	nodep::QWORD DefaultTakeSnapshot() {
@@ -166,7 +167,7 @@ namespace rev {
 
 	/* Inproc API *************************************************************************/
 
-	RevtracerAPI revtracerAPI = {
+	RevtracerImports revtracerImports = {
 		NoDbgPrint,
 
 		DefaultMemoryAlloc,
@@ -189,9 +190,6 @@ namespace rev {
 		DefaultSymbolicHandler,
 
 		{
-			(ADDR_TYPE)DefaultNtAllocateVirtualMemory,
-			(ADDR_TYPE)DefaultNtFreeVirtualMemory,
-
 			(ADDR_TYPE)DefaultNtQueryInformationThread,
 			(ADDR_TYPE)DefaultRtlNtStatusToDosError,
 
@@ -216,7 +214,7 @@ namespace rev {
 		pBlock->address = (nodep::DWORD)orig;
 		pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
 
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Added detour from 0x%08x to 0x%08x\n", orig, det);
+		revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Added detour from 0x%08x to 0x%08x\n", orig, det);
 	}
 
 #ifdef _MSC_VER
@@ -232,23 +230,23 @@ namespace rev {
 
 		pEnv->runtimeContext.registers = rgs;
 
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (nodep::DWORD)revtracerConfig.entryPoint);
+		revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (nodep::DWORD)revtracerConfig.entryPoint);
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((nodep::UINT_PTR)revtracerConfig.entryPoint);
 		pBlock->address = (nodep::DWORD)revtracerConfig.entryPoint;
 		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
 
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "New entry point @%08x\n", (nodep::DWORD)pBlock->pFwCode);
+		revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "New entry point @%08x\n", (nodep::DWORD)pBlock->pFwCode);
 		
 		// TODO: replace with address of the actual terminate process
-		pEnv->exitAddr = (nodep::DWORD)revtracerAPI.lowLevel.ntTerminateProcess;
+		pEnv->exitAddr = (nodep::DWORD)revtracerImports.lowLevel.ntTerminateProcess;
 
 		/*pEnv->runtimeContext.execBuff -= 4;
 		*((DWORD *)pEnv->runtimeContext.execBuff) = (DWORD)revtracerConfig.entryPoint;*/
 		
-		//switch (revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
-		switch (revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
+		//switch (revtracerImports.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+		switch (revtracerImports.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
 			case EXECUTION_ADVANCE :
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
+				revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
 				for (nodep::DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
 					CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
 				}
@@ -256,20 +254,20 @@ namespace rev {
 				pEnv->bForward = 1;
 				pBlock->MarkForward();
 
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Translated entry point %08x.\n", pBlock->pFwCode);
+				revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Translated entry point %08x.\n", pBlock->pFwCode);
 				revtracerConfig.entryPoint = pBlock->pFwCode;
 				break;
 			case EXECUTION_TERMINATE :
-				revtracerConfig.entryPoint = revtracerAPI.lowLevel.ntTerminateProcess;
+				revtracerConfig.entryPoint = revtracerImports.lowLevel.ntTerminateProcess;
 				break;
 			case EXECUTION_BACKTRACK :
-				revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "EXECUTION_BACKTRACK @executionBegin");
-				revtracerConfig.entryPoint = revtracerAPI.lowLevel.ntTerminateProcess;
+				revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "EXECUTION_BACKTRACK @executionBegin");
+				revtracerConfig.entryPoint = revtracerImports.lowLevel.ntTerminateProcess;
 				break;
 		}
 	}
 
-	NAKED  void RevtracerPerform() {
+	NAKED void RevtracerPerform() {
 #ifdef _MSC_VER
 		__asm {
 			xchg esp, shadowStack;
@@ -298,8 +296,19 @@ namespace rev {
 #endif
 	}
 
+	nodep::DWORD __stdcall MarkAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel);
+	void MarkMemoryValue(void *ctx, ADDR_TYPE addr, nodep::DWORD value) {
+		MarkAddr((ExecutionEnvironment *)ctx, (nodep::DWORD)addr, value, 0x2B);
+	}
 
+	RevtracerExports revtracerExports = {
+		GetCurrentRegisters,
+		GetMemoryInfo,
+		GetLastBasicBlockInfo,
+		MarkMemoryValue,
 
+		RevtracerPerform
+	};
 
 	/* Segment initialization *************************************************************/
 
@@ -329,38 +338,35 @@ namespace rev {
 
 
 	void SetDbgPrint(DbgPrintFunc func) {
-		revtracerAPI.dbgPrintFunc = func;
+		revtracerImports.dbgPrintFunc = func;
 	}
 
 	void SetMemoryMgmt(MemoryAllocFunc alc, MemoryFreeFunc fre) {
-		revtracerAPI.memoryAllocFunc = alc;
-		revtracerAPI.memoryFreeFunc = fre;
+		revtracerImports.memoryAllocFunc = alc;
+		revtracerImports.memoryFreeFunc = fre;
 	}
 
 	void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs) {
-		revtracerAPI.takeSnapshot = ts;
-		revtracerAPI.restoreSnapshot = rs;
+		revtracerImports.takeSnapshot = ts;
+		revtracerImports.restoreSnapshot = rs;
 	}
 
 	void SetLowLevelAPI(LowLevelRevtracerAPI *llApi) {
-		revtracerAPI.lowLevel.ntAllocateVirtualMemory = llApi->ntAllocateVirtualMemory;
-		revtracerAPI.lowLevel.ntFreeVirtualMemory = llApi->ntFreeVirtualMemory;
-		revtracerAPI.lowLevel.ntQueryInformationThread = llApi->ntQueryInformationThread;
+		revtracerImports.lowLevel.ntTerminateProcess = llApi->ntTerminateProcess;
+		revtracerImports.lowLevel.ntWriteFile = llApi->ntWriteFile;
 
-		revtracerAPI.lowLevel.rtlNtStatusToDosError = llApi->rtlNtStatusToDosError;
-
-		revtracerAPI.lowLevel.vsnprintf_s = llApi->vsnprintf_s;
+		revtracerImports.lowLevel.vsnprintf_s = llApi->vsnprintf_s;
 	}
 
 	void SetContextMgmt(InitializeContextFunc initCtx, CleanupContextFunc cleanCtx) {
-		revtracerAPI.initializeContext = initCtx;
-		revtracerAPI.cleanupContext = cleanCtx;
+		revtracerImports.initializeContext = initCtx;
+		revtracerImports.cleanupContext = cleanCtx;
 	}
 
-	//void SetControlMgmt(ExecutionControlFunc execCtl, SyscallControlFunc syscallCtl) {
+	//void SetControlMgmt(ExecutionControlFunc execCtl, SyscallControl syscallCtl) {
 	void SetControlMgmt(BranchHandlerFunc branchCtl, SyscallControlFunc syscallCtl) {
-		revtracerAPI.branchHandler = branchCtl;
-		revtracerAPI.syscallControl = syscallCtl;
+		revtracerImports.branchHandler = branchCtl;
+		revtracerImports.syscallControl = syscallCtl;
 	}
 
 	void SetContext(ADDR_TYPE ctx) {
@@ -372,9 +378,9 @@ namespace rev {
 	}
 
 	void Initialize() {
-		revtracerAPI.ipcLibInitialize();
+		revtracerImports.ipcLibInitialize();
 
-		revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Feature flags %08x, entrypoint %08x\n", revtracerConfig.featureFlags, revtracerConfig.entryPoint);
+		revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Feature flags %08x, entrypoint %08x\n", revtracerConfig.featureFlags, revtracerConfig.entryPoint);
 
 		pEnv = new ExecutionEnvironment(revtracerConfig.featureFlags, 0x1000000, 0x10000, 0x4000000, 0x4000000, 16, 0x10000);
 		pEnv->userContext = revtracerConfig.context; //AllocUserContext(pEnv, revtracerConfig.contextSize);
@@ -384,16 +390,11 @@ namespace rev {
 
 	void Execute(int argc, char *argv[]) {
 		nodep::DWORD ret;
-		//if (EXECUTION_ADVANCE == revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
-		if (EXECUTION_ADVANCE == revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
+		//if (EXECUTION_ADVANCE == revtracerImports.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+		if (EXECUTION_ADVANCE == revtracerImports.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
 			ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
-			revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
+			revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
 		}
-	}
-
-	nodep::DWORD __stdcall MarkAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel);
-	void MarkMemoryValue(void *ctx, ADDR_TYPE addr, nodep::DWORD value) {
-		MarkAddr((ExecutionEnvironment *)ctx, (nodep::DWORD)addr, value, 0x2B);
 	}
 
 };

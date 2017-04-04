@@ -131,6 +131,7 @@ public:
 	virtual bool WaitForTermination() = 0;
 
 	virtual THREAD_T GetProcessHandle() = 0;
+	virtual rev::ADDR_TYPE GetTerminationCode() = 0;
 
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) = 0;
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount) = 0;

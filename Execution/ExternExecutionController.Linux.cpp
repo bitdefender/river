@@ -48,7 +48,7 @@ unsigned long ExternExecutionController::ControlThread() {
 					break;
 				}
 
-			} while (!ipcToken->Wait(REMOTE_TOKEN_USER, false));
+			} while (!ipcToken->Wait(CONTROL_PROCESS_TOKENID, false));
 			updated = false;
 
 			while (!debugLog->IsEmpty()) {
@@ -108,7 +108,7 @@ unsigned long ExternExecutionController::ControlThread() {
 				break;
 			}
 
-			ipcToken->Release(REMOTE_TOKEN_USER);
+			ipcToken->Release(CONTROL_PROCESS_TOKENID);
 		}
 
 
@@ -248,14 +248,14 @@ bool ExternExecutionController::InitializeIpcLib() {
 		!LoadExportedName(hIpcModule, hIpcBase, "ipcData", ipcData) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "Initialize", tmpRevApi.ipcLibInitialize) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "DebugPrint", tmpRevApi.dbgPrintFunc) ||
-		!LoadExportedName(hIpcModule, hIpcBase, "MemoryAllocFunc", tmpRevApi.memoryAllocFunc) ||
-		!LoadExportedName(hIpcModule, hIpcBase, "MemoryFreeFunc", tmpRevApi.memoryFreeFunc) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "MemoryAlloc", tmpRevApi.memoryAllocFunc) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "MemoryFree", tmpRevApi.memoryFreeFunc) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "TakeSnapshot", tmpRevApi.takeSnapshot) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "RestoreSnapshot", tmpRevApi.restoreSnapshot) ||
-		!LoadExportedName(hIpcModule, hIpcBase, "InitializeContextFunc", tmpRevApi.initializeContext) ||
-		!LoadExportedName(hIpcModule, hIpcBase, "CleanupContextFunc", tmpRevApi.cleanupContext) ||
-		!LoadExportedName(hIpcModule, hIpcBase, "BranchHandlerFunc", tmpRevApi.branchHandler) ||
-		!LoadExportedName(hIpcModule, hIpcBase, "SyscallControlFunc", tmpRevApi.syscallControl) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "InitializeContext", tmpRevApi.initializeContext) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "CleanupContext", tmpRevApi.cleanupContext) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "BranchHandler", tmpRevApi.branchHandler) ||
+		!LoadExportedName(hIpcModule, hIpcBase, "SyscallControl", tmpRevApi.syscallControl) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "IsProcessorFeaturePresent", pIPFPFunc) ||
 		!LoadExportedName(hIpcModule, hIpcBase, "ipcToken", ipcToken)
 	) {
@@ -286,8 +286,8 @@ bool ExternExecutionController::InitializeRevtracer() {
 		tmpRevApi.symbolicHandler = symbCb;
 	}
 
-	rev::RevtracerAPI *revAPI;
-	if (!LoadExportedName(hRevtracerModule, hRevtracerBase, "revtracerAPI", revAPI) ||
+	rev::RevtracerImports *revAPI;
+	if (!LoadExportedName(hRevtracerModule, hRevtracerBase, "revtracerImports", revAPI) ||
 		!LoadExportedName(hRevtracerModule, hRevtracerBase, "revtracerConfig", revCfg)
 		) {
 		return false;
@@ -430,7 +430,7 @@ bool ExternExecutionController::Execute() {
 		//DebugPrintVMMap(getpid());
 		// Setup token ring pids
 		ipcToken->Init(0);
-		ipcToken->Use(REMOTE_TOKEN_USER);
+		ipcToken->Use(CONTROL_PROCESS_TOKENID);
 
 		printf("[Parent] Passing execution control to revtracerPerform %08lx\n", (unsigned long)revtracerPerform);
 		// ipcToken object exists and called init and use.

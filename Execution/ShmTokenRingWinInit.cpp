@@ -2,11 +2,16 @@
 
 #include <Windows.h>
 
-namespace ipc {
-	bool InitTokenRingWin(ShmTokenRingWin *_this, long uCount, unsigned int *pids, long token, PostEventFunc pFunc, WaitEventFunc wFunc) {
-		_this->post = pFunc;
-		_this->wait = wFunc;
-		_this->userCount = uCount;
+#include "../revtracer-wrapper/TokenRing.Windows.h"
+
+namespace revwrapper {
+	bool InitTokenRingWin(TokenRing *_this, long uCount, unsigned int *pids, long token) {
+		//_this->trw = WaitTokenRingWin;
+		//_this->trr = ReleaseTokenRingWin;
+
+		TokenRingOsData *_data = (TokenRingOsData *)_this->osData;
+
+		_data->userCount = uCount;
 
 		HANDLE processes[USER_MAX];
 		for (int i = 0; i < uCount; ++i) {
@@ -14,13 +19,13 @@ namespace ipc {
 		}
 
 		for (int i = 0; i < uCount; ++i) {
-			HANDLE hEvt = CreateEvent(nullptr, FALSE, (token == i) ? TRUE : FALSE, nullptr);
+			HANDLE hEvt = CreateEvent(nullptr, FALSE, FALSE, nullptr); // (token == i) ? TRUE : FALSE, nullptr);
 
 			DuplicateHandle(
 				GetCurrentProcess(),
 				hEvt,
 				processes[i],
-				&_this->waitSem[i],
+				&_data->waitSem[i],
 				0,
 				FALSE,
 				DUPLICATE_SAME_ACCESS
@@ -30,7 +35,7 @@ namespace ipc {
 				GetCurrentProcess(),
 				hEvt,
 				processes[(0 == i) ? (uCount - 1) : (i - 1)],
-				&_this->postSem[i],
+				&_data->postSem[i],
 				0,
 				FALSE,
 				DUPLICATE_SAME_ACCESS

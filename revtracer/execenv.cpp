@@ -5,7 +5,7 @@
 #include "revtracer.h"
 
 void *ExecutionEnvironment::operator new(size_t sz){
-	void *storage = revtracerAPI.memoryAllocFunc(sz);
+	void *storage = revtracerImports.memoryAllocFunc(sz);
 	if (NULL == storage) {
 		DEBUG_BREAK;
 		return NULL;
@@ -14,7 +14,7 @@ void *ExecutionEnvironment::operator new(size_t sz){
 }
 
 void ExecutionEnvironment::operator delete(void *ptr) {
-	revtracerAPI.memoryFreeFunc((nodep::BYTE *)ptr);
+	revtracerImports.memoryFreeFunc((nodep::BYTE *)ptr);
 }
 
 ExecutionEnvironment::ExecutionEnvironment(nodep::DWORD flags, unsigned int heapSize, unsigned int historySize, unsigned int executionSize, unsigned int trackSize, unsigned int logHashSize, unsigned int outBufferSize) {
@@ -31,22 +31,22 @@ ExecutionEnvironment::ExecutionEnvironment(nodep::DWORD flags, unsigned int heap
 		return;
 	}
 
-	if (0 == (executionBuffer = (nodep::UINT_PTR *)revtracerAPI.memoryAllocFunc(executionSize + trackSize + 4096))) {
+	if (0 == (executionBuffer = (nodep::UINT_PTR *)revtracerImports.memoryAllocFunc(executionSize + trackSize + 4096))) {
 		blockCache.Destroy();
 		heap.Destroy();
 		return;
 	}
 
 	if (!codeGen.Init(&heap, &runtimeContext, outBufferSize, generationFlags)) {
-		revtracerAPI.memoryFreeFunc(executionBuffer);
+		revtracerImports.memoryFreeFunc(executionBuffer);
 		blockCache.Destroy();
 		heap.Destroy();
 		return;
 	}
 
-	if (NULL == (pStack = (unsigned char *)revtracerAPI.memoryAllocFunc(0x100000))) {
+	if (NULL == (pStack = (unsigned char *)revtracerImports.memoryAllocFunc(0x100000))) {
 		codeGen.Destroy();
-		revtracerAPI.memoryFreeFunc(executionBuffer);
+		revtracerImports.memoryFreeFunc(executionBuffer);
 		blockCache.Destroy();
 		heap.Destroy();
 		return;
@@ -91,9 +91,9 @@ ExecutionEnvironment::~ExecutionEnvironment() {
 	blockCache.Destroy(); 
 	heap.Destroy();
 
-	revtracerAPI.memoryFreeFunc((nodep::BYTE *)executionBuffer);
+	revtracerImports.memoryFreeFunc((nodep::BYTE *)executionBuffer);
 
-	revtracerAPI.memoryFreeFunc((nodep::BYTE *)pStack);
+	revtracerImports.memoryFreeFunc((nodep::BYTE *)pStack);
 	pStack = NULL;
 }
 
