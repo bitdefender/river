@@ -157,6 +157,8 @@ namespace rev {
 #define RIVER_SYMBOP_REVERSE_TRANSLATOR_ID   0x00000006
 #define RIVER_REVERSE_TRANSLATOR_ID          0x00000007
 
+#define INVALID_ADDRESS			0xFFFFFFFF
+
 	struct RevtracerError {
 		BYTE prefix;
 		BYTE opcode;

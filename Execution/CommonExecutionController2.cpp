@@ -97,6 +97,18 @@ rev::DWORD ErrorHandlerFunc(void *context, void *userContext, rev::RevtracerErro
 	if (rerror->errorCode == RERROR_UNK_INSTRUCTION) {
 		exec->DebugPrintf(PRINT_ERROR, "Disassembling unknown instruction %02x %02x at address %08x\n",
 				rerror->prefix, rerror->opcode, rerror->instructionAddress);
+
+		switch(rerror->translatorId) {
+			case RIVER_META_TRANSLATOR_ID:
+				exec->DebugPrintf(PRINT_ERROR, "Translation step: MetaTrasnlator\n");
+				break;
+			case RIVER_DISASSEMBLER_ID:
+				exec->DebugPrintf(PRINT_ERROR, "Translation step: Disassembler\n");
+				break;
+			default:
+				exec->DebugPrintf(PRINT_ERROR, "Translation step: unknown\n");
+
+		}
 	}
 
 	auto direction = exec->TranslationError((void*)rerror->instructionAddress, pEnv);

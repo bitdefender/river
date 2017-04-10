@@ -149,7 +149,7 @@ void MakeJMP(struct RiverInstruction *ri, DWORD jmpAddr) {
 void RiverPrintInstruction(DWORD printMask, RiverInstruction *ri);
 
 bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD &count, DWORD &dwFlags, RevtracerError *rerror) {
-	bool ret;
+	bool ret = true;
 	RiverInstruction dis;
 
 	ret = disassembler.Translate(px86, dis, dwFlags);
@@ -160,7 +160,7 @@ bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD 
 	if (!ret) {
 		rerror->errorCode = RERROR_UNK_INSTRUCTION;
 		rerror->translatorId = RIVER_DISASSEMBLER_ID;
-		return false;
+		return ret;
 	}
 
 	ret = metaTranslator.Translate(dis, rOut, count);
@@ -168,12 +168,12 @@ bool RiverCodeGen::DisassembleSingle(BYTE *&px86, RiverInstruction *rOut, DWORD 
 	if (!ret) {
 		rerror->errorCode = RERROR_UNK_INSTRUCTION;
 		rerror->translatorId = RIVER_META_TRANSLATOR_ID;
-		return false;
+		return ret;
 	}
 
 	rerror->errorCode = RERROR_OK;
 	rerror->translatorId = RIVER_NONE_ID;
-	return true;
+	return ret;
 }
 
 DWORD RiverCodeGen::TranslateBasicBlock(BYTE *px86, DWORD &dwInst, BYTE *&disasm, DWORD dwTranslationFlags, RevtracerError *rerror) {
@@ -410,7 +410,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags, Rev
 					rerror->translatorId = RIVER_REVERSE_TRANSLATOR_ID;
 					rerror->instructionAddress = ri.instructionAddress;
 					rerror->errorCode = RERROR_UNK_INSTRUCTION;
-					return 0;
+					return false;
 				}
 			}
 			MakeJMP(&bkRiverInst[fwInstCount], pCB->address);
@@ -435,7 +435,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags, Rev
 						rerror->translatorId = RIVER_SYMBOP_SAVE_TRANSLATOR_ID;
 						rerror->instructionAddress = si.instructionAddress;
 						rerror->errorCode = RERROR_UNK_INSTRUCTION;
-						return 0;
+						return false;
 					}
 				}
 
@@ -454,7 +454,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, DWORD dwTranslationFlags, Rev
 						rerror->translatorId = RIVER_SYMBOP_REVERSE_TRANSLATOR_ID;
 						rerror->instructionAddress = sfri.instructionAddress;
 						rerror->errorCode = RERROR_UNK_INSTRUCTION;
-						return 0;
+						return false;
 					}
 				}
 				sbInstCount = sfInstCount;

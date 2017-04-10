@@ -94,12 +94,12 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 
 	flags = 0;
 	do {
-		auto currentInstr = px86;
+		BYTE* currentInstr = px86;
 		dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
 
 		flags &= ~RIVER_FLAG_PFX;
 		(this->*disassembleOpcodes[dwTable][*px86])(px86, rOut, flags);
-		if (px86 == 0) {
+		if ((px86 == (BYTE *)INVALID_ADDRESS) && (currentInstr != px86)) {
 			px86 = currentInstr;
 			return false;
 		}
@@ -107,9 +107,9 @@ bool RiverX86Disassembler::Translate(BYTE *&px86, RiverInstruction &rOut, DWORD 
 
 	dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
 	
-	auto currentInstr = px86;
+	BYTE* currentInstr = px86;
 	(this->*disassembleOperands[dwTable][rOut.opCode])(px86, rOut);
-	if (px86 == 0) {
+	if ((px86 == (BYTE *)INVALID_ADDRESS) && (currentInstr != px86)) {
 		px86 = currentInstr;
 		return false;
 	}
@@ -131,7 +131,7 @@ void RiverX86Disassembler::DisassembleUnkInstr(BYTE *&px86, RiverInstruction &ri
 	opcode = *px86;
 	extPrefix = (ri.modifiers & RIVER_MODIFIER_EXT) ? 0x0F : 0x00;
 	address = ri.instructionAddress;
-	px86 = 0;
+	px86 = (BYTE*)INVALID_ADDRESS;
 }
 
 /* =========================================== */
@@ -272,7 +272,7 @@ void RiverX86Disassembler::DisassembleMoffs32(BYTE opIdx, BYTE *&px86, RiverInst
 /* =========================================== */
 
 void RiverX86Disassembler::DisassembleUnkOp(BYTE *&px86, RiverInstruction &ri) {
-	px86 = 0;
+	px86 = (BYTE*)INVALID_ADDRESS;
 }
 
 void RiverX86Disassembler::DisassembleNoOp(BYTE *&px86, RiverInstruction &ri) {

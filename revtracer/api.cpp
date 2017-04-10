@@ -115,7 +115,9 @@ bool ProcessDirection<EXECUTION_RESTART>(ExecutionEnvironment *pEnv, ADDR_TYPE n
 	DWORD nextDirection = revtracerAPI.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint);
 	if (nextDirection == EXECUTION_ADVANCE) {
 		pEnv->runtimeContext.virtualStack -= 4;
-		*((ADDR_TYPE *)pEnv->runtimeContext.virtualStack) = revtracerConfig.entryPoint;
+		*((ADDR_TYPE *)pEnv->runtimeContext.virtualStack) = nextInstruction;
+		pEnv->lastFwBlock = (UINT_PTR)revtracerConfig.entryPoint;
+		pEnv->bForward = 1;
 		DirectionHandler(nextDirection, pEnv, revtracerConfig.entryPoint);
 	} else {
 		pEnv->runtimeContext.jumpBuff = (UINT_PTR)revtracerAPI.lowLevel.ntTerminateProcess;
