@@ -65,12 +65,14 @@ bool RiverBasicBlockCache::Init(RiverHeap *hp, nodep::DWORD logHSize, nodep::DWO
 
 	logHashSize = logHSize;
 	historySize = histSize;
+	rev::revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_RUNTIME, "BlockCache initialized @%p\n", this);
 	hashTable = (RiverBasicBlock **)rev::revtracerImports.memoryAllocFunc((1 << logHashSize) * sizeof(hashTable[0]));
+	rev::revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_RUNTIME, "BlockCache hashtable @%p\n", hashTable);
 
 	if (0 == hashTable) {
 		return false;
 	}
-
+	 
 	rev_memset(hashTable, 0, (1 << logHashSize) * sizeof(hashTable[0]));
 
 	/*history = (UINT_PTR *)EnvMemoryAlloc(historySize * sizeof (history[0]));
@@ -131,10 +133,11 @@ bool RiverBasicBlockCache::Destroy() {
 RiverBasicBlock *RiverBasicBlockCache::FindBlock(nodep::UINT_PTR a) {
 	RiverBasicBlock *pWalk;
 	int arr = 0;
+	
+	//DEBUG_BREAK; 
 	unsigned long hash = HashFunc(logHashSize, a);
 
 	//cbLock.Lock();
-
 	pWalk = hashTable[hash];
 
 	while (pWalk) {

@@ -9,11 +9,11 @@
 #include <string.h>
 #endif
 
-bool InprocessExecutionController::SetPath() {
+bool InprocessExecutionController::SetPath(const wstring &p) {
 	return false;
 }
 
-bool InprocessExecutionController::SetCmdLine() {
+bool InprocessExecutionController::SetCmdLine(const wstring &c) {
 	return false;
 }
 
@@ -24,14 +24,6 @@ THREAD_T InprocessExecutionController::GetProcessHandle() {
 rev::ADDR_TYPE InprocessExecutionController::GetTerminationCode() {
 	return wrapper.pExports->getTerminationCode();
 }
-
-/*bool InprocessExecutionController::GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) {
-	return false;
-}
-
-bool InprocessExecutionController::GetModules(ModuleInfo *& modules, int & moduleCount) {
-	return false;
-}*/
 
 bool InprocessExecutionController::ReadProcessMemory(unsigned int base, unsigned int size, unsigned char * buff) {
 	memcpy(buff, (LPCVOID)base, size);
@@ -108,22 +100,22 @@ bool InprocessExecutionController::Execute() {
 	wrapper.pImports->libraries = &libLayout;
 	InitWrapperOffsets(&libLayout, wrapper.pImports);
 
-	if (0 != (wrapper.pExports->initRevtracerWrapper(nullptr))) {
+	if (!wrapper.pExports->initRevtracerWrapper(nullptr)) {
 		DEBUG_BREAK;
 		return false;
 	}
 
 	revtracer.pImports->memoryAllocFunc = wrapper.pExports->allocateMemory;
 	revtracer.pImports->memoryFreeFunc = wrapper.pExports->freeMemory;
-	revtracer.pImports->lowLevel.ntTerminateProcess = wrapper.pExports->terminateProcess;
-	revtracer.pImports->lowLevel.vsnprintf_s = wrapper.pExports->formattedPrint;
+	revtracer.pImports->lowLevel.ntTerminateProcess = (rev::ADDR_TYPE)wrapper.pExports->terminateProcess;
+	revtracer.pImports->lowLevel.vsnprintf_s = (rev::ADDR_TYPE)wrapper.pExports->formattedPrint;
 
 	gcr = revtracer.pExports->getCurrentRegisters;
 	gmi = revtracer.pExports->getMemoryInfo;
 	mmv = revtracer.pExports->markMemoryValue;
 	glbbc = revtracer.pExports->getLastBasicBlockInfo;
 
-	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv)) {
+	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv) || (nullptr == glbbc)) {
 		DEBUG_BREAK;
 		return false;
 	}
@@ -165,12 +157,4 @@ bool InprocessExecutionController::WaitForTermination() {
 	JOIN_THREAD(hThread, ret);
 	return TRUE == ret;
 }
-
-
-/*void InprocessExecutionController::GetCurrentRegisters(Registers &registers) {
-	RemoteRuntime *ree = (RemoteRuntime *)revCfg->pRuntime;
-
-	memcpy(&registers, (Registers *)ree->registers, sizeof(registers));
-	registers.esp = ree->virtualStack;
-}*/
 

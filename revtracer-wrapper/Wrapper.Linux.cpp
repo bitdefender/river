@@ -4,6 +4,8 @@
 #include <stdarg.h>
 
 #include "Wrapper.Global.h"
+#include "TokenRing.h"
+#include "TokenRing.Linux.h"
 
 #include "RevtracerWrapper.h"
 #include "../BinLoader/LoaderAPI.h"
@@ -80,7 +82,7 @@ typedef ssize_t(*WriteFileHandler)(
 	size_t count
 );
 
-bool WinWriteFile(void *handle, void *buffer, size_t size, unsigned long *written) {
+bool LinWriteFile(void *handle, void *buffer, size_t size, unsigned long *written) {
 	*written = CALL_API(libc, _writeFile, WriteFileHandler) ((int)handle, buffer, size);
 	return (0 <= written);
 }
@@ -115,13 +117,10 @@ void LinFlushInstructionCache(void) {
 }
 
 // ------------------- Wait semaphore -------------------------
-typedef int(*WaitSemaphoreHandler) (sem_t *);
-typedef int(*TimedWaitSemaphoreHandler) (sem_t *, const struct timespec *);
-typedef int(*ClockGetTimeHandler) (clockid_t clk_id, struct timespec *tp);
-
-WaitSemaphoreHandler _waitSemaphore;
-TimedWaitSemaphoreHandler _timedWaitSemaphore;
-ClockGetTimeHandler _clockGetTime;
+typedef int(*WaitSemaphoreFunc) (sem_t *);
+typedef int(*PostSemaphoreFunc) (sem_t *);
+typedef int(*TimedWaitSemaphoreFunc) (sem_t *, const struct timespec *);
+typedef int(*ClockGetTimeFunc) (clockid_t clk_id, struct timespec *tp);
 
 static long sec_to_nsec = 1000000000;
 
@@ -145,31 +144,65 @@ void DebugSegmentDescriptors() {
 	free(table_entry_ptr);
 }
 
-int LinWaitSemaphore(void *semaphore, bool blocking) {
-	return _waitSemaphore((sem_t *)semaphore);
+bool LinWaitSemaphore(void *semaphore, bool blocking) {
+	if (blocking) {
+		//return _waitSemaphore((sem_t *)semaphore);
+		return 0 == CALL_API(libpthread, _sem_wait, WaitSemaphoreFunc)((sem_t *)semaphore);
+	} else {
+		int ret;
+		int timeout = 3;
+		struct timespec abs_timeout;
+
+		if (CALL_API(libc, _clockGetTime, ClockGetTimeFunc)(CLOCK_REALTIME, &abs_timeout) == -1) {
+			_print("[RevtracerWrapper] Cannot get current time\n");
+			return -1;
+		}
+
+		//abs_timeout.tv_nsec += timeout * sec_to_nsec;
+		abs_timeout.tv_sec += timeout;
+		//abs_timeout.tv_nsec %= 1000000000;
+
+		unsigned int segments[0x100];
+		return 0 == CALL_API(libpthread, _sem_timedwait, TimedWaitSemaphoreFunc)((sem_t *)semaphore, &abs_timeout);
+		//DEBUG_BREAK;
+	}
 }
 
-// Not used!
-int LinWaitSemaphoreNonBlocking(void *semaphore) {
-	int ret;
-	int timeout = 3;
-	struct timespec abs_timeout;
+bool LinPostSemaphore(void *semaphore) {
+	//return TRUE == SetEvent(*(HANDLE *)handle);
+	return 0 == CALL_API(libpthread, _sem_post, PostSemaphoreFunc)((sem_t *)semaphore);
+}
 
-	if (_clockGetTime(CLOCK_REALTIME, &abs_timeout) == -1) {
-		_print("[RevtracerWrapper] Cannot get current time\n");
-		return -1;
+// ------------------- Token ring -----------------------------
+
+namespace revwrapper {
+
+	bool TokenRingWait(TokenRing *_this, long userId, bool blocking) {
+		return LinWaitSemaphore(
+			&((TokenRingOsData *)_this->osData)->semaphores[userId], 
+			blocking
+		);
 	}
 
-	abs_timeout.tv_nsec = timeout * sec_to_nsec;
-	abs_timeout.tv_sec = timeout;
-	abs_timeout.tv_nsec %= 1000000000;
+	void TokenRingRelease(TokenRing *_this, long userId) {
+		long nextId = userId + 1;
+		if (((TokenRingOsData *)_this->osData)->userCount == nextId) {
+			nextId = 0;
+		}
 
-	unsigned int segments[0x100];
-	ret = _timedWaitSemaphore((sem_t *)semaphore, &abs_timeout);
+		/*if (1 == nextId) {
+			void *p = &((TokenRingOsData *)_this->osData)->semaphores[nextId];
+			int sz = sizeof(((TokenRingOsData *)_this->osData)->semaphores[nextId]);
+			DEBUG_BREAK;
+		}*/
 
-	return ret;
-}
+		LinPostSemaphore(
+			&((TokenRingOsData *)_this->osData)->semaphores[nextId]
+		);
+	}
+};
 
+// ------------------- Initialization -------------------------
 
 namespace revwrapper {
 	extern "C" bool InitRevtracerWrapper(void *configPage) {
@@ -216,7 +249,7 @@ namespace revwrapper {
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_post", postSemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_destroy", destroySemaphore);
 		LoadExportedName(lpthreadModule, lpthreadBase, "sem_getvalue", getvalueSemaphore);
-		_clockGetTime = (ClockGetTimeHandler)LOAD_PROC(lcModule, "clock_gettime");
+		_clockGetTime = (ClockGetTimeFunc)LOAD_PROC(lcModule, "clock_gettime");
 
 		waitSemaphore = LinWaitSemaphore;
 		openSharedMemory = (OpenSharedMemoryFunc)LOAD_PROC(lrtModule, "shm_open");
@@ -225,6 +258,36 @@ namespace revwrapper {
 		flushInstructionCache = LinFlushInstructionCache;
 		return true;
 	}
-};
+
+	TokenRingOps trOps = {
+		TokenRingWait,
+		TokenRingRelease
+	};
+
+	TokenRing tokenRing = { &trOps };
+
+	DLL_WRAPPER_PUBLIC WrapperExports wrapperExports = {
+		InitRevtracerWrapper, // remove if unused in linux
+		LinAllocateVirtual,
+		LinFreeVirtual,
+
+		LinTerminateProcess,
+		LinGetTerminationCodeFunc,
+
+		LinFormatPrint,
+
+		LinWriteFile,
+
+		nullptr, //WinInitEvent,
+		nullptr, //WinWaitEvent,
+		nullptr, //WinPostEvent,
+		nullptr, //WinDestroyEvent,
+		nullptr, //WinGetValueEvent,
+		nullptr, //CallOpenSharedMemory,
+		nullptr, //CallUnlinkSharedMemory
+
+		&tokenRing
+	};
+}; //namespace revwrapper
 
 #endif

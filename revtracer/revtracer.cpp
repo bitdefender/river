@@ -202,9 +202,6 @@ namespace rev {
 		0
 	};
 
-	nodep::DWORD miniStack[4096];
-	nodep::DWORD shadowStack = (nodep::DWORD)&(miniStack[4090]);
-
 	struct ExecutionEnvironment *pEnv = NULL;
 
 	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
@@ -223,29 +220,33 @@ namespace rev {
 #define ADDR_OF_RET_ADDR() ({ int addr; __asm__ ("lea 4(%%ebp), %0" : : "r" (addr)); addr; })
 #endif
 
-	void TracerInitialization() { // parameter is not initialized (only used to get the 
-		nodep::UINT_PTR rgs = (nodep::UINT_PTR)ADDR_OF_RET_ADDR() + sizeof(void *);
-		
-		Initialize();
+	extern "C" {
+		nodep::DWORD miniStack[4096];
+		nodep::DWORD shadowStack = (nodep::DWORD)&(miniStack[4090]);
 
-		pEnv->runtimeContext.registers = rgs;
+		void TracerInitialization() { // parameter is not initialized (only used to get the 
+			nodep::UINT_PTR rgs = (nodep::UINT_PTR)ADDR_OF_RET_ADDR() + sizeof(void *);
 
-		revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (nodep::DWORD)revtracerConfig.entryPoint);
-		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((nodep::UINT_PTR)revtracerConfig.entryPoint);
-		pBlock->address = (nodep::DWORD)revtracerConfig.entryPoint;
-		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
+			Initialize();
 
-		revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "New entry point @%08x\n", (nodep::DWORD)pBlock->pFwCode);
-		
-		// TODO: replace with address of the actual terminate process
-		pEnv->exitAddr = (nodep::DWORD)revtracerImports.lowLevel.ntTerminateProcess;
+			pEnv->runtimeContext.registers = rgs;
 
-		/*pEnv->runtimeContext.execBuff -= 4;
-		*((DWORD *)pEnv->runtimeContext.execBuff) = (DWORD)revtracerConfig.entryPoint;*/
-		
-		//switch (revtracerImports.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
-		switch (revtracerImports.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
-			case EXECUTION_ADVANCE :
+			revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (nodep::DWORD)revtracerConfig.entryPoint);
+			RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((nodep::UINT_PTR)revtracerConfig.entryPoint);
+			pBlock->address = (nodep::DWORD)revtracerConfig.entryPoint;
+			pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
+
+			revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "New entry point @%08x\n", (nodep::DWORD)pBlock->pFwCode);
+
+			// TODO: replace with address of the actual terminate process
+			pEnv->exitAddr = (nodep::DWORD)revtracerImports.lowLevel.ntTerminateProcess;
+
+			/*pEnv->runtimeContext.execBuff -= 4;
+			*((DWORD *)pEnv->runtimeContext.execBuff) = (DWORD)revtracerConfig.entryPoint;*/
+
+			//switch (revtracerImports.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+			switch (revtracerImports.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
+			case EXECUTION_ADVANCE:
 				revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "%d detours needed.\n", revtracerConfig.hookCount);
 				for (nodep::DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
 					CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
@@ -257,58 +258,21 @@ namespace rev {
 				revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Translated entry point %08x.\n", pBlock->pFwCode);
 				revtracerConfig.entryPoint = pBlock->pFwCode;
 				break;
-			case EXECUTION_TERMINATE :
+			case EXECUTION_TERMINATE:
 				revtracerConfig.entryPoint = revtracerImports.lowLevel.ntTerminateProcess;
 				break;
-			case EXECUTION_BACKTRACK :
+			case EXECUTION_BACKTRACK:
 				revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "EXECUTION_BACKTRACK @executionBegin");
 				revtracerConfig.entryPoint = revtracerImports.lowLevel.ntTerminateProcess;
 				break;
+			}
 		}
-	}
-
-	NAKED void RevtracerPerform() {
-#ifdef _MSC_VER
-		__asm {
-			xchg esp, shadowStack;
-			pushad;
-			pushfd;
-			call TracerInitialization;
-			popfd;
-			popad;
-			xchg esp, shadowStack;
-
-			jmp dword ptr[revtracerConfig.entryPoint];
-		}
-#else
-		__asm__ (
-				"xchgl %0, %%esp             \n\t"
-				"pushal                      \n\t"
-				"pushfl                      \n\t"
-				"call %P1                    \n\t"
-				"popfl                       \n\t"
-				"popal                       \n\t"
-				"xchgl %0, %%esp" : : "m" (shadowStack), "i" (TracerInitialization)
-				);
-		__asm__ (
-				"jmp *%0" : : "m" (revtracerConfig.entryPoint)
-				);
-#endif
-	}
+	};
 
 	nodep::DWORD __stdcall MarkAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel);
 	void MarkMemoryValue(void *ctx, ADDR_TYPE addr, nodep::DWORD value) {
 		MarkAddr((ExecutionEnvironment *)ctx, (nodep::DWORD)addr, value, 0x2B);
 	}
-
-	RevtracerExports revtracerExports = {
-		GetCurrentRegisters,
-		GetMemoryInfo,
-		GetLastBasicBlockInfo,
-		MarkMemoryValue,
-
-		RevtracerPerform
-	};
 
 	/* Segment initialization *************************************************************/
 
@@ -397,4 +361,34 @@ namespace rev {
 		}
 	}
 
+};
+
+extern "C" {
+	void RevtracerPerform();
+#ifdef _MSC_VER
+	NAKED void RevtracerPerform() {
+		__asm {
+			xchg esp, shadowStack;
+			pushad;
+			pushfd;
+			call TracerInitialization;
+			popfd;
+			popad;
+			xchg esp, shadowStack;
+
+			jmp dword ptr[revtracerConfig.entryPoint];
+		}
+	}
+#endif
+};
+
+namespace rev {
+	RevtracerExports revtracerExports = {
+		GetCurrentRegisters,
+		GetMemoryInfo,
+		GetLastBasicBlockInfo,
+		MarkMemoryValue,
+
+		::RevtracerPerform
+	};
 };

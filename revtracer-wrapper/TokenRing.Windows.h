@@ -6,13 +6,13 @@
 namespace revwrapper {
 	typedef void *HANDLE;
 
-	#define USER_MAX 4
+	#define MAX_USER_COUNT 4
 
 	struct TokenRingOsData {
-		volatile long userCount;
+		long userCount;
 
-		HANDLE waitSem[USER_MAX];
-		HANDLE postSem[USER_MAX];
+		HANDLE waitSem[MAX_USER_COUNT];
+		HANDLE postSem[MAX_USER_COUNT];
 	};
 };
 

@@ -1,10 +1,10 @@
 #include "DualAllocator.h"
 
-DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const char *shmName, DWORD granularity) {
+DualAllocator::DualAllocator(DWORD size, HANDLE remoteProcess, const char *shmName, DWORD granularity, DWORD initialOffset) {
 	hMapping = MAP_FILE_RWX(shmName, size);
 
 	dwSize = size;
-	dwUsed = 0;
+	dwUsed = initialOffset;
 	dwGran = granularity;
 
 	hProcess[0] = GetCurrentProcess();

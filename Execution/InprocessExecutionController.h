@@ -32,8 +32,8 @@ private :
 		rev::RevtracerExports *pExports;
 	} revtracer;
 public :
-	virtual bool SetPath();
-	virtual bool SetCmdLine();
+	virtual bool SetPath(const wstring &p);
+	virtual bool SetCmdLine(const wstring &c);
 
 	virtual THREAD_T GetProcessHandle();
 	virtual rev::ADDR_TYPE GetTerminationCode();

@@ -8,7 +8,7 @@
 #include "../BinLoader/PE.Loader.h"
 #include "DualAllocator.h"
 
-#include "../loader/loader.h"
+#include "../loader/Loader.h"
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 #include "../ipclib/ipclib.h"
 #include "../revtracer/revtracer.h"
@@ -27,7 +27,7 @@ private:
 	HANDLE hProcess /* child process */, hMainThread;
 	THREAD_T hControlThread;
 	FILE_T hDbg;
-	DWORD pid, mainTid;
+	DWORD pid, currentPid;
 
 	DualAllocator* shmAlloc;
 

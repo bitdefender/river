@@ -1,7 +1,7 @@
 #ifndef _LOADER_H
 #define _LOADER_H
 
-//#include "../BinLoader/LoaderAPI.h"
+#include "../BinLoader/LoaderAPI.h"
 #include "../CommonCrossPlatform/LibraryLayout.h"
 
 namespace ldr {
@@ -75,7 +75,14 @@ namespace ldr {
 
 	typedef void *ADDR_TYPE;
 
-	typedef void *HANDLE;
+#if defined _WIN32 || defined __CYGWIN__
+	typedef void *SHM_HANDLE;
+#else
+	typedef unsigned long SHM_HANDLE;
+#endif
+
+#define MAX_LIBS 0x10
+#define MAX_SEGMENTS 0x100
 
 	struct PESections {
 		ADDR_TYPE mappingAddress;
@@ -85,11 +92,22 @@ namespace ldr {
 	};
 
 	struct LoaderConfig {
-		HANDLE sharedMemory;
+		SHM_HANDLE sharedMemory;
 		ADDR_TYPE shmBase;
-		PESections sections[32];
-		DWORD sectionCount;
 		ADDR_TYPE entryPoint;
+
+		union {
+			struct {
+				PESections sections[32];
+				DWORD sectionCount;
+			} windows;
+
+			struct {
+				ADDR_TYPE retAddr;
+				MappedObject mos[MAX_LIBS];
+				DWORD segments[MAX_SEGMENTS];
+			} linux;
+		} osData;
 	};
 
 #define MAX_LIBS 0x10

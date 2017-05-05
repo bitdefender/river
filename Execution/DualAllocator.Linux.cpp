@@ -14,9 +14,9 @@
 #define dbg_log(fmt,...) printf(fmt, ##__VA_ARGS__)
 #endif
 
-DualAllocator::DualAllocator(DWORD size, PROCESS_HANDLE remoteProcess, const char *shmName, DWORD granularity) {
+DualAllocator::DualAllocator(DWORD size, PROCESS_HANDLE remoteProcess, const char *shmName, DWORD granularity, DWORD initialOffset) {
 	dwSize = size;
-	dwUsed = 0;
+	dwUsed = initialOffset;
 	dwGran = 0x1000;
 
 	hProcess[0] = GET_CURRENT_PROC();
@@ -47,15 +47,19 @@ void DualAllocator::SetBaseAddress(DWORD baseAddress) {
 }
 
 DWORD DualAllocator::AllocateFixed(DWORD address, DWORD size) {
+	printf("[DualAllocator] AllocateFixed(%p, %08x)\n", address, dwUsed);
+	void* addr = mmap((void*)address, size,
+				PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, hMapping, dwUsed);
+	if (addr == (void *)(-1)) {
+		printf("[DualAllocator] mmap failed with error code %d for address %p. Used: %08lx\n", errno, addr, dwUsed);
+		return (DWORD)addr;
+	}
+
 	// TODO check if there is enough free space in parent! Should be!
 	dwUsed += size;
 	dwUsed += dwGran - 1;
 	dwUsed &= ~(dwGran - 1);
 
-	void* addr = mmap((void*)address, size,
-				PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, hMapping, 0);
-	if (addr == (void *)(-1))
-		printf("[DualAllocator] mmap failed with error code %d for address %p. Used: %08lx\n", errno, addr, dwUsed);
 	return (DWORD)addr;
 }
 

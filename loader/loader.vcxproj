@@ -87,6 +87,9 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
   <ItemGroup>
     <ClInclude Include="Loader.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Loader.Linux.Stub.S" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

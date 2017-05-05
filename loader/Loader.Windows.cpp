@@ -199,6 +199,8 @@ namespace ldr {
 				return TRUE;
 			}
 
+			return false;
+
 			/*if ((0xC0000045 == ret) && ((HANDLE)0xFFFFFFFF == hProcess)) {
 				if (FALSE == ((RtlFlushSecureMemoryCacheFunc)loaderAPI.rtlFlushSecureMemoryCache)(lpAddress, dwSize)) {
 					return FALSE;
@@ -249,8 +251,6 @@ namespace ldr {
 
 		SimulateDebugger();
 
-		//CALL_API(ntdll, _ntFreeVirtualMemory, FreeMemoryCall) (loaderConfig.shmBase);
-
 		Kernel32VirtualFreeEx(
 			(HANDLE)0xFFFFFFFF,
 			loaderConfig.shmBase,
@@ -258,15 +258,15 @@ namespace ldr {
 			MEM_RELEASE
 		);
 		
-		for (DWORD s = 0; s < loaderConfig.sectionCount; ++s) {
+		for (DWORD s = 0; s < loaderConfig.osData.windows.sectionCount; ++s) {
 			void *addr = MapMemory(
-				loaderConfig.sections[s].desiredAccess,
-				loaderConfig.sections[s].sectionOffset,
-				(SIZE_T)loaderConfig.sections[s].mappingSize,
-				loaderConfig.sections[s].mappingAddress
+				loaderConfig.osData.windows.sections[s].desiredAccess,
+				loaderConfig.osData.windows.sections[s].sectionOffset,
+				(SIZE_T)loaderConfig.osData.windows.sections[s].mappingSize,
+				loaderConfig.osData.windows.sections[s].mappingAddress
 			);
 
-			if (addr != loaderConfig.sections[s].mappingAddress) {
+			if (addr != loaderConfig.osData.windows.sections[s].mappingAddress) {
 				__asm int 3;
 			}
 		}

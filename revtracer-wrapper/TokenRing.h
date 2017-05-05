@@ -23,8 +23,8 @@ namespace revwrapper {
 		TokenRingOps *ops;
 		unsigned char osData[RING_OS_DATA_SIZE];
 
-		friend bool InitTokenRing(TokenRing *_this, long userCount, unsigned int *pids, long token);
-		friend struct TokenRingOps;
+		//friend bool InitTokenRing(TokenRing *_this, long userCount, unsigned int *pids, long token);
+		//friend struct TokenRingOps;
 		
 		bool Wait(long userId, bool blocking = true) {
 			return ops->__Wait(this, userId, blocking);

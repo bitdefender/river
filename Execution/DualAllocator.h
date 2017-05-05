@@ -17,8 +17,7 @@ private:
 	std::vector<std::pair<FileView, DWORD> > mappedViews;
 	PROCESS_HANDLE hProcess[2];
 public:
-	DualAllocator(DWORD size, PROCESS_HANDLE remoteProcess,
-			const char *shmName, DWORD granularity);
+	DualAllocator(DWORD size, PROCESS_HANDLE remoteProcess,	const char *shmName, DWORD granularity, DWORD initialOffset);
 	~DualAllocator();
 
 	HANDLE CloneTo(PROCESS_HANDLE process);

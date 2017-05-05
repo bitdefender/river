@@ -1,3 +1,5 @@
+#ifdef  __linux__
+
 #include "Debugger.h"
 
 #include <sys/wait.h>
@@ -78,6 +80,13 @@ namespace dbg {
 		printf("[Debugger] Tracee process %d stopped at eip %lx\n", Tracee, regs.eip);
 	}
 
+	void Debugger::PrintRegs() {
+		struct user_regs_struct regs;
+		ptrace(PTRACE_GETREGS, Tracee, 0, &regs);
+		printf("[Debugger] EAX: %08lx  EDX: %08x  ECX: %08lx  EBX: %08x\n", regs.eax, regs.edx, regs.ecx, regs.ebx);
+		printf("[Debugger] ESP: %08lx  EBP: %08x  ESI: %08lx  EDI: %08x\n", regs.esp, regs.ebp, regs.esi, regs.edi);
+	}
+
 	int Debugger::CheckEip(unsigned eip) {
 		struct user_regs_struct regs;
 		ptrace(PTRACE_GETREGS, Tracee, 0, &regs);
@@ -148,10 +157,11 @@ namespace dbg {
 					fflush(stdout);
 				} else {
 					printf("[Debugger] Tracee received signal %d\n", last_sig);
+					PrintEip();
+					PrintRegs();
 					if (last_sig == 11) {
 						return -1;
 					}
-					PrintEip();
 				}
 			}
 		}
@@ -172,3 +182,5 @@ namespace dbg {
 	}
 
 } //namespace dbg
+
+#endif

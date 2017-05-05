@@ -35,6 +35,7 @@ namespace revwrapper {
 			dbg_log("%x ", *(p + i));
 		dbg_log("\n");
 	}
+
 	void ShmTokenRingLin::Init(long presetUsers) {
 		dbg_log("[ShmTokenRingLin] Initialization with %lu presetUsers\n", presetUsers);
 
@@ -63,7 +64,7 @@ namespace revwrapper {
 
 		((GetvalueSemaphoreHandler)ipcAPI->getvalueSemaphore)(&use_semaphore, &ret);
 		dbg_log("[ShmTokenRingLin] User %lu tries to start this %p sem value %d\n", id, &use_semaphore, ret);
-		ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&use_semaphore, true);
+		ret = ((WaitSemaphoreFunc)ipcAPI->waitSemaphore)(&use_semaphore, true);
 		if (ret != 0) {
 			dbg_log("[ShmTokenRingLin] Wait for use_semaphore failed\n");
 		}
@@ -76,7 +77,7 @@ namespace revwrapper {
 		dbg_log("[ShmTokenRingLin] Inited sem %lu with ret %d addr %p\n", id, ret, &semaphores[id]);
 		valid[id] = true;
 		userCount += 1;
-		ret = ((PostSemaphoreHandler)ipcAPI->postSemaphore)(&use_semaphore);
+		ret = ((PostSemaphoreFunc)ipcAPI->postSemaphore)(&use_semaphore);
 		if (ret != 0) {
 			dbg_log("[ShmTokenRingLin] Post use_semaphore failed\n");
 		}
@@ -90,7 +91,7 @@ namespace revwrapper {
 
 		while(1) {
 			dbg_log("[ShmTokenRingLin] User %ld waiting for token sem valid %d\n", userId, (int)valid[userId]);
-			int ret = ((WaitSemaphoreHandler)ipcAPI->waitSemaphore)(&semaphores[userId], blocking);
+			int ret = ((WaitSemaphoreFunc)ipcAPI->waitSemaphore)(&semaphores[userId], blocking);
 			if (ret != 0) {
 				if (!blocking)
 					return false;
@@ -112,7 +113,7 @@ namespace revwrapper {
 			dbg_log("[ShmTokenRingLin] Trying to release invalid semaphore %lu\n", localCurrentOwner);
 			return;
 		}
-		int ret = ((PostSemaphoreHandler)ipcAPI->postSemaphore)(&semaphores[localCurrentOwner]);
+		int ret = ((PostSemaphoreFunc)ipcAPI->postSemaphore)(&semaphores[localCurrentOwner]);
 		dbg_log("[ShmTokenRingLin] User %lu unlocks sem for %lu ret %d\n", userId, localCurrentOwner, ret);
 	}
 } //namespace ipc

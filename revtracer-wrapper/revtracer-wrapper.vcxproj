@@ -130,15 +130,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="RevtracerWrapper.cpp" />
-    <ClCompile Include="ShmTokenRingLin.cpp" />
+    <ClCompile Include="ShmTokenRingLin.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Wrapper.Linux.cpp" />
     <ClCompile Include="Wrapper.Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CommonCrossPlatform\LibraryLayout.h" />
     <ClInclude Include="RevtracerWrapper.h" />
-    <ClInclude Include="ShmTokenRingLin.h" />
+    <ClInclude Include="ShmTokenRingLin.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="TokenRing.h" />
+    <ClInclude Include="TokenRing.Linux.h" />
     <ClInclude Include="TokenRing.Windows.h" />
     <ClInclude Include="Wrapper.Global.h" />
   </ItemGroup>

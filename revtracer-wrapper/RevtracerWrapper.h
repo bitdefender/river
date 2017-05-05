@@ -45,6 +45,7 @@ namespace revwrapper {
 					unsigned int _waitForSingleObject;
 					unsigned int _formatPrint;
 					unsigned int _print;
+					unsigned int _clockGetTime;
 				} libc;
 
 				struct {
@@ -56,6 +57,7 @@ namespace revwrapper {
 					unsigned int _yieldExecution;
 					unsigned int _sem_init;
 					unsigned int _sem_wait;
+					unsigned int _sem_timedwait;
 					unsigned int _sem_post;
 					unsigned int _sem_destroy;
 					unsigned int _sem_getvalue;
