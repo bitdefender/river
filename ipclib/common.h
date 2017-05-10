@@ -39,8 +39,8 @@ typedef void *ADDR_TYPE;
 
 namespace ipc {
 	typedef int (*InitSemaphoreHandler)(void *, int, int);
-	typedef int (*WaitSemaphoreHandler)(void *, bool);
-	typedef int (*PostSemaphoreHandler)(void *);
+	typedef int (*WaitSemaphoreFunc)(void *, bool);
+	typedef int (*PostSemaphoreFunc)(void *);
 	typedef int (*DestroySemaphoreHandler)(void *);
 	typedef int (*GetvalueSemaphoreHandler)(void *, int*);
 

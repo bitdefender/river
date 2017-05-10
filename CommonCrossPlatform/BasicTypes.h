@@ -50,7 +50,7 @@ namespace nodep {
 	typedef UCHAR *PUCHAR;
 	
 	typedef long LONG;
-	typedef __int64 LONGLONG;
+	typedef long long LONGLONG;
 
 	typedef unsigned long long QWORD;
 	typedef unsigned long DWORD;

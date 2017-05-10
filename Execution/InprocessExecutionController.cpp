@@ -9,7 +9,6 @@
 #include <string.h>
 #endif
 
-bool InprocessExecutionController::SetPath(const wstring &p) {
 #ifdef __linux__
 #define MAX_FUNC_LIST 32
 struct libc_ifunc_impl
@@ -25,7 +24,7 @@ struct libc_ifunc_impl
 typedef size_t (*__libc_ifunc_impl_list_handle)(const char *name,
                        struct libc_ifunc_impl *array,
                        size_t max);
-__libc_ifunc_impl_list_handle my__libc_ifunc_impl_list;
+static __libc_ifunc_impl_list_handle my__libc_ifunc_impl_list;
 #endif
 
 #ifdef __linux__
@@ -39,7 +38,7 @@ __libc_ifunc_impl_list_handle my__libc_ifunc_impl_list;
 
 typedef ADDR_TYPE(*GetHandlerCallback)(void);
 
-bool InprocessExecutionController::SetPath() {
+bool InprocessExecutionController::SetPath(const wstring &) {
 	return false;
 }
 
@@ -48,7 +47,8 @@ bool InprocessExecutionController::SetCmdLine(const wstring &c) {
 }
 
 bool InprocessExecutionController::PatchProcess() {
-	lib_t libcHandler;
+#ifdef __linux__
+	LIB_T libcHandler;
 	struct libc_ifunc_impl func_list[MAX_FUNC_LIST];
 
 	std::vector<std::string> func_names = {
@@ -99,13 +99,15 @@ bool InprocessExecutionController::PatchProcess() {
 			if (!func_list[i].name || !func_list[i].fn)
 				break;
 			if ((ADDR_TYPE)func_list[i].fn != detourAddr) {
-				revCfg->hooks[revCfg->hookCount].originalAddr = (ADDR_TYPE)func_list[i].fn;
-				revCfg->hooks[revCfg->hookCount].detourAddr = detourAddr;
-				revCfg->hookCount++;
+				revtracer.pConfig->hooks[revtracer.pConfig->hookCount].originalAddr = (ADDR_TYPE)func_list[i].fn;
+				revtracer.pConfig->hooks[revtracer.pConfig->hookCount].detourAddr = detourAddr;
+				revtracer.pConfig->hookCount++;
 			}
 		}
 
 	}
+#endif
+	return true;
 }
 
 

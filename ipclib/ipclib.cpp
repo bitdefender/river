@@ -104,7 +104,6 @@ namespace ipc {
 #define FILE_MAP_READ       SECTION_MAP_READ
 #define FILE_MAP_EXECUTE	SECTION_MAP_EXECUTE
 
-	typedef void *(*LdrMapMemory)(DWORD desiredAccess, DWORD offset, unsigned long size, void *address);
 	void *MemoryAlloc(DWORD dwSize) {
 		ipcData.type = REQUEST_MEMORY_ALLOC;
 		ipcData.data.asMemoryAllocRequest = dwSize;

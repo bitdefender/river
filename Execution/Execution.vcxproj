@@ -145,6 +145,9 @@ copy $(TargetDir)$(ProjectName).pdb $(SolutionDir)jsdemo\</Command>
     <ClInclude Include="TokenRingInit.Linux.h" />
     <ClInclude Include="TokenRingInit.Windows.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -153,9 +153,118 @@ rev::ADDR_TYPE ExternExecutionController::GetTerminationCode() {
 	return wrapper.pExports->getTerminationCode();
 }
 
+unsigned long GetLibcAddress(pid_t pid) {
+	struct map_iterator mi;
+	struct map_prot mp;
+	unsigned long hi;
+	unsigned long segbase, mapoff;
+
+
+	if (maps_init(&mi, pid) < 0) {
+		printf("Cannot find maps for pid %d\n", pid);
+		return 0;
+	}
+
+	while (maps_next(&mi, &segbase, &hi, &mapoff, &mp)) {
+		const char *p = strrchr(mi.path, '/');
+		p = (nullptr == p) ? mi.path : (p + 1);
+
+		printf("[Parent] found lib %s\n", p);
+		if (0 == strncmp("libc", p, 4)) {
+			printf("[Parent] Found child mapping for libc %p\n", (void*)segbase);
+			maps_close(&mi);
+			return segbase;
+		}
+
+	}
+	maps_close(&mi);
+	return 0;
+}
+
+#define MAX_FUNC_LIST 32
+struct libc_ifunc_impl
+{
+	/* The name of function to be tested.  */
+	const char *name;
+	/* The address of function to be tested.  */
+	void(*fn) (void);
+	/* True if this implementation is usable on this machine.  */
+	bool usable;
+};
+
+typedef size_t(*__libc_ifunc_impl_list_handle)(const char *name,
+	struct libc_ifunc_impl *array,
+	size_t max);
+static __libc_ifunc_impl_list_handle my__libc_ifunc_impl_list;
+
+
 bool ExternExecutionController::PatchProcess() {
+	LIB_T libcHandler;
+	struct libc_ifunc_impl func_list[MAX_FUNC_LIST];
+
+	std::vector<std::string> func_names = {
+		"bcopy", "bzero", "memchr", "memcmp", "__memmove_chk",
+		"memmove", "memrchr", "__memset_chk", "memset",
+		"rawmemchr", "stpncpy", "stpcpy", "strcasecmp",
+		"strcasecmp_l", "strcat", "strchr", "strcmp",
+		"strcpy", "strcspn", "strncasecmp", "strncasecmp_l",
+		"strncat", "strncpy", "strnlen", "strpbrk", "strrchr",
+		"strspn", "wcschr", "wcscmp", "wcscpy", "wcslen", "wcsrchr",
+		"wmemcmp", "__memcpy_chk", "memcpy", "__mempcpy_chk",
+		"mempcpy", "strlen", "strncmp"
+	};
+
+	libcHandler = GET_LIB_HANDLER("libc.so.6");
+	if (nullptr == libcHandler) {
+		DEBUG_BREAK;
+		return false;
+	}
+
+	unsigned long remoteLibc = GetLibcAddress(pid);
+	unsigned long libDelta = remoteLibc - *(unsigned long *)libcHandler;
+
+	printf("[Parent] libc parent %08lx; child %08x; delta %08x\n", *(unsigned long *)libcHandler, remoteLibc, libDelta);
+
+	my__libc_ifunc_impl_list = (__libc_ifunc_impl_list_handle)dlsym(
+		libcHandler, "__libc_ifunc_impl_list");
+	if (nullptr == my__libc_ifunc_impl_list) {
+		DEBUG_BREAK;
+		return false;
+	}
+
+	for (auto it = func_names.begin(); it != func_names.end(); ++it) {
+		ADDR_TYPE detourAddr = nullptr;
+		memset(func_list, 0,
+			MAX_FUNC_LIST * sizeof(struct libc_ifunc_impl));
+		(my__libc_ifunc_impl_list)(it->c_str(), func_list, MAX_FUNC_LIST);
+		for (int i = 0; i < MAX_FUNC_LIST; ++i) {
+			if (!func_list[i].name || !func_list[i].fn)
+				break;
+			char *ia32 = strstr((char*)func_list[i].name, "ia32");
+			if (nullptr != ia32 && (strlen(ia32) == strlen("ia32"))) {
+				detourAddr = (ADDR_TYPE)func_list[i].fn;
+				break;
+			}
+		}
+
+		if (nullptr == detourAddr) {
+			DEBUG_BREAK;
+			return false;
+		}
+		for (int i = 0; i < MAX_FUNC_LIST; ++i) {
+			if (!func_list[i].name || !func_list[i].fn)
+				break;
+			if ((ADDR_TYPE)func_list[i].fn != detourAddr) {
+				revtracer.pConfig->hooks[revtracer.pConfig->hookCount].originalAddr = (ADDR_TYPE)func_list[i].fn + libDelta;
+				revtracer.pConfig->hooks[revtracer.pConfig->hookCount].detourAddr = detourAddr + libDelta;
+				revtracer.pConfig->hookCount++;
+			}
+		}
+
+	}
 	return true;
 }
+
 
 
 bool ExternExecutionController::WaitForTermination() {
@@ -532,14 +641,14 @@ bool ExternExecutionController::Execute() {
 		BOOL _ret;
 		WRITE_FILE(hDbg, debugBuffer, read, written, _ret);
 
-		DEBUG_BREAK;
+		/*DEBUG_BREAK;
 
 		while (-1 != debugger.Run(PTRACE_SINGLESTEP)) {
 			//debugger.PrintEip();
 			debugger.PrintRegs();
 		}
 		debugger.PrintEip();
-		debugger.PrintRegs();
+		debugger.PrintRegs();*/
 
 		printf("[Parent] Remember: revwrapper@%lx ipclib@%lx revtracer@%lx mapMemory %08lx\n",
 			wrapper.base, ipc.base, revtracer.base, (DWORD)loader.pExports->mapMemory);
