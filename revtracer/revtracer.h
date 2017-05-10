@@ -42,6 +42,7 @@ namespace rev {
 
 
 	typedef void *ADDR_TYPE;
+	typedef struct RevtracerError RevtracerError;
 
 	typedef void(*DbgPrintFunc)(const unsigned int dwMask, const char *fmt, ...);
 	typedef void *(*MemoryAllocFunc)(nodep::DWORD dwSize);
@@ -59,6 +60,7 @@ namespace rev {
 	typedef void(*CleanupContextFunc)(void *context);
 
 	typedef nodep::DWORD(*BranchHandlerFunc)(void *context, void *userContext, ADDR_TYPE nextInstruction);
+	typedef nodep::DWORD(*ErrorHandlerFunc)(void *context, void *userContext, RevtracerError *rerror);
 	typedef void(*SyscallControlFunc)(void *context, void *userContext);
 	typedef void(*IpcLibInitFunc)();
 
@@ -97,6 +99,7 @@ namespace rev {
 		InitializeContextFunc initializeContext;
 		CleanupContextFunc cleanupContext;
 		BranchHandlerFunc branchHandler;
+		ErrorHandlerFunc errorHandler;
 		SyscallControlFunc syscallControl;
 
 		/* IpcLib initialization */
@@ -138,6 +141,30 @@ namespace rev {
 		CodeHooks hooks[0x100];
 	};
 
+#define RERROR_OK              0x00000000
+#define RERROR_UNK_INSTRUCTION 0x00000001
+
+#define RIVER_NONE_ID                        0x00000000
+#define RIVER_DISASSEMBLER_ID                0x00000001
+#define RIVER_META_TRANSLATOR_ID             0x00000002
+#define RIVER_SAVE_TRANSLATOR_ID             0x00000003
+#define RIVER_SYMBOP_TRANSLATOR_ID           0x00000004
+#define RIVER_SYMBOP_SAVE_TRANSLATOR_ID      0x00000005
+#define RIVER_SYMBOP_REVERSE_TRANSLATOR_ID   0x00000006
+#define RIVER_REVERSE_TRANSLATOR_ID          0x00000007
+
+#define INVALID_ADDRESS			0xFFFFFFFF
+
+	struct RevtracerError {
+		nodep::BYTE prefix;
+		nodep::BYTE opcode;
+		nodep::DWORD translatorId;
+		nodep::DWORD instructionAddress;
+
+		nodep::DWORD errorCode;
+	};
+
+
 	struct ExecutionRegs {
 		nodep::DWORD edi;
 		nodep::DWORD esi;
@@ -162,6 +189,12 @@ namespace rev {
 	typedef void (*MarkMemoryValueFunc)(void *ctx, ADDR_TYPE addr, nodep::DWORD value);
 	typedef void (*RevtracerPerformFunc)();
 
+	struct RevtracerVersion {
+		nodep::BYTE major;
+		nodep::BYTE minor;
+		nodep::WORD build;
+	};
+
 	struct RevtracerExports {
 		GetCurrentRegistersFunc getCurrentRegisters;
 		GetMemoryInfoFunc getMemoryInfo;
@@ -181,7 +214,7 @@ namespace rev {
 
 		/* DLL API ****************************************/
 
-		DLL_REVTRACER_PUBLIC void SetDbgPrint(DbgPrintFunc);
+		/*DLL_REVTRACER_PUBLIC void SetDbgPrint(DbgPrintFunc);
 		DLL_REVTRACER_PUBLIC void SetMemoryMgmt(MemoryAllocFunc alc, MemoryFreeFunc fre);
 		DLL_REVTRACER_PUBLIC void SetSnapshotMgmt(TakeSnapshotFunc ts, RestoreSnapshotFunc rs);
 		DLL_REVTRACER_PUBLIC void SetLowLevelAPI(LowLevelRevtracerAPI *llApi);
@@ -190,7 +223,7 @@ namespace rev {
 
 
 		DLL_REVTRACER_PUBLIC void SetContext(ADDR_TYPE ctx);
-		DLL_REVTRACER_PUBLIC void SetEntryPoint(ADDR_TYPE ep);
+		DLL_REVTRACER_PUBLIC void SetEntryPoint(ADDR_TYPE ep);*/
 
 		DLL_REVTRACER_PUBLIC void Initialize();
 		DLL_REVTRACER_PUBLIC void Execute(int argc, char *argv[]);

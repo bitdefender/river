@@ -290,6 +290,10 @@ bool ExternExecutionController::ReadProcessMemory(unsigned int base, unsigned in
 	return true;
 }
 
+bool ExternExecutionController::WriteProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) {
+	return true;
+}
+
 void ExternExecutionController::ConvertWideStringPath(char *result, size_t len) {
 	memset(result, 0, len);
 	const wchar_t *pathStream = path.c_str();
@@ -438,7 +442,7 @@ bool ExternExecutionController::InitializeRevtracer() {
 	gcr = revtracer.pExports->getCurrentRegisters;
 	gmi = revtracer.pExports->getMemoryInfo;
 	mmv = revtracer.pExports->markMemoryValue;
-	glbbc = revtracer.pExports->getLastBasicBlockInfo;
+	glbbi = revtracer.pExports->getLastBasicBlockInfo;
 
 	revtracer.pConfig->context = nullptr;
 	/*for (unsigned i = 0; i < 0x100; i++) {

@@ -58,6 +58,12 @@ public :
 		fflush(fBlocks);
 		return EXECUTION_TERMINATE;
 	}
+
+	virtual unsigned int TranslationError(void *ctx, void *address) {
+		printf("Translation error @%08p\n", address);
+		return EXECUTION_TERMINATE;
+	}
+
 } observer;
 
 #define MAX_BUFF 4096

@@ -536,6 +536,11 @@ public:
 
 	virtual void TerminationNotification(void *ctx) { }
 
+	virtual unsigned int TranslationError(void *ctx, void *address) {
+		printf("Translation error @%08p\n", address);
+		return EXECUTION_TERMINATE;
+	}
+
 } symbolicExecution;
 
 void TrackCallback(nodep::DWORD value, nodep::DWORD address, nodep::DWORD segSel) {

@@ -2,6 +2,7 @@
 #include "Common.h"
 
 #include <malloc.h>
+#define NDEBUG
 #include <assert.h>
 #include <string.h>
 //#include <stdio.h>
@@ -17,6 +18,7 @@ static int currently_parsing_eof;
 
 #define TRUE 1
 #define FALSE 0
+
 
 struct message {
 	const char *name; // for debugging purposes
@@ -55,7 +57,7 @@ struct message {
 	int body_is_final;
 };
 
-static struct message messages[5];
+static struct message messages[16];
 static int num_messages;
 static http_parser_settings *current_pause_parser;
 
@@ -327,7 +329,7 @@ static http_parser_settings settings = {
 	chunk_complete_cb
 };
 
-size_t parse(const char *buf, size_t len) {
+size_t parse (const char *buf, size_t len) {
 	size_t nparsed;
 	currently_parsing_eof = (len == 0);
 	nparsed = http_parser_execute(parser, &settings, buf, len);
@@ -344,6 +346,7 @@ void test_simple(const char *buf) {
 	parse(NULL, 0);
 
 	parser_free();
+	num_messages = 0;
 }
 
 extern "C" {

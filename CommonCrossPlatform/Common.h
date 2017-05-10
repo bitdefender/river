@@ -78,26 +78,32 @@ struct event_t {
   int exited;
 };
 
+//TODO clean this. Lots of components require changes
 typedef struct event_t EVENT_T;
-#define CREATE_EVENT(event) \
+#define CREATE_VALUE_EVENT(event, value) \
   ({ pthread_cond_init(&((event).cond), nullptr); \
    pthread_mutex_init(&(event).mutex, nullptr); \
-   (event).exited = false; \
+   (event).exited = (value); \
    })
+
+#define CREATE_EVENT(event) CREATE_VALUE_EVENT((event), false)
 
 #define SIGNAL_EVENT(event) \
   ({ pthread_mutex_lock(&(event).mutex); \
-   (event).exited = true; \
+   (event).exited = !(event).exited; \
    pthread_cond_signal(&(event).cond); \
    pthread_mutex_unlock(&(event).mutex); \
    })
 
 #define WAIT_FOR_SINGLE_OBJECT(event) \
   ({ pthread_mutex_lock(&(event).mutex); \
+   int ret = 0; \
    while (!(event).exited) { \
-   pthread_cond_wait(&(event).cond, &(event).mutex); \
+   ret = pthread_cond_wait(&(event).cond, &(event).mutex); \
    } \
+   (event).exited = !(event).exited; \
    pthread_mutex_unlock(&(event).mutex); \
+   ret == 0; \
    })
 
 #define CREATE_THREAD(tid, func, params, ret) do { ret = pthread_create((&tid), nullptr, (func), (params)); ret = (0 == ret); } while(false)
@@ -124,9 +130,10 @@ typedef HANDLE EVENT_T;
 typedef HANDLE PROCESS_HANDLE;
 typedef HANDLE MAPPING_HANDLE;
 
-#define CREATE_EVENT(handle) do { handle = CreateEvent(nullptr, false, false, nullptr); } while (false)
+#define CREATE_VALUE_EVENT(handle, value) do { handle = CreateEvent(nullptr, false, (value), nullptr); } while (false)
+#define CREATE_EVENT(handle) CREATE_VALUE_EVENT((handle), false)
 #define SIGNAL_EVENT(handle) SetEvent((handle))
-#define WAIT_FOR_SINGLE_OBJECT(handle) WaitForSingleObject((handle), INFINITE)
+#define WAIT_FOR_SINGLE_OBJECT(handle) (WAIT_OBJECT_0 == WaitForSingleObject((handle), INFINITE))
 
 #define CREATE_THREAD(tid, func, params, ret) do { tid = CreateThread(nullptr, 0, (func), (params), 0, nullptr); ret = (tid != nullptr); } while (false)
 #define JOIN_THREAD(tid, ret) do { ret = WaitForSingleObject(tid, INFINITE); ret = (WAIT_FAILED != ret); } while (false)

@@ -94,15 +94,25 @@ bool RiverX86Disassembler::Translate(nodep::BYTE *&px86, RiverInstruction &rOut,
 
 	flags = 0;
 	do {
+		nodep::BYTE* currentInstr = px86;
 		dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
 
 		flags &= ~RIVER_FLAG_PFX;
 		(this->*disassembleOpcodes[dwTable][*px86])(px86, rOut, flags);
+		if ((px86 == (nodep::BYTE *)INVALID_ADDRESS) && (currentInstr != px86)) {
+			px86 = currentInstr;
+			return false;
+		}
 	} while (flags & RIVER_FLAG_PFX);
 
 	dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
 	
+	nodep::BYTE* currentInstr = px86;
 	(this->*disassembleOperands[dwTable][rOut.opCode])(px86, rOut);
+	if ((px86 == (nodep::BYTE *)INVALID_ADDRESS) && (currentInstr != px86)) {
+		px86 = currentInstr;
+		return false;
+	}
 	TrackModifiedRegisters(rOut);
 	TrackFlagUsage(rOut);
 	rOut.TrackEspAsParameter();
@@ -122,9 +132,7 @@ void RiverX86Disassembler::DisassembleUnkInstr(nodep::BYTE *&px86, RiverInstruct
 	opcode = *px86;
 	extPrefix = (ri.modifiers & RIVER_MODIFIER_EXT) ? 0x0F : 0x00;
 	address = ri.instructionAddress;
-	DEBUG_BREAK;
-	/*exit(0);*/
-	px86++;
+	px86 = (nodep::BYTE*)INVALID_ADDRESS;
 }
 
 /* =========================================== */
@@ -265,7 +273,7 @@ void RiverX86Disassembler::DisassembleMoffs32(nodep::BYTE opIdx, nodep::BYTE *&p
 /* =========================================== */
 
 void RiverX86Disassembler::DisassembleUnkOp(nodep::BYTE *&px86, RiverInstruction &ri) {
-	DEBUG_BREAK;
+	px86 = (nodep::BYTE*)INVALID_ADDRESS;
 }
 
 void RiverX86Disassembler::DisassembleNoOp(nodep::BYTE *&px86, RiverInstruction &ri) {
@@ -615,7 +623,7 @@ const nodep::WORD specTbl[2][0x100] = {
 			/*0x02*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG,
 			/*0x03*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG,
 			/*0x04*/ 0xFF,
-			/*0x05*/ 0xFF,
+			/*0x05*/ 0x00,
 			/*0x06*/ 0xFF,
 			/*0x07*/ 0xFF,
 			/*0x08*/ 0xFF,

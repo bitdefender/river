@@ -6,8 +6,8 @@
 #include <intrin.h>
 
 
-void InitSymbolicHandler(ExecutionEnvironment *pEnv);
-void *CreateSymbolicVariable(const char *name);
+//void InitSymbolicHandler(ExecutionEnvironment *pEnv);
+//void *CreateSymbolicVariable(const char *name);
 
 namespace rev {
 
@@ -111,6 +111,10 @@ namespace rev {
 		return EXECUTION_ADVANCE;
 	}
 
+	nodep::DWORD DefaultErrorHandlerFunc(void *context, void *userContext, RevtracerError *rerror) {
+		return EXECUTION_TERMINATE;
+	}
+
 	void DefaultSyscallControlFunc(void *context, void *userContext) { }
 
 	void DefaultTrackCallback(nodep::DWORD value, nodep::DWORD address, nodep::DWORD segSel) { }
@@ -180,6 +184,7 @@ namespace rev {
 		DefaultCleanupContextFunc,
 		
 		DefaultBranchHandlerFunc,
+		DefaultErrorHandlerFunc,
 		DefaultSyscallControlFunc,
 
 		DefaultIpcInitialize,
@@ -202,12 +207,20 @@ namespace rev {
 		0
 	};
 
+	RevtracerVersion revtracerVersion = {
+		0,
+		1,
+		1
+	};
+
 	struct ExecutionEnvironment *pEnv = NULL;
 
 	void CreateHook(ADDR_TYPE orig, ADDR_TYPE det) {
+		RevtracerError rerror;
 		RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((nodep::UINT_PTR)orig);
+
 		pBlock->address = (nodep::DWORD)det;
-		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
+		pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags, &rerror);
 		pBlock->address = (nodep::DWORD)orig;
 		pBlock->dwFlags |= RIVER_BASIC_BLOCK_DETOUR;
 
@@ -228,13 +241,14 @@ namespace rev {
 			nodep::UINT_PTR rgs = (nodep::UINT_PTR)ADDR_OF_RET_ADDR() + sizeof(void *);
 
 			Initialize();
-
+			
 			pEnv->runtimeContext.registers = rgs;
 
 			revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (nodep::DWORD)revtracerConfig.entryPoint);
 			RiverBasicBlock *pBlock = pEnv->blockCache.NewBlock((nodep::UINT_PTR)revtracerConfig.entryPoint);
+			RevtracerError rerror;
 			pBlock->address = (nodep::DWORD)revtracerConfig.entryPoint;
-			pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags);
+			pEnv->codeGen.Translate(pBlock, revtracerConfig.featureFlags, &rerror);
 
 			revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "New entry point @%08x\n", (nodep::DWORD)pBlock->pFwCode);
 
@@ -274,34 +288,10 @@ namespace rev {
 		MarkAddr((ExecutionEnvironment *)ctx, (nodep::DWORD)addr, value, 0x2B);
 	}
 
-	/* Segment initialization *************************************************************/
-
-	//DWORD segmentOffsets[0x100];
-	/*void InitSegment(DWORD dwSeg) {
-		LDT_ENTRY entry;
-		Kernel32GetThreadSelectorEntry(Kernel32GetCurrentThread(), dwSeg, &entry);
-
-		DWORD base = entry.BaseLow | (entry.HighWord.Bytes.BaseMid << 16) | (entry.HighWord.Bytes.BaseHi << 24);
-		DWORD limit = entry.LimitLow | (entry.HighWord.Bits.LimitHi << 16);
-
-		if (entry.HighWord.Bits.Granularity) {
-			limit = (limit << 12) | 0x0FFF;
-		}
-
-		segmentOffsets[dwSeg] = base;
-	}
-
-
-	void InitSegments() {
-		for (DWORD i = 0; i < 0x100; ++i) {
-			InitSegment(i);
-		}
-	}*/
-
 	/* DLL API ****************************************************************************/
 
 
-	void SetDbgPrint(DbgPrintFunc func) {
+	/*void SetDbgPrint(DbgPrintFunc func) {
 		revtracerImports.dbgPrintFunc = func;
 	}
 
@@ -339,7 +329,7 @@ namespace rev {
 
 	void SetEntryPoint(ADDR_TYPE ep) {
 		revtracerConfig.entryPoint = ep;
-	}
+	}*/
 
 	void Initialize() {
 		revtracerImports.ipcLibInitialize();
@@ -359,7 +349,12 @@ namespace rev {
 			for (nodep::DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
 				CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
 			}
-			ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
+			for (nodep::DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
+				CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
+			}
+			// TODO save state
+			nodep::DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
+			// TODO if error=> restore state
 			revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
 		}
 	}

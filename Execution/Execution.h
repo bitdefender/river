@@ -1,4 +1,5 @@
 #ifndef _EXECUTION_H
+#define _EXECUTION_H
 
 #include <string>
 #include <cstdint>
@@ -49,6 +50,7 @@ typedef void *ADDR_TYPE;
 #define EXECUTION_ADVANCE					0x00000000
 #define EXECUTION_BACKTRACK					0x00000001
 #define EXECUTION_TERMINATE					0x00000002
+#define EXECUTION_RESTART					0x00000003
 
 #define EXECUTION_NEW							0x00
 #define EXECUTION_INITIALIZED					0x01
@@ -114,6 +116,7 @@ public :
 	virtual unsigned int ExecutionBegin(void *ctx, void *address) = 0;
 	virtual unsigned int ExecutionControl(void *ctx, void *address) = 0;
 	virtual unsigned int ExecutionEnd(void *ctx) = 0;
+	virtual unsigned int TranslationError(void *ctx, void *address) = 0;
 
 	virtual void TerminationNotification(void *ctx) = 0;
 };
@@ -127,7 +130,9 @@ public:
 	virtual bool SetCmdLine(const wstring &) = 0;
 	virtual bool SetEntryPoint(void *ep) = 0;
 	virtual bool SetExecutionFeatures(unsigned int feat) = 0;
+
 	virtual bool Execute() = 0;
+	// wait for the whole thing to terminate
 	virtual bool WaitForTermination() = 0;
 
 	virtual THREAD_T GetProcessHandle() = 0;
@@ -136,6 +141,7 @@ public:
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount) = 0;
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount) = 0;
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) = 0;
+	virtual bool WriteProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) = 0;
 
 	virtual void SetExecutionObserver(ExecutionObserver *obs) = 0;
 	virtual void SetTrackingObserver(rev::TrackCallbackFunc track, rev::MarkCallbackFunc mark) = 0;
@@ -144,6 +150,7 @@ public:
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx) = 0;
 	virtual unsigned int ExecutionEnd(void *cbCtx) = 0;
+	virtual unsigned int TranslationError(void *address, void *cbCtx) = 0;
 
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
 
@@ -154,6 +161,7 @@ public:
 	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value) = 0;
 
 };
+
 
 DLL_EXECUTION_PUBLIC extern ExecutionController *NewExecutionController(uint32_t type);
 DLL_EXECUTION_PUBLIC extern void DeleteExecutionController(ExecutionController *);

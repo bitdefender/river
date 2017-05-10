@@ -18,7 +18,7 @@ private:
 	static TranslateOpcodeFunc translate0xFFOp[8];
 public:
 	bool Init(RiverCodeGen *cg);
-	void Translate(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount);
+	bool Translate(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount);
 
 private:
 	void MakeAddNoFlagsRegImm8(RiverInstruction *rOut, const RiverRegister &reg, unsigned char offset, nodep::BYTE family, nodep::DWORD addr);

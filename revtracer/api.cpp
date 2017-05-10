@@ -24,6 +24,7 @@ DWORD dwAddressTrackHandler = (DWORD)&rev::TrackAddr;
 DWORD dwAddressMarkHandler = (DWORD)&rev::MarkAddr;
 
 void RiverPrintInstruction(DWORD printMask, RiverInstruction *ri);
+void DirectionHandler(DWORD dwDirection, ExecutionEnvironment *pEnv, ADDR_TYPE addr);
 
 extern "C" {
 	void PushToExecutionBuffer(ExecutionEnvironment *pEnv, DWORD value) {
@@ -45,23 +46,27 @@ extern "C" {
 		return (DWORD)pEnv->executionBase == pEnv->runtimeContext.execBuff;
 	}
 
+	void ClearExecutionBuffer(ExecutionEnvironment *pEnv) {
+		pEnv->runtimeContext.execBuff = pEnv->executionBase;
+	}
+
 	typedef DWORD (*NtTerminateProcessFunc)(
 		DWORD ProcessHandle,
 		DWORD ExitStatus
 	);
 
+
 	void __stdcall BranchHandler(ExecutionEnvironment *pEnv, ADDR_TYPE a) {
 		//ExecutionRegs *currentRegs = (ExecutionRegs *)((&a) + 1);
 
 		pEnv->runtimeContext.registers = (UINT_PTR)((&a) + 1);
-		RiverBasicBlock *pCB;
 		pEnv->runtimeContext.trackBuff = pEnv->runtimeContext.trackBase;
 
 		if (pEnv->bForward) {
 			PushToExecutionBuffer(pEnv, pEnv->lastFwBlock);
 		}
 
-		
+
 		DWORD *stk = (DWORD *)pEnv->runtimeContext.virtualStack;
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "EIP: 0x%08x Stack :\n", a);
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x00, stk[0], stk[1], stk[2], stk[3]);
@@ -79,74 +84,135 @@ extern "C" {
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->eflags);
 
 		DWORD dwDirection = revtracerImports.branchHandler(pEnv, pEnv->userContext, a);
-		if (EXECUTION_BACKTRACK == dwDirection) {
-			// go backwards
-			DWORD addr = PopFromExecutionBuffer(pEnv);
-			revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Going Backwards to %08X!!!\n", addr);
-
-			revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Looking for block\n");
-			pCB = pEnv->blockCache.FindBlock(addr);
-			if (pCB) {
-				revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Block found\n");
-				pCB->MarkBackward();
-				//pEnv->posHist -= 1;
-				
-				pEnv->bForward = 0;
-				pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pBkCode;
-			}
-			else {
-				revtracerImports.dbgPrintFunc(PRINT_BRANCHING_ERROR, "No reverse block found!");
-				DEBUG_BREAK;
-			}
-
-		} else if (EXECUTION_ADVANCE == dwDirection) {
-			// go forwards
-			revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Going Forwards from %08X!!!\n", a);
-			revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Looking for block\n");
-			pCB = pEnv->blockCache.FindBlock((UINT_PTR)a);
-			if (pCB) {
-				revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Block found\n");
-			} else {
-				revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Not Found\n");
-				pCB = pEnv->blockCache.NewBlock((UINT_PTR)a);
-
-				pEnv->codeGen.Translate(pCB, pEnv->generationFlags);
-
-				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river saving code ===========================================================\n");
-				for (DWORD i = 0; i < pEnv->codeGen.fwInstCount; ++i) {
-					TRANSLATE_PRINT_INSTRUCTION(PRINT_BRANCHING_INFO, &pEnv->codeGen.fwRiverInst[i]);
-				}
-				TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "===============================================================================\n");
-
-				if (TRACER_FEATURE_REVERSIBLE & pEnv->generationFlags) {
-					TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river reversing code ========================================================\n");
-					for (DWORD i = 0; i < pEnv->codeGen.bkInstCount; ++i) {
-						TRANSLATE_PRINT_INSTRUCTION(PRINT_BRANCHING_INFO, &pEnv->codeGen.bkRiverInst[i]);
-					}
-					TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "===============================================================================\n");
-				}
-			}
-			pCB->MarkForward();
-			pEnv->lastFwBlock = pCB->address;
-			pEnv->bForward = 1;
-
-			pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
-		} else if (EXECUTION_TERMINATE == dwDirection) {
-			//revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++ Tainted addresses +++ \n");
-			pEnv->ac.PrintAddreses();
-			//revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++++++++++++++++++++++++ \n");
-			
-			//((NtTerminateProcessFunc)revtracerImports.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
-
-			pEnv->runtimeContext.jumpBuff = pEnv->exitAddr;
-		}
-		
+		DirectionHandler(dwDirection, pEnv, a);
 	}
 
 	void __stdcall SysHandler(struct ExecutionEnvironment *pEnv) {
 		revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "SysHandler!!!\n");
 	}
 };
+
+template<DWORD Direction>
+bool ProcessDirection(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction);
+
+template<>
+bool ProcessDirection<EXECUTION_TERMINATE>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
+	//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++ Tainted addresses +++ \n");
+	pEnv->ac.PrintAddreses();
+	//revtracerAPI.dbgPrintFunc(PRINT_INFO | PRINT_INSPECTION, " +++++++++++++++++++++++++ \n");
+
+	//((NtTerminateProcessFunc)revtracerAPI.lowLevel.ntTerminateProcess)(0xFFFFFFFF, 0);
+
+	pEnv->runtimeContext.jumpBuff = pEnv->exitAddr;
+	return true;
+}
+
+template<>
+bool ProcessDirection<EXECUTION_RESTART>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
+	BRANCHING_PRINT(PRINT_BRANCHING_INFO, "RESTART Requested\n", revtracerConfig.entryPoint);
+	pEnv->lastFwBlock = 0;
+	ClearExecutionBuffer(pEnv);
+
+	// need to push the return address again
+	DWORD nextDirection = revtracerImports.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint);
+	if (nextDirection == EXECUTION_ADVANCE) {
+		pEnv->runtimeContext.virtualStack -= 4;
+		*((ADDR_TYPE *)pEnv->runtimeContext.virtualStack) = nextInstruction;
+		pEnv->lastFwBlock = (UINT_PTR)revtracerConfig.entryPoint;
+		pEnv->bForward = 1;
+		DirectionHandler(nextDirection, pEnv, revtracerConfig.entryPoint);
+	} else {
+		pEnv->runtimeContext.jumpBuff = (UINT_PTR)revtracerImports.lowLevel.ntTerminateProcess;
+	}
+	return true;
+}
+
+template<>
+bool ProcessDirection<EXECUTION_ADVANCE>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
+	RiverBasicBlock *pCB;
+	// go forwards
+	TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Going Forwards from %08X!!!\n", nextInstruction);
+	TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Looking for block\n");
+
+	pCB = pEnv->blockCache.FindBlock((nodep::UINT_PTR)nextInstruction);
+
+	if (pCB) {
+		TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Block found\n");
+	} else {
+		TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "Not Found\n");
+		pCB = pEnv->blockCache.NewBlock((nodep::UINT_PTR)nextInstruction);
+
+		RevtracerError rerror;
+		bool ret = pEnv->codeGen.Translate(pCB, pEnv->generationFlags, &rerror);
+
+		if (!ret && rerror.errorCode != RERROR_OK) {
+			auto nextDirection = revtracerImports.errorHandler(pEnv, pEnv->userContext, &rerror);
+			if (nextDirection == EXECUTION_RESTART) {
+				ProcessDirection<EXECUTION_RESTART>(pEnv, nextInstruction);
+			} else {
+				ProcessDirection<EXECUTION_TERMINATE>(pEnv, nextInstruction);
+			}
+			return false;
+		}
+
+		TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river saving code ===========================================================\n");
+		for (DWORD i = 0; i < pEnv->codeGen.fwInstCount; ++i) {
+			TRANSLATE_PRINT_INSTRUCTION(PRINT_BRANCHING_INFO, &pEnv->codeGen.fwRiverInst[i]);
+		}
+		TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "===============================================================================\n");
+
+		if (TRACER_FEATURE_REVERSIBLE & pEnv->generationFlags) {
+			TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "= river reversing code ========================================================\n");
+			for (DWORD i = 0; i < pEnv->codeGen.bkInstCount; ++i) {
+				TRANSLATE_PRINT_INSTRUCTION(PRINT_BRANCHING_INFO, &pEnv->codeGen.bkRiverInst[i]);
+			}
+			TRANSLATE_PRINT(PRINT_BRANCHING_INFO, "===============================================================================\n");
+		}
+	}
+	pCB->MarkForward();
+	pEnv->lastFwBlock = pCB->address;
+	pEnv->bForward = 1;
+
+	pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pFwCode;
+	return true;
+}
+
+template<>
+bool ProcessDirection<EXECUTION_BACKTRACK>(ExecutionEnvironment *pEnv, ADDR_TYPE nextInstruction) {
+	RiverBasicBlock *pCB;
+
+	// go backwards
+	DWORD addr = PopFromExecutionBuffer(pEnv);
+	revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Going Backwards to %08X!!!\n", addr);
+
+	revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Looking for block\n");
+	pCB = pEnv->blockCache.FindBlock(addr);
+	if (pCB) {
+		revtracerImports.dbgPrintFunc(PRINT_BRANCHING_INFO, "Block found\n");
+		pCB->MarkBackward();
+		//pEnv->posHist -= 1;
+
+		pEnv->bForward = 0;
+		pEnv->runtimeContext.jumpBuff = (DWORD)pCB->pBkCode;
+	}
+	else {
+		revtracerImports.dbgPrintFunc(PRINT_BRANCHING_ERROR, "No reverse block found!");
+		return false;
+	}
+	return true;
+}
+
+void DirectionHandler(DWORD dwDirection, ExecutionEnvironment *pEnv, ADDR_TYPE addr) {
+	if (EXECUTION_BACKTRACK == dwDirection) {
+		ProcessDirection<EXECUTION_BACKTRACK>(pEnv, addr);
+	} else if (EXECUTION_ADVANCE == dwDirection) {
+		ProcessDirection<EXECUTION_ADVANCE>(pEnv, addr);
+	} else if (EXECUTION_TERMINATE == dwDirection) {
+		ProcessDirection<EXECUTION_TERMINATE>(pEnv, addr);
+	} else if (EXECUTION_RESTART == dwDirection) {
+		ProcessDirection<EXECUTION_RESTART>(pEnv, addr);
+	}
+}
 
 
 DWORD DllEntry() {

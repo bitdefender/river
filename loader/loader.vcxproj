@@ -53,8 +53,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>Entry</EntryPointSymbol>
       <SubSystem>Console</SubSystem>
-      <SectionAlignment>
-      </SectionAlignment>
+      <SectionAlignment>65536</SectionAlignment>
     </Link>
     <PostBuildEvent>
       <Command>copy $(TargetDir)$(TargetFileName) $(SolutionDir)jsdemo\

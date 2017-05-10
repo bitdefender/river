@@ -148,16 +148,36 @@ void MakeJMP(struct RiverInstruction *ri, nodep::DWORD jmpAddr) {
 
 void RiverPrintInstruction(nodep::DWORD printMask, RiverInstruction *ri);
 
-bool RiverCodeGen::DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut, nodep::DWORD &count, nodep::DWORD &dwFlags) {
+bool RiverCodeGen::DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut, nodep::DWORD &count, nodep::DWORD &dwFlags, RevtracerError *rerror) {
+	bool ret = true;
 	RiverInstruction dis;
 
-	disassembler.Translate(px86, dis, dwFlags);
-	metaTranslator.Translate(dis, rOut, count);
+	ret = disassembler.Translate(px86, dis, dwFlags);
+	rerror->instructionAddress = dis.instructionAddress;
+	rerror->prefix = (dis.modifiers & RIVER_MODIFIER_EXT) ? 0x0F : 0x00;
+	rerror->opcode = *px86;
 
-	return true;
+	if (!ret) {
+		rerror->errorCode = RERROR_UNK_INSTRUCTION;
+		rerror->translatorId = RIVER_DISASSEMBLER_ID;
+		return ret;
+	}
+
+	ret = metaTranslator.Translate(dis, rOut, count);
+
+	if (!ret) {
+		rerror->errorCode = RERROR_UNK_INSTRUCTION;
+		rerror->translatorId = RIVER_META_TRANSLATOR_ID;
+		return ret;
+	}
+
+	rerror->errorCode = RERROR_OK;
+	rerror->translatorId = RIVER_NONE_ID;
+	return ret;
 }
 
-nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags) {
+nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags, RevtracerError *rerror) {
+	bool ret;
 	nodep::BYTE *pTmp = px86;
 	nodep::DWORD pFlags = 0;
 
@@ -181,7 +201,10 @@ nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &
 		//disassembler.Translate(pTmp, dis, pFlags);
 		//metaTranslator.Translate(dis, instrBuffers[currentBuffer], instrCounts[currentBuffer]);
 
-		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags);
+		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags, rerror);
+		if (rerror->errorCode != RERROR_OK) {
+			return 0;
+		}
 
 		nodep::DWORD addrCount = 0;
 		
@@ -239,11 +262,16 @@ nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &
 		if (TRACER_FEATURE_REVERSIBLE & dwTranslationFlags) {
 			instrCounts[currentBuffer] = 0;
 			for (nodep::DWORD i = 0; i < instrCounts[currentBuffer - 1]; ++i) {
-				saveTranslator.Translate(
-					instrBuffers[currentBuffer - 1][i], 
-					&instrBuffers[currentBuffer][instrCounts[currentBuffer]], 
-					instrCounts[currentBuffer]
-				);
+				ret = saveTranslator.Translate(
+						instrBuffers[currentBuffer - 1][i], 
+						&instrBuffers[currentBuffer][instrCounts[currentBuffer]], 
+						instrCounts[currentBuffer]
+						);
+				if (!ret) {
+					rerror->translatorId = RIVER_SAVE_TRANSLATOR_ID;
+					rerror->errorCode = RERROR_UNK_INSTRUCTION;
+					return 0;
+				}
 			}
 			currentBuffer++;
 		}
@@ -251,14 +279,19 @@ nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &
 		if (TRACER_FEATURE_TRACKING & dwTranslationFlags) {
 			instrCounts[currentBuffer] = 0;
 			for (nodep::DWORD i = 0; i < instrCounts[currentBuffer - 1]; ++i) {
-				symbopTranslator.Translate(
-					instrBuffers[currentBuffer - 1][i], 
-					&instrBuffers[currentBuffer][instrCounts[currentBuffer]], 
-					instrCounts[currentBuffer], 
-					&symbopInst[symbopInstCount], 
-					symbopInstCount,
-					dwTranslationFlags
-				);
+				ret = symbopTranslator.Translate(
+						instrBuffers[currentBuffer - 1][i], 
+						&instrBuffers[currentBuffer][instrCounts[currentBuffer]], 
+						instrCounts[currentBuffer], 
+						&symbopInst[symbopInstCount], 
+						symbopInstCount,
+						dwTranslationFlags
+						);
+				if (!ret) {
+					rerror->translatorId = RIVER_SYMBOP_TRANSLATOR_ID;
+					rerror->errorCode = RERROR_UNK_INSTRUCTION;
+					return 0;
+				}
 			}
 			currentBuffer++;
 		}
@@ -335,7 +368,9 @@ bool SaveToStream(
 	return true;
 }
 
-bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFlags) {
+bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFlags, RevtracerError *rerror) {
+	bool ret;
+
 	if (dwTranslationFlags & 0x80000000) {
 		pCB->dwSize = 0;
 		pCB->dwCRC = (nodep::DWORD)crc32(0xEDB88320, (nodep::BYTE *)pCB->address, 0);
@@ -344,13 +379,19 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFla
 		pCB->pCode = pCB->pFwCode = (unsigned char *)pCB->address;
 		pCB->pBkCode = NULL;
 
+		rerror->errorCode = RERROR_OK;
 		return true;
 	} else {
 
 		Reset();
 
 		pCB->dwOrigOpCount = 0;
-		pCB->dwSize = TranslateBasicBlock((nodep::BYTE *)pCB->address, pCB->dwOrigOpCount, pCB->pDisasmCode, dwTranslationFlags); //(this, disassembler, saveTranslator, (nodep::BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
+		pCB->dwSize = TranslateBasicBlock((nodep::BYTE *)pCB->address, pCB->dwOrigOpCount, pCB->pDisasmCode, dwTranslationFlags, rerror); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
+
+		if (pCB->dwSize == 0 && rerror->errorCode != RERROR_OK) {
+			return false;
+		}
+
 		trInstCount += pCB->dwOrigOpCount;
 		pCB->dwCRC = (nodep::DWORD)crc32(0xEDB88320, (nodep::BYTE *)pCB->address, pCB->dwSize);
 
@@ -361,7 +402,16 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFla
 			revtracerImports.dbgPrintFunc(PRINT_DEBUG, "##Rev: %08x %d instructions\n", fwRiverInst, fwInstCount);
 			for (nodep::DWORD i = 0; i < fwInstCount; ++i) {
 				//TranslateReverse(this, &fwRiverInst[fwInstCount - 1 - i], &bkRiverInst[i], &tmp);
-				revTranslator.Translate(fwRiverInst[fwInstCount - 1 - i], bkRiverInst[i]);
+				const RiverInstruction ri = fwRiverInst[fwInstCount - 1 - i];
+				ret = revTranslator.Translate(ri, bkRiverInst[i]);
+				if (!ret) {
+					rerror->prefix = (ri.modifiers | RIVER_MODIFIER_EXT) ? 0xFF : 0x00;
+					rerror->opcode = *((nodep::BYTE*)ri.instructionAddress);
+					rerror->translatorId = RIVER_REVERSE_TRANSLATOR_ID;
+					rerror->instructionAddress = ri.instructionAddress;
+					rerror->errorCode = RERROR_UNK_INSTRUCTION;
+					return false;
+				}
 			}
 			MakeJMP(&bkRiverInst[fwInstCount], pCB->address);
 			bkInstCount = fwInstCount + 1;
@@ -377,7 +427,16 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFla
 			if (dwTranslationFlags & TRACER_FEATURE_REVERSIBLE) {
 				sfInstCount = 0;
 				for (unsigned int i = 0; i < symbopInstCount; ++i) {
-					symbopSaveTranslator.Translate(symbopInst[i], &symbopFwRiverInst[sfInstCount], sfInstCount);
+					const RiverInstruction si = symbopInst[i];
+					ret = symbopSaveTranslator.Translate(si, &symbopFwRiverInst[sfInstCount], sfInstCount);
+					if (!ret) {
+						rerror->prefix = (si.modifiers | RIVER_MODIFIER_EXT) ? 0xFF : 0x00;
+						rerror->opcode = *((nodep::BYTE*)si.instructionAddress);
+						rerror->translatorId = RIVER_SYMBOP_SAVE_TRANSLATOR_ID;
+						rerror->instructionAddress = si.instructionAddress;
+						rerror->errorCode = RERROR_UNK_INSTRUCTION;
+						return false;
+					}
 				}
 
 				TRANSLATE_PRINT(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, "= SymbopFwRiverTrack ==========================================================\n");
@@ -387,7 +446,16 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFla
 				TRANSLATE_PRINT(PRINT_INFO | PRINT_TRANSLATION | PRINT_TRACKING | PRINT_FORWARD, "===============================================================================\n");
 
 				for (nodep::DWORD i = 0; i < sfInstCount; ++i) {
-					symbopReverseTranslator.Translate(symbopFwRiverInst[sfInstCount - 1 - i], symbopBkRiverInst[i]);
+					const RiverInstruction sfri = symbopFwRiverInst[sfInstCount - 1 - i];
+					ret = symbopReverseTranslator.Translate(sfri, symbopBkRiverInst[i]);
+					if (!ret) {
+						rerror->prefix = (sfri.modifiers | RIVER_MODIFIER_EXT) ? 0xFF : 0x00;
+						rerror->opcode = *((nodep::BYTE*)sfri.instructionAddress);
+						rerror->translatorId = RIVER_SYMBOP_REVERSE_TRANSLATOR_ID;
+						rerror->instructionAddress = sfri.instructionAddress;
+						rerror->errorCode = RERROR_UNK_INSTRUCTION;
+						return false;
+					}
 				}
 				sbInstCount = sfInstCount;
 

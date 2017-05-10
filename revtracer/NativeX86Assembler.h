@@ -46,7 +46,9 @@ private :
 	void AssembleFarJumpInstr(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter);
 	void AssembleFarJump2(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter);
 	
+	template <nodep::BYTE opcode>
 	void AssembleSyscall(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter);
+	template <nodep::BYTE opcode>
 	void AssembleSyscall2(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::DWORD &instrCounter);
 
 	void AssembleLeaveForSyscall(

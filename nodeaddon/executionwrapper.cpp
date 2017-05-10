@@ -15,9 +15,10 @@ using namespace v8;
 //using namespace ;
 
 
-class ExecutionWrapper : public node::ObjectWrap {
+class ExecutionWrapper : public node::ObjectWrap, public ExecutionObserver {
 private:
     ExecutionController *controller;
+	void *context;
 
     HANDLE hEvent;
     unsigned int result;    
@@ -35,10 +36,10 @@ private:
 
     static ExecutionWrapper *Factory();
 
-    static void __stdcall TerminationNotify(void *ctx);
+    /*static void __stdcall TerminationNotify(void *ctx);
     static unsigned int __stdcall ExecutionBegin(void *ctx, unsigned int address);
     static unsigned int __stdcall ExecutionControl(void *ctx, unsigned int address);
-    static unsigned int __stdcall ExecutionEnd(void *ctx);
+    static unsigned int __stdcall ExecutionEnd(void *ctx);*/
 
 public:
     static void Init(Local<Object> exports);
@@ -71,18 +72,23 @@ public:
     static void EBeginAsync(uv_async_t *handle);
     static void EControlAsync(uv_async_t *handle);
     static void EEndAsync(uv_async_t *handle);
+
+	virtual unsigned int ExecutionBegin(void *ctx, void *address);
+	virtual unsigned int ExecutionControl(void *ctx, void *address);
+	virtual unsigned int ExecutionEnd(void *ctx);
+	virtual void TerminationNotification(void *ctx);
 };
 
 ExecutionWrapper *ExecutionWrapper::Factory() {
     ExecutionWrapper *ret = new ExecutionWrapper();
-    ret->controller = NewExecutionController();
+    ret->controller = NewExecutionController(EXECUTION_EXTERNAL);
 
-    ret->controller->SetNotificationContext(ret);
+	ret->controller->SetExecutionObserver(ret);
 
-    ret->controller->SetTerminationNotification(TerminationNotify);
+    /*ret->controller->SetTerminationNotification(TerminationNotify);
     ret->controller->SetExecutionBeginNotification(ExecutionBegin);
     ret->controller->SetExecutionControlNotification(ExecutionControl);
-    ret->controller->SetExecutionEndNotification(ExecutionEnd);
+    ret->controller->SetExecutionEndNotification(ExecutionEnd);*/
 
     uv_async_init(uv_default_loop(), &ret->termAsync, TermAsync);
     uv_async_init(uv_default_loop(), &ret->eBeginAsync, EBeginAsync);
@@ -135,45 +141,39 @@ void ExecutionWrapper::New(const FunctionCallbackInfo<Value> &args) {
 
 
 // this gets called on the execution thread
-void __stdcall ExecutionWrapper::TerminationNotify(void *ctx) {
-    ExecutionWrapper *_this = (ExecutionWrapper *)ctx;
-
-    uv_async_send(&_this->termAsync);
+void ExecutionWrapper::TerminationNotification(void *ctx) {
+    uv_async_send(&termAsync);
 }
 
 // this gets called on the execution thread
-unsigned int __stdcall ExecutionWrapper::ExecutionBegin(void *ctx, unsigned int address) {
-    ExecutionWrapper *_this = (ExecutionWrapper *)ctx;
+unsigned int ExecutionWrapper::ExecutionBegin(void *ctx, void *address) {
+	context = ctx;
 
-    _this->eip = address;
-    uv_async_send(&_this->eBeginAsync);
+    eip = (unsigned int)address;
+    uv_async_send(&eBeginAsync);
 
-    WaitForSingleObject(_this->hEvent, INFINITE);
+    WaitForSingleObject(hEvent, INFINITE);
 
-    return _this->result;
+    return result;
 }
 
 // this gets called on the execution thread
-unsigned int __stdcall ExecutionWrapper::ExecutionControl(void *ctx, unsigned int address) {
-    ExecutionWrapper *_this = (ExecutionWrapper *)ctx;
+unsigned int ExecutionWrapper::ExecutionControl(void *ctx, void *address) {
+    eip = (unsigned int)address;
+    uv_async_send(&eControlAsync);
 
-    _this->eip = address;
-    uv_async_send(&_this->eControlAsync);
+    WaitForSingleObject(hEvent, INFINITE);
 
-    WaitForSingleObject(_this->hEvent, INFINITE);
-
-    return _this->result;
+    return result;
 }
 
 // this gets called on the execution thread
-unsigned int __stdcall ExecutionWrapper::ExecutionEnd(void *ctx) {
-    ExecutionWrapper *_this = (ExecutionWrapper *)ctx;
+unsigned int ExecutionWrapper::ExecutionEnd(void *ctx) {
+    uv_async_send(&eEndAsync);
 
-    uv_async_send(&_this->eEndAsync);
+    WaitForSingleObject(hEvent, INFINITE);
 
-    WaitForSingleObject(_this->hEvent, INFINITE);
-
-    return _this->result;
+    return result;
 }
 
 void ExecutionWrapper::Init(Local<Object> exports) {
@@ -276,7 +276,7 @@ void ExecutionWrapper::Terminate(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
     ExecutionWrapper *_this = ObjectWrap::Unwrap<ExecutionWrapper>(args.Holder());
-    args.GetReturnValue().Set(Boolean::New(isolate, _this->controller->Terminate()));
+    args.GetReturnValue().Set(Boolean::New(isolate, _this->controller->WaitForTermination()));
 }
 
 void ExecutionWrapper::GetProcessVirtualMemory(const FunctionCallbackInfo<Value>& args) {
@@ -388,14 +388,13 @@ void ExecutionWrapper::SetExecutionEndNotification(const FunctionCallbackInfo<Va
     args.GetReturnValue().Set(Undefined(isolate));
 }
 
-
 void ExecutionWrapper::GetCurrentRegisters(const FunctionCallbackInfo<Value>& args) {
     Isolate *isolate = args.GetIsolate();
 
     ExecutionWrapper *_this = ObjectWrap::Unwrap<ExecutionWrapper>(args.Holder());
     
-    Registers regs;
-    _this->controller->GetCurrentRegisters(regs);
+	rev::ExecutionRegs regs;
+    _this->controller->GetCurrentRegisters(_this->context, &regs);
     
     Local<Object> obj = Object::New(isolate);
 

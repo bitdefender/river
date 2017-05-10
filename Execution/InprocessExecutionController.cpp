@@ -124,6 +124,11 @@ bool InprocessExecutionController::ReadProcessMemory(unsigned int base, unsigned
 	return true;
 }
 
+bool InprocessExecutionController::WriteProcessMemory(unsigned int base, unsigned int size, unsigned char * buff) {
+	memcpy((LPVOID)base, buff, size);
+	return true;
+}
+
 #ifdef __linux__
 void *ThreadProc(void *p) {
 	InprocessExecutionController *_this = (InprocessExecutionController *)p;
@@ -174,6 +179,7 @@ bool InprocessExecutionController::Execute() {
 	revtracer.pImports->dbgPrintFunc = ::DebugPrintf;
 
 	revtracer.pImports->branchHandler = BranchHandlerFunc;
+	revtracer.pImports->errorHandler = ErrorHandlerFunc;
 	revtracer.pImports->syscallControl = SyscallControlFunc;
 
 	if (nullptr != trackCb) {
@@ -203,26 +209,21 @@ bool InprocessExecutionController::Execute() {
 	revtracer.pImports->memoryFreeFunc = wrapper.pExports->freeMemory;
 	revtracer.pImports->lowLevel.ntTerminateProcess = (rev::ADDR_TYPE)wrapper.pExports->terminateProcess;
 	revtracer.pImports->lowLevel.vsnprintf_s = (rev::ADDR_TYPE)wrapper.pExports->formattedPrint;
-
 	gcr = revtracer.pExports->getCurrentRegisters;
 	gmi = revtracer.pExports->getMemoryInfo;
 	mmv = revtracer.pExports->markMemoryValue;
-	glbbc = revtracer.pExports->getLastBasicBlockInfo;
+	glbbi = revtracer.pExports->getLastBasicBlockInfo;
 
-	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv) || (nullptr == glbbc)) {
+	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv) || (nullptr == glbbi)) {
 		DEBUG_BREAK;
 		return false;
 	}
 
-	//config->contextSize = sizeof(CustomExecutionContext);
 	revtracer.pConfig->entryPoint = entryPoint;
 	revtracer.pConfig->featureFlags = featureFlags;
 	revtracer.pConfig->context = this;
-	//revtracer.pConfig->sCons = symbolicConstructor;
-
-
-	//revtracer.pConfig->sCons = SymExeConstructor;
-
+	revtracer.pConfig->hookCount = 0;
+	
 	revtracerInitialize = (InitializeFunc)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "Initialize");
 	revtraceExecute = (ExecuteFunc)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "Execute");
 

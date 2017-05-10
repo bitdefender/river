@@ -101,6 +101,7 @@ public:
 	virtual rev::ADDR_TYPE GetTerminationCode();
 
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
+	virtual bool WriteProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
 
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx);
 };

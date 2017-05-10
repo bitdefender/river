@@ -9,6 +9,7 @@ using namespace std;
 
 void DebugPrintf(const unsigned int printMask, const char *fmt, ...);
 nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction);
+nodep::DWORD ErrorHandlerFunc(void *context, void *userContext, rev::RevtracerError *rerror);
 void InitSegments(void *hThread, nodep::DWORD *segments);
 
 typedef void(*GetCurrentRegistersFunc)(void *ctx, rev::ExecutionRegs *regs);
@@ -55,13 +56,13 @@ protected:
 	GetCurrentRegistersFunc gcr;
 	GetMemoryInfoFunc gmi;
 	MarkMemoryValueFunc mmv;
-	GetLastBasicBlockInfoFunc glbbc;
+	GetLastBasicBlockInfoFunc glbbi;
 
-	//rev::SymExeConstructorFunc symbolicConstructor;
 	rev::TrackCallbackFunc trackCb;
 	rev::MarkCallbackFunc markCb;
 	rev::SymbolicHandlerFunc symbCb;
 
+	static const rev::RevtracerVersion supportedVersion;
 public :
 	virtual int GetState() const;
 
@@ -77,6 +78,7 @@ public :
 	virtual unsigned int ExecutionBegin(void *address, void *cbCtx);
 	virtual unsigned int ExecutionControl(void *address, void *cbCtx);
 	virtual unsigned int ExecutionEnd(void *cbCtx);
+	virtual unsigned int TranslationError(void *address, void *cbCtx);
 
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers);
 	virtual void *GetMemoryInfo(void *ctx, void *ptr);

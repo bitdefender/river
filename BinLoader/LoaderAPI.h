@@ -7,6 +7,11 @@
 typedef unsigned long DWORD;
 typedef ldr::AbstractBinary *MODULE_PTR;
 typedef DWORD BASE_PTR;
+struct mappedObject {
+	MODULE_PTR module;
+	BASE_PTR base;
+	DWORD size;
+};
 
 #define LOAD_LIBRARYW(libName, module, base) ManualLoadLibrary((libName), (module), (base))
 #define GET_PROC_ADDRESS(module, base, name) ManualGetProcAddress((module), (base), (name))

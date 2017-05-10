@@ -64,6 +64,11 @@ nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE 
 		dwDirection = exec->ExecutionControl(nextInstruction, pEnv);
 	}
 
+	// for now: we only accept resets at execution end
+	if ((EXECUTION_RESTART == dwDirection) && (nextInstruction != (rev::ADDR_TYPE)pEnv->exitAddr)) {
+		dwDirection = EXECUTION_TERMINATE;
+	}
+
 	if ((EXECUTION_BACKTRACK == dwDirection) && (0 == (pEnv->generationFlags & TRACER_FEATURE_REVERSIBLE))) {
 		dwDirection = EXECUTION_ADVANCE;
 	}
@@ -87,6 +92,32 @@ nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE 
 
 	printf("[Parent] BH direction %s\n", dwDirection == EXECUTION_ADVANCE ? "advance" : "other");
 	return dwDirection;
+}
+
+nodep::DWORD ErrorHandlerFunc(void *context, void *userContext, rev::RevtracerError *rerror) {
+	ExecutionEnvironment *pEnv = (ExecutionEnvironment *)context;
+	ExecutionController *exec = (ExecutionController *)userContext;
+
+	if (rerror->errorCode == RERROR_UNK_INSTRUCTION) {
+		exec->DebugPrintf(PRINT_ERROR, "Disassembling unknown instruction %02x %02x at address %08x\n",
+				rerror->prefix, rerror->opcode, rerror->instructionAddress);
+
+		switch(rerror->translatorId) {
+			case RIVER_META_TRANSLATOR_ID:
+				exec->DebugPrintf(PRINT_ERROR, "Translation step: MetaTrasnlator\n");
+				break;
+			case RIVER_DISASSEMBLER_ID:
+				exec->DebugPrintf(PRINT_ERROR, "Translation step: Disassembler\n");
+				break;
+			default:
+				exec->DebugPrintf(PRINT_ERROR, "Translation step: unknown\n");
+
+		}
+	}
+
+	auto direction = exec->TranslationError((void*)rerror->instructionAddress, pEnv);
+
+	return direction;
 }
 
 void SyscallControlFunc(void *context, void *userContext) {

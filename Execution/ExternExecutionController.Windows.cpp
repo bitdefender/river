@@ -210,7 +210,7 @@ bool ExternExecutionController::InitializeRevtracer() {
 	gcr = revtracer.pExports->getCurrentRegisters;
 	gmi = revtracer.pExports->getMemoryInfo;
 	mmv = revtracer.pExports->markMemoryValue;
-	glbbc = revtracer.pExports->getLastBasicBlockInfo;
+	glbbi = revtracer.pExports->getLastBasicBlockInfo;
 
 	revtracer.pConfig->context = nullptr;
 	InitSegments(hMainThread, revtracer.pConfig->segmentOffsets);
@@ -377,7 +377,7 @@ bool ExternExecutionController::MapTracer() {
 
 bool ExternExecutionController::WriteLoaderConfig() {
 	DWORD dwWritten;
-	if (FALSE == WriteProcessMemory(hProcess, loader.pConfig, &loader.vConfig, sizeof(loader.vConfig), &dwWritten)) {
+	if (FALSE == ::WriteProcessMemory(hProcess, loader.pConfig, &loader.vConfig, sizeof(loader.vConfig), &dwWritten)) {
 		return false;
 	}
 
@@ -470,7 +470,7 @@ bool ExternExecutionController::PatchProcess() {
 		return false;
 	}
 
-	if (FALSE == WriteProcessMemory(hProcess, mAddr, &tmp, sizeof(tmp), &dwWr)) {
+	if (FALSE == ::WriteProcessMemory(hProcess, mAddr, &tmp, sizeof(tmp), &dwWr)) {
 		return false;
 	}
 
@@ -714,6 +714,11 @@ DWORD ExternExecutionController::ControlThread() {
 bool ExternExecutionController::ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) {
 	DWORD dwRd;
 	return TRUE == ::ReadProcessMemory(hProcess, (LPCVOID)base, buff, size, &dwRd);
+}
+
+bool ExternExecutionController::WriteProcessMemory(unsigned int base, unsigned int size, unsigned char *buff) {
+	DWORD dwWr;
+	return TRUE == ::WriteProcessMemory(hProcess, (LPVOID)base, buff, size, &dwWr);
 }
 
 unsigned int ExternExecutionController::ExecutionBegin(void *address, void *cbCtx) {

@@ -43,6 +43,7 @@ public :
 	/*virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);*/
 	virtual bool ReadProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
+	virtual bool WriteProcessMemory(unsigned int base, unsigned int size, unsigned char *buff);
 
 	DWORD ControlThread();
 

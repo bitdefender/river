@@ -144,7 +144,7 @@ bool RiverMetaTranslator::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-void RiverMetaTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount) {
+bool RiverMetaTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount) {
 	nodep::DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
 
 	if (rIn.family == RIVER_FAMILY_NATIVE) {
@@ -154,6 +154,7 @@ void RiverMetaTranslator::Translate(const RiverInstruction &rIn, RiverInstructio
 		CopyInstruction(rOut[0], rIn);
 		instrCount++;
 	}
+	return true;
 }
 
 void RiverMetaTranslator::TranslateUnk(RiverInstruction *rOut, const RiverInstruction &rIn, nodep::DWORD &instrCount) {
@@ -544,7 +545,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0x02 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x03 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x04 */ &RiverMetaTranslator::TranslateUnk,
-		/* 0x05 */ &RiverMetaTranslator::TranslateUnk,
+		/* 0x05 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x06 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x07 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x08 */ &RiverMetaTranslator::TranslateUnk,
@@ -570,7 +571,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0x1C */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x1D */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x1E */ &RiverMetaTranslator::TranslateUnk,
-		/* 0x1F */ &RiverMetaTranslator::TranslateUnk,
+		/* 0x1F */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x20 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x21 */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x22 */ &RiverMetaTranslator::TranslateUnk,

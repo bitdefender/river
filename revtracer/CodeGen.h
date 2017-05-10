@@ -42,7 +42,7 @@ private :
 	SymbopSaveTranslator symbopSaveTranslator;
 	SymbopReverseTranslator symbopReverseTranslator;
 
-	nodep::DWORD TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags);
+	nodep::DWORD TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags, RevtracerError *rerror);
 public :
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];
@@ -75,8 +75,8 @@ public :
 
 	unsigned int NextReg(unsigned char regName);
 
-	bool Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFlags);
-	bool DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut, nodep::DWORD &count, nodep::DWORD &dwFlags);
+	bool Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFlags, RevtracerError *rerror);
+	bool DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut, nodep::DWORD &count, nodep::DWORD &dwFlags, RevtracerError *rerror);
 };
 
 #endif

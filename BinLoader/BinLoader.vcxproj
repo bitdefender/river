@@ -139,6 +139,10 @@
     <ClCompile Include="Inproc.Mapper.cpp" />
     <ClCompile Include="Inproc.Native.Importer.cpp" />
     <ClCompile Include="LoaderAPI.cpp" />
+    <ClCompile Include="Main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Mem.Mapper.cpp" />
     <ClCompile Include="PE.Loader.cpp" />
     <ClCompile Include="Shm.Mapper.cpp" />

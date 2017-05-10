@@ -17,15 +17,17 @@ bool RiverReverseTranslator::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-void RiverReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstruction &rOut) {
+bool RiverReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstruction &rOut) {
 	if (RIVER_FAMILY_RIVER != RIVER_FAMILY(rIn.family)) {
 		CopyInstruction(rOut, rIn);
 		rOut.family |= RIVER_FAMILY_FLAG_IGNORE;
-		return;
+		return true;
 	}
 
 	nodep::DWORD dwTable = (RIVER_MODIFIER_EXT & rIn.modifiers) ? 1 : 0;
 	(this->*translateOpcodes[dwTable][rIn.opCode])(rOut, rIn);
+
+	return true;
 }
 
 void RiverReverseTranslator::TranslateUnk(RiverInstruction &rOut, const RiverInstruction &rIn) {
