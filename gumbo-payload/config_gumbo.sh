@@ -2,7 +2,6 @@
 
 # Init source code
 SRC_DIR="$(pwd)/gumbo-src"
-BUILD_DIR="$(pwd)/build"
 
 DEFAULT_CFLAGS="-m32"
 DEFAULT_LDFLAGS="-m32"
@@ -21,12 +20,9 @@ init_target() {
 
 # Build http-parser with the given `name` and flags.
 build_target() {
-	if [ ! -d $BUILD_DIR ]; then
-		mkdir -p $BUILD_DIR
-	fi
-	cd $BUILD_DIR
+	cd $SRC_DIR
 	CC="$CC" CXX="$CXX" CXXFLAGS="$DEFAULT_CFLAGS" CFLAGS="$DEFAULT_CFLAGS" \
-		LDFLAGS="$DEFAULT_LDFLAGS" $SRC_DIR/configure
+		LDFLAGS="$DEFAULT_LDFLAGS"  ./configure
 
 	make
 	cd -
