@@ -1,5 +1,5 @@
 #ifdef __linux__
-#include "loader.h"
+#include "Loader.h"
 #include <sys/mman.h>
 #include <sys/stat.h>        /* For mode constants */
 #include <asm/ldt.h>

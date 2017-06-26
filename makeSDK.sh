@@ -28,7 +28,6 @@ mkdir $1/lin/lib
 cp revtracer/revtracer.dll $1/lin/lib
 cp revtracer-wrapper/librevtracerwrapper.so $1/lin/lib
 cp Execution/libexecution.so $1/lin/lib
-cp DisableSSE/libdisablesse.so $1/lin/lib
 cp loader/libloader.so $1/lin/lib
 cp ipclib/libipc.so $1/lin/lib
-#cp Debug/SymbolicEnvironment.dll $1/lin/lib
+cp SymbolicEnvironment/libsymbolicenvironment.so  $1/lin/lib
