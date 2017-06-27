@@ -198,7 +198,10 @@ bool InprocessExecutionController::Execute() {
 	wrapper.pExports = (revwrapper::WrapperExports *)GET_PROC_ADDRESS(wrapper.module, wrapper.base, "wrapperExports");
 
 	wrapper.pImports->libraries = &libLayout;
-	InitWrapperOffsets(&libLayout, wrapper.pImports);
+	if (!InitWrapperOffsets(&libLayout, wrapper.pImports)) {
+		DEBUG_BREAK;
+		return false;
+	}
 
 	if (!wrapper.pExports->initRevtracerWrapper(nullptr)) {
 		DEBUG_BREAK;

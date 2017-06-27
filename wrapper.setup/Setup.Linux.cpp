@@ -9,6 +9,10 @@ extern "C" bool InitWrapperOffsets(ext::LibraryLayout *libs, revwrapper::Wrapper
 	LIB_T hlibrt = GET_LIB_HANDLER("librt.so");
 	LIB_T hlibpthread = GET_LIB_HANDLER("libpthread.so");
 
+	if (!hlibc || !hlibrt || !hlibpthread) {
+		return false;
+	}
+
 	DWORD baselibc = GET_LIB_BASE(hlibc);
 	DWORD baselibrt = GET_LIB_BASE(hlibrt);
 	DWORD baselibpthread = GET_LIB_BASE(hlibpthread);
