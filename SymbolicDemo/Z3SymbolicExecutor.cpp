@@ -1,6 +1,6 @@
 #include "Z3SymbolicExecutor.h"
 
-#include "TrackingCookie.h"
+#include "../CommonCrossPlatform/Common.h"
 
 void *Z3SymbolicExecutor::CreateVariable(const char *name, nodep::DWORD size) {
 	Z3_symbol s = Z3_mk_string_symbol(context, name);
@@ -63,7 +63,7 @@ void *Z3SymbolicExecutor::CreateVariable(const char *name, nodep::DWORD size) {
 
 	symIndex++;
 
-	printf("<sym> var %08p <= %s\n", ret, name);
+	printf("<sym> var %p <= %s\n", ret, name);
 	return ret;
 }
 
@@ -84,7 +84,7 @@ void *Z3SymbolicExecutor::MakeConst(nodep::DWORD value, nodep::DWORD bits) {
 			type = dwordSort;
 			break;
 		default :
-			__asm int 3;
+			DEBUG_BREAK;
 	}
 
 	Z3_ast ret = Z3_mk_int(
@@ -93,7 +93,7 @@ void *Z3SymbolicExecutor::MakeConst(nodep::DWORD value, nodep::DWORD bits) {
 		type
 	);
 
-	printf("<sym> const %08p <= %08x\n", ret, value);
+	printf("<sym> const %p <= %08lx\n", ret, value);
 
 	return (void *)ret;
 }
@@ -105,7 +105,7 @@ void *Z3SymbolicExecutor::ExtractBits(void *expr, nodep::DWORD lsb, nodep::DWORD
 		lsb,
 		(Z3_ast)expr
 	);
-	printf("<sym> extract %08p <= %08p, %d, %d\n", ret, expr, lsb+size-1, lsb);
+	printf("<sym> extract %p <= %p, %08lx, %08lx\n", ret, expr, lsb+size-1, lsb);
 	return (void *)ret;
 }
 
@@ -116,7 +116,7 @@ void *Z3SymbolicExecutor::ConcatBits(void *expr1, void *expr2) {
 		(Z3_ast)expr2
 	);
 
-	printf("<sym> concat %08p <= %08p, %08p\n", ret, expr1, expr2);
+	printf("<sym> concat %p <= %p, %p\n", ret, expr1, expr2);
 	return (void *)ret;
 }
 
@@ -243,11 +243,11 @@ void Z3SymbolicExecutor::StepBackward() {
 //}
 
 void Z3SymbolicExecutor::SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops) {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops) {
-	printf("<sym> jcc %08p\n", ops->svf[flag]);
+	printf("<sym> jcc %p\n", ops->svf[flag]);
 	
 	Z3_ast cond = Z3_mk_eq(
 		context,
@@ -262,7 +262,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteAdd(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvadd(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> add %08p <= %08p, %08p\n", r, o1, o2);
+	printf("<sym> add %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
@@ -270,19 +270,19 @@ Z3_ast Z3SymbolicExecutor::ExecuteOr(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvor(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> or %08p <= %08p, %08p\n", r, o1, o2);
+	printf("<sym> or %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteAdc(Z3_ast o1, Z3_ast o2) {
 	//return Z3_mk_bvadd(context, o1, o2);
-	__asm int 3;
+	DEBUG_BREAK;
 	return nullptr;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteSbb(Z3_ast o1, Z3_ast o2) {
 	//return Z3_mk_bvor(context, o1, o2);
-	__asm int 3;
+	DEBUG_BREAK;
 	return nullptr;
 }
 
@@ -290,7 +290,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteAnd(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvand(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> and %08p <= %08p, %08p\n", r, o1, o2);
+	printf("<sym> and %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
@@ -298,7 +298,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteSub(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> sub %08p <= %08p, %08p\n", r, o1, o2);
+	printf("<sym> sub %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
@@ -310,19 +310,19 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvxor(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> xor %08p <= %08p, %08p\n", r, o1, o2);
+	printf("<sym> xor %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
-	printf("<sym> cmp %08p <= %08p, %08p\n", r, o1, o2);
+	printf("<sym> cmp %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteTest(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvand(context, o1, o2);
-	printf("<sym> test %08p <= %08p, %08p\n", r, o1, o2);
+	printf("<sym> test %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
@@ -340,7 +340,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMovSx(RiverInstruction *instruction, Sym
 		Z3_ast dst = Z3_mk_sign_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)ops->sv[1]));
 		env->SetOperand(0, (void *)dst);
 
-		printf("<sym> movsx %08p <= %08p\n", dst, ops->sv[1]);
+		printf("<sym> movsx %p <= %p\n", dst, ops->sv[1]);
 	}
 	else {
 		env->UnsetOperand(0);
@@ -352,7 +352,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMovZx(RiverInstruction *instruction, Sym
 		Z3_ast dst = Z3_mk_zero_ext(context, 24, Z3_mk_extract(context, 7, 0, (Z3_ast)ops->sv[1]));
 		env->SetOperand(0, (void *)dst);
 
-		printf("<sym> movsx %08p <= %08p\n", dst, ops->sv[1]);
+		printf("<sym> movsx %p <= %p\n", dst, ops->sv[1]);
 	}
 	else {
 		env->UnsetOperand(0);

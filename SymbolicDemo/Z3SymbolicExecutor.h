@@ -4,10 +4,10 @@
 #include "z3.h"
 
 #include "../SymbolicEnvironment/SymbolicEnvironment.h"
+#include "../SymbolicEnvironment/LargeStack.h"
 
 #include "VariableTracker.h"
 #include "TrackingCookie.h"
-#include "LargeStack.h"
 
 #define OPERAND_BITMASK(idx) (0x00010000 << (idx))
 

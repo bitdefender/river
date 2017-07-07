@@ -1,5 +1,7 @@
 #include "Z3SymbolicExecutor.h"
 
+#include "../CommonCrossPlatform/Common.h"
+
 Z3SymbolicExecutor::Z3SymbolicCpuFlag::Z3SymbolicCpuFlag() {
 	Unset();
 }
@@ -27,7 +29,7 @@ Z3_ast Z3SymbolicExecutor::Z3SymbolicCpuFlag::GetValue() {
 
 // Zero flag - simple compare with zero
 Z3_ast Z3FlagZF::Eval() {
-	printf("<sym> lazyZF %08p\n", source);
+	printf("<sym> lazyZF %p\n", source);
 
 	return Z3_mk_ite(parent->context,
 		Z3_mk_eq(
@@ -56,7 +58,7 @@ void Z3FlagZF::LoadState(stk::LargeStack &stack) {
 
 // Sign flag - extract msb
 Z3_ast Z3FlagSF::Eval() {
-	printf("<sym> lazySF %08p\n", source);
+	printf("<sym> lazySF %p\n", source);
 
 	return Z3_mk_extract(
 		parent->context,
@@ -123,7 +125,7 @@ Z3_ast Z3FlagPF::Eval() {
 		)
 	);
 
-	printf("<sym> lazyPF %08p\n", source);
+	printf("<sym> lazyPF %p\n", source);
 
 	return Z3_mk_extract(
 		parent->context,
@@ -160,7 +162,7 @@ Z3_ast Z3FlagCF::Eval() {
 		case Z3_FLAG_OP_SUB:
 			break;
 		default :
-			__asm int 3;
+			DEBUG_BREAK;
 	}
 
 	Z3_ast nr = Z3_mk_bvnot(
@@ -219,7 +221,7 @@ Z3_ast Z3FlagCF::Eval() {
 		);
 	}
 
-	printf("<sym> lazyCF %08p <= %08p, %08p\n", source, p[0], p[1]);
+	printf("<sym> lazyCF %p <= %p, %p\n", source, p[0], p[1]);
 
 	return c;
 }
@@ -262,7 +264,7 @@ Z3_ast Z3FlagOF::Eval() {
 		case Z3_FLAG_OP_SUB:
 			break;
 		default:
-			__asm int 3;
+			DEBUG_BREAK;
 	}
 
 	Z3_ast r = Z3_mk_extract(
@@ -293,7 +295,7 @@ Z3_ast Z3FlagOF::Eval() {
 		);
 	}
 
-	printf("<sym> lazyOF %08p <= %08p, %08p\n", source, p[0], p[1]);
+	printf("<sym> lazyOF %p <= %p, %p\n", source, p[0], p[1]);
 
 	return Z3_mk_bvand(
 		parent->context,
@@ -334,7 +336,7 @@ void Z3FlagOF::LoadState(stk::LargeStack &stack) {
 
 // Adjust flag
 Z3_ast Z3FlagAF::Eval() {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void Z3FlagAF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
@@ -352,7 +354,7 @@ void Z3FlagAF::LoadState(stk::LargeStack &stack) {
 
 // Direction flag
 Z3_ast Z3FlagDF::Eval() {
-	__asm int 3;
+	DEBUG_BREAK;
 }
 
 void Z3FlagDF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
