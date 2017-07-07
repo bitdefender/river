@@ -121,6 +121,17 @@ typedef void* LIB_T;
 #define CLOSE_LIB(libhandler) dlclose((libhandler))
 #define LOAD_PROC(libhandler, szProc) dlsym((libhandler), (szProc))
 
+typedef struct timespec TIME_T;
+typedef double TIME_FREQ_T;
+typedef double TIME_RES_T;
+#define START_COUNTER(starttime, freq) { clock_gettime(CLOCK_REALTIME, &(starttime)); }
+#define GET_COUNTER(starttime, endtime, freq, res) { clock_gettime(CLOCK_REALTIME, &(endtime)); \
+	res = ((endtime).tv_sec - (starttime).tv_sec) + ((endtime).tv_nsec - (starttime).tv_nsec) / freq; }
+#define GET_COUNTER_AGGREGATE(starttime, endtime, freq, res) { clock_gettime(CLOCK_REALTIME, &(endtime)); \
+	res += ((endtime).tv_sec - (starttime).tv_sec) + ((endtime).tv_nsec - (starttime).tv_nsec) / freq; }
+#define GET_AGGREGATE_RESULT(total, freq, result) { result = total; }
+#define GET_FREQ(freq) { (freq) = 1E9; }
+
 
 #else
 #include <Windows.h>
@@ -162,6 +173,16 @@ typedef HMODULE LIB_T;
 #define GET_LIB_BASE(lib) (DWORD)(lib)
 #define CLOSE_LIB
 #define LOAD_PROC(libhandler, szProc) GetProcAddress((libhandler), (szProc))
+
+typedef LARGE_INTEGER TIME_T
+#define START_COUNTER(starttime, freq) { QueryPerformanceCounter(&(starttime)); }
+#define GET_COUNTER_AGGREGATE(starttime, endtime, freq, total) { QueryPerformanceCounter(&(endtime)); \
+	total += (endtime).QuadPart - (starttime).QuadPart; }
+#define GET_COUNTER(starttime, endtime, freq, total) { QueryPerformanceCounter(&(endtime)); \
+	total = 1000.0 * ((endtime).QuadPart - (starttime).QuadPart) / freq.QuadPart; }
+#define GET_AGGREGATE_RESULT(total, freq, result) { \
+	result = 1000.0 * (total) / (freq).QuadPart; }
+#define GET_FREQ(freq) { QueryPerformanceFrequency(&(freq)); }
 
 #endif
 

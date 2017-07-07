@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <stdio.h>
 
 #include "../Execution/Execution.h"
@@ -13,15 +15,39 @@
 
 #include "z3.h"
 
+#include "util.h"
+
+#include "../CommonCrossPlatform/Common.h"
+#include "../CommonCrossPlatform/BasicTypes.h"
+
 ExecutionController *ctrl;
 
-::HANDLE fDbg = ((::HANDLE)(::LONG_PTR)-1);
+#ifdef _WIN32
+HANDLE fDbg = ((HANDLE)(LONG_PTR)-1);
+#else
+FILE_T fDbg = -1;
+#endif
 
 #define PRINTF(fmt, ...) \
 	do { \
-		printf(fmt, __VA_ARGS__); \
+		printf((fmt), ##__VA_ARGS__); \
 		fflush(stdout); \
 	} while (false);
+
+int GeneratePrefix(char *buff, int size, ...) {
+	va_list va;
+
+	va_start(va, size);
+	int sz = ((_vsnprintf_sFunc)symDemoImports.vsnprintf_sFunc)(
+			buff,
+			size - 1,
+			"[%3s|%5s|%3s|%c] ",
+			va
+			);
+	va_end(va);
+
+	return sz;
+}
 
 void DebugPrint(nodep::DWORD printMask, const char *fmt, ...) {
 	va_list va;
@@ -62,10 +88,9 @@ void DebugPrint(nodep::DWORD printMask, const char *fmt, ...) {
 		'_', 'F', 'B'
 	};
 
-	_snprintf_s(
+	int sz = GeneratePrefix(
 		pfxBuff,
-		sizeof(pfxBuff)-1,
-		"[%3s|%5s|%3s|%c] ",
+		sizeof(pfxBuff),
 		messageTypes[(printMask & PRINT_MESSAGE_MASK) >> PRINT_MESSAGE_SHIFT],
 		executionStages[(printMask & PRINT_EXECUTION_MASK) >> PRINT_EXECUTION_SHIFT],
 		codeTypes[(printMask & PRINT_CODE_TYPE_MASK) >> PRINT_CODE_TYPE_SHIFT],
@@ -73,14 +98,16 @@ void DebugPrint(nodep::DWORD printMask, const char *fmt, ...) {
 		);
 
 	va_start(va, fmt);
-	int sz = _vsnprintf_s(tmpBuff, sizeof(tmpBuff)-1, fmt, va);
+	sz = ((_vsnprintf_sFunc)symDemoImports.vsnprintf_sFunc)(
+			tmpBuff, sizeof(tmpBuff)-1, fmt, va);
 	va_end(va);
 
+	int ret;
 	unsigned long wr;
 	if ('\n' == lastChar) {
-		WriteFile(fDbg, pfxBuff, sizeof(pfxBuff) - 1, &wr, NULL);
+		WRITE_FILE(fDbg, tmpBuff, sz * sizeof(tmpBuff[0]), wr, ret);
 	}
-	WriteFile(fDbg, tmpBuff, sz * sizeof(tmpBuff[0]), &wr, NULL);
+	WRITE_FILE(fDbg, tmpBuff, sz * sizeof(tmpBuff[0]), wr, ret);
 	lastChar = tmpBuff[sz - 1];
 }
 
@@ -218,7 +245,11 @@ public :
 	}
 };
 
-LARGE_INTEGER liFreq, liStart, liStop, liSymStart, liSymStop, liSymTotal, liBrStart, liBrStop, liBrTotal;
+TIME_FREQ_T liFreq;
+TIME_T liStart, liStop,
+	   liSymStart, liSymStop,
+	   liBrStart, liBrStop;
+TIME_RES_T liSymTotal, liBrTotal, liTotal;
 
 unsigned char newPass[9];
 
@@ -229,8 +260,8 @@ public:
 
 	virtual unsigned int ExecutionBegin(void *ctx, rev::ADDR_TYPE addr) {
 		static bool ctxInit = false;
-		
-		QueryPerformanceCounter(&liSymStart);
+
+		START_COUNTER(liSymStart, liFreq);
 		if (!ctxInit) {
 			revEnv = NewX86RevtracerEnvironment(ctx, ctrl); //new RevSymbolicEnvironment(ctx, ctrl);
 			regEnv = NewX86RegistersEnvironment(revEnv); //new OverlappedRegistersEnvironment();
@@ -249,23 +280,25 @@ public:
 			revEnv->SetSymbolicVariable("a[7]", (rev::ADDR_TYPE)(&bufferByte[7]), 1);
 
 			ctxInit = true;
-			QueryPerformanceCounter(&liStart);
-			liSymTotal.QuadPart = 0;
+			START_COUNTER(liStart, liFreq);
+			//TODO liSymTotal.QuadPart = 0;
 		}
 
 		nodep::DWORD ret = EXECUTION_ADVANCE;
 
 		if (cec.BACKTRACKING == cec.executionState) {
-			QueryPerformanceCounter(&liStop);
+			GET_COUNTER(liStart, liStop, liFreq, liTotal);
 
-			fprintf(stderr, "$$ Symbolic time: %lfms\n", 1000.0 * liSymTotal.QuadPart / liFreq.QuadPart);
-			fprintf(stderr, "$$ Branching time: %lfms\n", 1000.0 * liBrTotal.QuadPart / liFreq.QuadPart);
-			fprintf(stderr, "$$ Execution time: %lfms\n", 1000.0 * (liStop.QuadPart - liStart.QuadPart) / liFreq.QuadPart);
+			TIME_RES_T result;
+			GET_AGGREGATE_RESULT(liSymTotal, liFreq, result);
+			fprintf(stderr, "$$ Symbolic time: %lfms\n", result);
+			GET_AGGREGATE_RESULT(liBrTotal, liFreq, result);
+			fprintf(stderr, "$$ Branching time: %lfms\n", result);
+			fprintf(stderr, "$$ Execution time: %lfms\n", liTotal);
 			ret = EXECUTION_TERMINATE;
 		}
 
-		QueryPerformanceCounter(&liSymStop);
-		liSymTotal.QuadPart += liSymStop.QuadPart - liSymStart.QuadPart;
+		GET_COUNTER_AGGREGATE(liSymStart, liSymStop, liFreq, liSymTotal);
 		return ret;
 	}
 
@@ -293,7 +326,7 @@ public:
 		nodep::DWORD ret = EXECUTION_ADVANCE;
 		TrackedCondition *lastCondition;
 
-		QueryPerformanceCounter(&liSymStart);
+		START_COUNTER(liSymStart, liFreq);
 		static const char c[][32] = {
 			"EXPLORING",
 			"BACKTRACKING",
@@ -312,7 +345,7 @@ public:
 				ret = EXECUTION_BACKTRACK;
 
 				if (cec.TryPop(lastCondition)) {
-					PRINTF("Trying to invert condition %08p - %s\n", lastCondition->ast, lastCondition->wasInverted ? "true" : "false");
+					PRINTF("Trying to invert condition %p - %s\n", lastCondition->ast, lastCondition->wasInverted ? "true" : "false");
 
 					if (!lastCondition->wasInverted) {
 						lastCondition->ast = Z3_simplify(
@@ -413,11 +446,11 @@ public:
 
 			case CustomExecutionContext::EXPLORING:
 			case CustomExecutionContext::RESTORING:
-				__asm int 3;
+				DEBUG_BREAK;
 			}
 
 			PRINTF(
-				"*** step %d; addr 0x%08p; state %s; backSteps %d, coundCount %d\n",
+				"*** step %d; addr %p; state %s; backSteps %d, coundCount %d\n",
 				cec.GetStep(),
 				addr,
 				c[cec.executionState],
@@ -429,7 +462,7 @@ public:
 		}
 		else if (EXECUTION_ADVANCE == lastDirection) {
 			PRINTF(
-				"*** step %d; addr 0x%08p; state %s; backSteps %d, coundCount %d\n",
+				"*** step %d; addr %p; state %s; backSteps %d, coundCount %d\n",
 				cec.GetStep(),
 				addr,
 				c[cec.executionState],
@@ -486,7 +519,7 @@ public:
 				break;
 			case CustomExecutionContext::BACKTRACKING:
 			case CustomExecutionContext::PATCHING:
-				__asm int 3;
+				DEBUG_BREAK;
 			}
 		}
 
@@ -501,16 +534,15 @@ public:
 			cec.Forward();
 		}
 
-		QueryPerformanceCounter(&liSymStop);
-		liSymTotal.QuadPart += liSymStop.QuadPart - liSymStart.QuadPart;
+		GET_COUNTER_AGGREGATE(liSymStart, liSymStop, liFreq, liSymTotal);
 		return ret;
 	}
 
 	virtual unsigned int ExecutionEnd(void *ctx) {
-		QueryPerformanceCounter(&liSymStart);
+		START_COUNTER(liSymStart, liFreq);
 
 		if (cec.EXPLORING != cec.executionState) {
-			__asm int 3;
+			DEBUG_BREAK;
 		}
 
 		fprintf(stderr, "Check(\"");
@@ -527,9 +559,8 @@ public:
 
 		lastDirection = EXECUTION_BACKTRACK;
 		cec.executionState = cec.BACKTRACKING;
-		
-		QueryPerformanceCounter(&liSymStop);
-		liSymTotal.QuadPart += liSymStop.QuadPart - liSymStart.QuadPart;
+
+		GET_COUNTER_AGGREGATE(liSymStart, liSymStop, liFreq, liSymTotal);
 
 		return EXECUTION_BACKTRACK;
 	}
@@ -537,7 +568,7 @@ public:
 	virtual void TerminationNotification(void *ctx) { }
 
 	virtual unsigned int TranslationError(void *ctx, void *address) {
-		printf("Translation error @%08p\n", address);
+		printf("Translation error @%p\n", address);
 		return EXECUTION_TERMINATE;
 	}
 
@@ -560,26 +591,22 @@ void MarkCallback(nodep::DWORD oldValue, nodep::DWORD newValue, nodep::DWORD add
 
 void __stdcall SymbolicHandler(void *ctx, void *offset, void *addr) {
 	RiverInstruction *instr = (RiverInstruction *)addr;
-	
+
 	regEnv->SetCurrentInstruction(instr, offset);
 	executor->Execute(instr);
 }
 
 int main(int argc, char *argv[]) {
-	
-	HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
-	//TmpPrint("ntdll.dll @ 0x%08x\n", (DWORD)hNtDll);
 
-	QueryPerformanceFrequency(&liFreq);
-
-	QueryPerformanceCounter(&liStart);
+	GET_FREQ(liFreq);
+	START_COUNTER(liStart, liFreq);
 	PayloadByte();
-	QueryPerformanceCounter(&liStop);
+	GET_COUNTER(liStart, liStop, liFreq, liTotal);
 
-	fprintf(stderr, "$$ Native time: %lfms\n", 1000.0 * (liStop.QuadPart - liStart.QuadPart) / liFreq.QuadPart);
+	fprintf(stderr, "$$ Native time: %lfms\n", liTotal);
 
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);
-	ctrl->SetEntryPoint(PayloadByte);
+	ctrl->SetEntryPoint((void*)PayloadByte);
 
 	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_SYMBOLIC);
 	ctrl->SetExecutionObserver(&symbolicExecution);
