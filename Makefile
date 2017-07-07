@@ -1,4 +1,6 @@
-DIRS := BinLoader VirtualMemory wrapper.setup revtracer-wrapper revtracer ipclib  DisableSSE  Execution loader ParserPayload execution.inprocess.test
+DIRS := BinLoader VirtualMemory wrapper.setup revtracer-wrapper \
+	revtracer ipclib  DisableSSE  Execution loader ParserPayload \
+	SymbolicEnvironment SymbolicDemo
 prefix := /usr/local
 
 all:
