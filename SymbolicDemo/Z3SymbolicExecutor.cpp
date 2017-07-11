@@ -180,6 +180,7 @@ Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e) :
 
 	config = Z3_mk_config();
 	context = Z3_mk_context(config);
+	Z3_set_ast_print_mode(context, Z3_PRINT_LOW_LEVEL);
 	Z3_open_log("Z3.log");
 
 	dwordSort = Z3_mk_bv_sort(context, 32);

@@ -55,7 +55,7 @@ private:
 	TrackedVariableData vars[8];
 public :
 	TrackedVariableData *GetVariable(rev::ADDR_TYPE addr) {
-		DWORD idx = (nodep::BYTE *)addr - bufferByte;
+		DWORD idx = (unsigned int *)addr - bufferDword;
 
 		if (idx < 8) {
 			return &vars[idx];
@@ -98,17 +98,17 @@ public :
 
 		TrackedCondition *ret = freeConditions[--freeCondCount];
 		ret->wasInverted = false;
-		//PRINTF("Alloc condition %08p\n", ret);
+		PRINTF("Alloc condition %08p\n", ret);
 		return ret;
 	}
 
 	void FreeCondition(TrackedCondition *cond) {
-		//PRINTF("Free condition %08p\n", cond);
+		PRINTF("Free condition %08p\n", cond);
 		freeConditions[freeCondCount++] = cond;
 	}
 
 	void Unload(TrackedCondition *tvd) {
-		//PRINTF("Tracking condition %08p\n", tvd);
+		PRINTF("Tracking condition %08p\n", tvd);
 		tvds[revCount] = tvd;
 		revCount++;
 
@@ -119,7 +119,7 @@ public :
 		TrackedCondition *ret = tvds[--revCount];
 		tvds[revCount] = nullptr;
 
-		//PRINTF("Restoring condition %08p\n", ret);
+		PRINTF("Restoring condition %08p\n", ret);
 		return ret;
 	}
 
@@ -198,14 +198,14 @@ public:
 
 
 			cec.Init();
-			revEnv->SetSymbolicVariable("a[0]", (rev::ADDR_TYPE)(&bufferByte[0]), 1);
-			revEnv->SetSymbolicVariable("a[1]", (rev::ADDR_TYPE)(&bufferByte[1]), 1);
-			revEnv->SetSymbolicVariable("a[2]", (rev::ADDR_TYPE)(&bufferByte[2]), 1);
-			revEnv->SetSymbolicVariable("a[3]", (rev::ADDR_TYPE)(&bufferByte[3]), 1);
-			revEnv->SetSymbolicVariable("a[4]", (rev::ADDR_TYPE)(&bufferByte[4]), 1);
-			revEnv->SetSymbolicVariable("a[5]", (rev::ADDR_TYPE)(&bufferByte[5]), 1);
-			revEnv->SetSymbolicVariable("a[6]", (rev::ADDR_TYPE)(&bufferByte[6]), 1);
-			revEnv->SetSymbolicVariable("a[7]", (rev::ADDR_TYPE)(&bufferByte[7]), 1);
+			revEnv->SetSymbolicVariable("a[0]", (rev::ADDR_TYPE)(&bufferDword[0]), 4);
+			revEnv->SetSymbolicVariable("a[1]", (rev::ADDR_TYPE)(&bufferDword[1]), 4);
+			revEnv->SetSymbolicVariable("a[2]", (rev::ADDR_TYPE)(&bufferDword[2]), 4);
+			revEnv->SetSymbolicVariable("a[3]", (rev::ADDR_TYPE)(&bufferDword[3]), 4);
+			revEnv->SetSymbolicVariable("a[4]", (rev::ADDR_TYPE)(&bufferDword[4]), 4);
+			revEnv->SetSymbolicVariable("a[5]", (rev::ADDR_TYPE)(&bufferDword[5]), 4);
+			revEnv->SetSymbolicVariable("a[6]", (rev::ADDR_TYPE)(&bufferDword[6]), 4);
+			revEnv->SetSymbolicVariable("a[7]", (rev::ADDR_TYPE)(&bufferDword[7]), 4);
 
 			ctxInit = true;
 			START_COUNTER(liStart, liFreq);
@@ -366,7 +366,7 @@ public:
 					cec.Unload(lastCondition);
 				}*/
 
-				if (DonePatching(ctx, (unsigned int *)bufferByte, (unsigned int *)newPass, 2)) {
+				if (DonePatching(ctx, (unsigned int *)bufferDword, (unsigned int *)newPass, 2)) {
 					cec.executionState = cec.RESTORING;
 					ret = EXECUTION_ADVANCE;
 				}
@@ -377,25 +377,27 @@ public:
 				DEBUG_BREAK;
 			}
 
-			PRINTF(
-				"BACKTRACK *** step %d; addr %p; state %s; backSteps %d, coundCount %d\n",
+			printf(
+				"BACKTRACK *** step %d; addr %p; state %s; backSteps %d, coundCount %d revCount %u\n",
 				cec.GetStep(),
 				addr,
 				c[cec.executionState],
 				cec.backSteps,
-				cec.GetTop()
+				cec.GetTop(),
+				cec.revCount
 			);
 
 			fflush(stdout);
 		}
 		else if (EXECUTION_ADVANCE == lastDirection) {
 			PRINTF(
-				"ADVANCE *** step %d; addr %p; state %s; backSteps %d, coundCount %d\n",
+				"ADVANCE *** step %d; addr %p; state %s; backSteps %d, coundCount %d revCount %u\n",
 				cec.GetStep(),
 				addr,
 				c[cec.executionState],
 				cec.backSteps,
-				cec.GetTop()
+				cec.GetTop(),
+				cec.revCount
 			);
 
 			fflush(stdout);
@@ -403,7 +405,7 @@ public:
 			switch (cec.executionState) {
 			case CustomExecutionContext::EXPLORING:
 				if (nullptr != executor->lastCondition) {
-					PRINTF("!@(assert %s)\n\n", Z3_ast_to_string(executor->context, executor->lastCondition));
+					printf("!@(assert %s)\n\n", Z3_ast_to_string(executor->context, executor->lastCondition));
 
 					if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, executor->lastCondition)) {
 						TrackedCondition *cond = cec.AllocCondition();
@@ -474,16 +476,16 @@ public:
 		}
 
 		fprintf(stderr, "Check(\"");
-		for (int i = 0; bufferByte[i]; ++i) {
-			fprintf(stderr, "%c", bufferByte[i]);
+		for (int i = 0; bufferDword[i]; ++i) {
+			fprintf(stderr, "%c", bufferDword[i]);
 		}
-		fprintf(stderr, "\") = %04x\n", CheckByte(bufferByte));
+		fprintf(stderr, "\") = %04x\n", CheckDword(bufferDword));
 
 		PRINTF("Check(\"");
-		for (int i = 0; bufferByte[i]; ++i) {
-			PRINTF("%c", bufferByte[i]);
+		for (int i = 0; bufferDword[i]; ++i) {
+			PRINTF("%c", bufferDword[i]);
 		}
-		PRINTF("\") = %04x\n", CheckByte(bufferByte));
+		PRINTF("\") = %04x\n", CheckDword(bufferDword));
 
 		lastDirection = EXECUTION_BACKTRACK;
 		cec.executionState = cec.BACKTRACKING;
