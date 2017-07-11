@@ -177,6 +177,9 @@ TIME_RES_T liSymTotal, liBrTotal, liTotal;
 
 unsigned char newPass[9];
 
+void AddReference(void *ref) {}
+void DelReference(void *ref) {}
+
 class SymbolicExecution : public ExecutionObserver {
 private :
 	CustomExecutionContext cec;
@@ -191,6 +194,7 @@ public:
 			regEnv = NewX86RegistersEnvironment(revEnv); //new OverlappedRegistersEnvironment();
 			executor = new Z3SymbolicExecutor(regEnv);
 			regEnv->SetExecutor(executor);
+			regEnv->SetReferenceCounting(AddReference, DelReference);
 
 
 			cec.Init();
@@ -374,7 +378,7 @@ public:
 			}
 
 			PRINTF(
-				"*** step %d; addr %p; state %s; backSteps %d, coundCount %d\n",
+				"BACKTRACK *** step %d; addr %p; state %s; backSteps %d, coundCount %d\n",
 				cec.GetStep(),
 				addr,
 				c[cec.executionState],
@@ -386,7 +390,7 @@ public:
 		}
 		else if (EXECUTION_ADVANCE == lastDirection) {
 			PRINTF(
-				"*** step %d; addr %p; state %s; backSteps %d, coundCount %d\n",
+				"ADVANCE *** step %d; addr %p; state %s; backSteps %d, coundCount %d\n",
 				cec.GetStep(),
 				addr,
 				c[cec.executionState],
@@ -524,13 +528,13 @@ int main(int argc, char *argv[]) {
 
 	GET_FREQ(liFreq);
 	START_COUNTER(liStart, liFreq);
-	PayloadByte();
+	PayloadDword();
 	GET_COUNTER(liStart, liStop, liFreq, liTotal);
 
 	fprintf(stderr, "$$ Native time: %lfms\n", liTotal);
 
 	ctrl = NewExecutionController(EXECUTION_INPROCESS);
-	ctrl->SetEntryPoint((void*)PayloadByte);
+	ctrl->SetEntryPoint((void*)PayloadDword);
 
 	ctrl->SetExecutionFeatures(EXECUTION_FEATURE_REVERSIBLE | EXECUTION_FEATURE_SYMBOLIC);
 	ctrl->SetExecutionObserver(&symbolicExecution);
