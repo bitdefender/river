@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include <libgen.h> //basename
 #else
 #include <Windows.h>
 #include <Psapi.h>
@@ -188,6 +189,10 @@ long get_prss() {
 	return (size_t)(rusage.ru_maxrss * 1024L);
 }
 
+char *TrimModulePath(char *modulePath) {
+	return basename(modulePath);
+}
+
 bool CommonExecutionController::UpdateLayout() {
 	if (updated) {
 		return true;
@@ -223,9 +228,10 @@ bool CommonExecutionController::UpdateLayout() {
 		sec.push_back(vms);
 
 		ssize_t pathLen = strlen(mi.path);
+		char *moduleName = TrimModulePath(mi.path);
 
 		if ((0 == mod.size()) ||
-				(0 != strcmp(mi.path, mod[mod.size() - 1].Name))) {
+				(0 != strcmp(moduleName, mod[mod.size() - 1].Name))) {
 			ModuleInfo minfo;
 
 			if (0 == pathLen) {
@@ -234,7 +240,7 @@ bool CommonExecutionController::UpdateLayout() {
 			} else {
 				minfo.anonymous = false;
 				memset(minfo.Name, 0, MAX_PATH);
-				strncpy(minfo.Name, mi.path, pathLen);
+				strncpy(minfo.Name, moduleName, pathLen);
 			}
 
 			minfo.ModuleBase = segbase;
