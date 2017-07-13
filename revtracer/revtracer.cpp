@@ -164,6 +164,8 @@ namespace rev {
 		if (nullptr != pCB) {
 			info->address = (rev::ADDR_TYPE)pCB->address;
 			info->cost = pCB->dwOrigOpCount;
+			info->branchType = pCB->dwBranchType;
+			info->branchInstruction = pCB->dwBranchInstruction;
 		}
 		return false;
 	}

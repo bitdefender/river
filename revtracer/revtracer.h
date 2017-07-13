@@ -181,6 +181,8 @@ namespace rev {
 	struct BasicBlockInfo {
 		ADDR_TYPE address;
 		nodep::DWORD cost;
+		nodep::DWORD branchType;
+		nodep::DWORD branchInstruction;
 	};
 
 	typedef void (*GetCurrentRegistersFunc)(void *ctx, ExecutionRegs *regs);

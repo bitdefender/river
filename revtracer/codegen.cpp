@@ -176,7 +176,7 @@ bool RiverCodeGen::DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut,
 	return ret;
 }
 
-nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags, RevtracerError *rerror) {
+nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags, nodep::DWORD *disassFlags, RevtracerError *rerror) {
 	bool ret;
 	nodep::BYTE *pTmp = px86;
 	nodep::DWORD pFlags = 0;
@@ -201,13 +201,20 @@ nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &
 		//disassembler.Translate(pTmp, dis, pFlags);
 		//metaTranslator.Translate(dis, instrBuffers[currentBuffer], instrCounts[currentBuffer]);
 
-		DisassembleSingle(pTmp, instrBuffers[currentBuffer], instrCounts[currentBuffer], pFlags, rerror);
+		RiverInstruction *ri = instrBuffers[currentBuffer];
+		DisassembleSingle(pTmp, ri, instrCounts[currentBuffer], pFlags, rerror);
+
+		// set disassemble flags when branch instruction is found
+		if (pFlags & RIVER_FLAG_BRANCH) {
+			*disassFlags = pFlags;
+		}
+
 		if (rerror->errorCode != RERROR_OK) {
 			return 0;
 		}
 
 		nodep::DWORD addrCount = 0;
-		
+
 		for (nodep::DWORD i = 0; i < instrCounts[currentBuffer]; ++i) {
 			for (nodep::DWORD j = 0; j < 4; ++j) {
 				if (RIVER_OPTYPE(instrBuffers[currentBuffer][i].opTypes[j]) == RIVER_OPTYPE_MEM) {
@@ -368,6 +375,28 @@ bool SaveToStream(
 	return true;
 }
 
+void SetBranchInfo(RiverBasicBlock *pCB, nodep::DWORD disassFlags) {
+	if (disassFlags & RIVER_BRANCH_INSTR_RET) {
+		pCB->dwBranchInstruction = RIVER_INSTR_RET;
+	} else if (disassFlags & RIVER_BRANCH_INSTR_JMP) {
+		pCB->dwBranchInstruction = RIVER_INSTR_JMP;
+	} else if (disassFlags & RIVER_BRANCH_INSTR_JXX) {
+		pCB->dwBranchInstruction = RIVER_INSTR_JXX;
+	} else if (disassFlags & RIVER_BRANCH_INSTR_CALL) {
+		pCB->dwBranchInstruction = RIVER_INSTR_CALL;
+	} else if (disassFlags & RIVER_BRANCH_INSTR_SYSCALL) {
+		pCB->dwBranchInstruction = RIVER_INSTR_SYSCALL;
+	}
+
+	if (disassFlags & RIVER_BRANCH_TYPE_IMM) {
+		pCB->dwBranchType = RIVER_OPTYPE_IMM;
+	} else if (disassFlags & RIVER_BRANCH_TYPE_MEM) {
+		pCB->dwBranchType = RIVER_OPTYPE_MEM;
+	} else if (disassFlags & RIVER_BRANCH_TYPE_REG) {
+		pCB->dwBranchType = RIVER_OPTYPE_REG;
+	}
+}
+
 bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFlags, RevtracerError *rerror) {
 	bool ret;
 
@@ -385,8 +414,13 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFla
 
 		Reset();
 
+		nodep::DWORD disassFlags;
 		pCB->dwOrigOpCount = 0;
-		pCB->dwSize = TranslateBasicBlock((nodep::BYTE *)pCB->address, pCB->dwOrigOpCount, pCB->pDisasmCode, dwTranslationFlags, rerror); //(this, disassembler, saveTranslator, (BYTE *)pCB->address, fwRiverInst, &pCB->dwOrigOpCount);
+		pCB->dwSize = TranslateBasicBlock((nodep::BYTE *)pCB->address,
+				pCB->dwOrigOpCount, pCB->pDisasmCode, dwTranslationFlags,
+				&disassFlags, rerror);
+
+		SetBranchInfo(pCB, disassFlags);
 
 		if (pCB->dwSize == 0 && rerror->errorCode != RERROR_OK) {
 			return false;

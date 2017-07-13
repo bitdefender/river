@@ -92,7 +92,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 			/*0xB8*/ &RiverX86Disassembler::DisassemblePlusRegInstr<0xB8>, &RiverX86Disassembler::DisassemblePlusRegInstr<0xB8>, &RiverX86Disassembler::DisassemblePlusRegInstr<0xB8>, &RiverX86Disassembler::DisassemblePlusRegInstr<0xB8>,
 			/*0xBC*/ &RiverX86Disassembler::DisassemblePlusRegInstr<0xB8>, &RiverX86Disassembler::DisassemblePlusRegInstr<0xB8>, &RiverX86Disassembler::DisassemblePlusRegInstr<0xB8>, &RiverX86Disassembler::DisassemblePlusRegInstr<0xB8>,
 
-			/*0xC0*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH | RIVER_MODIFIER_O16>, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH>,
+			/*0xC0*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH | RIVER_MODIFIER_O16 | RIVER_BRANCH_INSTR_RET | RIVER_BRANCH_TYPE_MEM>, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH | RIVER_BRANCH_INSTR_RET | RIVER_BRANCH_TYPE_MEM>,
 			/*0xC4*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultInstr,
 			/*0xC8*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0xCC*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
@@ -104,7 +104,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 
 			/*0xE0*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleRelJmpInstr<2>,
 			/*0xE4*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
-			/*0xE8*/ &RiverX86Disassembler::DisassembleRelJmpInstr<5>, &RiverX86Disassembler::DisassembleRelJmpInstr<5>, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>,
+			/*0xE8*/ &RiverX86Disassembler::DisassembleRelJmpInstr<5>, &RiverX86Disassembler::DisassembleRelJmpInstr<5>, &RiverX86Disassembler::DisassembleDefaultInstr<0, RIVER_FLAG_BRANCH | RIVER_BRANCH_INSTR_JMP | RIVER_BRANCH_TYPE_IMM>, &RiverX86Disassembler::DisassembleRelJmpInstr<2>,
 			/*0xEC*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
 			/*0xF0*/ &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_LOCK, RIVER_FLAG_PFX>, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_REPNZ, RIVER_FLAG_PFX>, &RiverX86Disassembler::DisassembleDefaultInstr<RIVER_MODIFIER_REPZ, RIVER_FLAG_PFX>,

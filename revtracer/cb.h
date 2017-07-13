@@ -34,6 +34,10 @@ public :
 	unsigned char		*pRevTrackCode; // reverse tracking code
 	unsigned char       *pDisasmCode; // disassembled code
 
+	/* control flow data */
+	nodep::DWORD				dwBranchType;
+	nodep::DWORD				dwBranchInstruction;
+
 	/* block linkage (for hash table) */
 	RiverBasicBlock		*pNext;
 

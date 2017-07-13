@@ -116,6 +116,35 @@ private :
 		ri.opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
 		ri.operands[1].asImm32 = (nodep::DWORD)px86 + instrLen;
 		flags |= RIVER_FLAG_BRANCH;
+		flags |= RIVER_BRANCH_TYPE_IMM;
+
+		switch(ri.opCode) {
+		case 0x70: case 0x71: case 0x72: case 0x73:
+		case 0x74: case 0x75: case 0x76: case 0x77:
+		case 0x78: case 0x79: case 0x7A: case 0x7B:
+		case 0x7C: case 0x7D: case 0x7E: case 0x7F:
+		case 0xE3: /*jcxz*/
+		case 0x80: case 0x81: case 0x82: case 0x83:
+		case 0x84: case 0x85: case 0x86: case 0x87:
+		case 0x88: case 0x89: case 0x8A: case 0x8B:
+		case 0x8C: case 0x8D: case 0x8E: case 0x8F:
+				flags |= RIVER_BRANCH_INSTR_JXX;
+				break;
+		case 0xE9: case 0xEB:
+				flags |= RIVER_BRANCH_INSTR_JMP;
+				break;
+		case 0xE8:
+				flags |= RIVER_BRANCH_INSTR_CALL;
+				break;
+		case 0x34:
+				flags |= RIVER_BRANCH_INSTR_SYSCALL;
+				break;
+		case 0x05:
+				break;
+		default:
+				DEBUG_BREAK;
+
+		}
 		px86++;
 	}
 
@@ -126,10 +155,31 @@ private :
 
 		px86++;
 		DisassembleModRMOp(0, px86, ri, extra);
+		switch(ri.opTypes[0]) {
+		case RIVER_OPTYPE_REG:
+			flags |= RIVER_BRANCH_TYPE_REG;
+			break;
+		case RIVER_OPTYPE_MEM:
+			flags |= RIVER_BRANCH_TYPE_MEM;
+			break;
+		default:
+			DEBUG_BREAK;
+		}
 
 		ri.opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
 		ri.operands[1].asImm32 = (nodep::DWORD)px86;
 		flags |= RIVER_FLAG_BRANCH;
+
+		switch(ri.subOpCode) {
+		case 0x02:
+			flags |= RIVER_BRANCH_INSTR_CALL;
+			break;
+		case 0x04:
+			flags |= RIVER_BRANCH_INSTR_JMP;
+			break;
+		default:
+			DEBUG_BREAK;
+		}
 	}
 
 	/*void DisassembleExtInstr(BYTE *&px86, RiverInstruction &ri, DWORD &flags);*/

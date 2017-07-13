@@ -82,7 +82,7 @@ bool RiverX86Disassembler::Init(RiverCodeGen *cg) {
 
 bool RiverX86Disassembler::Translate(nodep::BYTE *&px86, RiverInstruction &rOut, nodep::DWORD &flags) {
 	nodep::DWORD dwTable = 0;
-	
+
 	rOut.modifiers = 0;
 	rOut.specifiers = 0;
 	rOut.family = 0;
@@ -106,7 +106,7 @@ bool RiverX86Disassembler::Translate(nodep::BYTE *&px86, RiverInstruction &rOut,
 	} while (flags & RIVER_FLAG_PFX);
 
 	dwTable = (rOut.modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
-	
+
 	nodep::BYTE* currentInstr = px86;
 	(this->*disassembleOperands[dwTable][rOut.opCode])(px86, rOut);
 	if ((px86 == (nodep::BYTE *)INVALID_ADDRESS) && (currentInstr != px86)) {

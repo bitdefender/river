@@ -42,7 +42,10 @@ private :
 	SymbopSaveTranslator symbopSaveTranslator;
 	SymbopReverseTranslator symbopReverseTranslator;
 
-	nodep::DWORD TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags, RevtracerError *rerror);
+	nodep::DWORD TranslateBasicBlock(nodep::BYTE *px86,
+			nodep::DWORD &dwInst, nodep::BYTE *&disasm,
+			nodep::DWORD dwTranslationFlags, nodep::DWORD *disassFlags,
+			RevtracerError *rerror);
 public :
 	struct RiverInstruction fwRiverInst[RIVER_FORWARD_INSTRUCTIONS];
 	struct RiverInstruction bkRiverInst[RIVER_BACKWARD_INSTRUCTIONS];

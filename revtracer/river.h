@@ -47,6 +47,24 @@
 #define RIVER_FLAG_OPCODE			0x00000002
 #define RIVER_FLAG_BRANCH			0x00000100
 
+/* Branch instructions and types used for control-flow analysis */
+#define RIVER_BRANCH_INSTR_RET		0x00001000
+#define RIVER_BRANCH_INSTR_JMP		0x00002000
+#define RIVER_BRANCH_INSTR_JXX		0x00004000
+#define RIVER_BRANCH_INSTR_CALL		0x00008000
+#define RIVER_BRANCH_INSTR_SYSCALL	0x00010000
+
+#define RIVER_BRANCH_TYPE_IMM		0x00020000
+#define RIVER_BRANCH_TYPE_REG		0x00040000
+#define RIVER_BRANCH_TYPE_MEM		0x00080000
+
+/* River branch instruction types */
+#define RIVER_INSTR_RET				0x00
+#define RIVER_INSTR_JMP				0x01
+#define RIVER_INSTR_JXX				0x02
+#define RIVER_INSTR_CALL			0x03
+#define RIVER_INSTR_SYSCALL			0x04
+
 /* River virtual register names */
 #define RIVER_REG_xAX				0x00
 #define RIVER_REG_xCX				0x01
@@ -210,7 +228,7 @@ struct RiverInstruction {
 	nodep::BYTE opCode;
 	nodep::BYTE subOpCode;
 
-	nodep::BYTE modFlags, testFlags;
+	nodep::BYTE disassFlags, modFlags, testFlags;
 
 	nodep::BYTE opTypes[4];
 	union RiverOperand operands[4];
