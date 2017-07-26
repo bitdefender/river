@@ -63,7 +63,7 @@ bool InprocessExecutionController::PatchProcess() {
 		"mempcpy", "strlen", "strncmp"
 	};
 
-	libcHandler = GET_LIB_HANDLER("libc.so.6");
+	libcHandler = GET_LIB_HANDLER("libc.so");
 	if (nullptr == libcHandler) {
 		DEBUG_BREAK;
 		return false;

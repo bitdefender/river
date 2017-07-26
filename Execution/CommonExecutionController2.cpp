@@ -25,7 +25,7 @@ nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE 
 	ExecutionController *exec = (ExecutionController *)userContext;
 	rev::ADDR_TYPE termCode = exec->GetTerminationCode();
 
-	printf("[BranchHandler] next instr %p\n", nextInstruction);
+	exec->DebugPrintf(PRINT_BRANCHING_INFO, "[BranchHandler] next instr %p\n", nextInstruction);
 
 	if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
 		if (pEnv->bForward) {
@@ -90,7 +90,7 @@ nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE 
 		}
 	}
 
-	printf("[Parent] BH direction %s\n", dwDirection == EXECUTION_ADVANCE ? "advance" : "other");
+	exec->DebugPrintf(PRINT_BRANCHING_INFO, "[Parent] BH direction %s\n", dwDirection == EXECUTION_ADVANCE ? "advance" : "other");
 	return dwDirection;
 }
 
