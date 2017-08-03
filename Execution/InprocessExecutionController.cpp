@@ -46,6 +46,51 @@ bool InprocessExecutionController::SetCmdLine(const wstring &c) {
 	return false;
 }
 
+bool InprocessExecutionController::MarkErrorHandlingBB() {
+#ifdef __linux__
+	/* 1. get library imports. check if __errno_location is an import
+	 * 2. get libc handler - find __errno_location offset
+	 * 3. compute address
+	 * 4. check call instructions
+	 */
+	LIB_T libcHandler;
+	libcHandler = GET_LIB_HANDLER("libc.so");
+	if (nullptr == libcHandler) {
+		DEBUG_BREAK;
+		return false;
+	}
+
+	DWORD local__errno_location = (DWORD) dlsym(libcHandler,
+			"__errno_location");
+	DWORD libcBase = ((DWORD *)libcHandler)[0];
+
+	DWORD offset__errno_location = local__errno_location - libcBase;
+
+	//revtracer.pConfig->address__errno_location = local__errno_location;
+	//revtracer.pConfig->offset__errno_location = offset__errno_location;
+
+#endif
+	return true;
+}
+
+bool InprocessExecutionController::AnalyzeTargetModule() {
+#ifdef __linux__
+	/* Open tracer module with binloader and
+	 * - check - if __errno_location is an import
+	 * - address of __errno_location in .plt
+	 * - address of __errno_location in .got
+	 */
+	ldr::AbstractBinary *targetModule = nullptr;
+	CreateModule(targetModulePath.c_str(), targetModule);
+
+	if (targetModule == nullptr) {
+		DEBUG_BREAK;
+	}
+
+#endif
+	return true;
+}
+
 bool InprocessExecutionController::PatchProcess() {
 #ifdef __linux__
 	LIB_T libcHandler;
@@ -231,6 +276,7 @@ bool InprocessExecutionController::Execute() {
 	revtraceExecute = (ExecuteFunc)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "Execute");
 
 	PatchProcess();
+	AnalyzeTargetModule();
 
 	int ret;
 	CREATE_THREAD(hThread, ThreadProc, this, ret);

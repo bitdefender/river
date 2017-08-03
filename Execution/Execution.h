@@ -128,6 +128,7 @@ public:
 	virtual int GetState() const = 0;
 	virtual bool SetPath(const wstring &) = 0;
 	virtual bool SetCmdLine(const wstring &) = 0;
+	virtual bool SetTargetModulePath(const string &) = 0;
 	virtual bool SetEntryPoint(void *ep) = 0;
 	virtual bool SetExecutionFeatures(unsigned int feat) = 0;
 

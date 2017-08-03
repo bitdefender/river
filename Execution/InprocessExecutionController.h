@@ -36,6 +36,8 @@ public :
 	virtual bool SetCmdLine(const wstring &c);
 
 	bool PatchProcess();
+	bool MarkErrorHandlingBB();
+	bool AnalyzeTargetModule();
 
 	virtual THREAD_T GetProcessHandle();
 	virtual rev::ADDR_TYPE GetTerminationCode();

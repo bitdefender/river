@@ -24,8 +24,10 @@ namespace ldr {
 		char path[MAX_PATH_NAME];
 		solve_path(module, path);
 
-		if (FOPEN(fMod, path, "rt"))
+		if (FOPEN(fMod, path, "rt")) {
+			printf("ERROR: Cannot open: %s for reading\n", path);
 			return nullptr;
+		}
 
 		AbstractBinary *bin = LoadBinary<const char *>(path, fMod);
 

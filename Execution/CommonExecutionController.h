@@ -45,6 +45,7 @@ protected:
 	wstring path;
 	wstring cmdLine;
 	void *entryPoint;
+	string targetModulePath;
 
 	uint32_t featureFlags;
 
@@ -68,6 +69,7 @@ public :
 
 	virtual bool SetPath(const wstring &p);
 	virtual bool SetCmdLine(const wstring &c);
+	virtual bool SetTargetModulePath(const string &s);
 	virtual bool SetEntryPoint(void *ep);
 	virtual bool SetExecutionFeatures(unsigned int feat);
 
