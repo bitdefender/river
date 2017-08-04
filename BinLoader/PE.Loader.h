@@ -172,6 +172,8 @@ namespace ldr {
 		virtual bool IsValid() const {
 			return isValid;
 		}
+
+		virtual bool IsGlobalSymbolPresent(char *symbol, size_t len);
 	};
 }; //namespace ldr
 

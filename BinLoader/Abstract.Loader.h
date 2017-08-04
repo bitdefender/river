@@ -10,6 +10,7 @@ namespace ldr {
 	class AbstractBinary {
 	public:
 		virtual bool IsValid() const = 0;
+		virtual bool IsGlobalSymbolPresent(char *symbol, size_t len) = 0;
 		virtual bool Map(AbstractMapper &mapr, AbstractImporter &impr, DWORD &baseAddr, bool callConstructors) = 0;
 		virtual bool GetExport(const char *funcName, DWORD &funcRVA) const = 0;
 		virtual DWORD GetRequiredSize() const = 0;

@@ -298,6 +298,10 @@ namespace ldr {
 	}
 
 
+	bool FloatingPE::IsGlobalSymbolPresent(char *symbol, size_t len) {
+		return false;
+	}
+
 	bool FloatingPE::FixImports(AbstractImporter &impr) {
 		DWORD importRVA = 0;
 

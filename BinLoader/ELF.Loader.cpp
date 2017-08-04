@@ -466,6 +466,28 @@ namespace ldr {
 		return 0;
 	}
 
+	bool FloatingELF32::IsGlobalSymbolPresent(char *symbol, size_t len) {
+		for (auto i = sections.begin(); i != sections.end(); ++i) {
+			/* dynsym contains everything needed for dynamic linking
+			 * so the imports we need are contained in it.
+			 */
+			if(SHT_DYNSYM == i->header.sh_type) {
+				ELF32Sym *symb = (ELF32Sym *)i->data;
+				DWORD count = i->header.sh_size / sizeof(*symb);
+				for (int j = 0; j < count; ++j) {
+					if ((STB_GLOBAL == ELF32STBIND(symb[j].st_info)) && (SHN_UNDEF == symb[j].st_shndx)) {
+						char *local_symbol = (char *)&sections[i->header.sh_link].data[symb[j].st_name];
+						if (strncmp(symbol, local_symbol, len) == 0) {
+							return true;
+						}
+					}
+				}
+
+			}
+		}
+		return false;
+	}
+
 	bool FloatingELF32::FixImports(AbstractImporter &impr, DWORD offset) {
 		for (auto i = sections.begin(); i != sections.end(); ++i) {
 			if ((SHT_DYNSYM == i->header.sh_type) || (SHT_SYMTAB == i->header.sh_type)) {

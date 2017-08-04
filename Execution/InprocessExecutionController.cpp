@@ -76,15 +76,22 @@ bool InprocessExecutionController::MarkErrorHandlingBB() {
 bool InprocessExecutionController::AnalyzeTargetModule() {
 #ifdef __linux__
 	/* Open tracer module with binloader and
-	 * - check - if __errno_location is an import
+	 * - check if call relocation is R_386_PC32 or got.plt
 	 * - address of __errno_location in .plt
 	 * - address of __errno_location in .got
 	 */
+	char symbolName[] = "__errno_location";
+	size_t symbolSize = strlen(symbolName);
+
 	ldr::AbstractBinary *targetModule = nullptr;
 	CreateModule(targetModulePath.c_str(), targetModule);
 
 	if (targetModule == nullptr) {
 		DEBUG_BREAK;
+	}
+
+	if (!targetModule->IsGlobalSymbolPresent(symbolName, symbolSize)) {
+		return false;
 	}
 
 #endif
