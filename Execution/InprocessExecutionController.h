@@ -32,7 +32,6 @@ private :
 		rev::RevtracerExports *pExports;
 	} revtracer;
 public :
-	virtual bool SetPath(const wstring &p);
 	virtual bool SetCmdLine(const wstring &c);
 
 	bool PatchProcess();

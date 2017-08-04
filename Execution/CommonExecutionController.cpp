@@ -121,15 +121,6 @@ bool CommonExecutionController::SetCmdLine(const wstring &c) {
 	return true;
 }
 
-bool CommonExecutionController::SetTargetModulePath(const string &s) {
-	if (execState == RUNNING) {
-		return false;
-	}
-
-	targetModulePath = s;
-	return true;
-}
-
 bool CommonExecutionController::SetEntryPoint(void *ep) {
 	if (execState == RUNNING) {
 		return false;

@@ -38,10 +38,6 @@ static __libc_ifunc_impl_list_handle my__libc_ifunc_impl_list;
 
 typedef ADDR_TYPE(*GetHandlerCallback)(void);
 
-bool InprocessExecutionController::SetPath(const wstring &) {
-	return false;
-}
-
 bool InprocessExecutionController::SetCmdLine(const wstring &c) {
 	return false;
 }
@@ -75,7 +71,7 @@ bool InprocessExecutionController::MarkErrorHandlingBB() {
 
 bool InprocessExecutionController::AnalyzeTargetModule() {
 #ifdef __linux__
-	/* Open tracer module with binloader and
+	/* TODO: Open tracer module with binloader and
 	 * - check if call relocation is R_386_PC32 or got.plt
 	 * - address of __errno_location in .plt
 	 * - address of __errno_location in .got
@@ -84,13 +80,15 @@ bool InprocessExecutionController::AnalyzeTargetModule() {
 	size_t symbolSize = strlen(symbolName);
 
 	ldr::AbstractBinary *targetModule = nullptr;
-	CreateModule(targetModulePath.c_str(), targetModule);
+	CreateModule(path.c_str(), targetModule);
 
 	if (targetModule == nullptr) {
 		DEBUG_BREAK;
 	}
 
 	if (!targetModule->IsGlobalSymbolPresent(symbolName, symbolSize)) {
+		printf("Cannot find: %s in target: %ls\n", symbolName,
+				path.c_str());
 		return false;
 	}
 
