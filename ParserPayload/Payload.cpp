@@ -199,6 +199,10 @@ header_field_cb(http_parser *p, const char *buf, size_t len)
 	assert(p == parser);
 	struct message *m = &messages[num_messages];
 
+	if (m->num_headers < MAX_HEADERS - 1) {
+		return -1;
+	}
+
 	if (m->last_header_element != m->FIELD)
 		m->num_headers++;
 
@@ -287,7 +291,11 @@ int message_complete_cb(http_parser *p) {
 
 	messages[num_messages].message_complete_on_eof = currently_parsing_eof;
 
-	num_messages++;
+	if (num_messages < (sizeof(messages) / sizeof(messages[0]) - 1)) {
+		num_messages++;
+	} else {
+		memset(messages + num_messages, 0, sizeof(messages[0]));
+	}
 	return 0;
 }
 
