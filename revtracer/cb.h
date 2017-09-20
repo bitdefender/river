@@ -37,6 +37,7 @@ public :
 	/* control flow data */
 	nodep::DWORD				dwBranchType;
 	nodep::DWORD				dwBranchInstruction;
+	struct rev::BranchNext		pBranchNext[2];
 
 	/* block linkage (for hash table) */
 	RiverBasicBlock		*pNext;
