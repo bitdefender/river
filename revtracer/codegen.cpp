@@ -211,19 +211,37 @@ nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86,
 		if (pFlags & RIVER_FLAG_BRANCH) {
 			*disassFlags = pFlags;
 			rev_memset(next, 0, 2 * sizeof(struct BranchNext));
+
+			// get last instruction from translation array
+			RiverInstruction *tmpRi = ri + instrCounts[currentBuffer] - 1;
+
 			// set next instructions and branch taken info
-			if (pFlags & RIVER_BRANCH_TYPE_IMM) {
+			if (RIVER_OPTYPE(tmpRi->opTypes[0]) == RIVER_OPTYPE_IMM) {
 				next[0].taken = true;
-				next[0].address = ri->instructionAddress +
-					ri->operands[0].asImm8;
+				next[0].address = tmpRi->operands[1].asImm32;
+
+				switch(RIVER_OPSIZE(tmpRi->opTypes[0])) {
+				case RIVER_OPSIZE_32:
+					next[0].address = (unsigned)((int)next[0].address + (int)tmpRi->operands[0].asImm32);
+					break;
+				case RIVER_OPSIZE_16:
+					next[0].address = (unsigned)((int)next[0].address + (short)tmpRi->operands[0].asImm16);
+					break;
+				case RIVER_OPSIZE_8:
+					next[0].address = (unsigned)((int)next[0].address + (char)tmpRi->operands[0].asImm8);
+					break;
+				default:
+					DEBUG_BREAK;
+				}
+
 				if (pFlags & RIVER_BRANCH_INSTR_JXX) {
 					next[1].taken = false;
-					next[1].address = ri->operands[1].asImm32;
+					next[1].address = tmpRi->operands[1].asImm32;
 				}
-			} else if (pFlags & RIVER_BRANCH_TYPE_MEM ||
-					pFlags & RIVER_BRANCH_TYPE_REG) {
+			} else if (RIVER_OPTYPE(tmpRi->opTypes[0]) == RIVER_OPTYPE_MEM ||
+					RIVER_OPTYPE(tmpRi->opTypes[0]) == RIVER_OPTYPE_REG) {
 				next[0].taken = true;
-				next[0].address = 0xFFFFFFFF;
+				next[0].address = 0x00000000;
 			}
 		}
 
