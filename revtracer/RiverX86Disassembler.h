@@ -155,7 +155,7 @@ private :
 
 		px86++;
 		DisassembleModRMOp(0, px86, ri, extra);
-		switch(ri.opTypes[0]) {
+		switch(RIVER_OPTYPE(ri.opTypes[0])) {
 		case RIVER_OPTYPE_REG:
 			flags |= RIVER_BRANCH_TYPE_REG;
 			break;

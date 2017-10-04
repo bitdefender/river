@@ -11,7 +11,7 @@ OBJAS_FILES := $(addprefix ,$(notdir $(AS_FILES:.S=.o)))
 LD_FLAGS :=
 AS_FLAGS += --32
 CC_FLAGS_CROSS = -D_cdecl="" -D_stdcall=""
-CC_FLAGS += -g -m32 -march=i386 -fno-exceptions -fno-stack-protector -fcheck-new -std=c++11 -D_BUILDING_REVTRACER_DLL $(CC_FLAGS_CROSS)
+CC_FLAGS += -g -m32 -march=i386 -fno-exceptions -fno-stack-protector -fcheck-new -std=c++11 $(CC_FLAGS_CROSS) -D_BUILDING_REVTRACER_DLL
 prefix := /usr/local
 
 all: $(lib_revtracer)

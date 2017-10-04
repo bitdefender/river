@@ -178,11 +178,17 @@ namespace rev {
 		nodep::DWORD eflags;
 	};
 
+	struct BranchNext {
+		nodep::DWORD address;
+		nodep::DWORD taken;
+	};
+
 	struct BasicBlockInfo {
 		ADDR_TYPE address;
 		nodep::DWORD cost;
 		nodep::DWORD branchType;
 		nodep::DWORD branchInstruction;
+		struct BranchNext branchNext[2];
 	};
 
 	typedef void (*GetCurrentRegistersFunc)(void *ctx, ExecutionRegs *regs);

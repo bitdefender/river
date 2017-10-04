@@ -176,7 +176,10 @@ bool RiverCodeGen::DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut,
 	return ret;
 }
 
-nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &dwInst, nodep::BYTE *&disasm, nodep::DWORD dwTranslationFlags, nodep::DWORD *disassFlags, RevtracerError *rerror) {
+nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86,
+		nodep::DWORD &dwInst, nodep::BYTE *&disasm,
+		nodep::DWORD dwTranslationFlags, nodep::DWORD *disassFlags,
+		struct rev::BranchNext *next, RevtracerError *rerror) {
 	bool ret;
 	nodep::BYTE *pTmp = px86;
 	nodep::DWORD pFlags = 0;
@@ -207,6 +210,39 @@ nodep::DWORD RiverCodeGen::TranslateBasicBlock(nodep::BYTE *px86, nodep::DWORD &
 		// set disassemble flags when branch instruction is found
 		if (pFlags & RIVER_FLAG_BRANCH) {
 			*disassFlags = pFlags;
+			rev_memset(next, 0, 2 * sizeof(struct BranchNext));
+
+			// get last instruction from translation array
+			RiverInstruction *tmpRi = ri + instrCounts[currentBuffer] - 1;
+
+			// set next instructions and branch taken info
+			if (RIVER_OPTYPE(tmpRi->opTypes[0]) == RIVER_OPTYPE_IMM) {
+				next[0].taken = true;
+				next[0].address = tmpRi->operands[1].asImm32;
+
+				switch(RIVER_OPSIZE(tmpRi->opTypes[0])) {
+				case RIVER_OPSIZE_32:
+					next[0].address = (unsigned)((int)next[0].address + (int)tmpRi->operands[0].asImm32);
+					break;
+				case RIVER_OPSIZE_16:
+					next[0].address = (unsigned)((int)next[0].address + (short)tmpRi->operands[0].asImm16);
+					break;
+				case RIVER_OPSIZE_8:
+					next[0].address = (unsigned)((int)next[0].address + (char)tmpRi->operands[0].asImm8);
+					break;
+				default:
+					DEBUG_BREAK;
+				}
+
+				if (pFlags & RIVER_BRANCH_INSTR_JXX) {
+					next[1].taken = false;
+					next[1].address = tmpRi->operands[1].asImm32;
+				}
+			} else if (RIVER_OPTYPE(tmpRi->opTypes[0]) == RIVER_OPTYPE_MEM ||
+					RIVER_OPTYPE(tmpRi->opTypes[0]) == RIVER_OPTYPE_REG) {
+				next[0].taken = true;
+				next[0].address = 0x00000000;
+			}
 		}
 
 		if (rerror->errorCode != RERROR_OK) {
@@ -418,7 +454,7 @@ bool RiverCodeGen::Translate(RiverBasicBlock *pCB, nodep::DWORD dwTranslationFla
 		pCB->dwOrigOpCount = 0;
 		pCB->dwSize = TranslateBasicBlock((nodep::BYTE *)pCB->address,
 				pCB->dwOrigOpCount, pCB->pDisasmCode, dwTranslationFlags,
-				&disassFlags, rerror);
+				&disassFlags, pCB->pBranchNext, rerror);
 
 		SetBranchInfo(pCB, disassFlags);
 
