@@ -186,6 +186,8 @@ void OverlappedRegistersEnvironment::OverlappedRegister::Set(RiverRegister &reg,
 		if ((nullptr != subRegs[seed]) && (&needExtract != subRegs[seed]) && (&needConcat != subRegs[seed])) {
 			parent->decRefFunc(subRegs[seed]);
 		}
+		if (parent->addRefFunc == nullptr)
+			DEBUG_BREAK;
 		parent->addRefFunc(value);
 	}
 	subRegs[seed] = value;

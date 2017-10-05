@@ -27,7 +27,7 @@ namespace stk {
 		bool VirtualPush(DWORD *buffer);
 		bool VirtualPop(DWORD *buffer);
 	public:
-		LargeStack(DWORD *base, DWORD size, DWORD *top, char *fName);
+		LargeStack(DWORD *base, DWORD size, DWORD *top, const char *fName);
 		~LargeStack();
 
 		void Push(DWORD value);

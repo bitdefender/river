@@ -1,6 +1,8 @@
 #ifndef _VARIABLE_TRACKER_H_
 #define _VARIABLE_TRACKER_H_
 
+#include "../CommonCrossPlatform/BasicTypes.h"
+
 template <typename T> class VariableTracker {
 public :
 	typedef bool(*IsLockedFunc)(void *ctx, const T*);
@@ -10,10 +12,10 @@ public :
 private :
 	struct {
 		T var;
-		rev::DWORD step;
+		nodep::DWORD step;
 	} stack[32];
-	rev::DWORD top;
-	rev::DWORD step;
+	nodep::DWORD top;
+	nodep::DWORD step;
 
 	IsLockedFunc isLocked;
 	LockFunc lock;

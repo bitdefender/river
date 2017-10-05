@@ -38,7 +38,7 @@
 
 namespace stk {
 
-	LargeStack::LargeStack(DWORD *base, DWORD size, DWORD *top, char *fName) {
+	LargeStack::LargeStack(DWORD *base, DWORD size, DWORD *top, const char *fName) {
 		if (size & (MIN_STACK_SIZE - 1)) {
 			DEBUG_BREAK;
 		}
