@@ -31,13 +31,16 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 #define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : "=r" (addr)); addr; })
 #endif
 
+unsigned int addr;
+
+void RetAddr() {
+	asm("mov 4(%%ebp), %0" : "=r" (addr));
+}
 
 nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
 	RiverBasicBlock *pBlock;
 	RevtracerError rerror;
 	DWORD ret;
-
-	Stopper (env, (BYTE *)&&exit);
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	//pBlock->address = (DWORD) f;
@@ -46,9 +49,20 @@ nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env,
 	env->lastFwBlock = (DWORD)f;
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
-	ret = ((_fn_cdecl_0)(pBlock->pFwCode))(); //JUMP in TVM
 
-exit:
+	_fn_cdecl_0 funcs[] = {
+		(_fn_cdecl_0)RetAddr,
+		(_fn_cdecl_0)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])();
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
+
 	return ret;
 }
 

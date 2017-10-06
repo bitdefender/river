@@ -359,7 +359,7 @@ namespace rev {
 				CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
 			}
 			// TODO save state
-			nodep::DWORD ret = call_cdecl_2(pEnv, (_fn_cdecl_2)revtracerConfig.entryPoint, (void *)argc, (void *)argv);
+			nodep::DWORD ret = call_cdecl_0(pEnv, (_fn_cdecl_0)revtracerConfig.entryPoint);
 			// TODO if error=> restore state
 			revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Done. ret = %d\n\n", ret);
 		}
