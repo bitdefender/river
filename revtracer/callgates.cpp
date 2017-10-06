@@ -24,18 +24,33 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 	pEnv->exitAddr = (DWORD)s;
 }
 
+
+BYTE *GetContinuation(BYTE *func) {
+	while (*func != 0xCC) {
+		func++;
+}
+
+	return func + 1;
+}
+
+
 #ifdef _MSC_VER
 #define GET_RETURN_ADDR _ReturnAddress
 #else
 #define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : "=r" (addr)); addr; })
 #endif
 
+
+/** IMPORTANT NOTE! 
+	Do not insert breakpoints in call_*_* functions as they break the GetContinuation function!
+*/
+
 nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
 	RiverBasicBlock *pBlock;
 	RevtracerError rerror;
 	DWORD ret;
 
-	Stopper (env, (BYTE *)GET_RETURN_ADDR());
+	Stopper (env, GetContinuation((BYTE *)call_cdecl_2));
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	//pBlock->address = (DWORD) f;
@@ -45,6 +60,8 @@ nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env,
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 	ret = ((_fn_cdecl_0)(pBlock->pFwCode))(); //JUMP in TVM
+
+	DEBUG_BREAK;
 
 	return ret;
 }
@@ -72,9 +89,10 @@ DWORD __declspec(noinline) call_cdecl_1(struct ExecutionEnvironment *env, _fn_cd
 DWORD __declspec(noinline) call_cdecl_2(struct ExecutionEnvironment *env, _fn_cdecl_2 f, void *p1, void *p2) {
 	DWORD ret;
 	RevtracerError rerror;
-	RiverBasicBlock *pBlock;
-
-	Stopper(env, (BYTE *)GET_RETURN_ADDR());
+	RiverBasicBlock *pBlock; 
+	
+	Stopper(env, GetContinuation((BYTE *)call_cdecl_2));
+		//(BYTE *)GET_RETURN_ADDR());
 
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
@@ -85,6 +103,8 @@ DWORD __declspec(noinline) call_cdecl_2(struct ExecutionEnvironment *env, _fn_cd
 	//AddBlock(env, pBlock);
 
 	ret = ((_fn_cdecl_2)(pBlock->pFwCode))(p1, p2);
+
+	DEBUG_BREAK;
 
 	return ret;
 }
