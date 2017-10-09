@@ -31,17 +31,29 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 #define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : "=r" (addr)); addr; })
 #endif
 
-unsigned int addr;
+#define _RET_ADDR_FUNC_(conv, paramCount, ...) \
+	nodep::DWORD __##conv RetAddr_##conv##_##paramCount (__VA_ARGS__) { \
+		return (nodep::DWORD)GET_RETURN_ADDR(); \
+	}
 
-void RetAddr() {
-	asm("mov 4(%%ebp), %0" : "=r" (addr));
-}
+
+_RET_ADDR_FUNC_(cdecl, 0);
+_RET_ADDR_FUNC_(cdecl, 1, void *);
+_RET_ADDR_FUNC_(cdecl, 2, void *, void *);
+_RET_ADDR_FUNC_(cdecl, 3, void *, void *, void *);
+_RET_ADDR_FUNC_(cdecl, 4, void *, void *, void *, void *);
+
+_RET_ADDR_FUNC_(stdcall, 0);
+_RET_ADDR_FUNC_(stdcall, 1, void *);
+_RET_ADDR_FUNC_(stdcall, 2, void *, void *);
+_RET_ADDR_FUNC_(stdcall, 3, void *, void *, void *);
+_RET_ADDR_FUNC_(stdcall, 4, void *, void *, void *, void *);
 
 nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env, _fn_cdecl_0 f) {
-	RiverBasicBlock *pBlock;
-	RevtracerError rerror;
 	DWORD ret;
-
+	RevtracerError rerror;
+	RiverBasicBlock *pBlock;
+	
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	//pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -51,7 +63,7 @@ nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env,
 	//AddBlock(env, pBlock);
 
 	_fn_cdecl_0 funcs[] = {
-		(_fn_cdecl_0)RetAddr,
+		RetAddr_cdecl_0,
 		(_fn_cdecl_0)(pBlock->pFwCode)
 
 	};
@@ -71,8 +83,6 @@ DWORD __declspec(noinline) call_cdecl_1(struct ExecutionEnvironment *env, _fn_cd
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock;
 
-	Stopper (env, (BYTE *)GET_RETURN_ADDR());
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -81,7 +91,18 @@ DWORD __declspec(noinline) call_cdecl_1(struct ExecutionEnvironment *env, _fn_cd
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_cdecl_1)(pBlock->pFwCode))(p1);
+	_fn_cdecl_1 funcs[] = {
+		RetAddr_cdecl_1,
+		(_fn_cdecl_1)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])(p1);
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
 
 	return ret;
 }
@@ -91,8 +112,6 @@ DWORD __declspec(noinline) call_cdecl_2(struct ExecutionEnvironment *env, _fn_cd
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock; 
 	
-	Stopper(env, (BYTE *)&&exit);
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -101,9 +120,19 @@ DWORD __declspec(noinline) call_cdecl_2(struct ExecutionEnvironment *env, _fn_cd
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_cdecl_2)(pBlock->pFwCode))(p1, p2);
+	_fn_cdecl_2 funcs[] = {
+		RetAddr_cdecl_2,
+		(_fn_cdecl_2)(pBlock->pFwCode)
 
-exit:
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])(p1, p2);
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
+
 	return ret;
 }
 
@@ -112,8 +141,6 @@ DWORD __declspec(noinline) call_cdecl_3(struct ExecutionEnvironment *env, _fn_cd
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GET_RETURN_ADDR());
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -122,7 +149,18 @@ DWORD __declspec(noinline) call_cdecl_3(struct ExecutionEnvironment *env, _fn_cd
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_cdecl_3)(pBlock->pFwCode))(p1, p2, p3);
+	_fn_cdecl_3 funcs[] = {
+		RetAddr_cdecl_3,
+		(_fn_cdecl_3)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])(p1, p2, p3);
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
 
 	return ret;
 }
@@ -132,8 +170,6 @@ DWORD __declspec(noinline) call_cdecl_4(struct ExecutionEnvironment *env, _fn_cd
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GET_RETURN_ADDR());
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -142,7 +178,19 @@ DWORD __declspec(noinline) call_cdecl_4(struct ExecutionEnvironment *env, _fn_cd
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_cdecl_4)(pBlock->pFwCode))(p1, p2, p3, p4);
+	_fn_cdecl_4 funcs[] = {
+		RetAddr_cdecl_4,
+		(_fn_cdecl_4)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])(p1, p2, p3, p4);
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
+
 	return ret;
 }
 
@@ -151,8 +199,6 @@ DWORD __declspec(noinline) call_stdcall_0(struct ExecutionEnvironment *env, _fn_
 	RevtracerError rerror;
 	DWORD ret;
 
-	Stopper(env, (BYTE *)GET_RETURN_ADDR());
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -161,7 +207,19 @@ DWORD __declspec(noinline) call_stdcall_0(struct ExecutionEnvironment *env, _fn_
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_0)(pBlock->pFwCode))(); //JUMP in TVM
+	_fn_stdcall_0 funcs[] = {
+		RetAddr_stdcall_0,
+		(_fn_stdcall_0)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])();
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
+
 	return ret;
 }
 
@@ -170,8 +228,6 @@ DWORD __declspec(noinline) call_stdcall_1(struct ExecutionEnvironment *env, _fn_
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GET_RETURN_ADDR());
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -180,7 +236,19 @@ DWORD __declspec(noinline) call_stdcall_1(struct ExecutionEnvironment *env, _fn_
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_1)(pBlock->pFwCode))(p1);
+	_fn_stdcall_1 funcs[] = {
+		RetAddr_stdcall_1,
+		(_fn_stdcall_1)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])(p1);
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
+
 	return ret;
 }
 
@@ -189,8 +257,6 @@ DWORD __declspec(noinline) call_stdcall_2(struct ExecutionEnvironment *env, _fn_
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GET_RETURN_ADDR());
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -199,7 +265,19 @@ DWORD __declspec(noinline) call_stdcall_2(struct ExecutionEnvironment *env, _fn_
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_2)(pBlock->pFwCode))(p1, p2);
+	_fn_stdcall_2 funcs[] = {
+		RetAddr_stdcall_2,
+		(_fn_stdcall_2)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])(p1, p2);
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
+
 	return ret;
 }
 
@@ -208,8 +286,6 @@ DWORD __declspec(noinline) call_stdcall_3(struct ExecutionEnvironment *env, _fn_
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GET_RETURN_ADDR());
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -218,7 +294,19 @@ DWORD __declspec(noinline) call_stdcall_3(struct ExecutionEnvironment *env, _fn_
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_3)(pBlock->pFwCode))(p1, p2, p3);
+	_fn_stdcall_3 funcs[] = {
+		RetAddr_stdcall_3,
+		(_fn_stdcall_3)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])(p1, p2, p3);
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
+
 	return ret;
 }
 
@@ -227,8 +315,6 @@ DWORD __declspec(noinline) call_stdcall_4(struct ExecutionEnvironment *env, _fn_
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock;
 
-	Stopper(env, (BYTE *)GET_RETURN_ADDR());
-
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -237,6 +323,18 @@ DWORD __declspec(noinline) call_stdcall_4(struct ExecutionEnvironment *env, _fn_
 	pBlock->MarkForward();
 	//AddBlock(env, pBlock);
 
-	ret = ((_fn_stdcall_4)(pBlock->pFwCode))(p1, p2, p3, p4);
+	_fn_stdcall_4 funcs[] = {
+		RetAddr_stdcall_4,
+		(_fn_stdcall_4)(pBlock->pFwCode)
+
+	};
+
+	for (int i = 0; i < 2; ++i) {
+		ret = (funcs[i])(p1, p2, p3, p4);
+		if (0 == i) {
+			Stopper(env, (BYTE *)ret);
+		}
+	}
+
 	return ret;
 }

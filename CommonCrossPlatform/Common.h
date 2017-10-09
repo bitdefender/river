@@ -174,7 +174,9 @@ typedef HMODULE LIB_T;
 #define CLOSE_LIB
 #define LOAD_PROC(libhandler, szProc) GetProcAddress((libhandler), (szProc))
 
-typedef LARGE_INTEGER TIME_T
+typedef LARGE_INTEGER TIME_T;
+typedef LARGE_INTEGER TIME_FREQ_T;
+typedef double TIME_RES_T;
 #define START_COUNTER(starttime, freq) { QueryPerformanceCounter(&(starttime)); }
 #define GET_COUNTER_AGGREGATE(starttime, endtime, freq, total) { QueryPerformanceCounter(&(endtime)); \
 	total += (endtime).QuadPart - (starttime).QuadPart; }

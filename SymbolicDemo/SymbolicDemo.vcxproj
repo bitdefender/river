@@ -85,7 +85,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\revtracer\AddressContainer.cpp" />
-    <ClCompile Include="LargeStack.cpp" />
+    <ClCompile Include="..\SymbolicEnvironment\LargeStack.cpp" />
     <ClCompile Include="Payload.cpp">
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</BufferSecurityCheck>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
