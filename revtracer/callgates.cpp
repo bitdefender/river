@@ -27,14 +27,18 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 
 #ifdef _MSC_VER
 #define GET_RETURN_ADDR _ReturnAddress
+#define CALLING_CONV(conv) __##conv
 #else
 #define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : "=r" (addr)); addr; })
+#define CALLING_CONV(conv) __attribute__((conv))
 #endif
 
-#define _RET_ADDR_FUNC_(conv, paramCount, ...) \
-	nodep::DWORD __##conv RetAddr_##conv##_##paramCount (__VA_ARGS__) { \
+#define _RET_ADDR_FUNC_2(conv, paramCount, ...) \
+	nodep::DWORD CALLING_CONV(conv) RetAddr_##conv##_##paramCount (__VA_ARGS__) { \
 		return (nodep::DWORD)GET_RETURN_ADDR(); \
 	}
+
+#define _RET_ADDR_FUNC_(conv, paramCount, ...) _RET_ADDR_FUNC_2(conv, paramCount, __VA_ARGS__)
 
 
 _RET_ADDR_FUNC_(cdecl, 0);
