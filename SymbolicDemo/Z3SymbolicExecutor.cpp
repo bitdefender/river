@@ -321,6 +321,10 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(Z3_ast o1, Z3_ast o2) {
 Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
 	printf("<sym> cmp %p <= %p, %p\n", r, o1, o2);
+	printf("%s<=>\n%s\n",
+		Z3_ast_to_string(context, o1),
+		Z3_ast_to_string(context, o2)
+	);
 	return r;
 }
 
