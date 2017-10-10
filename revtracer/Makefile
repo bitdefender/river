@@ -10,8 +10,8 @@ OBJAS_FILES := $(addprefix ,$(notdir $(AS_FILES:.S=.o)))
 
 LD_FLAGS :=
 AS_FLAGS += --32
-CC_FLAGS_CROSS = -D_cdecl="" -D_stdcall=""
-CC_FLAGS += -g -m32 -march=i386 -fno-exceptions -fno-stack-protector -fcheck-new -std=c++11 $(CC_FLAGS_CROSS) -D_BUILDING_REVTRACER_DLL
+CC_FLAGS_CROSS = -D_cdecl="__attribute__((cdecl))" -D_stdcall="__attribute__((stdcall))"
+CC_FLAGS += -g -m32 -march=i386 -fno-exceptions -fno-stack-protector -fcheck-new -std=c++11 $(CC_FLAGS_CROSS) -D_BUILDING_REVTRACER_DLL #-D_REVTRACER_DEBUG_PRINT_
 prefix := /usr/local
 
 all: $(lib_revtracer)
