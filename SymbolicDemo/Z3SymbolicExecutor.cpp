@@ -250,7 +250,7 @@ void Z3SymbolicExecutor::SymbolicExecuteUnk(RiverInstruction *instruction, Symbo
 
 template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops) {
 	printf("<sym> jcc %p\n", ops->svf[flag]);
-	
+
 	Z3_ast cond = Z3_mk_eq(
 		context,
 		(1 == ops->cvf[flag]) ? oneFlag : zeroFlag,
@@ -264,7 +264,13 @@ Z3_ast Z3SymbolicExecutor::ExecuteAdd(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvadd(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> add %p <= %p, %p\n", r, o1, o2);
+	//printf("<sym> add %p <= %p, %p\n", r, o1, o2);
+	printf("<sym> add op1 %s",
+		Z3_ast_to_string(context, o1)
+	);
+	printf("<sym> add op2 %s",
+		Z3_ast_to_string(context, o2)
+	);
 	return r;
 }
 
@@ -312,15 +318,23 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvxor(context, o1, o2);
 	env->SetOperand(0, r);
 
-	printf("<sym> xor %p <= %p, %p\n", r, o1, o2);
+	//printf("<sym> xor %p <= %p, %p\n", r, o1, o2);
+	printf("<sym> xor op1 %s",
+		Z3_ast_to_string(context, o1)
+	);
+	printf("<sym> xor op2 %s",
+		Z3_ast_to_string(context, o2)
+	);
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
-	printf("<sym> cmp %p <= %p, %p\n", r, o1, o2);
-	printf("%s<=>\n%s\n",
-		Z3_ast_to_string(context, o1),
+	//printf("<sym> cmp %p <= %p, %p\n", r, o1, o2);
+	printf("<sym> cmp op1 %s",
+		Z3_ast_to_string(context, o1)
+	);
+	printf("<sym> cmp op2 %s",
 		Z3_ast_to_string(context, o2)
 	);
 	return r;
@@ -396,6 +410,7 @@ void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, nodep::DWORD m
 	for (int i = 0; i < 4; ++i) {
 		if ((OPERAND_BITMASK(i) & m) && !ops->tr[i]) {
 			ops->sv[i] = Z3_mk_int(context, ops->cv[i], dwordSort);
+			printf("<sym> mkint %d\n", ops->cv[i]);
 		}
 	}
 
