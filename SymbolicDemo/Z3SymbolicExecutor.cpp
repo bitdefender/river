@@ -197,7 +197,6 @@ Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e) :
 
 	solver = Z3_mk_solver(context);
 	Z3_solver_push(context, solver);
-	//Z3_solver_assert(context, solver, Z3_mk_true(context));
 	Z3_solver_inc_ref(context, solver);
 
 	ls = new stk::LargeStack(saveStack, sizeof(saveStack), &saveTop, "flagStack.bin");
@@ -216,7 +215,6 @@ Z3SymbolicExecutor::~Z3SymbolicExecutor() {
 void Z3SymbolicExecutor::StepForward() {
 	//variableTracker.Forward();
 	Z3_solver_push(context, solver);
-	Z3_solver_assert(context, solver, Z3_mk_true(context));
 	for (int i = 0; i < 7; ++i) {
 		lazyFlags[i]->SaveState(*ls);
 	}
