@@ -218,7 +218,7 @@ void RevSymbolicEnvironment::SetExpression(void *exp, nodep::DWORD address, node
 		void *ext = (osz == copy) ? exp : exec->ExtractBits(exp, (sz - copy) << 3, copy << 3);
 
 		void *val = (void *)TrackAddr(pEnv, fa, 0);
-		if (nullptr == val) {
+		if (((0 != fo) || (4 != sz)) && (nullptr == val)) {
 			val = exec->MakeConst(values[ptr], 32);
 		}
 
