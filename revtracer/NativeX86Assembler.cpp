@@ -861,8 +861,8 @@ NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assembleOpcodes[2][0x
 
 		/*0xC0*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 		/*0xC4*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleSubOpInstr<NativeX86Assembler::assemble0x0FC7Instr>,
-		/*0xC8*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
-		/*0xCC*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
+		/*0xC8*/ &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr,
+		/*0xCC*/ &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr,
 
 		/*0xD0*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 		/*0xD4*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
@@ -1025,8 +1025,8 @@ NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assembleOperands[2]
 
 		/*0xC0*/ &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleModRMRegOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 		/*0xC4*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleSubOpOp<NativeX86Assembler::assemble0x0FC7Op>,
-		/*0xC8*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
-		/*0xCC*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
+		/*0xC8*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp,
+		/*0xCC*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp,
 
 		/*0xD0*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 		/*0xD4*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,

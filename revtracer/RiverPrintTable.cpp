@@ -229,7 +229,7 @@ const char PrintMnemonicTable0F[][10] = {
 	/*0x90*/"seto", "setno", "setc", "setnc", "setz", "setnz", "setbe", "setnbe", "sets", "setns", "setp", "setnp", "setl", "setnl", "setle", "setnle",
 	/*0xA0*/"", "", "cpuid", "", "shld", "shld", "", "", "", "", "", "", "shrd", "shrd", "", "imul",
 	/*0xB0*/"cmpxchg", "cmpxchg", "", "", "", "", "movzx", "movzx", "", "", "\5", "", "bsf", "bsr", "movsx", "movsx",
-	/*0xC0*/"xadd", "xadd", "", "", "", "", "", "\7", "", "", "", "", "", "", "", "",
+	/*0xC0*/"xadd", "xadd", "", "", "", "", "", "\7", "bswap", "bswap", "bswap", "bswap", "bswap", "bswap", "bswap", "bswap",
 	/*0xD0*/"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
 	/*0xE0*/"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
 	/*0xF0*/"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
