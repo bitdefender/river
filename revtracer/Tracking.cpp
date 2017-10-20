@@ -8,7 +8,7 @@ namespace rev {
 	nodep::DWORD __stdcall TrackAddr(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD segSel) {
 		nodep::DWORD ret = ((::ExecutionEnvironment *)pEnv)->ac.Get(dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF]);
 		
-		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "TrackAddr 0x%08x => %d\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
+		TRACKING_PRINT(PRINT_RUNTIME_TRACKING, "TrackAddr 0x%08x => 0x%08X\n", dwAddr + revtracerConfig.segmentOffsets[segSel & 0xFFFF], ret);
 
 		if (0 != ret) {
 			revtracerImports.trackCallback(ret, dwAddr, segSel);
