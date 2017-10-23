@@ -1,8 +1,9 @@
 ## BinLoader CMakeLists.txt
 
+set(LIBRARY_NAME binloader)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -m32 -std=c++11")
 
-add_library(libbinloader STATIC
+add_library(${LIBRARY_NAME} STATIC
 	Common.cpp
 	ELF.Loader.cpp
 	PE.Loader.cpp
@@ -13,5 +14,5 @@ add_library(libbinloader STATIC
 	Inproc.Native.Importer.cpp
 	)
 
-install(TARGETS libbinloader DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS ${LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

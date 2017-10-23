@@ -1,11 +1,12 @@
 ## Execution CMakeLists.txt
 
+set(LIBRARY_NAME execution)
 set(FLAGS_CROSS "-D__cdecl=\"\" -D__stdcall=\"\"")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -D_EXECUTION_EXPORTS \
 	-DBLOCK_CACHE_READ_ONLY ${FLAGS_CROSS}")
 
 include_directories(../BinLoader)
-add_library(libexecution SHARED
+add_library(${LIBRARY_NAME} SHARED
 	Debugger.cpp
 	ExternExecutionController.Linux.cpp
 	DualAllocator.Linux.cpp
@@ -21,10 +22,10 @@ add_library(libexecution SHARED
 	../libproc/libproc.cpp
 	)
 
-target_link_libraries(libexecution
-	libbinloader
-	libwrappersetup
-	libvirtualmemory
+target_link_libraries(${LIBRARY_NAME}
+	binloader
+	wrappersetup
+	virtualmemory
 	rt)
 
-install(TARGETS libexecution DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS ${LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
