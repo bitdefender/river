@@ -14,10 +14,6 @@ set(CMAKE_ASM_FLAGS "--32")
 
 set_source_files_properties(revtracer.stub.S PROPERTIES COMPILE_FLAGS "${CMAKE_ASM_FLAGS}")
 
-add_library(asm STATIC
-	revtracer.stub.S
-	)
-
 add_library(revtracer SHARED
 	AddressContainer.cpp
 	api.cpp
@@ -49,9 +45,16 @@ add_library(revtracer SHARED
 	X86AssemblerFuncs.cpp
 	RiverX86DisassemblerTable.cpp
 	codegen.cpp
+	revtracer.stub.S
 	)
 
-target_link_libraries(revtracer
-	asm)
+# disable -revtracer_EXPORTS
+set_target_properties(revtracer
+	PROPERTIES
+	DEFINE_SYMBOL ""
+	NO_SONAME ON
+	PREFIX ""
+	SUFFIX ".dll"
+	)
 
 install(TARGETS revtracer DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
