@@ -83,8 +83,8 @@ namespace dbg {
 	void Debugger::PrintRegs() {
 		struct user_regs_struct regs;
 		ptrace(PTRACE_GETREGS, Tracee, 0, &regs);
-		printf("[Debugger] EAX: %08lx  EDX: %08x  ECX: %08lx  EBX: %08x\n", regs.eax, regs.edx, regs.ecx, regs.ebx);
-		printf("[Debugger] ESP: %08lx  EBP: %08x  ESI: %08lx  EDI: %08x\n", regs.esp, regs.ebp, regs.esi, regs.edi);
+		printf("[Debugger] EAX: %08lx  EDX: %08lx  ECX: %08lx  EBX: %08lx\n", regs.eax, regs.edx, regs.ecx, regs.ebx);
+		printf("[Debugger] ESP: %08lx  EBP: %08lx  ESI: %08lx  EDI: %08lx\n", regs.esp, regs.ebp, regs.esi, regs.edi);
 	}
 
 	int Debugger::CheckEip(unsigned eip) {

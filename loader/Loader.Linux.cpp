@@ -95,13 +95,13 @@ static int FindDependencies(struct dl_phdr_info *info, size_t size, void *data) 
 	p = (nullptr == p) ? info->dlpi_name : (p + 1);
 
 	if (0 == strncmp("libc.so", p, 7)) {
-		printf("Found libc @ %p\n", info->dlpi_addr);
+		printf("Found libc @ %08x\n", info->dlpi_addr);
 		libs->linLib.libcBase = info->dlpi_addr;
 	} else if (0 == strncmp("librt.so", p, 8)) {
-		printf("Found librt @ %p\n", info->dlpi_addr); 
+		printf("Found librt @ %08x\n", info->dlpi_addr); 
 		libs->linLib.librtBase = info->dlpi_addr;
 	} else if(0 == strncmp("libpthread.so", p, 13)) {
-		printf("Found libpthread @ %p\n", info->dlpi_addr);
+		printf("Found libpthread @ %08x\n", info->dlpi_addr);
 		libs->linLib.libpthreadBase = info->dlpi_addr;
 	}
 

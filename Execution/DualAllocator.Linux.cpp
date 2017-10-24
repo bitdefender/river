@@ -47,7 +47,7 @@ void DualAllocator::SetBaseAddress(DWORD baseAddress) {
 }
 
 DWORD DualAllocator::AllocateFixed(DWORD address, DWORD size) {
-	printf("[DualAllocator] AllocateFixed(%p, %08x)\n", address, dwUsed);
+	printf("[DualAllocator] AllocateFixed(%08lx, %08lx)\n", address, dwUsed);
 	void* addr = mmap((void*)address, size,
 				PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, hMapping, dwUsed);
 	if (addr == (void *)(-1)) {

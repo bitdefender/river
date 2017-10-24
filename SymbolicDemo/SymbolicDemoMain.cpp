@@ -98,17 +98,17 @@ public :
 
 		TrackedCondition *ret = freeConditions[--freeCondCount];
 		ret->wasInverted = false;
-		PRINTF("Alloc condition %08p\n", ret);
+		PRINTF("Alloc condition %08lx\n", (DWORD)ret);
 		return ret;
 	}
 
 	void FreeCondition(TrackedCondition *cond) {
-		PRINTF("Free condition %08p\n", cond);
+		PRINTF("Free condition %08lx\n", (DWORD)cond);
 		freeConditions[freeCondCount++] = cond;
 	}
 
 	void Unload(TrackedCondition *tvd) {
-		PRINTF("Tracking condition %08p\n", tvd);
+		PRINTF("Tracking condition %08lx\n", (DWORD)tvd);
 		tvds[revCount] = tvd;
 		revCount++;
 
@@ -119,7 +119,7 @@ public :
 		TrackedCondition *ret = tvds[--revCount];
 		tvds[revCount] = nullptr;
 
-		PRINTF("Restoring condition %08p\n", ret);
+		PRINTF("Restoring condition %08lx\n", (DWORD)ret);
 		return ret;
 	}
 
@@ -289,7 +289,7 @@ public:
 							)
 						);
 
-						//PRINTF("Invert condition %08p\n", cond);
+						//PRINTF("Invert condition %08x\n", cond);
 						lastCondition->ast = Z3_simplify(executor->context, lastCondition->ast);
 						//PRINTF("(tryinvert %s)\n\n", Z3_ast_to_string(executor->context, lastCondition->ast));
 
@@ -383,7 +383,7 @@ public:
 			}
 
 			printf(
-				"BACKTRACK *** step %d; addr %p; state %s; backSteps %d, coundCount %d revCount %u\n",
+				"BACKTRACK *** step %d; addr %p; state %s; backSteps %d, coundCount %d revCount %lu\n",
 				cec.GetStep(),
 				addr,
 				c[cec.executionState],
@@ -396,7 +396,7 @@ public:
 		}
 		else if (EXECUTION_ADVANCE == lastDirection) {
 			PRINTF(
-				"ADVANCE *** step %d; addr %p; state %s; backSteps %d, coundCount %d revCount %u\n",
+				"ADVANCE *** step %d; addr %p; state %s; backSteps %d, coundCount %d revCount %lu\n",
 				cec.GetStep(),
 				addr,
 				c[cec.executionState],

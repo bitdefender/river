@@ -223,7 +223,7 @@ bool ExternExecutionController::PatchProcess() {
 	unsigned long remoteLibc = GetLibcAddress(pid);
 	unsigned long libDelta = remoteLibc - *(unsigned long *)libcHandler;
 
-	printf("[Parent] libc parent %08lx; child %08x; delta %08x\n", *(unsigned long *)libcHandler, remoteLibc, libDelta);
+	printf("[Parent] libc parent %08lx; child %08lx; delta %08lx\n", *(unsigned long *)libcHandler, remoteLibc, libDelta);
 
 	my__libc_ifunc_impl_list = (__libc_ifunc_impl_list_handle)dlsym(
 		libcHandler, "__libc_ifunc_impl_list");
@@ -255,8 +255,8 @@ bool ExternExecutionController::PatchProcess() {
 			if (!func_list[i].name || !func_list[i].fn)
 				break;
 			if ((ADDR_TYPE)func_list[i].fn != detourAddr) {
-				revtracer.pConfig->hooks[revtracer.pConfig->hookCount].originalAddr = (ADDR_TYPE)func_list[i].fn + libDelta;
-				revtracer.pConfig->hooks[revtracer.pConfig->hookCount].detourAddr = detourAddr + libDelta;
+				revtracer.pConfig->hooks[revtracer.pConfig->hookCount].originalAddr = (ADDR_TYPE)((unsigned long)func_list[i].fn + libDelta);
+				revtracer.pConfig->hooks[revtracer.pConfig->hookCount].detourAddr = (ADDR_TYPE)((unsigned long)detourAddr + libDelta);
 				revtracer.pConfig->hookCount++;
 			}
 		}
@@ -539,7 +539,7 @@ bool ExternExecutionController::Execute() {
 			loader.pConfig,
 			loader.pImports,
 			loader.pExports,
-			loader.vExports
+			loader.vExports.mapMemory
 		);
 
 

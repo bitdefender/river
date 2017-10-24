@@ -22,7 +22,7 @@ namespace revwrapper {
 		p = (nullptr == p) ? info->dlpi_name : (p + 1);
 
 		if (0 == strncmp("libpthread.so", p, 13)) {
-			printf("Found libpthread @ %p\n", info->dlpi_addr);
+			printf("Found libpthread @ %08x\n", info->dlpi_addr);
 			*dest = GET_LIB_HANDLER(info->dlpi_name);
 			return 0;
 		}

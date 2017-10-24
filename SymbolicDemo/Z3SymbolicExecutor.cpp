@@ -410,7 +410,7 @@ void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, nodep::DWORD m
 	for (int i = 0; i < 4; ++i) {
 		if ((OPERAND_BITMASK(i) & m) && !ops->tr[i]) {
 			ops->sv[i] = Z3_mk_int(context, ops->cv[i], dwordSort);
-			printf("<sym> mkint %d\n", ops->cv[i]);
+			printf("<sym> mkint %lu\n", ops->cv[i]);
 		}
 	}
 

@@ -1,3 +1,4 @@
+#include "Payload.h"
 unsigned int serial[] = { 0x31, 0x3e, 0x3d, 0x26, 0x31 };
 
 int CheckDword(unsigned int *ptr) {
@@ -13,7 +14,7 @@ int CheckDword(unsigned int *ptr) {
 	return hash;
 }
 
-extern "C" unsigned int bufferDword[] = {
+unsigned int bufferDword[] = {
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
 };
 
@@ -41,7 +42,7 @@ int CheckByte(unsigned char *ptr) {
 	return hash;
 }
 
-extern "C" unsigned char bufferByte[] = {
+unsigned char bufferByte[] = {
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
 };
 
