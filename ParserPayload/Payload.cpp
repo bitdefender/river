@@ -19,6 +19,7 @@ static int currently_parsing_eof;
 #define TRUE 1
 #define FALSE 0
 
+#define MAX_PAYLOAD_BUF (64 << 10)
 
 struct message {
 	const char *name; // for debugging purposes
@@ -344,12 +345,12 @@ size_t parse (const char *buf, size_t len) {
 	return nparsed;
 }
 
-void test_simple(const char *buf) {
+void test_simple(const unsigned char *buf) {
 	parser_init(HTTP_REQUEST);
 
 	enum http_errno err;
 
-	parse(buf, my_strlen(buf));
+	parse((const char *)buf, MAX_PAYLOAD_BUF);
 	err = HTTP_PARSER_ERRNO(parser);
 	parse(NULL, 0);
 
@@ -358,7 +359,7 @@ void test_simple(const char *buf) {
 }
 
 extern "C" {
-	DLL_PUBLIC char payloadBuffer[4096];
+	DLL_PUBLIC unsigned char payloadBuffer[MAX_PAYLOAD_BUF];
 	DLL_PUBLIC int Payload() {
 		test_simple(payloadBuffer);
 		return 0;

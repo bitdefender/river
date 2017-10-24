@@ -8,6 +8,8 @@
 #define PNG_INTERNAL
 #include "png.h"
 
+#define MAX_PAYLOAD_BUF (64 << 10)
+
 struct BufState {
   const uint8_t* data;
   size_t bytes_left;
@@ -46,9 +48,8 @@ static const int kPngHeaderSize = 8;
 // Roughly follows the libpng book example:
 // http://www.libpng.org/pub/png/book/chapter13.html
 
-void test_simple(const char *_data) {
-  unsigned char *data = (unsigned char *)_data;
-  unsigned int size = 4096;
+void test_simple(const unsigned char *data) {
+  unsigned int size = MAX_PAYLOAD_BUF;
   if (size < kPngHeaderSize) {
     return;
   }
@@ -129,7 +130,7 @@ void test_simple(const char *_data) {
 }
 
 extern "C" {
-	DLL_PUBLIC char payloadBuffer[4096];
+	DLL_PUBLIC unsigned char payloadBuffer[MAX_PAYLOAD_BUF];
 	DLL_PUBLIC int Payload() {
 		test_simple(payloadBuffer);
 		return 0;

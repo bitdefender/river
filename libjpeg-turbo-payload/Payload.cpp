@@ -6,14 +6,14 @@
 
 #include <memory>
 
+#define MAX_PAYLOAD_BUF (64 << 10)
 
-
-void test_simple(const char *data) {
+void test_simple(const unsigned char *data) {
 	tjhandle jpegDecompressor = tjInitDecompress();
 
 	int width, height, subsamp, colorspace;
 	int res = tjDecompressHeader3(
-        jpegDecompressor, (unsigned char *)data, 4096,
+        jpegDecompressor, data, MAX_PAYLOAD_BUF,
 		&width, &height, &subsamp, &colorspace);
 
     // Bail out if decompressing the headers failed, the width or height is 0,
@@ -26,14 +26,14 @@ void test_simple(const char *data) {
 
     std::unique_ptr<unsigned char[]> buf(new unsigned char[width * height * 3]);
     tjDecompress2(
-        jpegDecompressor, (unsigned char *)data, 4096,
+        jpegDecompressor, data, MAX_PAYLOAD_BUF,
 		buf.get(), width, 0, height, TJPF_RGB, 0);
 
     tjDestroy(jpegDecompressor);
 }
 
 extern "C" {
-	DLL_PUBLIC char payloadBuffer[4096];
+	DLL_PUBLIC unsigned char payloadBuffer[MAX_PAYLOAD_BUF];
 	DLL_PUBLIC int Payload() {
 		test_simple(payloadBuffer);
 		return 0;
