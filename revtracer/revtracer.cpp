@@ -166,6 +166,7 @@ namespace rev {
 			info->cost = pCB->dwOrigOpCount;
 			info->branchType = pCB->dwBranchType;
 			info->branchInstruction = pCB->dwBranchInstruction;
+			info->nInstructions = pCB->dwOrigOpCount;
 			// branch taken
 			info->branchNext[0] = pCB->pBranchNext[0];
 			//branch not taken

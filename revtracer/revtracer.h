@@ -188,6 +188,7 @@ namespace rev {
 		nodep::DWORD cost;
 		nodep::DWORD branchType;
 		nodep::DWORD branchInstruction;
+		nodep::DWORD nInstructions;
 		struct BranchNext branchNext[2];
 	};
 
