@@ -117,7 +117,7 @@ void *RevSymbolicEnvironment::GetExpression(nodep::DWORD address, nodep::DWORD s
 			copy = sz;
 		}
 
-		void *tmp = (this->*subExpsGet[fo][sz])(address);
+		void *tmp = (this->*subExpsGet[fo][copy])(address);
 
 		if (nullptr == ret) {
 			ret = tmp;
@@ -223,7 +223,7 @@ void RevSymbolicEnvironment::SetExpression(void *exp, nodep::DWORD address, node
 		}
 
 
-		(this->*subExpsSet[fo][sz])(ext, address, val);
+		(this->*subExpsSet[fo][copy])(ext, address, val);
 		
 		if (ext != exp) {
 			decRefFunc(ext);
