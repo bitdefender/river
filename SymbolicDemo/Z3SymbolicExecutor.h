@@ -7,7 +7,6 @@
 #include "../SymbolicEnvironment/LargeStack.h"
 
 #include "VariableTracker.h"
-#include "TrackingCookie.h"
 
 #define OPERAND_BITMASK(idx) (0x00010000 << (idx))
 
