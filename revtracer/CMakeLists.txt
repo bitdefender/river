@@ -2,11 +2,15 @@
 
 set(CMAKE_VERBOSE_MAKEFILE true)
 set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
+
 set(FLAGS_CROSS "-D_cdecl=\"__attribute__((cdecl))\" \
 	-D_stdcall=\"__attribute__((stdcall))\"")
 set(CMAKE_CXX_FLAGS "-g -m32 -march=i386 -fno-exceptions \
 	-fno-stack-protector -fcheck-new -std=c++11 ${FLAGS_CROSS} \
 	-D_BUILDING_REVTRACER_DLL")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_RELEASE} -D_REVTRACER_DEBUG_PRINT_")
+
 set(CMAKE_SHARED_LINKER_FLAGS "--disable-stdcall-fixup -static-libstdc++")
 
 set(CMAKE_ASM_COMPILER i686-w64-mingw32-as)
