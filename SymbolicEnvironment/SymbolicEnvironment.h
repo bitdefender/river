@@ -2,6 +2,7 @@
 #define _SYMBOLIC_ENVIRONMENT_H_
 
 #include "../revtracer/river.h"
+#include "../Execution/Execution.h"
 #include "LargeStack.h"
 
 namespace sym {
@@ -135,12 +136,14 @@ namespace sym {
 	/** Executor class. Inherit this class to provide bindings to a SMT solver. */
 	class SymbolicExecutor {
 	public:
+		int mCount;
+		ModuleInfo *mInfo;
 		SymbolicEnvironment *env;
 	public:
 
-		SymbolicExecutor(SymbolicEnvironment *e) {
-			env = e;
-		}
+		SymbolicExecutor(SymbolicEnvironment *e)
+			: mCount(0), mInfo(nullptr), env(e)
+		{}
 
 		// Create a new symbolic variable
 		virtual void *CreateVariable(const char *name, nodep::DWORD size) = 0;
@@ -156,6 +159,10 @@ namespace sym {
 		// Access the symbolic environment through env->* methods
 		// The environment might be subject to change as more features are added
 		virtual void Execute(RiverInstruction *instruction) = 0;
+		virtual void SetModuleData(int mCount, ModuleInfo *mInfo) {
+			this->mCount = mCount;
+			this->mInfo = mInfo;
+		}
 	};
 
 }; // namespace sym

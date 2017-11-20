@@ -2,7 +2,7 @@
 
 set(LIBRARY_NAME symbolicenvironment)
 set(FLAGS_CROSS "-D__cdecl=\"\" -D__stdcall=\"\"")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 \
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -m32 -std=c++11 \
 	-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ ${FLAGS_CROSS}")
 
 add_library(${LIBRARY_NAME} SHARED
