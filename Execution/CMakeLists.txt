@@ -26,6 +26,7 @@ target_link_libraries(${LIBRARY_NAME}
 	binloader
 	wrappersetup
 	virtualmemory
-	rt)
+	rt
+	dl)
 
 install(TARGETS ${LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
