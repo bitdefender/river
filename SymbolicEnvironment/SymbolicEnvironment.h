@@ -141,9 +141,7 @@ namespace sym {
 		SymbolicEnvironment *env;
 	public:
 
-		SymbolicExecutor(SymbolicEnvironment *e)
-			: mCount(0), mInfo(nullptr), env(e)
-		{}
+		SymbolicExecutor(SymbolicEnvironment *e);
 
 		// Create a new symbolic variable
 		virtual void *CreateVariable(const char *name, nodep::DWORD size) = 0;
@@ -159,10 +157,7 @@ namespace sym {
 		// Access the symbolic environment through env->* methods
 		// The environment might be subject to change as more features are added
 		virtual void Execute(RiverInstruction *instruction) = 0;
-		virtual void SetModuleData(int mCount, ModuleInfo *mInfo) {
-			this->mCount = mCount;
-			this->mInfo = mInfo;
-		}
+		void SetModuleData(int mCount, ModuleInfo *mInfo);
 	};
 
 }; // namespace sym

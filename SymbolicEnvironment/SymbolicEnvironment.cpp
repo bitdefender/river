@@ -79,4 +79,13 @@ namespace sym {
 	void ScopedSymbolicEnvironment::UnsetFlgValue(nodep::BYTE flg, bool doRefCount) {
 		return subEnv->UnsetFlgValue(flg, doRefCount);
 	}
+
+	SymbolicExecutor::SymbolicExecutor(SymbolicEnvironment *e)
+		: mCount(0), mInfo(nullptr), env(e)
+	{}
+
+	void SymbolicExecutor::SetModuleData(int mCount, ModuleInfo *mInfo) {
+		this->mCount = mCount;
+		this->mInfo = mInfo;
+	}
 };
