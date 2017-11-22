@@ -504,9 +504,9 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		nodep::BOOL tracked = false;
 		nodep::DWORD concrete = 0;
 		void *s = nullptr;
-		if (true == env->GetOperandAddress(i, tracked, concrete, s)) {
+		/*if (true == env->GetOperandAddress(i, tracked, concrete, s)) {
 			printf("======= GetOperandAddress: isTracked: %d symb addr: %p\n", (int)tracked, s);
-		}
+		}*/
 	}
 
 	for (int i = 0; i < flagCount; ++i) {

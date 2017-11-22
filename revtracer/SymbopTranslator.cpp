@@ -190,6 +190,14 @@ nodep::DWORD SymbopTranslator::MakeTrackAddress(nodep::WORD specifiers, const Ri
 
 	rMainOut->opTypes[2] = rMainOut->opTypes[3] = RIVER_OPTYPE_NONE;
 
+	if (op.asAddress->type & RIVER_ADDR_BASE) {
+		trackedValues++;
+	}
+
+	if (op.asAddress->type & RIVER_ADDR_INDEX) {
+		trackedValues++;
+	}
+
 	if (0 == (specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
 		trackedValues += 2; // we push two operands on the stack [addr], [addr + 4]
 		rMainOut->opTypes[2] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;

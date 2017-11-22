@@ -60,10 +60,14 @@ namespace sym {
 		return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
 	}
 
-	bool ScopedSymbolicEnvironment::GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
-		return subEnv->GetOperandAddress(opIdx, isTracked, concreteValue, symbolicValue);
+	bool ScopedSymbolicEnvironment::GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+		return subEnv->GetAddressBase(opIdx, isTracked, concreteValue, symbolicValue);
 	}
 
+	bool ScopedSymbolicEnvironment::GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+		return subEnv->GetAddressScaleAndIndex(opIdx, scale, isTracked, concreteValue, symbolicValue);
+	}
+	
 	bool ScopedSymbolicEnvironment::GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue) {
 		return subEnv->GetFlgValue(flg, isTracked, concreteValue, symbolicValue);
 	}
@@ -83,10 +87,6 @@ namespace sym {
 	void ScopedSymbolicEnvironment::UnsetFlgValue(nodep::BYTE flg, bool doRefCount) {
 		return subEnv->UnsetFlgValue(flg, doRefCount);
 	}
-
-	SymbolicExecutor::SymbolicExecutor(SymbolicEnvironment *e)
-		: mCount(0), mInfo(nullptr), env(e)
-	{}
 
 	void SymbolicExecutor::SetModuleData(int mCount, ModuleInfo *mInfo) {
 		this->mCount = mCount;

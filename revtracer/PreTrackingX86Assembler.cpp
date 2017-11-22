@@ -96,6 +96,18 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 	px86.cursor++;
 	instrCounter++;
 
+	if (addr->type & RIVER_ADDR_BASE) {
+		px86.cursor[0] = 0x50 + GetFundamentalRegister(addr->base.name); // push reg;
+		px86.cursor++;
+		instrCounter++;
+	}
+
+	if (addr->type & RIVER_ADDR_INDEX) {
+		px86.cursor[0] = 0x50 + GetFundamentalRegister(addr->index.name); // push reg;
+		px86.cursor++;
+		instrCounter++;
+	}
+
 	if (saveVal) {
 		const nodep::BYTE andRegVal[] = { 0x9C, 0x83, 0xE0, 0xFC, 0x9D };
 		const nodep::BYTE pushEax4[] = { 0xFF, 0x70, 0x04 };

@@ -27,10 +27,9 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 
 	for (unsigned int i = 0; i < 4; ++i) {
 		addressOffsets[i] = 0xFFFFFFFF;
-	}
-
-	for (unsigned int i = 0; i < 4; ++i) {
 		valueOffsets[i] = 0xFFFFFFFF;
+		baseOffsets[i] = 0xFFFFFFFF;
+		indexOffsets[i] = 0xFFFFFFFF;
 	}
 
 	flagOffset = 0xFFFFFFFF;
@@ -44,6 +43,16 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 		if ((RIVER_OPTYPE(rIn.opTypes[i]) == RIVER_OPTYPE_MEM) && (0 != rIn.operands[i].asAddress->type)) {
 			addressOffsets[i] = trackIndex;
 			trackIndex += rIn.operands[i].asAddress->HasSegment() ? 2 : 1;
+
+			if (rIn.operands[i].asAddress->type & RIVER_ADDR_BASE) {
+				baseOffsets[i] = trackIndex;
+				trackIndex++;
+			}
+
+			if (rIn.operands[i].asAddress->type & RIVER_ADDR_INDEX) {
+				indexOffsets[i] = trackIndex;
+				trackIndex++;
+			}
 
 			if (0 == (rIn.specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
 				valueOffsets[i] = trackIndex + 1; // look at the layout one more time
@@ -251,7 +260,40 @@ bool RevSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *rIn, void *
 void RevSymbolicEnvironment::PushState(stk::LargeStack &stack) { }
 void RevSymbolicEnvironment::PopState(stk::LargeStack &stack) { }
 
-bool RevSymbolicEnvironment::GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+bool RevSymbolicEnvironment::GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+	if ((RIVER_OPTYPE(current->opTypes[opIdx]) != RIVER_OPTYPE_MEM) || (0 == current->operands[opIdx].asAddress->type)) {
+		return false;
+	}
+
+	if (0 == (current->operands[opIdx].asAddress->type & RIVER_ADDR_BASE)) {
+		return false;
+	}
+
+	symbolicValue = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
+		current->operands[opIdx].asAddress->base.name)];
+	isTracked = (symbolicValue != NULL);
+	concreteValue = opBase[-((int)baseOffsets[opIdx])];
+	return true;
+}
+
+bool RevSymbolicEnvironment::GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+	if ((RIVER_OPTYPE(current->opTypes[opIdx]) != RIVER_OPTYPE_MEM) || (0 == current->operands[opIdx].asAddress->type)) {
+		return false;
+	}
+
+	if (0 == (current->operands[opIdx].asAddress->type & RIVER_ADDR_INDEX)) {
+		return false;
+	}
+
+	scale = current->operands[opIdx].asAddress->GetScale();
+	symbolicValue = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
+		current->operands[opIdx].asAddress->index.name)];
+	isTracked = (symbolicValue != NULL);
+	concreteValue = opBase[-((int)baseOffsets[opIdx])];
+	return true;
+}
+
+/*bool RevSymbolicEnvironment::GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
 	void *symBase = nullptr, *symIndex = nullptr;
 
 	// ignore operands that don't address memory
@@ -263,6 +305,8 @@ bool RevSymbolicEnvironment::GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &i
 	if (RIVER_SPEC_IGNORES_MEMORY & current->specifiers) {
 		return false;
 	}
+
+
 
 	// compute symbolic value using base and index
 	if (current->operands[opIdx].asAddress->type & RIVER_ADDR_BASE) {
@@ -291,7 +335,7 @@ bool RevSymbolicEnvironment::GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &i
 			current->operands[opIdx].asAddress->GetScale());
 	isTracked = true;
 	return true;
-}
+}*/
 
 bool RevSymbolicEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
 	void *symExpr;

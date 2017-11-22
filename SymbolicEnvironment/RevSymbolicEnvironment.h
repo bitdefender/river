@@ -10,7 +10,7 @@ private :
 	RiverInstruction *current;
 	ExecutionController *ctrl;
 	nodep::DWORD *opBase;
-	nodep::DWORD addressOffsets[4], valueOffsets[4], flagOffset;
+	nodep::DWORD addressOffsets[4], valueOffsets[4], baseOffsets[4], indexOffsets[4], flagOffset;
 
 	AddRefFunc addRefFunc;
 	DecRefFunc decRefFunc;
@@ -45,7 +45,9 @@ public :
 	virtual void PopState(stk::LargeStack &stack);
 
 	virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
-	virtual bool GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+	virtual bool GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+	virtual bool GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+
 	virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
 	virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
 	virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);

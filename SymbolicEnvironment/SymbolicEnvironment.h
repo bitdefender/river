@@ -52,18 +52,32 @@ namespace sym {
 		virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
 
 		/**
-		*	The GetOperandAddress function returns the address of operand by index.
+		*	The GetAddressBase function returns the base of an address operand by index.
 		*	Params:
 		*		opIdx - input, specifies the operand index.
-		*		isTracked - output, returns true if the operand is tracked.
-		*		concreteValue - output, returns the operand address concrete value.
-		*		symbolicValue - output, if isSymblic is true, this variable holds the symbolic expression of operand address.
+		*		isTracked - output, returns true if the operand base is tracked.
+		*		concreteValue - output, returns the operand base concrete value.
+		*		symbolicValue - output, if isSymblic is true, this variable holds the symbolic expression of operand base.
 		*  Result:
 		*		true - if the operand can be interogated
-		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM,
-		*				if RIVER_SPEC_IGNORES_MEMORY specifier present
+		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM)
 		*/
-		virtual bool GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
+		virtual bool GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
+
+		/**
+		*	The GetAddressScaleAndIndex function returns the scale and index of an address operand by index.
+		*	Params:
+		*		opIdx - input, specifies the operand index.
+		*       scale - output, returns the operands scale.
+		*		isTracked - output, returns true if the operand index is tracked.
+		*		concreteValue - output, returns the operand index concrete value.
+		*		symbolicValue - output, if isSymblic is true, this variable holds the symbolic expression of operand index.
+		*  Result:
+		*		true - if the operand can be interogated
+		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM)
+		*/
+		virtual bool GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
+
 
 		/**
 		*	The GetFlgValue function returns a flag by flag value.
@@ -140,7 +154,8 @@ namespace sym {
 		virtual bool SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer);
 
 		virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
-		virtual bool GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+		virtual bool GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+		virtual bool GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
 		virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
 		virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
 		virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
@@ -156,7 +171,9 @@ namespace sym {
 		SymbolicEnvironment *env;
 	public:
 
-		SymbolicExecutor(SymbolicEnvironment *e);
+		SymbolicExecutor(SymbolicEnvironment *e)
+			: mCount(0), mInfo(nullptr), env(e)
+		{}
 
 		// Create a new symbolic variable
 		virtual void *CreateVariable(const char *name, nodep::DWORD size) = 0;
