@@ -60,6 +60,10 @@ namespace sym {
 		return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
 	}
 
+	bool ScopedSymbolicEnvironment::GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+		return subEnv->GetOperandAddress(opIdx, isTracked, concreteValue, symbolicValue);
+	}
+
 	bool ScopedSymbolicEnvironment::GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue) {
 		return subEnv->GetFlgValue(flg, isTracked, concreteValue, symbolicValue);
 	}

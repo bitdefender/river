@@ -59,6 +59,7 @@ public:
 	Z3_sort dwordSort, wordSort, tbSort, byteSort, bitSort;
 
 	Z3_ast zero32, zero16, zero8, zeroFlag, oneFlag;
+	Z3_ast zeroScale, twoScale, fourScale;
 
 	class Z3SymbolicCpuFlag {
 	protected:
@@ -106,6 +107,7 @@ public:
 	virtual void *ExtractBits(void *expr, nodep::DWORD lsb, nodep::DWORD size);
 	virtual void *ConcatBits(void *expr1, void *expr2);
 	virtual void Execute(RiverInstruction *instruction);
+	virtual void *ExecuteResolveAddress(void *base, void *index, nodep::BYTE scale);
 };
 
 class Z3FlagZF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {

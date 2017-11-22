@@ -120,6 +120,50 @@ void *Z3SymbolicExecutor::ConcatBits(void *expr1, void *expr2) {
 	return (void *)ret;
 }
 
+void *Z3SymbolicExecutor::ExecuteResolveAddress(void *base, void *index,
+		nodep::BYTE scale) {
+	Z3_ast indexRet = 0, scaleAst = 0, Ret = 0;
+
+	switch(scale) {
+	case 0:
+		indexRet = zeroScale;
+		break;
+	case 1:
+		indexRet = (Z3_ast)index;
+		break;
+	case 2:
+		scaleAst = twoScale;
+		break;
+	case 4:
+		scaleAst = fourScale;
+		break;
+	default:
+		DEBUG_BREAK;
+	}
+
+	// if index and scale are valid
+	if (index != nullptr && (void *)scaleAst != nullptr) {
+		indexRet = Z3_mk_bvmul(context, (Z3_ast)index, scaleAst);
+	}
+
+	if (base != nullptr) {
+		if ((void *)indexRet != nullptr) {
+			Ret = Z3_mk_bvadd(context, (Z3_ast)base, indexRet);
+		} else {
+			Ret = (Z3_ast)base;
+		}
+	} else {
+		if (index != nullptr) {
+			Ret = indexRet;
+		} else {
+			Ret = (Z3_ast)0;
+		}
+	}
+	printf("base: %p, index: %p, scale: %d, indexRet: %p, Ret: %p\n",
+			base, index, scale, (void *)indexRet, (void *)Ret);
+	return (void *)Ret;
+}
+
 /*bool IsLocked(void *ctx, const Z3_ast *ast) {
 	void *v = Z3_get_user_ptr((Z3_context)ctx, *ast);
 	const TrackedVariableData *tvd = (const TrackedVariableData *)v;
@@ -194,6 +238,10 @@ Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e) :
 	zero8 = Z3_mk_int(context, 0, byteSort);
 	zeroFlag = Z3_mk_int(context, 0, bitSort);
 	oneFlag = Z3_mk_int(context, 1, bitSort);
+
+	zeroScale = zero32;
+	twoScale = Z3_mk_int(context, 2, dwordSort);
+	fourScale = Z3_mk_int(context, 4, dwordSort);
 
 	solver = Z3_mk_solver(context);
 	Z3_solver_push(context, solver);
@@ -452,6 +500,12 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		if (true == (uo[i] = env->GetOperand(i, ops.tr[i], ops.cv[i], ops.sv[i]))) {
 			ops.av |= OPERAND_BITMASK(i);
 			isSymb |= ops.tr[i];
+		}
+		nodep::BOOL tracked = false;
+		nodep::DWORD concrete = 0;
+		void *s = nullptr;
+		if (true == env->GetOperandAddress(i, tracked, concrete, s)) {
+			printf("======= GetOperandAddress: isTracked: %d symb addr: %p\n", (int)tracked, s);
 		}
 	}
 

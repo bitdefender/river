@@ -251,6 +251,48 @@ bool RevSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *rIn, void *
 void RevSymbolicEnvironment::PushState(stk::LargeStack &stack) { }
 void RevSymbolicEnvironment::PopState(stk::LargeStack &stack) { }
 
+bool RevSymbolicEnvironment::GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+	void *symBase = nullptr, *symIndex = nullptr;
+
+	// ignore operands that don't address memory
+	if (RIVER_OPTYPE(current->opTypes[opIdx]) != RIVER_OPTYPE_MEM) {
+		return false;
+	}
+
+	// ignore operations that do not access memory
+	if (RIVER_SPEC_IGNORES_MEMORY & current->specifiers) {
+		return false;
+	}
+
+	// compute symbolic value using base and index
+	if (current->operands[opIdx].asAddress->type & RIVER_ADDR_BASE) {
+		symBase = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
+					current->operands[opIdx].asAddress->base.name)];
+		// if base is present, we only handle the case where base is symbolic
+		if (symBase == nullptr)
+			return false;
+	}
+	if (current->operands[opIdx].asAddress->type & RIVER_ADDR_INDEX) {
+		symIndex = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
+					current->operands[opIdx].asAddress->index.name)];
+		// if index is present, we can only handle the case where index is symbolic
+		if (symIndex == nullptr)
+			return false;
+	}
+
+	// issue:
+	// if base or index have concrete values, these cannot be
+	// obtained using the current target instrumentation
+	// done by river. We consider only the cases where both are symbolic,
+	// or missing
+
+	concreteValue = opBase[-((int)addressOffsets[opIdx])];
+	symbolicValue = exec->ExecuteResolveAddress(symBase, symIndex,
+			current->operands[opIdx].asAddress->GetScale());
+	isTracked = true;
+	return true;
+}
+
 bool RevSymbolicEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
 	void *symExpr;
 
@@ -289,7 +331,8 @@ bool RevSymbolicEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracke
 		// how do we handle dereferenced symbolic values?
 
 		if (0 == current->operands[opIdx].asAddress->type) {
-			symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)];
+			symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
+					current->operands[opIdx].asAddress->base.name)];
 
 			isTracked = (symExpr != NULL);
 			symbolicValue = symExpr;

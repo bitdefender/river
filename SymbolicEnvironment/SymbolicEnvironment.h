@@ -52,6 +52,20 @@ namespace sym {
 		virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
 
 		/**
+		*	The GetOperandAddress function returns the address of operand by index.
+		*	Params:
+		*		opIdx - input, specifies the operand index.
+		*		isTracked - output, returns true if the operand is tracked.
+		*		concreteValue - output, returns the operand address concrete value.
+		*		symbolicValue - output, if isSymblic is true, this variable holds the symbolic expression of operand address.
+		*  Result:
+		*		true - if the operand can be interogated
+		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM,
+		*				if RIVER_SPEC_IGNORES_MEMORY specifier present
+		*/
+		virtual bool GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
+
+		/**
 		*	The GetFlgValue function returns a flag by flag value.
 		*	Params:
 		*		flg - input, one of the RIVER_SPEC_FLAG_?F constants.
@@ -126,6 +140,7 @@ namespace sym {
 		virtual bool SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer);
 
 		virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+		virtual bool GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
 		virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
 		virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
 		virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
@@ -157,6 +172,7 @@ namespace sym {
 		// Access the symbolic environment through env->* methods
 		// The environment might be subject to change as more features are added
 		virtual void Execute(RiverInstruction *instruction) = 0;
+		virtual void *ExecuteResolveAddress(void *base, void *index, nodep::BYTE scale) = 0;
 		void SetModuleData(int mCount, ModuleInfo *mInfo);
 	};
 
