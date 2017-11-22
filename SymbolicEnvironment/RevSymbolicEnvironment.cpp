@@ -289,7 +289,7 @@ bool RevSymbolicEnvironment::GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::B
 	symbolicValue = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
 		current->operands[opIdx].asAddress->index.name)];
 	isTracked = (symbolicValue != NULL);
-	concreteValue = opBase[-((int)baseOffsets[opIdx])];
+	concreteValue = opBase[-((int)indexOffsets[opIdx])];
 	return true;
 }
 
