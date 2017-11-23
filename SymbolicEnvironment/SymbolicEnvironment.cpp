@@ -56,18 +56,18 @@ namespace sym {
 		return _SetCurrentInstruction(instruction, opBuffer);
 	}
 
-	bool ScopedSymbolicEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
-		return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
+	bool ScopedSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
+		return subEnv->GetOperand(opInfo);
 	}
 
-	bool ScopedSymbolicEnvironment::GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
-		return subEnv->GetAddressBase(opIdx, isTracked, concreteValue, symbolicValue);
+	bool ScopedSymbolicEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
+		return subEnv->GetAddressBase(opInfo);
 	}
 
-	bool ScopedSymbolicEnvironment::GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
-		return subEnv->GetAddressScaleAndIndex(opIdx, scale, isTracked, concreteValue, symbolicValue);
+	bool ScopedSymbolicEnvironment::GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale) {
+		return subEnv->GetAddressScaleAndIndex(opInfo, scale);
 	}
-	
+
 	bool ScopedSymbolicEnvironment::GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue) {
 		return subEnv->GetFlgValue(flg, isTracked, concreteValue, symbolicValue);
 	}

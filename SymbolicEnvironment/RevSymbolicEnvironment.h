@@ -44,9 +44,9 @@ public :
 	virtual void PushState(stk::LargeStack &stack);
 	virtual void PopState(stk::LargeStack &stack);
 
-	virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
-	virtual bool GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
-	virtual bool GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+	virtual bool GetOperand(struct OperandInfo &opInfo);
+	virtual bool GetAddressBase(struct OperandInfo &opInfo);
+	virtual bool GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale);
 
 	virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
 	virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);

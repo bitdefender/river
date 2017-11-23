@@ -274,31 +274,37 @@ OverlappedRegistersEnvironment::OverlappedRegistersEnvironment() {
 	}
 }
 
-bool OverlappedRegistersEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 	//return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
 
 	OverlappedRegister *reg;
-	
-	switch (RIVER_OPTYPE(current->opTypes[opIdx])) {
+	struct OperandInfo regOpInfo = {
+		.opIdx = opInfo.opIdx,
+		.isTracked = opInfo.isTracked,
+		.concrete = opInfo.concrete,
+		.symbolic = (void *)reg
+	};
+
+	switch (RIVER_OPTYPE(current->opTypes[opInfo.opIdx])) {
 		case RIVER_OPTYPE_REG :
-			if (!subEnv->GetOperand(opIdx, isTracked, concreteValue, (void *&)reg)) {
+			if (!subEnv->GetOperand(regOpInfo)) {
 				return false;
 			}
 
-			if (isTracked) {
-				symbolicValue = reg->Get(current->operands[opIdx].asRegister, concreteValue);
+			if (opInfo.isTracked) {
+				opInfo.symbolic = reg->Get(current->operands[opInfo.opIdx].asRegister, opInfo.concrete);
 			}
 
 			return true;
 
 		case RIVER_OPTYPE_MEM :
-			if (0 == current->operands[opIdx].asAddress->type) {
-				if (!subEnv->GetOperand(opIdx, isTracked, concreteValue, (void *&)reg)) {
+			if (0 == current->operands[opInfo.opIdx].asAddress->type) {
+				if (!subEnv->GetOperand(regOpInfo)) {
 					return false;
 				}
 
-				if (isTracked) {
-					symbolicValue = reg->Get(current->operands[opIdx].asAddress->base, concreteValue);
+				if (opInfo.isTracked) {
+					opInfo.symbolic = reg->Get(current->operands[opInfo.opIdx].asAddress->base, opInfo.concrete);
 				}
 
 				return true;
@@ -306,7 +312,7 @@ bool OverlappedRegistersEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &
 
 			// no break/return on purpose
 		default :
-			return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
+			return subEnv->GetOperand(opInfo);
 	};
 }
 

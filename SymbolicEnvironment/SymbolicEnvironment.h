@@ -5,6 +5,13 @@
 #include "../Execution/Execution.h"
 #include "LargeStack.h"
 
+struct OperandInfo {
+	nodep::BYTE opIdx;
+	nodep::BOOL isTracked;
+	nodep::DWORD concrete;
+	void *symbolic;
+};
+
 namespace sym {
 
 	class SymbolicExecutor;
@@ -49,7 +56,7 @@ namespace sym {
 		*		false - if the operand can't be interogated, (if the operand type is RIVER_OPERAND_NONE, or if
 		*				the RIVER_SPEC_IGNORES_OP(opIdx) flag is specified).
 		*/
-		virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
+		virtual bool GetOperand(struct OperandInfo &opInfo) = 0;
 
 		/**
 		*	The GetAddressBase function returns the base of an address operand by index.
@@ -62,7 +69,7 @@ namespace sym {
 		*		true - if the operand can be interogated
 		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM)
 		*/
-		virtual bool GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
+		virtual bool GetAddressBase(struct OperandInfo &opInfo) = 0;
 
 		/**
 		*	The GetAddressScaleAndIndex function returns the scale and index of an address operand by index.
@@ -76,7 +83,7 @@ namespace sym {
 		*		true - if the operand can be interogated
 		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM)
 		*/
-		virtual bool GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) = 0;
+		virtual bool GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale) = 0;
 
 
 		/**
@@ -153,9 +160,9 @@ namespace sym {
 		virtual void SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef);
 		virtual bool SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer);
 
-		virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
-		virtual bool GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
-		virtual bool GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+		virtual bool GetOperand(struct OperandInfo &opInfo);
+		virtual bool GetAddressBase(struct OperandInfo &opInfo);
+		virtual bool GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale);
 		virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
 		virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
 		virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
@@ -189,7 +196,6 @@ namespace sym {
 		// Access the symbolic environment through env->* methods
 		// The environment might be subject to change as more features are added
 		virtual void Execute(RiverInstruction *instruction) = 0;
-		virtual void *ExecuteResolveAddress(void *base, void *index, nodep::BYTE scale) = 0;
 		void SetModuleData(int mCount, ModuleInfo *mInfo);
 	};
 

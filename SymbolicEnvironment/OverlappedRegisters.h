@@ -50,7 +50,7 @@ protected :
 public :
 	OverlappedRegistersEnvironment();
 
-	virtual bool GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue);
+	virtual bool GetOperand(struct OperandInfo &opInfo);
 	virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
 	virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
 };

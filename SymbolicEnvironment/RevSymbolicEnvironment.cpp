@@ -260,127 +260,85 @@ bool RevSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *rIn, void *
 void RevSymbolicEnvironment::PushState(stk::LargeStack &stack) { }
 void RevSymbolicEnvironment::PopState(stk::LargeStack &stack) { }
 
-bool RevSymbolicEnvironment::GetAddressBase(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
-	if ((RIVER_OPTYPE(current->opTypes[opIdx]) != RIVER_OPTYPE_MEM) || (0 == current->operands[opIdx].asAddress->type)) {
+bool RevSymbolicEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
+	if ((RIVER_OPTYPE(current->opTypes[opInfo.opIdx]) != RIVER_OPTYPE_MEM) || (0 == current->operands[opInfo.opIdx].asAddress->type)) {
 		return false;
 	}
 
-	if (0 == (current->operands[opIdx].asAddress->type & RIVER_ADDR_BASE)) {
+	if (0 == (current->operands[opInfo.opIdx].asAddress->type & RIVER_ADDR_BASE)) {
 		return false;
 	}
 
-	symbolicValue = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
-		current->operands[opIdx].asAddress->base.name)];
-	isTracked = (symbolicValue != NULL);
-	concreteValue = opBase[-((int)baseOffsets[opIdx])];
+	opInfo.symbolic = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
+		current->operands[opInfo.opIdx].asAddress->base.name)];
+	opInfo.isTracked = (opInfo.symbolic != NULL);
+	opInfo.concrete = opBase[-((int)baseOffsets[opInfo.opIdx])];
 	return true;
 }
 
-bool RevSymbolicEnvironment::GetAddressScaleAndIndex(nodep::BYTE opIdx, nodep::BYTE &scale, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
-	if ((RIVER_OPTYPE(current->opTypes[opIdx]) != RIVER_OPTYPE_MEM) || (0 == current->operands[opIdx].asAddress->type)) {
+bool RevSymbolicEnvironment::GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale) {
+	if ((RIVER_OPTYPE(current->opTypes[opInfo.opIdx]) != RIVER_OPTYPE_MEM) ||
+			(0 == current->operands[opInfo.opIdx].asAddress->type)) {
 		return false;
 	}
 
-	if (0 == (current->operands[opIdx].asAddress->type & RIVER_ADDR_INDEX)) {
+	if (0 == (current->operands[opInfo.opIdx].asAddress->type & RIVER_ADDR_INDEX)) {
 		return false;
 	}
 
-	scale = current->operands[opIdx].asAddress->GetScale();
-	symbolicValue = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
-		current->operands[opIdx].asAddress->index.name)];
-	isTracked = (symbolicValue != NULL);
-	concreteValue = opBase[-((int)indexOffsets[opIdx])];
+	scale = current->operands[opInfo.opIdx].asAddress->GetScale();
+	opInfo.symbolic = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
+		current->operands[opInfo.opIdx].asAddress->index.name)];
+	opInfo.isTracked = (opInfo.symbolic != NULL);
+	opInfo.concrete = opBase[-((int)indexOffsets[opInfo.opIdx])];
 	return true;
 }
 
-/*bool RevSymbolicEnvironment::GetOperandAddress(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
-	void *symBase = nullptr, *symIndex = nullptr;
-
-	// ignore operands that don't address memory
-	if (RIVER_OPTYPE(current->opTypes[opIdx]) != RIVER_OPTYPE_MEM) {
-		return false;
-	}
-
-	// ignore operations that do not access memory
-	if (RIVER_SPEC_IGNORES_MEMORY & current->specifiers) {
-		return false;
-	}
-
-
-
-	// compute symbolic value using base and index
-	if (current->operands[opIdx].asAddress->type & RIVER_ADDR_BASE) {
-		symBase = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
-					current->operands[opIdx].asAddress->base.name)];
-		// if base is present, we only handle the case where base is symbolic
-		if (symBase == nullptr)
-			return false;
-	}
-	if (current->operands[opIdx].asAddress->type & RIVER_ADDR_INDEX) {
-		symIndex = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
-					current->operands[opIdx].asAddress->index.name)];
-		// if index is present, we can only handle the case where index is symbolic
-		if (symIndex == nullptr)
-			return false;
-	}
-
-	// issue:
-	// if base or index have concrete values, these cannot be
-	// obtained using the current target instrumentation
-	// done by river. We consider only the cases where both are symbolic,
-	// or missing
-
-	concreteValue = opBase[-((int)addressOffsets[opIdx])];
-	symbolicValue = exec->ExecuteResolveAddress(symBase, symIndex,
-			current->operands[opIdx].asAddress->GetScale());
-	isTracked = true;
-	return true;
-}*/
-
-bool RevSymbolicEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracked, nodep::DWORD &concreteValue, void *&symbolicValue) {
+bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 	void *symExpr;
 
-	if (RIVER_SPEC_IGNORES_OP(opIdx) & current->specifiers) {
+	if (RIVER_SPEC_IGNORES_OP(opInfo.opIdx) & current->specifiers) {
 		return false;
 	}
 
-	switch (RIVER_OPTYPE(current->opTypes[opIdx])) {
+	switch (RIVER_OPTYPE(current->opTypes[opInfo.opIdx])) {
 	case RIVER_OPTYPE_NONE:
 		return false;
 
 	case RIVER_OPTYPE_IMM:
-		isTracked = false;
-		switch (RIVER_OPSIZE(current->opTypes[opIdx])) {
+		opInfo.isTracked = false;
+		switch (RIVER_OPSIZE(current->opTypes[opInfo.opIdx])) {
 		case RIVER_OPSIZE_32:
-			concreteValue = current->operands[opIdx].asImm32;
+			opInfo.concrete = current->operands[opInfo.opIdx].asImm32;
 			break;
 		case RIVER_OPSIZE_16:
-			concreteValue = current->operands[opIdx].asImm16;
+			opInfo.concrete = current->operands[opInfo.opIdx].asImm16;
 			break;
 		case RIVER_OPSIZE_8:
-			concreteValue = current->operands[opIdx].asImm8;
+			opInfo.concrete = current->operands[opInfo.opIdx].asImm8;
 			break;
 		}
 		return true;
 
 	case RIVER_OPTYPE_REG:
-		symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asRegister.name)];
+		symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
+				current->operands[opInfo.opIdx].asRegister.name)];
 
-		isTracked = (symExpr != NULL);
-		symbolicValue = symExpr;
-		concreteValue = opBase[-((int)valueOffsets[opIdx])];
+		opInfo.isTracked = (symExpr != NULL);
+		opInfo.symbolic = symExpr;
+		opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
 		return true;
 
 	case RIVER_OPTYPE_MEM:
 		// how do we handle dereferenced symbolic values?
 
-		if (0 == current->operands[opIdx].asAddress->type) {
+		if (0 == current->operands[opInfo.opIdx].asAddress->type) {
 			symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
-					current->operands[opIdx].asAddress->base.name)];
+					current->operands[opInfo.opIdx].asAddress->base.name)];
 
-			isTracked = (symExpr != NULL);
-			symbolicValue = symExpr;
-			concreteValue = opBase[-((int)valueOffsets[opIdx])];
+			opInfo.isTracked = (symExpr != NULL);
+			opInfo.symbolic = symExpr;
+			opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
 			return true;
 		}
 
@@ -388,16 +346,17 @@ bool RevSymbolicEnvironment::GetOperand(nodep::BYTE opIdx, nodep::BOOL &isTracke
 			return false; // for now!
 		}
 
-		//symExpr = get from opBase[opOffset[opIdx]]
+		//symExpr = get from opBase[opOffset[opInfo.opIdx]]
 
-		if (opBase[-((int)addressOffsets[opIdx])] < 0x1000) {
+		if (opBase[-((int)addressOffsets[opInfo.opIdx])] < 0x1000) {
 			DEBUG_BREAK;
 		}
 
-		symExpr = GetExpression(opBase[-((int)addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx])); //(void *)TrackAddr(pEnv, opBase[-(addressOffsets[opIdx])], 0);
-		isTracked = (symExpr != NULL);
-		symbolicValue = symExpr;
-		concreteValue = opBase[-((int)valueOffsets[opIdx])];
+		symExpr = GetExpression(opBase[-((int)addressOffsets[opInfo.opIdx])],
+				RIVER_OPSIZE(current->opTypes[opInfo.opIdx])); //(void *)TrackAddr(pEnv, opBase[-(addressOffsets[opInfo.opIdx])], 0);
+		opInfo.isTracked = (symExpr != NULL);
+		opInfo.symbolic = symExpr;
+		opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
 		return true;
 	}
 

@@ -496,17 +496,31 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 	nodep::BOOL isSymb = false;
 
 	for (int i = 0; i < 4; ++i) {
-		ops.tr[i] = false;
-		if (true == (uo[i] = env->GetOperand(i, ops.tr[i], ops.cv[i], ops.sv[i]))) {
+		struct OperandInfo opInfo = {
+			.opIdx = (nodep::BYTE)i,
+			.isTracked = false
+		};
+		if (true == (uo[i] = env->GetOperand(opInfo))) {
 			ops.av |= OPERAND_BITMASK(i);
-			isSymb |= ops.tr[i];
+			isSymb |= opInfo.isTracked;
 		}
-		nodep::BOOL tracked = false;
-		nodep::DWORD concrete = 0;
-		void *s = nullptr;
-		/*if (true == env->GetOperandAddress(i, tracked, concrete, s)) {
-			printf("======= GetOperandAddress: isTracked: %d symb addr: %p\n", (int)tracked, s);
-		}*/
+		ops.tr[i] = opInfo.isTracked;
+		ops.cv[i] = opInfo.concrete;
+		ops.sv[i] = opInfo.symbolic;
+
+		struct OperandInfo baseOpInfo, indexOpInfo;
+		baseOpInfo.opIdx = i;
+		indexOpInfo.opIdx = i;
+		if (true == env->GetAddressBase(baseOpInfo)) {
+			printf("======= GetAddressBase: isTracked: %d symb addr: %p\n",
+					(int)baseOpInfo.isTracked, baseOpInfo.symbolic);
+		}
+
+		nodep::BYTE scale;
+		if (true == env->GetAddressScaleAndIndex(indexOpInfo, scale)) {
+			printf("======= GetAddressScaleAndIndex: isTracked: %d symb addr: %p\n",
+					(int)indexOpInfo.isTracked, indexOpInfo.symbolic);
+		}
 	}
 
 	for (int i = 0; i < flagCount; ++i) {
