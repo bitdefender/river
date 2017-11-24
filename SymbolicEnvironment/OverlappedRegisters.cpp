@@ -129,7 +129,7 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(RiverRegister &reg
 	void *ret = Get(seed, concreteValue);
 
 	concreteValue >>= rOff[idx];
-	concreteValue &= (1 << rSize[idx]) - 1;
+	concreteValue &= ((1 << (rSize[idx] - 1)) << 1) - 1;
 
 	return ret;
 }
@@ -278,33 +278,30 @@ bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 	//return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
 
 	OverlappedRegister *reg;
-	struct OperandInfo regOpInfo = {
-		.opIdx = opInfo.opIdx,
-		.isTracked = opInfo.isTracked,
-		.concrete = opInfo.concrete,
-		.symbolic = (void *)reg
-	};
 
+	void *symbolicValue = opInfo.symbolic;
+	opInfo.symbolic = reg;
 	switch (RIVER_OPTYPE(current->opTypes[opInfo.opIdx])) {
 		case RIVER_OPTYPE_REG :
-			if (!subEnv->GetOperand(regOpInfo)) {
+			if (!subEnv->GetOperand(opInfo)) {
 				return false;
 			}
 
 			if (opInfo.isTracked) {
-				opInfo.symbolic = reg->Get(current->operands[opInfo.opIdx].asRegister, opInfo.concrete);
+				opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
+						current->operands[opInfo.opIdx].asRegister, opInfo.concrete);
 			}
-
 			return true;
 
 		case RIVER_OPTYPE_MEM :
 			if (0 == current->operands[opInfo.opIdx].asAddress->type) {
-				if (!subEnv->GetOperand(regOpInfo)) {
+				if (!subEnv->GetOperand(opInfo)) {
 					return false;
 				}
 
 				if (opInfo.isTracked) {
-					opInfo.symbolic = reg->Get(current->operands[opInfo.opIdx].asAddress->base, opInfo.concrete);
+					opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
+							current->operands[opInfo.opIdx].asAddress->base, opInfo.concrete);
 				}
 
 				return true;
@@ -312,6 +309,7 @@ bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 
 			// no break/return on purpose
 		default :
+			opInfo.symbolic = symbolicValue;
 			return subEnv->GetOperand(opInfo);
 	};
 }

@@ -398,6 +398,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMov(RiverInstruction *instruction, Symbo
 	// mov dest, addr
 	if (ops->tr[1]) {
 		env->SetOperand(0, ops->sv[1]);
+		printf("<sym> mov <= %p\n", ops->sv[1]);
 	} else {
 		env->UnsetOperand(0);
 	}
@@ -477,6 +478,11 @@ void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, nodep::DWORD m
 	}
 }
 
+void printoperand(struct OperandInfo oinfo) {
+	printf("[%d] operand: istracked: %d concrete :0x%08lX symbolic: 0x%08lX\n",
+			oinfo.opIdx, oinfo.isTracked, oinfo.concrete, (DWORD)oinfo.symbolic);
+}
+
 void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 	static const unsigned char flagList[] = {
 		RIVER_SPEC_FLAG_CF,
@@ -503,6 +509,7 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		if (true == (uo[i] = env->GetOperand(opInfo))) {
 			ops.av |= OPERAND_BITMASK(i);
 			isSymb |= opInfo.isTracked;
+			//printoperand(opInfo);
 		}
 		ops.tr[i] = opInfo.isTracked;
 		ops.cv[i] = opInfo.concrete;
@@ -512,14 +519,14 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		baseOpInfo.opIdx = i;
 		indexOpInfo.opIdx = i;
 		if (true == env->GetAddressBase(baseOpInfo)) {
-			printf("======= GetAddressBase: isTracked: %d symb addr: %p\n",
-					(int)baseOpInfo.isTracked, baseOpInfo.symbolic);
+			printf("[%d] GetAddressBase: riaddr: [%08lx] isTracked: [%d] symb addr: [%p]\n",
+					i, instruction->instructionAddress, (int)baseOpInfo.isTracked, baseOpInfo.symbolic);
 		}
 
 		nodep::BYTE scale;
 		if (true == env->GetAddressScaleAndIndex(indexOpInfo, scale)) {
-			printf("======= GetAddressScaleAndIndex: isTracked: %d symb addr: %p\n",
-					(int)indexOpInfo.isTracked, indexOpInfo.symbolic);
+			printf("[%d] GetAddressScaleAndIndex:riaddr: [%08lx] isTracked: [%d] symb addr: [%p]\n",
+					i, instruction->instructionAddress, (int)indexOpInfo.isTracked, indexOpInfo.symbolic);
 		}
 	}
 
