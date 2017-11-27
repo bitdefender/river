@@ -105,7 +105,7 @@ void *Z3SymbolicExecutor::ExtractBits(void *expr, nodep::DWORD lsb, nodep::DWORD
 		lsb,
 		(Z3_ast)expr
 	);
-	printf("<sym> extract %p <= %p, %08lx, %08lx\n", ret, expr, lsb+size-1, lsb);
+	printf("<sym> extract %p <= %p, %02lx, %02lx\n", ret, expr, lsb+size-1, lsb);
 	return (void *)ret;
 }
 
@@ -494,7 +494,7 @@ template <Z3SymbolicExecutor::SymbolicExecute fSubOps[8]> void Z3SymbolicExecuto
 	(this->*fSubOps[instruction->subOpCode])(instruction, ops);
 }
 
-void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, nodep::DWORD mask) {
+void Z3SymbolicExecutor::GetSymbolicValues(RiverInstruction *instruction, SymbolicOperands *ops, nodep::DWORD mask) {
 	static const unsigned char flagList[] = {
 		RIVER_SPEC_FLAG_CF,
 		RIVER_SPEC_FLAG_PF,
@@ -507,9 +507,24 @@ void Z3SymbolicExecutor::GetSymbolicValues(SymbolicOperands *ops, nodep::DWORD m
 	static const int flagCount = sizeof(flagList) / sizeof(flagList[0]);
 	nodep::DWORD m = mask & ops->av;
 
+	bool foundSort = false;
+	Z3_sort operandsSort = dwordSort;
+	for (int i = 0; i < 4; ++i) {
+		if ((OPERAND_BITMASK(i) & m) && ops->tr[i]) {
+			 Z3_sort localSort = Z3_get_sort(context, (Z3_ast)ops->sv[i]);
+			 if (foundSort && !Z3_is_eq_sort(context, localSort, operandsSort)) {
+				 DEBUG_BREAK;
+			 }
+			 if (!foundSort) {
+				 operandsSort = localSort;
+				 foundSort = true;
+			 }
+		}
+	}
+
 	for (int i = 0; i < 4; ++i) {
 		if ((OPERAND_BITMASK(i) & m) && !ops->tr[i]) {
-			ops->sv[i] = Z3_mk_int(context, ops->cv[i], dwordSort);
+			ops->sv[i] = Z3_mk_int(context, ops->cv[i], operandsSort);
 			printf("<sym> mkint %lu\n", ops->cv[i]);
 		}
 	}
@@ -560,7 +575,8 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		if (true == (uo[i] = env->GetOperand(opInfo))) {
 			ops.av |= OPERAND_BITMASK(i);
 			isSymb |= opInfo.isTracked;
-			//printoperand(opInfo);
+			if (isSymb)
+				printoperand(opInfo);
 		}
 		ops.tr[i] = opInfo.isTracked;
 		ops.cv[i] = opInfo.concrete;
@@ -568,16 +584,16 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 
 		struct OperandInfo baseOpInfo, indexOpInfo;
 		baseOpInfo.opIdx = i;
-		indexOpInfo.opIdx = i;
 		if (true == env->GetAddressBase(baseOpInfo)) {
-			printf("[%d] GetAddressBase: riaddr: [%08lx] isTracked: [%d] symb addr: [%p]\n",
-					i, instruction->instructionAddress, (int)baseOpInfo.isTracked, baseOpInfo.symbolic);
+			printf("[%d] GetAddressBase: riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
+					i, instruction->instructionAddress, (int)baseOpInfo.isTracked, baseOpInfo.symbolic, baseOpInfo.concrete);
 		}
 
 		nodep::BYTE scale;
+		indexOpInfo.opIdx = i;
 		if (true == env->GetAddressScaleAndIndex(indexOpInfo, scale)) {
-			printf("[%d] GetAddressScaleAndIndex:riaddr: [%08lx] isTracked: [%d] symb addr: [%p]\n",
-					i, instruction->instructionAddress, (int)indexOpInfo.isTracked, indexOpInfo.symbolic);
+			printf("[%d] GetAddressScaleAndIndex:riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
+					i, instruction->instructionAddress, (int)indexOpInfo.isTracked, indexOpInfo.symbolic, indexOpInfo.concrete);
 		}
 	}
 
@@ -591,9 +607,10 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 
 	if (isSymb) {
 		// This functionality must be moved into individual functions if the need arises
-		GetSymbolicValues(&ops, ops.av);
+		GetSymbolicValues(instruction, &ops, ops.av);
 
 		nodep::DWORD dwTable = (instruction->modifiers & RIVER_MODIFIER_EXT) ? 1 : 0;
+		printf("Execute instruction: 0x%08lX\n", instruction->instructionAddress);
 		(this->*executeFuncs[dwTable][instruction->opCode])(instruction, &ops);
 	} else {
 		// unset all modified operands
