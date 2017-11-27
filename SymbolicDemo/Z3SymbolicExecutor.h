@@ -31,7 +31,11 @@ private:
 
 	void SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	template <unsigned int flag> void SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops);
+	template <unsigned int flag> 
+	void SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops);
+	
+	template <unsigned int f1, unsigned int f2, bool eq> 
+	void SymbolicExecuteJCCCompare(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	void SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);

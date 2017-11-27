@@ -308,6 +308,25 @@ template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverIn
 	lastCondition = Z3_simplify(context, cond);
 }
 
+template <unsigned int f1, unsigned int f2, bool eq> void Z3SymbolicExecutor::SymbolicExecuteJCCCompare(RiverInstruction *instruction, SymbolicOperands *ops) {
+	printf("<sym> jcc %p %c= %p\n", ops->svf[f1], eq ? '=' : '!', ops->svf[f2]);
+
+	Z3_ast cond = Z3_mk_eq(
+		context,
+		(Z3_ast)ops->svf[f1],
+		(Z3_ast)ops->svf[f2]
+	);
+
+	if (!eq) {
+		cond = Z3_mk_not(
+			context,
+			cond
+		);
+	}
+
+	lastCondition = Z3_simplify(context, cond);
+}
+
 Z3_ast Z3SymbolicExecutor::ExecuteAdd(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvadd(context, o1, o2);
 	env->SetOperand(0, r);
@@ -366,25 +385,25 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvxor(context, o1, o2);
 	env->SetOperand(0, r);
 
-	//printf("<sym> xor %p <= %p, %p\n", r, o1, o2);
-	printf("<sym> xor op1 %s",
+	printf("<sym> xor %p <= %p, %p\n", r, o1, o2);
+	/*printf("<sym> xor op1 %s",
 		Z3_ast_to_string(context, o1)
 	);
 	printf("<sym> xor op2 %s",
 		Z3_ast_to_string(context, o2)
-	);
+	);*/
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
-	//printf("<sym> cmp %p <= %p, %p\n", r, o1, o2);
-	printf("<sym> cmp op1 %s",
+	printf("<sym> cmp %p <= %p, %p\n", r, o1, o2);
+	/*printf("<sym> cmp op1 %s",
 		Z3_ast_to_string(context, o1)
 	);
 	printf("<sym> cmp op2 %s",
 		Z3_ast_to_string(context, o2)
-	);
+	);*/
 	return r;
 }
 
@@ -502,10 +521,10 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 	nodep::BOOL isSymb = false;
 
 	for (int i = 0; i < 4; ++i) {
-		struct OperandInfo opInfo = {
-			.opIdx = (nodep::BYTE)i,
-			.isTracked = false
-		};
+		struct OperandInfo opInfo;
+		opInfo.opIdx = (nodep::BYTE)i;
+		opInfo.isTracked = false;
+
 		if (true == (uo[i] = env->GetOperand(opInfo))) {
 			ops.av |= OPERAND_BITMASK(i);
 			isSymb |= opInfo.isTracked;
@@ -601,7 +620,7 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x70*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>,
 		/*0x74*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0x78*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>,
-		/*0x7C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x7C*/ &Z3SymbolicExecutor::SymbolicExecuteJCCCompare<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, false>, &Z3SymbolicExecutor::SymbolicExecuteJCCCompare<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, true>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0x80*/ &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeIntegerFuncs>, &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeIntegerFuncs>, &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeIntegerFuncs>, &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeIntegerFuncs>,
 		/*0x84*/ &Z3SymbolicExecutor::SymbolicExecuteInteger<&Z3SymbolicExecutor::ExecuteTest, Z3_FLAG_OP_AND>, &Z3SymbolicExecutor::SymbolicExecuteInteger<&Z3SymbolicExecutor::ExecuteTest, Z3_FLAG_OP_AND>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,

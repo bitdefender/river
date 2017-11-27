@@ -262,6 +262,7 @@ Z3_ast Z3FlagOF::Eval() {
 	switch (func) {
 		case Z3_FLAG_OP_ADD:
 		case Z3_FLAG_OP_SUB:
+		case Z3_FLAG_OP_CMP:
 			break;
 		default:
 			DEBUG_BREAK;
@@ -288,7 +289,7 @@ Z3_ast Z3FlagOF::Eval() {
 		p[0]
 	);
 
-	if (func == Z3_FLAG_OP_SUB) {
+	if ((func == Z3_FLAG_OP_SUB) || (func == Z3_FLAG_OP_CMP)) {
 		b = Z3_mk_bvnot(
 			parent->context,
 			b

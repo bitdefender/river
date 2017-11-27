@@ -277,10 +277,8 @@ OverlappedRegistersEnvironment::OverlappedRegistersEnvironment() {
 bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 	//return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
 
-	OverlappedRegister *reg;
-
 	void *symbolicValue = opInfo.symbolic;
-	opInfo.symbolic = reg;
+	opInfo.symbolic = nullptr; 
 	switch (RIVER_OPTYPE(current->opTypes[opInfo.opIdx])) {
 		case RIVER_OPTYPE_REG :
 			if (!subEnv->GetOperand(opInfo)) {

@@ -15,7 +15,7 @@ int CheckDword(unsigned int *ptr) {
 }
 
 unsigned int bufferDword[] = {
-	10, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
+	8, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
 };
 
 int PayloadDword() {
