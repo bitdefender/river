@@ -54,7 +54,7 @@ private:
 	typedef Z3_ast (Z3SymbolicExecutor::*IntegerFunc)(Z3_ast o1, Z3_ast o2);
 	template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void SymbolicExecuteInteger(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	void GetSymbolicValues(SymbolicOperands *ops, nodep::DWORD mask);
+	void GetSymbolicValues(RiverInstruction *instruction, SymbolicOperands *ops, nodep::DWORD mask);
 public:
 	int symIndex;
 
