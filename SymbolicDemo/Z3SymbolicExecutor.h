@@ -31,10 +31,13 @@ private:
 
 	void SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	template <unsigned int flag> 
+	template <unsigned int flag>
 	void SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops);
-	
-	template <unsigned int f1, unsigned int f2, bool eq> 
+
+	template <unsigned int flag>
+	void SymbolicExecuteSetCC(RiverInstruction *instruction, SymbolicOperands *ops);
+
+	template <unsigned int f1, unsigned int f2, bool eq>
 	void SymbolicExecuteJCCCompare(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	template <unsigned int f1, unsigned int f2, unsigned int f3, bool eq>
@@ -64,8 +67,10 @@ public:
 	Z3_config config;
 	Z3_context context;
 	Z3_sort dwordSort, wordSort, tbSort, byteSort, bitSort;
+	Z3_sort sevenBitSort;
 
-	Z3_ast zero32, zero16, zero8, zeroFlag, oneFlag;
+	Z3_ast zero32, zero16, zero7, zero8, zeroFlag, oneFlag;
+	Z3_ast one8;
 	Z3_ast zeroScale, twoScale, fourScale;
 
 	class Z3SymbolicCpuFlag {

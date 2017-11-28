@@ -233,9 +233,14 @@ Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e) :
 	byteSort = Z3_mk_bv_sort(context, 8);
 	bitSort = Z3_mk_bv_sort(context, 1);
 
+	sevenBitSort = Z3_mk_bv_sort(context, 7);
+
 	zero32 = Z3_mk_int(context, 0, dwordSort);
 	zero16 = Z3_mk_int(context, 0, wordSort);
+	zero7 = Z3_mk_int(context, 0, sevenBitSort);
 	zero8 = Z3_mk_int(context, 0, byteSort);
+	one8 = Z3_mk_int(context, 1, byteSort);
+
 	zeroFlag = Z3_mk_int(context, 0, bitSort);
 	oneFlag = Z3_mk_int(context, 1, bitSort);
 
@@ -306,6 +311,16 @@ template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverIn
 	);
 
 	lastCondition = Z3_simplify(context, cond);
+}
+
+template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteSetCC(RiverInstruction *instruction, SymbolicOperands *ops) {
+	printf("<sym> setcc %p\n", ops->svf[flag]);
+	Z3_ast res = Z3_mk_concat(
+			context,
+			zero7,
+			(Z3_ast)ops->svf[flag]
+			);
+	env->SetOperand(0, res);
 }
 
 template <unsigned int f1, unsigned int f2, bool eq> void Z3SymbolicExecutor::SymbolicExecuteJCCCompare(RiverInstruction *instruction, SymbolicOperands *ops) {
@@ -525,7 +540,7 @@ void Z3SymbolicExecutor::GetSymbolicValues(RiverInstruction *instruction, Symbol
 	for (int i = 0; i < 4; ++i) {
 		if ((OPERAND_BITMASK(i) & m) && !ops->tr[i]) {
 			ops->sv[i] = Z3_mk_int(context, ops->cv[i], operandsSort);
-			printf("<sym> mkint %lu\n", ops->cv[i]);
+			printf("<sym> mkint %lu size: %u\n", ops->cv[i], Z3_get_bv_sort_size(context, operandsSort));
 		}
 	}
 
@@ -758,7 +773,7 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x8C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0x90*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x94*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x94*/ &Z3SymbolicExecutor::SymbolicExecuteSetCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0x98*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0x9C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 

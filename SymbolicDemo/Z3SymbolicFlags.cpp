@@ -35,7 +35,7 @@ Z3_ast Z3FlagZF::Eval() {
 		Z3_mk_eq(
 			parent->context,
 			source,
-			parent->zero32
+			Z3_mk_int(parent->context, 0, Z3_get_sort(parent->context, source))
 		),
 		parent->oneFlag,
 		parent->zeroFlag

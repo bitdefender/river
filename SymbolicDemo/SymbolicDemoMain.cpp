@@ -98,12 +98,12 @@ public :
 
 		TrackedCondition *ret = freeConditions[--freeCondCount];
 		ret->wasInverted = false;
-		PRINTF("Alloc condition %08lx\n", (DWORD)ret);
+		PRINTF("Alloc condition %08lx. Left: %lX\n", (DWORD)ret, freeCondCount);
 		return ret;
 	}
 
 	void FreeCondition(TrackedCondition *cond) {
-		PRINTF("Free condition %08lx\n", (DWORD)cond);
+		PRINTF("Free condition %08lx. Left: %lX\n", (DWORD)cond, freeCondCount);
 		freeConditions[freeCondCount++] = cond;
 	}
 
@@ -414,6 +414,8 @@ public:
 
 					if (Z3_L_UNDEF == Z3_get_bool_value(executor->context, executor->lastCondition)) {
 						TrackedCondition *cond = cec.AllocCondition();
+						if (!cond)
+							DEBUG_BREAK;
 						cond->wasInverted = false;
 						cond->ast = executor->lastCondition;
 						//Z3_set_user_ptr(executor->context, executor->lastCondition, cond, CustomExecutionContext::DummyFreeCondition);

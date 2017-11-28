@@ -5,7 +5,7 @@ int CheckDword(unsigned int *ptr) {
 	int i, j = 0;
 	int hash = 0xABCD;
 
-	for (i = ptr[0] - 1; i >= 1; i--) {
+	for (i = 0; ptr[i] != 0; i++) {
 		hash += ptr[i] ^ serial[j];
 
 		j = (j == 4) ? 0 : j + 1;
@@ -15,7 +15,7 @@ int CheckDword(unsigned int *ptr) {
 }
 
 unsigned int bufferDword[] = {
-	8, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 0
 };
 
 int PayloadDword() {

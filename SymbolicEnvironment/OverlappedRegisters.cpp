@@ -52,7 +52,7 @@ void OverlappedRegistersEnvironment::OverlappedRegister::MarkUnset(nodep::DWORD 
 		}
 		
 		subRegs[c] = nullptr;
-		MarkNeedExtract(c, doRefCount);
+		MarkUnset(c, doRefCount);
 	}
 
 	c = rMChild[node];
@@ -62,7 +62,7 @@ void OverlappedRegistersEnvironment::OverlappedRegister::MarkUnset(nodep::DWORD 
 		}
 		
 		subRegs[c] = nullptr;
-		MarkNeedExtract(c, doRefCount);
+		MarkUnset(c, doRefCount);
 	}
 }
 
@@ -78,6 +78,7 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(nodep::DWORD node,
 			DEBUG_BREAK;
 		}
 
+		printf("[0x%08lX] needs extract\n", node);
 		return parent->exec->ExtractBits(
 			subRegs[c],
 			rOff[node] >> 3,
@@ -107,9 +108,15 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(nodep::DWORD node,
 			);
 		}
 
+		printf("[0x%08lX] needs concat\n", node);
 		return parent->exec->ConcatBits(ms, ls);
 	}
 	else {
+		printf("[0x%08lX] needs nothing extr: %08lX concat: %08lX\n", node,
+				&needExtract, &needConcat);
+		for (int i = 0; i < 5; ++i) {
+			printf("reg: %08lX : %08lX\n", (DWORD)i, (DWORD)subRegs[i]);
+		}
 		return subRegs[node];
 	}
 }
@@ -277,7 +284,7 @@ OverlappedRegistersEnvironment::OverlappedRegistersEnvironment() {
 bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 	//return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
 
-	void *symbolicValue = opInfo.symbolic;
+	//void *symbolicValue = opInfo.symbolic;
 	opInfo.symbolic = nullptr; 
 	switch (RIVER_OPTYPE(current->opTypes[opInfo.opIdx])) {
 		case RIVER_OPTYPE_REG :
@@ -307,7 +314,7 @@ bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 
 			// no break/return on purpose
 		default :
-			opInfo.symbolic = symbolicValue;
+			//opInfo.symbolic = symbolicValue;
 			return subEnv->GetOperand(opInfo);
 	};
 }
@@ -344,6 +351,7 @@ bool OverlappedRegistersEnvironment::UnsetOperand(nodep::BYTE opIdx, bool doRefC
 	case RIVER_OPTYPE_REG:
 		reg = &subRegisters[_GetFundamentalRegister(current->operands[opIdx].asRegister.name)];
 		if (reg->Unset(current->operands[opIdx].asRegister, doRefCount)) {
+			printf("->>>>>>>>>>>>>>>>Unset is done reg\n");
 			return subEnv->UnsetOperand(opIdx, false);
 		}
 		return true;
@@ -352,6 +360,7 @@ bool OverlappedRegistersEnvironment::UnsetOperand(nodep::BYTE opIdx, bool doRefC
 		if (0 == current->operands[opIdx].asAddress->type) {
 			reg = &subRegisters[_GetFundamentalRegister(current->operands[opIdx].asAddress->base.name)];
 			if (reg->Unset(current->operands[opIdx].asAddress->base, doRefCount)) {
+				printf("->>>>>>>>>>>>>>>>Unset is done mem\n");
 				return subEnv->UnsetOperand(opIdx, false);
 			}
 			return true;

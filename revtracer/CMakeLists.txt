@@ -15,6 +15,8 @@ set(CMAKE_SHARED_LINKER_FLAGS "--disable-stdcall-fixup -static-libstdc++")
 
 set(CMAKE_ASM_COMPILER i686-w64-mingw32-as)
 set(CMAKE_ASM_FLAGS "--32")
+set(CMAKE_ASM_FLAGS_RELEASE "${CMAKE_ASM_FLAGS}")
+set(CMAKE_ASM_FLAGS_DEBUG "${CMAKE_ASM_FLAGS} -g")
 
 set_source_files_properties(revtracer.stub.S PROPERTIES COMPILE_FLAGS "${CMAKE_ASM_FLAGS}")
 
