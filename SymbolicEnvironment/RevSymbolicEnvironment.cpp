@@ -335,7 +335,7 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 		opInfo.isTracked = (symExpr != NULL);
 		opInfo.symbolic = symExpr;
 		opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
-		printf("[%d] <= getOperand reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+		//printf("[%d] <= getOperand reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 		return true;
 
 	case RIVER_OPTYPE_MEM:
@@ -348,7 +348,7 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 			opInfo.isTracked = (symExpr != NULL);
 			opInfo.symbolic = symExpr;
 			opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
-			printf("[%d] <= getOperand mem reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+			//printf("[%d] <= getOperand mem reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 			return true;
 		}
 
@@ -431,7 +431,9 @@ bool RevSymbolicEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, 
 		if (doRefCount && (nullptr != symbolicValue)) {
 			addRefFunc(symbolicValue);
 		}
-		printf("[%d] SetOperand Reg <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
+		//printf("[%d] SetOperand Reg <= 0x%08lX TR: %08lX Freg: %d reg: %d\n", opIdx, (DWORD)symbolicValue,
+		//		&((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asRegister.name)],
+		//		current->operands[opIdx].asRegister.name);
 		return true;
 
 	case RIVER_OPTYPE_MEM:
@@ -444,12 +446,12 @@ bool RevSymbolicEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, 
 			if (doRefCount && (nullptr != symbolicValue)) {
 				addRefFunc(symbolicValue);
 			}
-			printf("[%d] SetOperand Mem Reg <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
+			//printf("[%d] SetOperand Mem Reg <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
 		}
 		else {
 			//MarkAddr(pEnv, opBase[-(addressOffsets[opIdx])], (rev::DWORD)symbolicValue, 0);
 			SetExpression(symbolicValue, opBase[-((int)addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx]), &opBase[-((int)valueOffsets[opIdx])]);
-			printf("[%d] SetOperand Mem <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
+			//printf("[%d] SetOperand Mem <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
 		}
 		return true;
 
@@ -459,7 +461,6 @@ bool RevSymbolicEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, 
 }
 
 bool RevSymbolicEnvironment::UnsetOperand(nodep::BYTE opIdx, bool doRefCount) {
-	printf("=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>unSetOperand\n");
 	return SetOperand(opIdx, nullptr, doRefCount);
 }
 
