@@ -120,6 +120,7 @@ public:
 	virtual void *ConcatBits(void *expr1, void *expr2);
 	virtual void Execute(RiverInstruction *instruction);
 	virtual void *ExecuteResolveAddress(void *base, void *index, nodep::BYTE scale);
+	virtual void ComposeScaleAndIndex(nodep::BYTE &scale, struct OperandInfo &indexOp);
 };
 
 class Z3FlagZF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {

@@ -564,6 +564,25 @@ void printoperand(struct OperandInfo oinfo) {
 			oinfo.opIdx, oinfo.isTracked, oinfo.concrete, (DWORD)oinfo.symbolic);
 }
 
+void Z3SymbolicExecutor::ComposeScaleAndIndex(nodep::BYTE &scale,
+		struct OperandInfo &indexOp) {
+	if (scale == 0) {
+		indexOp.symbolic = (void *)zero32;
+		indexOp.concrete = 0;
+	}
+
+	if (indexOp.isTracked) {
+		Z3_ast res = Z3_mk_bvmul(context, (Z3_ast)indexOp.symbolic,
+				Z3_mk_int(context, scale, dwordSort)
+				);
+		printf("<sym> add %p <= %d + %p\n",
+				res, scale, indexOp.symbolic);
+		indexOp.symbolic = (void *)res;
+	} else {
+		indexOp.concrete = scale * indexOp.concrete;
+	}
+}
+
 void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 	static const unsigned char flagList[] = {
 		RIVER_SPEC_FLAG_CF,
@@ -584,7 +603,7 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 
 	for (int i = 0; i < 4; ++i) {
 		struct OperandInfo opInfo;
-		opInfo.opIdx = (nodep::BYTE)i;
+		 opInfo.opIdx = (nodep::BYTE)i;
 		opInfo.isTracked = false;
 
 		if (true == (uo[i] = env->GetOperand(opInfo))) {
@@ -598,10 +617,12 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		ops.sv[i] = opInfo.symbolic;
 
 		struct OperandInfo baseOpInfo, indexOpInfo;
+		bool hasIndex = false, hasBase = false;
 		baseOpInfo.opIdx = i;
 		if (true == env->GetAddressBase(baseOpInfo)) {
 			printf("[%d] GetAddressBase: riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
 					i, instruction->instructionAddress, (int)baseOpInfo.isTracked, baseOpInfo.symbolic, baseOpInfo.concrete);
+			hasBase = true;
 		}
 
 		nodep::BYTE scale;
@@ -609,6 +630,34 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		if (true == env->GetAddressScaleAndIndex(indexOpInfo, scale)) {
 			printf("[%d] GetAddressScaleAndIndex:riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
 					i, instruction->instructionAddress, (int)indexOpInfo.isTracked, indexOpInfo.symbolic, indexOpInfo.concrete);
+			hasIndex = true;
+		}
+
+		struct OperandInfo opAddressInfo;
+		opAddressInfo.opIdx = i;
+		opAddressInfo.concrete = 0;
+		opAddressInfo.symbolic = 0;
+		opAddressInfo.isTracked = baseOpInfo.isTracked || indexOpInfo.isTracked;
+
+		// if address is not symbolic
+		if (!opAddressInfo.isTracked) {
+			if (hasBase) {
+				opAddressInfo.concrete = baseOpInfo.concrete;
+			}
+			if (hasIndex) {
+				opAddressInfo.concrete += scale * indexOpInfo.concrete;
+			}
+		} else {
+			if (baseOpInfo.isTracked) {
+				if (baseOpInfo.isTracked) {
+					opAddressInfo.symbolic = baseOpInfo.symbolic;
+				}
+				if (indexOpInfo.isTracked) {
+					// sym(scale) * index
+				} else {
+					// add concrete from index
+				}
+			}
 		}
 	}
 
