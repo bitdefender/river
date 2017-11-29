@@ -373,6 +373,7 @@ void SymbopTranslator::TranslateUnk(const RiverInstruction &rIn, RiverInstructio
 
 	lastOpcode = rIn.opCode;
 	lastAddr = rIn.instructionAddress;
+	revtracerImports.dbgPrintFunc(PRINT_ERROR | PRINT_DISASSEMBLY, "Translating unknown instruction %02x %02x \n", rIn.modifiers & RIVER_MODIFIER_EXT ? 0x0F : 0x00, lastOpcode);
 
 	DEBUG_BREAK;
 }
@@ -559,7 +560,7 @@ SymbopTranslator::TranslateOpcodeFunc SymbopTranslator::translateOpcodes[2][0x10
 		/* 0x98 */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault,
 		/* 0x9C */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault,
 
-		/* 0xA0 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk,
+		/* 0xA0 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault,
 		/* 0xA4 */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk,
 		/* 0xA8 */ &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
 		/* 0xAC */ &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateDefault, &SymbopTranslator::TranslateUnk, &SymbopTranslator::TranslateDefault,
