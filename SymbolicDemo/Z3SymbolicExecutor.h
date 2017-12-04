@@ -121,6 +121,7 @@ public:
 	virtual void Execute(RiverInstruction *instruction);
 	virtual void *ExecuteResolveAddress(void *base, void *index, nodep::BYTE scale);
 	virtual void ComposeScaleAndIndex(nodep::BYTE &scale, struct OperandInfo &indexOp);
+	virtual void AddOperands(struct OperandInfo &left, struct OperandInfo &right, struct OperandInfo &result);
 };
 
 class Z3FlagZF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {

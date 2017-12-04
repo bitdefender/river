@@ -540,7 +540,8 @@ void Z3SymbolicExecutor::GetSymbolicValues(RiverInstruction *instruction, Symbol
 	for (int i = 0; i < 4; ++i) {
 		if ((OPERAND_BITMASK(i) & m) && !ops->tr[i]) {
 			ops->sv[i] = Z3_mk_int(context, ops->cv[i], operandsSort);
-			printf("<sym> mkint %lu size: %u\n", ops->cv[i], Z3_get_bv_sort_size(context, operandsSort));
+			printf("<sym> mkint %lu size: %u\n", ops->cv[i],
+					Z3_get_bv_sort_size(context, operandsSort));
 		}
 	}
 
@@ -564,22 +565,75 @@ void printoperand(struct OperandInfo oinfo) {
 			oinfo.opIdx, oinfo.isTracked, oinfo.concrete, (DWORD)oinfo.symbolic);
 }
 
+void InitializeOperand(struct OperandInfo &oinfo) {
+	oinfo.opIdx = -1;
+	oinfo.isTracked = 0;
+	oinfo.concrete = 0;
+	oinfo.symbolic = nullptr;
+}
+
 void Z3SymbolicExecutor::ComposeScaleAndIndex(nodep::BYTE &scale,
 		struct OperandInfo &indexOp) {
 	if (scale == 0) {
+		indexOp.isTracked = false;
 		indexOp.symbolic = (void *)zero32;
 		indexOp.concrete = 0;
 	}
 
 	if (indexOp.isTracked) {
+		Z3_sort opSort = Z3_get_sort(context, (Z3_ast)indexOp.symbolic);
 		Z3_ast res = Z3_mk_bvmul(context, (Z3_ast)indexOp.symbolic,
-				Z3_mk_int(context, scale, dwordSort)
-				);
+				Z3_mk_int(context, scale, opSort));
 		printf("<sym> add %p <= %d + %p\n",
 				res, scale, indexOp.symbolic);
 		indexOp.symbolic = (void *)res;
 	} else {
 		indexOp.concrete = scale * indexOp.concrete;
+	}
+}
+
+void Z3SymbolicExecutor::AddOperands(struct OperandInfo &left,
+		struct OperandInfo &right,
+		struct OperandInfo &result)
+{
+	if (left.opIdx == right.opIdx) {
+		result.opIdx = left.opIdx;
+	} else {
+		DEBUG_BREAK;
+	}
+	result.concrete = 0;
+	result.isTracked = left.isTracked || right.isTracked;
+
+	if (!result.isTracked) {
+		// concrete result
+		result.concrete = left.concrete + right.concrete;
+	} else {
+		// one operand or both are symbolic
+		// if one is concrete, turn into symbolic
+		if ((left.isTracked && right.isTracked) == 0) {
+			if (!left.isTracked) {
+				if (left.concrete == 0) {
+					result = right;
+					return;
+				}
+				left.symbolic = Z3_mk_int(context, left.concrete,
+						dwordSort);
+				printf("<sym> mkint %p <= %08lX\n", left.symbolic, left.concrete);
+			} else if (!right.isTracked) {
+				if (right.concrete == 0) {
+					result = left;
+					return;
+				}
+				right.symbolic = Z3_mk_int(context, right.concrete,
+						dwordSort);
+				printf("<sym> mkint %p <= %08lX\n", right.symbolic, right.concrete);
+			}
+		}
+		// add two symbolic objects
+		result.symbolic = Z3_mk_bvadd(context, (Z3_ast)left.symbolic,
+				(Z3_ast)right.symbolic);
+		printf("<sym> add %p <= %p + %p\n", result.symbolic, left.symbolic,
+				right.symbolic);
 	}
 }
 
@@ -603,7 +657,7 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 
 	for (int i = 0; i < 4; ++i) {
 		struct OperandInfo opInfo;
-		 opInfo.opIdx = (nodep::BYTE)i;
+		opInfo.opIdx = (nodep::BYTE)i;
 		opInfo.isTracked = false;
 
 		if (true == (uo[i] = env->GetOperand(opInfo))) {
@@ -618,6 +672,8 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 
 		struct OperandInfo baseOpInfo, indexOpInfo;
 		bool hasIndex = false, hasBase = false;
+
+		InitializeOperand(baseOpInfo);
 		baseOpInfo.opIdx = i;
 		if (true == env->GetAddressBase(baseOpInfo)) {
 			printf("[%d] GetAddressBase: riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
@@ -625,6 +681,7 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 			hasBase = true;
 		}
 
+		InitializeOperand(indexOpInfo);
 		nodep::BYTE scale;
 		indexOpInfo.opIdx = i;
 		if (true == env->GetAddressScaleAndIndex(indexOpInfo, scale)) {
@@ -634,31 +691,10 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		}
 
 		struct OperandInfo opAddressInfo;
-		opAddressInfo.opIdx = i;
-		opAddressInfo.concrete = 0;
-		opAddressInfo.symbolic = 0;
-		opAddressInfo.isTracked = baseOpInfo.isTracked || indexOpInfo.isTracked;
-
-		// if address is not symbolic
-		if (!opAddressInfo.isTracked) {
-			if (hasBase) {
-				opAddressInfo.concrete = baseOpInfo.concrete;
-			}
-			if (hasIndex) {
-				opAddressInfo.concrete += scale * indexOpInfo.concrete;
-			}
-		} else {
-			if (baseOpInfo.isTracked) {
-				if (baseOpInfo.isTracked) {
-					opAddressInfo.symbolic = baseOpInfo.symbolic;
-				}
-				if (indexOpInfo.isTracked) {
-					// sym(scale) * index
-				} else {
-					// add concrete from index
-				}
-			}
+		if (hasIndex) {
+			ComposeScaleAndIndex(scale, indexOpInfo);
 		}
+		AddOperands(baseOpInfo, indexOpInfo, opAddressInfo);
 	}
 
 	for (int i = 0; i < flagCount; ++i) {
