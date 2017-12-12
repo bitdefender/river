@@ -48,7 +48,7 @@ public :
 	virtual bool GetAddressBase(struct OperandInfo &opInfo);
 	virtual bool GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale);
 
-	virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
+	virtual bool GetFlgValue(struct FlagInfo &flagInfo);
 	virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
 	virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
 	virtual void SetFlgValue(nodep::BYTE flg, void *symbolicValue, bool doRefCount);

@@ -68,8 +68,8 @@ namespace sym {
 		return subEnv->GetAddressScaleAndIndex(opInfo, scale);
 	}
 
-	bool ScopedSymbolicEnvironment::GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue) {
-		return subEnv->GetFlgValue(flg, isTracked, concreteValue, symbolicValue);
+	bool ScopedSymbolicEnvironment::GetFlgValue(struct FlagInfo &flagInfo) {
+		return subEnv->GetFlgValue(flagInfo);
 	}
 
 	bool ScopedSymbolicEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount) {

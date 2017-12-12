@@ -396,20 +396,20 @@ unsigned int flagShifts[] = {
 	10 //RIVER_SPEC_FLAG_DF
 };
 
-bool RevSymbolicEnvironment::GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue) {
-	if (0 == (flg & current->testFlags)) {
+bool RevSymbolicEnvironment::GetFlgValue(struct FlagInfo &flagInfo) {
+	if (0 == (flagInfo.opIdx & current->testFlags)) {
 		return false;
 	}
 
-	unsigned int flgIdx = BinLog2(flg);
+	unsigned int flgIdx = BinLog2(flagInfo.opIdx);
 	//void *expr = pEnv->runtimeContext.taintedFlags[flgIdx];
 
 	nodep::DWORD val = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedFlags[flgIdx];
 
-	isTracked = (0 != val);
-	concreteValue = (opBase[flagOffset] >> flagShifts[flgIdx]) & 1;
-	if (isTracked) {
-		symbolicValue = (void *)val;
+	flagInfo.isTracked = (0 != val);
+	flagInfo.concrete = (opBase[flagOffset] >> flagShifts[flgIdx]) & 1;
+	if (flagInfo.isTracked) {
+		flagInfo.symbolic = (void *)val;
 	}
 
 	return true;

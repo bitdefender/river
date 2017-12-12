@@ -12,6 +12,13 @@ struct OperandInfo {
 	void *symbolic;
 };
 
+struct FlagInfo {
+	nodep::BYTE opIdx;
+	nodep::BOOL isTracked;
+	nodep::BYTE concrete;
+	void *symbolic;
+};
+
 namespace sym {
 
 	class SymbolicExecutor;
@@ -36,7 +43,7 @@ namespace sym {
 		*		obBuffer - input, buffer storing concrete operand values
 		*/
 		virtual bool SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer) = 0;
-		
+
 		virtual bool SetExecutor(SymbolicExecutor *e);
 
 		virtual void PushState(stk::LargeStack &stack) = 0;
@@ -47,10 +54,7 @@ namespace sym {
 		/**
 		*	The GetOperand function returns an operand by index.
 		*	Params:
-		*		opIdx - input, specifies the operand index.
-		*		isTracked - output, returns true if the operand is tracked.
-		*		concreteValue - output, returns the operands concrete value.
-		*		symbolicValue - output, if isSymblic is true, this variable holds the symbolic expression.
+		*		opInfo - struct containing operand info
 		*  Result:
 		*		true - if the operand can be interogated
 		*		false - if the operand can't be interogated, (if the operand type is RIVER_OPERAND_NONE, or if
@@ -61,10 +65,7 @@ namespace sym {
 		/**
 		*	The GetAddressBase function returns the base of an address operand by index.
 		*	Params:
-		*		opIdx - input, specifies the operand index.
-		*		isTracked - output, returns true if the operand base is tracked.
-		*		concreteValue - output, returns the operand base concrete value.
-		*		symbolicValue - output, if isSymblic is true, this variable holds the symbolic expression of operand base.
+		*		opInfo - struct containing operand info
 		*  Result:
 		*		true - if the operand can be interogated
 		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM)
@@ -74,11 +75,8 @@ namespace sym {
 		/**
 		*	The GetAddressScaleAndIndex function returns the scale and index of an address operand by index.
 		*	Params:
-		*		opIdx - input, specifies the operand index.
+		*		opInfo - struct containing operand info
 		*       scale - output, returns the operands scale.
-		*		isTracked - output, returns true if the operand index is tracked.
-		*		concreteValue - output, returns the operand index concrete value.
-		*		symbolicValue - output, if isSymblic is true, this variable holds the symbolic expression of operand index.
 		*  Result:
 		*		true - if the operand can be interogated
 		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM)
@@ -89,15 +87,12 @@ namespace sym {
 		/**
 		*	The GetFlgValue function returns a flag by flag value.
 		*	Params:
-		*		flg - input, one of the RIVER_SPEC_FLAG_?F constants.
-		*		isTracked - output, returns true if the flag is tracked.
-		*		concreteValue - output, returns the flags concrete value.
-		*		symbolicValue - output, if isSymblic is true, this variable holds the symbolic expression.
+		*		flagInfo - struct containing flag info
 		*  Result:
 		*		true - if the flag can be interogated
 		*		false - if the flag can't be interogated, (if the flag is not in the modFlags bitmask).
 		*/
-		virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue) = 0;
+		virtual bool GetFlgValue(struct FlagInfo &flagInfo) = 0;
 
 		/**
 		*  The SetOperand function binds a symbolic expression to an operand.
@@ -163,7 +158,7 @@ namespace sym {
 		virtual bool GetOperand(struct OperandInfo &opInfo);
 		virtual bool GetAddressBase(struct OperandInfo &opInfo);
 		virtual bool GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale);
-		virtual bool GetFlgValue(nodep::BYTE flg, nodep::BOOL &isTracked, nodep::BYTE &concreteValue, void *&symbolicValue);
+		virtual bool GetFlgValue(struct FlagInfo &flagInfo);
 		virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
 		virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
 		virtual void SetFlgValue(nodep::BYTE flg, void *symbolicValue, bool doRefCount);

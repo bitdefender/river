@@ -28,6 +28,3 @@ node_modules/
 
 #z3 subdir
 z3/
-
-include
-inst

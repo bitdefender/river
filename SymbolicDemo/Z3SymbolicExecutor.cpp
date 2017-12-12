@@ -698,11 +698,17 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 	}
 
 	for (int i = 0; i < flagCount; ++i) {
-		ops.trf[i] = false;
-		if (true == (uof[i] = env->GetFlgValue(flagList[i], ops.trf[i], ops.cvf[i], ops.svf[i]))) {
-			ops.av |= flagList[i];
-			isSymb |= ops.trf[i];
+		struct FlagInfo flagInfo = {
+			.opIdx = flagList[i],
+			.isTracked = false
+		};
+		if (true == (uof[i] = env->GetFlgValue(flagInfo))) {
+			ops.av |= flagInfo.opIdx;
+			isSymb |= flagInfo.isTracked;
 		}
+		ops.trf[i] = flagInfo.isTracked;
+		ops.cvf[i] = flagInfo.concrete;
+		ops.svf[i] = flagInfo.symbolic;
 	}
 
 	if (isSymb) {
