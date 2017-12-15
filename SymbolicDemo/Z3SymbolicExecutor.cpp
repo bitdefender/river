@@ -164,40 +164,6 @@ void *Z3SymbolicExecutor::ExecuteResolveAddress(void *base, void *index,
 	return (void *)Ret;
 }
 
-/*bool IsLocked(void *ctx, const Z3_ast *ast) {
-	void *v = Z3_get_user_ptr((Z3_context)ctx, *ast);
-	const TrackedVariableData *tvd = (const TrackedVariableData *)v;
-	const TrackedVariableData *tmp = tvd;
-
-	do {
-		if (tmp->isLocked) {
-			return true;
-		}
-		tmp = tmp->next;
-	} while (tmp != tvd);
-
-	return false;
-}
-
-void Lock(void *ctx, Z3_ast *ast) {
-	void *v = Z3_get_user_ptr((Z3_context)ctx, *ast);
-	TrackedVariableData *tvd = (TrackedVariableData *)v;
-	TrackedVariableData *tmp = tvd;
-	do {
-		tmp->isLocked = true;
-		tmp = tmp->next;
-	} while (tmp != tvd);
-}
-
-void Unlock(void *ctx, Z3_ast *ast) {
-	void *v = Z3_get_user_ptr((Z3_context)ctx, *ast);
-	TrackedVariableData *tvd = (TrackedVariableData *)v;
-	TrackedVariableData *tmp = tvd;
-	do {
-		tmp->isLocked = true;
-		tmp = tmp->next;
-	} while (tmp != tvd);
-}*/
 
 const unsigned int Z3SymbolicExecutor::Z3SymbolicCpuFlag::lazyMarker = 0xDEADBEEF;
 
@@ -266,38 +232,25 @@ Z3SymbolicExecutor::~Z3SymbolicExecutor() {
 }
 
 void Z3SymbolicExecutor::StepForward() {
-	//variableTracker.Forward();
 	Z3_solver_push(context, solver);
 	for (int i = 0; i < 7; ++i) {
 		lazyFlags[i]->SaveState(*ls);
 	}
-
-	/*for (int i = 0; i < 8; ++i) {
-		subRegisters[i].SaveState(*ls);
-	}*/
-
-	//printf("Solver push\n");
 }
 
 void Z3SymbolicExecutor::StepBackward() {
-	/*for (int i = 7; i >= 0; --i) {
-		subRegisters[i].LoadState(*ls);
-	}*/
 
 	for (int i = 6; i >= 0; --i) {
 		lazyFlags[i]->LoadState(*ls);
 	}
 
 	Z3_solver_pop(context, solver, 1);
-	//variableTracker.Backward();
-	//printf("Solver pop\n");
 }
 
-//void Z3SymbolicExecutor::Lock(Z3_ast t) {
-	//variableTracker.Lock(&t);
-//}
-
 void Z3SymbolicExecutor::SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops) {
+	printf("Z3 execute unknown instruction %02x %02x \n",
+			instruction->modifiers & RIVER_MODIFIER_EXT ? 0x0F : 0x00,
+			instruction->opCode);
 	DEBUG_BREAK;
 }
 
@@ -433,24 +386,12 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(Z3_ast o1, Z3_ast o2) {
 	env->SetOperand(0, r);
 
 	printf("<sym> xor %p <= %p, %p\n", r, o1, o2);
-	/*printf("<sym> xor op1 %s",
-		Z3_ast_to_string(context, o1)
-	);
-	printf("<sym> xor op2 %s",
-		Z3_ast_to_string(context, o2)
-	);*/
 	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
 	printf("<sym> cmp %p <= %p, %p\n", r, o1, o2);
-	/*printf("<sym> cmp op1 %s",
-		Z3_ast_to_string(context, o1)
-	);
-	printf("<sym> cmp op2 %s",
-		Z3_ast_to_string(context, o2)
-	);*/
 	return r;
 }
 
