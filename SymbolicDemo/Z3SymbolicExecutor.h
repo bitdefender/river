@@ -47,6 +47,8 @@ private:
 	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovZx(RiverInstruction *instruction, SymbolicOperands *ops);
 
+	Z3_ast ExecuteInc(Z3_ast o1, Z3_ast o2);
+	Z3_ast ExecuteDec(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteAdd(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteOr (Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteAdc(Z3_ast o1, Z3_ast o2);
@@ -70,7 +72,7 @@ public:
 	Z3_sort sevenBitSort;
 
 	Z3_ast zero32, zero16, zero7, zero8, zeroFlag, oneFlag;
-	Z3_ast one8;
+	Z3_ast one8, one32;
 	Z3_ast zeroScale, twoScale, fourScale;
 
 	class Z3SymbolicCpuFlag {
@@ -166,6 +168,7 @@ protected:
 #define Z3_FLAG_OP_SUB		0xA5
 #define Z3_FLAG_OP_XOR		0xA6
 #define Z3_FLAG_OP_CMP		0xA7
+#define Z3_FLAG_OP_INC		0xA8
 
 
 class Z3FlagCF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
