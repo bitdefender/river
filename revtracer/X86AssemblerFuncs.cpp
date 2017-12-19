@@ -89,11 +89,36 @@ void AssembleModRMImm32Op(const RiverInstruction &ri, RelocableCodeBuffer &px86)
 }
 
 void AssembleRegModRMOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
-	AssembleModRMOp(1, ri, px86, ri.operands[0].asRegister.name);
+	// TODO duplicated code
+	nodep::BYTE reg = ri.operands[0].asRegister.name;
+	if (RIVER_MODIFIER_O8 & ri.modifiers) {
+		if (RIVER_REG_SZ8_H & reg) {
+			reg = GetFundamentalRegister(reg) + 4;
+		} else {
+			reg = GetFundamentalRegister(reg);
+		}
+	}
+	else if (RIVER_MODIFIER_O16 & ri.modifiers) {
+		reg = GetFundamentalRegister(reg);
+	}
+	AssembleModRMOp(1, ri, px86, reg);
 }
 
 void AssembleModRMRegOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
-	AssembleModRMOp(0, ri, px86, ri.operands[1].asRegister.name);
+	//handle ext bits for modRMReg and RegModRM
+	// TODO duplicated code
+	nodep::BYTE reg = ri.operands[1].asRegister.name;
+	if (RIVER_MODIFIER_O8 & ri.modifiers) {
+		if (RIVER_REG_SZ8_H & reg) {
+			reg = GetFundamentalRegister(reg) + 4;
+		} else {
+			reg = GetFundamentalRegister(reg);
+		}
+	}
+	else if (RIVER_MODIFIER_O16 & ri.modifiers) {
+		reg = GetFundamentalRegister(reg);
+	}
+	AssembleModRMOp(0, ri, px86, reg);
 }
 
 void AssembleSubOpModRMOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {

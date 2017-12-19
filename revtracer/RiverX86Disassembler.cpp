@@ -162,7 +162,22 @@ void RiverX86Disassembler::DisassembleImmOp(nodep::BYTE opIdx, nodep::BYTE *&px8
 	}
 }
 
+// used when disass reg from ext bits of modRM
+void RiverX86Disassembler::DisassembleExtRegOp(nodep::BYTE opIdx, RiverInstruction &ri, nodep::BYTE reg) {
+	DisassembleRegOp(opIdx, ri, reg);
+}
+
 void RiverX86Disassembler::DisassembleRegOp(nodep::BYTE opIdx, RiverInstruction &ri, nodep::BYTE reg) {
+	if (RIVER_MODIFIER_O8 & ri.modifiers) {
+		if (reg <= 3) {
+			reg |= RIVER_REG_SZ8_L;
+		} else {
+			reg -= 4;
+			reg |= RIVER_REG_SZ8_H;
+		}
+	} else if (RIVER_MODIFIER_O16 & ri.modifiers) {
+		reg |= RIVER_REG_SZ16;
+	}
 	nodep::BYTE opType = RIVER_OPTYPE_REG;
 	if (RIVER_MODIFIER_O8 & ri.modifiers) {
 		opType |= RIVER_OPSIZE_8;
@@ -282,13 +297,13 @@ void RiverX86Disassembler::DisassembleNoOp(nodep::BYTE *&px86, RiverInstruction 
 void RiverX86Disassembler::DisassembleRegModRM(nodep::BYTE *&px86, RiverInstruction &ri) {
 	nodep::BYTE sec;
 	DisassembleModRMOp(1, px86, ri, sec);
-	DisassembleRegOp(0, ri, sec);
+	DisassembleExtRegOp(0, ri, sec);
 }
 
 void RiverX86Disassembler::DisassembleModRMReg(nodep::BYTE *&px86, RiverInstruction &ri) {
 	nodep::BYTE sec;
 	DisassembleModRMOp(0, px86, ri, sec);
-	DisassembleRegOp(1, ri, sec);
+	DisassembleExtRegOp(1, ri, sec);
 }
 
 void RiverX86Disassembler::DisassembleModRMImm8(nodep::BYTE *&px86, RiverInstruction &ri) {
@@ -337,21 +352,21 @@ void RiverX86Disassembler::DisassembleImm32Imm16(nodep::BYTE *&px86, RiverInstru
 void RiverX86Disassembler::DisassembleModRMRegImm8(nodep::BYTE *&px86, RiverInstruction &ri) {
 	nodep::BYTE sec;
 	DisassembleModRMOp(0, px86, ri, sec);
-	DisassembleRegOp(1, ri, sec);
+	DisassembleExtRegOp(1, ri, sec);
 	DisassembleImmOp(2, px86, ri, RIVER_OPSIZE_8);
 }
 
 void RiverX86Disassembler::DisassembleRegModRMImm8(nodep::BYTE *&px86, RiverInstruction &ri) {
 	nodep::BYTE sec;
 	DisassembleModRMOp(1, px86, ri, sec);
-	DisassembleRegOp(0, ri, sec);
+	DisassembleExtRegOp(0, ri, sec);
 	DisassembleImmOp(2, px86, ri, RIVER_OPSIZE_8);
 }
 
 void RiverX86Disassembler::DisassembleRegModRMImm32(nodep::BYTE *&px86, RiverInstruction &ri) {
 	nodep::BYTE sec;
 	DisassembleModRMOp(1, px86, ri, sec);
-	DisassembleRegOp(0, ri, sec);
+	DisassembleExtRegOp(0, ri, sec);
 	DisassembleImmOp(2, px86, ri, RIVER_OPSIZE_32);
 }
 

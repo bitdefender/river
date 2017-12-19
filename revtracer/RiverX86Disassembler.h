@@ -192,6 +192,7 @@ private :
 	/* operand helpers */
 	void DisassembleImmOp(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri, nodep::BYTE immSize);
 	void DisassembleRegOp(nodep::BYTE opIdx, RiverInstruction &ri, nodep::BYTE reg);
+	void DisassembleExtRegOp(nodep::BYTE opIdx, RiverInstruction &ri, nodep::BYTE reg);
 	void DisassembleModRMOp(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri, nodep::BYTE &extra);
 	void DisassembleSzModRMOp(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri, nodep::BYTE &extra, nodep::WORD sz);
 	void DisassembleMoffs8(nodep::BYTE opIdx, nodep::BYTE *&px86, RiverInstruction &ri);
