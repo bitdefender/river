@@ -248,6 +248,7 @@ private :
 		(this->*fSubOps[ri.subOpCode])(px86, ri);
 	}
 
+	//TODO modify this to work as 0xbe
 	template <nodep::WORD secondOpSz> void DisassembleRegSzModRM(nodep::BYTE *&px86, RiverInstruction &ri) {
 		nodep::BYTE sec;
 		DisassembleSzModRMOp(1, px86, ri, sec, secondOpSz);
@@ -262,6 +263,11 @@ private :
 
 		DisassembleRegOp(opIdx, ri, regName);
 		ri.opTypes[opIdx] |= opFlg;
+	}
+
+	template <nodep::BYTE opIdx, nodep::BYTE opSize, DisassembleOperandsFunc cont> void DisassembleFixOperandSize(nodep::BYTE *&px86, RiverInstruction &ri) {
+		(this->*cont)(px86, ri);
+		ri.opTypes[opIdx] = RIVER_OPTYPE(ri.opTypes[opIdx]) | opSize;
 	}
 
 	template <nodep::BYTE opIdx, nodep::BYTE opFlg, nodep::BYTE base, nodep::BYTE disp8, DisassembleOperandsFunc cont> void DisassembleConstMemOperand(nodep::BYTE *&px86, RiverInstruction &ri);

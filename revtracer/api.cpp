@@ -68,7 +68,7 @@ extern "C" {
 
 
 		DWORD *stk = (DWORD *)pEnv->runtimeContext.virtualStack;
-		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "EIP: 0x%08x Stack :\n", a);
+		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "EIP: 0x%08x Stack addr: %p stk: %p\n", a, &(pEnv->runtimeContext.virtualStack), stk);
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x00, stk[0], stk[1], stk[2], stk[3]);
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n",
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->eax, 
