@@ -155,41 +155,50 @@ void Z3FlagPF::LoadState(stk::LargeStack &stack) {
 // SBB: ?
 // MUL: ?
 // IMUL: ?
+// CMP: c = ~((a & ~b) | ((a | ~b) & ~r))
 // ??
 Z3_ast Z3FlagCF::Eval() {
 	switch (func) {
 		case Z3_FLAG_OP_ADD:
 		case Z3_FLAG_OP_SUB:
+		case Z3_FLAG_OP_CMP:
 			break;
 		default :
 			DEBUG_BREAK;
 	}
 
+
+	unsigned sourceSize = Z3_get_bv_sort_size(parent->context,
+			Z3_get_sort(parent->context, source));
 	Z3_ast nr = Z3_mk_bvnot(
 		parent->context,
 		Z3_mk_extract(
 			parent->context,
-			31,
-			31,
+			sourceSize - 1,
+			sourceSize - 1,
 			source
 		)
 	);
 
+	unsigned aSize = Z3_get_bv_sort_size(parent->context,
+			Z3_get_sort(parent->context, p[0]));
 	Z3_ast a = Z3_mk_extract(
 		parent->context,
-		31,
-		31,
+		aSize - 1,
+		aSize - 1,
 		p[0]
 	);
 
+	unsigned bSize = Z3_get_bv_sort_size(parent->context,
+			Z3_get_sort(parent->context, p[1]));
 	Z3_ast b = Z3_mk_extract(
 		parent->context,
-		31,
-		31,
-		p[0]
+		bSize - 1,
+		bSize - 1,
+		p[1]
 	);
 
-	if (func == Z3_FLAG_OP_SUB) {
+	if (func == Z3_FLAG_OP_SUB || func == Z3_FLAG_OP_CMP) {
 		b = Z3_mk_bvnot(
 			parent->context,
 			b
@@ -214,7 +223,7 @@ Z3_ast Z3FlagCF::Eval() {
 		)
 	);
 
-	if (func == Z3_FLAG_OP_SUB) {
+	if (func == Z3_FLAG_OP_SUB || func == Z3_FLAG_OP_CMP) {
 		c = Z3_mk_bvnot(
 			parent->context,
 			c
