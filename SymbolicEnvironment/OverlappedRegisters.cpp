@@ -89,7 +89,7 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(nodep::DWORD node,
 
 		return parent->exec->ExtractBits(
 			subRegs[c],
-			rOff[node] >> 3,
+			rOff[node],
 			rSize[node]
 		);
 	}
@@ -146,16 +146,22 @@ void *OverlappedRegistersEnvironment::OverlappedRegister::Get(RiverRegister &reg
 // recursive function that should mark node parent for needConcat
 //
 void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedConcat(nodep::DWORD node, bool doRefCount) {
-	// Possible bug
-	if (0xFF != rParent[node]) {
-		MarkNeedConcat(rParent[node], doRefCount);
-	}
-
+	// is symbolic or needExtract
 	if ((nullptr != subRegs[node]) && (&needConcat != subRegs[node])) {
+		// if it has child and child needs extract
 		if ((0xFF != rLChild[node]) && (&needExtract == subRegs[rLChild[node]])) {
+			void *symbolicValue = subRegs[node];
+			// cannot be needConcat
+			// xX lowest 16bit reg matches this requirement
+			if (&needExtract == symbolicValue) {
+				symbolicValue = parent->exec->ExtractBits(subRegs[rParent[node]],
+						rOff[node],
+						rSize[node]);
+				subRegs[node] = symbolicValue;
+			}
 			subRegs[rLChild[node]] = parent->exec->ExtractBits(
 				subRegs[node],
-				rOff[rLChild[node]] >> 3,
+				rOff[rLChild[node]],
 				rSize[rLChild[node]]
 			);
 
@@ -165,9 +171,18 @@ void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedConcat(nodep::D
 		}
 
 		if ((0xFF != rMChild[node]) && (&needExtract == subRegs[rMChild[node]])) {
+			void *symbolicValue = subRegs[node];
+			// cannot be needConcat
+			// xX lowest 16bit reg matches this requirement
+			if (&needExtract == symbolicValue) {
+				symbolicValue = parent->exec->ExtractBits(subRegs[rParent[node]],
+						rOff[node],
+						rSize[node]);
+				subRegs[node] = symbolicValue;
+			}
 			subRegs[rMChild[node]] = parent->exec->ExtractBits(
 				subRegs[node],
-				rOff[rMChild[node]] >> 3,
+				rOff[rMChild[node]],
 				rSize[rMChild[node]]
 			);
 
@@ -181,6 +196,10 @@ void OverlappedRegistersEnvironment::OverlappedRegister::MarkNeedConcat(nodep::D
 		}
 	}
 
+	// Possible bug
+	if (0xFF != rParent[node]) {
+		MarkNeedConcat(rParent[node], doRefCount);
+	}
 	subRegs[node] = &needConcat;
 }
 
@@ -232,11 +251,12 @@ bool OverlappedRegistersEnvironment::OverlappedRegister::Unset(RiverRegister &re
 
 	// unset parents if both children are unset
 	for (nodep::DWORD c = rParent[seed]; c != 0xFF; c = rParent[c]) {
-		if ((nullptr == subRegs[rMChild[c]]) || (nullptr == subRegs[rLChild[c]])) {
+		if ((nullptr == subRegs[rMChild[c]]) && (nullptr == subRegs[rLChild[c]])) {
 			subRegs[c] = nullptr;
 		}
 		else {
-			subRegs[c] = &needConcat;
+			// if parent is marked needConcat, all needExtract children must be resolved
+			MarkNeedConcat(c, doRefCount);
 		}
 	}
 
@@ -311,6 +331,7 @@ bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 				if (opInfo.isTracked) {
 					opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
 							current->operands[opInfo.opIdx].asAddress->base, opInfo.concrete);
+					opInfo.isTracked = (opInfo.symbolic != nullptr);
 				}
 
 				return true;
