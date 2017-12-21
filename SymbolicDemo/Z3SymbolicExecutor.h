@@ -33,6 +33,8 @@ private:
 
 	template <unsigned int flag>
 	void SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops);
+	template <unsigned int f1, unsigned int f2, bool eq>
+	void SymbolicExecuteJBE(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	template <unsigned int flag>
 	void SymbolicExecuteSetCC(RiverInstruction *instruction, SymbolicOperands *ops);

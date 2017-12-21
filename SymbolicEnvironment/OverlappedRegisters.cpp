@@ -306,6 +306,45 @@ OverlappedRegistersEnvironment::OverlappedRegistersEnvironment() {
 	}
 }
 
+bool OverlappedRegistersEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
+	bool ret = subEnv->GetAddressBase(opInfo);
+	if ((RIVER_OPTYPE(current->opTypes[opInfo.opIdx]) != RIVER_OPTYPE_MEM) || (0 == current->operands[opInfo.opIdx].asAddress->type)) {
+		return ret;
+	}
+
+	if (0 == (current->operands[opInfo.opIdx].asAddress->type & RIVER_ADDR_BASE)) {
+		return ret;
+	}
+
+	if (opInfo.isTracked) {
+		opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
+				current->operands[opInfo.opIdx].asAddress->base, opInfo.concrete);
+		opInfo.isTracked = (opInfo.symbolic != nullptr);
+	}
+
+	return true;
+}
+
+
+bool OverlappedRegistersEnvironment::GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale) {
+	bool ret = subEnv->GetAddressScaleAndIndex(opInfo, scale);
+	if ((RIVER_OPTYPE(current->opTypes[opInfo.opIdx]) != RIVER_OPTYPE_MEM) ||
+			(0 == current->operands[opInfo.opIdx].asAddress->type)) {
+		return ret;
+	}
+
+	if (0 == (current->operands[opInfo.opIdx].asAddress->type & RIVER_ADDR_INDEX)) {
+		return ret;
+	}
+
+	if (opInfo.isTracked) {
+		opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
+				current->operands[opInfo.opIdx].asAddress->index, opInfo.concrete);
+		opInfo.isTracked = (opInfo.symbolic != nullptr);
+	}
+	return true;
+}
+
 bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 	//return subEnv->GetOperand(opIdx, isTracked, concreteValue, symbolicValue);
 
@@ -319,6 +358,7 @@ bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 			if (opInfo.isTracked) {
 				opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
 						current->operands[opInfo.opIdx].asRegister, opInfo.concrete);
+				opInfo.isTracked = (opInfo.symbolic != nullptr);
 			}
 			return true;
 
@@ -351,7 +391,7 @@ bool OverlappedRegistersEnvironment::SetOperand(nodep::BYTE opIdx, void *symboli
 		case RIVER_OPTYPE_REG :
 			reg = &subRegisters[_GetFundamentalRegister(current->operands[opIdx].asRegister.name)];
 			reg->Set(current->operands[opIdx].asRegister, symbolicValue, doRefCount);
-			
+
 			return subEnv->SetOperand(opIdx, reg, false);
 
 		case RIVER_OPTYPE_MEM :

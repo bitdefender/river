@@ -268,6 +268,38 @@ template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteJCC(RiverIn
 	lastCondition = Z3_simplify(context, cond);
 }
 
+template <unsigned int f1, unsigned int f2, bool eq> void Z3SymbolicExecutor::SymbolicExecuteJBE(RiverInstruction *instruction, SymbolicOperands *ops) {
+	printf("<sym> %s ZF:%p CF:%p\n", eq ? "jbe" : "jnbe",
+			ops->svf[f1], ops->svf[f2]);
+	Z3_ast conds[] = {
+		Z3_mk_eq(
+			context,
+			(Z3_ast)ops->svf[f1],
+			oneFlag
+		),
+		Z3_mk_eq(
+			context,
+			(Z3_ast)ops->svf[f2],
+			oneFlag
+		)
+	};
+
+	Z3_ast cond = Z3_mk_or(
+		context,
+		2,
+		conds
+	);
+
+	if (!eq) {
+		cond = Z3_mk_not(
+			context,
+			cond
+		);
+	}
+	lastCondition = Z3_simplify(context, cond);
+}
+
+
 template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteSetCC(RiverInstruction *instruction, SymbolicOperands *ops) {
 	printf("<sym> setcc %p\n", ops->svf[flag]);
 	Z3_ast res = Z3_mk_concat(
@@ -580,6 +612,7 @@ void Z3SymbolicExecutor::ComposeScaleAndIndex(nodep::BYTE &scale,
 	}
 
 	if (indexOp.isTracked) {
+		// index has to be resolved if needConcat or needExtract
 		Z3_sort opSort = Z3_get_sort(context, (Z3_ast)indexOp.symbolic);
 		Z3_ast res = Z3_mk_bvmul(context, (Z3_ast)indexOp.symbolic,
 				Z3_mk_int(context, scale, opSort));
@@ -669,31 +702,32 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		ops.cv[i] = opInfo.concrete;
 		ops.sv[i] = opInfo.symbolic;
 
-		struct OperandInfo baseOpInfo, indexOpInfo;
+		struct OperandInfo baseOpInfo, indexOpInfo, composedIndeOpInfo;
 		bool hasIndex = false, hasBase = false;
 
 		InitializeOperand(baseOpInfo);
 		baseOpInfo.opIdx = i;
-		if (true == env->GetAddressBase(baseOpInfo)) {
-			printf("[%d] GetAddressBase: riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
-					i, instruction->instructionAddress, (int)baseOpInfo.isTracked, baseOpInfo.symbolic, baseOpInfo.concrete);
-			hasBase = true;
-		}
+		hasBase = env->GetAddressBase(baseOpInfo);
+		//printf("[%d] GetAddressBase: riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
+		//		i, instruction->instructionAddress, (int)baseOpInfo.isTracked, baseOpInfo.symbolic, baseOpInfo.concrete);
 
 		InitializeOperand(indexOpInfo);
 		nodep::BYTE scale;
 		indexOpInfo.opIdx = i;
-		if (true == env->GetAddressScaleAndIndex(indexOpInfo, scale)) {
-			printf("[%d] GetAddressScaleAndIndex:riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
-					i, instruction->instructionAddress, (int)indexOpInfo.isTracked, indexOpInfo.symbolic, indexOpInfo.concrete);
-			hasIndex = true;
-		}
+		hasIndex = env->GetAddressScaleAndIndex(indexOpInfo, scale);
+		//printf("[%d] GetAddressScaleAndIndex:riaddr: [%08lx] isTracked: [%d] symb addr: [%p] concrete: [0x%08lX]\n",
+		//		i, instruction->instructionAddress, (int)indexOpInfo.isTracked, indexOpInfo.symbolic, indexOpInfo.concrete);
 
 		struct OperandInfo opAddressInfo;
+		composedIndeOpInfo = indexOpInfo;
 		if (hasIndex) {
-			ComposeScaleAndIndex(scale, indexOpInfo);
+			ComposeScaleAndIndex(scale, composedIndeOpInfo);
 		}
-		AddOperands(baseOpInfo, indexOpInfo, opAddressInfo);
+		AddOperands(baseOpInfo, composedIndeOpInfo, opAddressInfo);
+		if (opAddressInfo.isTracked) {
+			printf("<sym> address %p <= %d * %p + %p\n", opAddressInfo.symbolic,
+					scale, indexOpInfo.symbolic, baseOpInfo.symbolic);
+		}
 	}
 
 	for (int i = 0; i < flagCount; ++i) {
@@ -859,7 +893,7 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x7C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0x80*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>,
-		/*0x84*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x84*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, true>, &Z3SymbolicExecutor::SymbolicExecuteJBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, true>,
 		/*0x88*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>,
 		/*0x8C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 

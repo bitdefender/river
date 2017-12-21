@@ -276,7 +276,7 @@ bool RevSymbolicEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
 		current->operands[opInfo.opIdx].asAddress->base.name)];
 	opInfo.isTracked = (opInfo.symbolic != NULL);
 	if (opInfo.isTracked)
-		printf("[%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+		printf("GetAddressBase [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 	opInfo.concrete = opBase[-((int)baseOffsets[opInfo.opIdx])];
 	return true;
 }
@@ -296,7 +296,7 @@ bool RevSymbolicEnvironment::GetAddressScaleAndIndex(struct OperandInfo &opInfo,
 		current->operands[opInfo.opIdx].asAddress->index.name)];
 	opInfo.isTracked = (opInfo.symbolic != NULL);
 	if (opInfo.isTracked) {
-		printf("[%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+		printf("GetAddressScaleAndIndex [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 	}
 	opInfo.concrete = opBase[-((int)indexOffsets[opInfo.opIdx])];
 	return true;
