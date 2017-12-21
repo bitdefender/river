@@ -10,7 +10,7 @@ nodep::BYTE GetFundamentalRegister(nodep::BYTE reg) {
 
 void RiverAddress::DecodeFlags(nodep::WORD flags) {
 	if (flags & 0x0007) {
-		SetSegment((nodep::BYTE)flags);
+		SetSegment((nodep::BYTE)flags & 0x0007);
 	}
 }
 
