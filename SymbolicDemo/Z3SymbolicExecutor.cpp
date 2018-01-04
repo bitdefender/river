@@ -1,6 +1,7 @@
 #include "Z3SymbolicExecutor.h"
 
 #include "../CommonCrossPlatform/Common.h"
+#include <assert.h>
 
 void *Z3SymbolicExecutor::CreateVariable(const char *name, nodep::DWORD size) {
 	Z3_symbol s = Z3_mk_string_symbol(context, name);
@@ -490,6 +491,66 @@ Z3_ast Z3SymbolicExecutor::ExecuteTest(Z3_ast o1, Z3_ast o2) {
 	return r;
 }
 
+Z3_ast Z3SymbolicExecutor::ExecuteRol(DWORD dest, DWORD src) {
+	unsigned i = (unsigned) src;
+	Z3_ast t = (Z3_ast) dest;
+
+	Z3_ast r = Z3_mk_rotate_left(context, i, t);
+	printf("<sym> rol %p 0x%08X <= %p\n", t, i, r);
+	return r;
+}
+
+Z3_ast Z3SymbolicExecutor::ExecuteRor(DWORD dest, DWORD src) {
+	unsigned i = (unsigned) src;
+	Z3_ast t = (Z3_ast) dest;
+
+	Z3_ast r = Z3_mk_rotate_right(context, i, t);
+	printf("<sym> ror %p 0x%08X <= %p\n", t, i, r);
+	return r;
+}
+
+Z3_ast Z3SymbolicExecutor::ExecuteRcl(DWORD dest, DWORD src) {
+	DEBUG_BREAK;
+	return nullptr;
+}
+
+Z3_ast Z3SymbolicExecutor::ExecuteRcr(DWORD dest, DWORD src) {
+	DEBUG_BREAK;
+	return nullptr;
+}
+
+Z3_ast Z3SymbolicExecutor::ExecuteShl(DWORD dest, DWORD src) {
+	Z3_ast t1 = (Z3_ast) dest;
+	Z3_ast t2 = (Z3_ast) src;
+
+	Z3_ast r = Z3_mk_bvshl(context, t1, t2);
+	printf("<sym> shl %p %p <= %p\n", t1, t2, r);
+	return r;
+}
+
+Z3_ast Z3SymbolicExecutor::ExecuteShr(DWORD dest, DWORD src) {
+	Z3_ast t1 = (Z3_ast) dest;
+	Z3_ast t2 = (Z3_ast) src;
+
+	Z3_ast r = Z3_mk_bvlshr(context, t1, t2);
+	printf("<sym> shr %p %p <= %p\n", t1, t2, r);
+	return r;
+}
+
+Z3_ast Z3SymbolicExecutor::ExecuteSal(DWORD dest, DWORD src) {
+	DEBUG_BREAK;
+	return nullptr;
+}
+
+Z3_ast Z3SymbolicExecutor::ExecuteSar(DWORD dest, DWORD src) {
+	Z3_ast t1 = (Z3_ast) dest;
+	Z3_ast t2 = (Z3_ast) src;
+
+	Z3_ast r = Z3_mk_bvashr(context, t1, t2);
+	printf("<sym> sar %p %p <= %p\n", t1, t2, r);
+	return r;
+}
+
 void Z3SymbolicExecutor::SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops) {
 	// mov dest, addr
 	if (ops->tr[1]) {
@@ -532,6 +593,32 @@ template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void Z3Sy
 		if ((1 << i) & instruction->modFlags) {
 			lazyFlags[i]->SetSource(ret, (Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1], nullptr, funcCode);
 			env->SetFlgValue(1 << i, lazyFlags[i]);
+		}
+	}
+}
+
+template <Z3SymbolicExecutor::RotateFunc func, unsigned int funcCode> void Z3SymbolicExecutor::SymbolicExecuteRotation(RiverInstruction *instruction, SymbolicOperands *ops) {
+	Z3_ast ret;
+
+	switch(funcCode) {
+		case Z3_FLAG_OP_ROL:
+		case Z3_FLAG_OP_ROR:
+			ret = (this->*func)((DWORD)ops->sv[0], (DWORD)ops->cv[1]);
+			break;
+		case Z3_FLAG_OP_SHL:
+		case Z3_FLAG_OP_SHR:
+		case Z3_FLAG_OP_SAR:
+			ret = (this->*func)((DWORD)ops->sv[0], (DWORD)ops->sv[1]);
+			break;
+		default:
+			DEBUG_BREAK;
+	}
+	void *symValue = (void *)ret;
+	for (int i = 0; i < 7; ++i) {
+		if ((1 << i) & instruction->modFlags) {
+			//TODO
+			//lazyFlags[i]->SetSource(ret, (Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1], nullptr, funcCode);
+			//env->SetFlgValue(1 << i, lazyFlags[i]);
 		}
 	}
 }
@@ -832,7 +919,7 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0xB8*/ &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov,
 		/*0xBC*/ &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov,
 
-		/*0xC0*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0xC0*/ &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeRotationFuncs>, &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeRotationFuncs>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0xC4*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteMov,
 		/*0xC8*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0xCC*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
@@ -943,4 +1030,15 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeIntegerFuncs[8] =
 	&Z3SymbolicExecutor::SymbolicExecuteInteger<&Z3SymbolicExecutor::ExecuteSub, Z3_FLAG_OP_SUB>,
 	&Z3SymbolicExecutor::SymbolicExecuteInteger<&Z3SymbolicExecutor::ExecuteXor, Z3_FLAG_OP_XOR>,
 	&Z3SymbolicExecutor::SymbolicExecuteInteger<&Z3SymbolicExecutor::ExecuteCmp, Z3_FLAG_OP_CMP>
+};
+
+Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeRotationFuncs[8] = {
+	&Z3SymbolicExecutor::SymbolicExecuteRotation<&Z3SymbolicExecutor::ExecuteRol, Z3_FLAG_OP_ROL>,
+	&Z3SymbolicExecutor::SymbolicExecuteRotation<&Z3SymbolicExecutor::ExecuteRor, Z3_FLAG_OP_ROR>,
+	&Z3SymbolicExecutor::SymbolicExecuteRotation<&Z3SymbolicExecutor::ExecuteRcl, Z3_FLAG_OP_RCL>,
+	&Z3SymbolicExecutor::SymbolicExecuteRotation<&Z3SymbolicExecutor::ExecuteRcr, Z3_FLAG_OP_RCR>,
+	&Z3SymbolicExecutor::SymbolicExecuteRotation<&Z3SymbolicExecutor::ExecuteShl, Z3_FLAG_OP_SHL>,
+	&Z3SymbolicExecutor::SymbolicExecuteRotation<&Z3SymbolicExecutor::ExecuteShr, Z3_FLAG_OP_SHR>,
+	&Z3SymbolicExecutor::SymbolicExecuteRotation<&Z3SymbolicExecutor::ExecuteSal, Z3_FLAG_OP_SAL>,
+	&Z3SymbolicExecutor::SymbolicExecuteRotation<&Z3SymbolicExecutor::ExecuteSar, Z3_FLAG_OP_SAR>
 };

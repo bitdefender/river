@@ -66,6 +66,17 @@ private:
 	typedef Z3_ast (Z3SymbolicExecutor::*IntegerFunc)(Z3_ast o1, Z3_ast o2);
 	template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void SymbolicExecuteInteger(RiverInstruction *instruction, SymbolicOperands *ops);
 
+	typedef Z3_ast (Z3SymbolicExecutor::*RotateFunc)(DWORD dest, DWORD src);
+	template <Z3SymbolicExecutor::RotateFunc func, unsigned int funcCode> void SymbolicExecuteRotation(RiverInstruction *instruction, SymbolicOperands *ops);
+	Z3_ast ExecuteRol(DWORD dest, DWORD src);
+	Z3_ast ExecuteRor(DWORD dest, DWORD src);
+	Z3_ast ExecuteRcl(DWORD dest, DWORD src);
+	Z3_ast ExecuteRcr(DWORD dest, DWORD src);
+	Z3_ast ExecuteShl(DWORD dest, DWORD src);
+	Z3_ast ExecuteShr(DWORD dest, DWORD src);
+	Z3_ast ExecuteSal(DWORD dest, DWORD src);
+	Z3_ast ExecuteSar(DWORD dest, DWORD src);
+
 	void GetSymbolicValues(RiverInstruction *instruction, SymbolicOperands *ops, nodep::DWORD mask);
 public:
 	int symIndex;
@@ -111,6 +122,7 @@ public:
 	
 	static SymbolicExecute executeFuncs[2][0x100];
 	static SymbolicExecute executeIntegerFuncs[8];
+	static SymbolicExecute executeRotationFuncs[8];
 
 	Z3SymbolicExecutor(sym::SymbolicEnvironment *e);
 	~Z3SymbolicExecutor();
@@ -174,6 +186,14 @@ protected:
 #define Z3_FLAG_OP_CMP		0xA7
 #define Z3_FLAG_OP_INC		0xA8
 
+#define Z3_FLAG_OP_ROL		0xA0
+#define Z3_FLAG_OP_ROR		0xA1
+#define Z3_FLAG_OP_RCL		0xA2
+#define Z3_FLAG_OP_RCR		0xA3
+#define Z3_FLAG_OP_SHL		0xA4
+#define Z3_FLAG_OP_SHR		0xA5
+#define Z3_FLAG_OP_SAL		0xA6
+#define Z3_FLAG_OP_SAR		0xA7
 
 class Z3FlagCF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
 private:
