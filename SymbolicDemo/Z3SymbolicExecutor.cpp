@@ -820,10 +820,10 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 	}
 
 	for (int i = 0; i < flagCount; ++i) {
-		struct FlagInfo flagInfo = {
-			.opIdx = flagList[i],
-			.isTracked = false
-		};
+		struct FlagInfo flagInfo;
+		flagInfo.opIdx = flagList[i];
+		flagInfo.isTracked = false;
+		
 		if (true == (uof[i] = env->GetFlgValue(flagInfo))) {
 			ops.av |= flagInfo.opIdx;
 			isSymb |= flagInfo.isTracked;

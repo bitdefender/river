@@ -171,7 +171,7 @@ void RiverX86Disassembler::DisassembleRegOp(nodep::BYTE opIdx, RiverInstruction 
 	if (RIVER_MODIFIER_O8 & ri.modifiers) {
 		if (reg <= 3) {
 			reg |= RIVER_REG_SZ8_L;
-		} else {
+		} else if (reg < 8) { // if reg >= 8 means register is explicitly specified
 			reg -= 4;
 			reg |= RIVER_REG_SZ8_H;
 		}
