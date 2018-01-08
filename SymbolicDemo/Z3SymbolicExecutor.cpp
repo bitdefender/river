@@ -496,7 +496,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteRol(DWORD dest, DWORD src) {
 	Z3_ast t = (Z3_ast) dest;
 
 	Z3_ast r = Z3_mk_rotate_left(context, i, t);
-	printf("<sym> rol %p 0x%08X <= %p\n", t, i, r);
+	printf("<sym> rol %p <= %p 0x%08X\n", r, t, i);
 	return r;
 }
 
@@ -505,7 +505,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteRor(DWORD dest, DWORD src) {
 	Z3_ast t = (Z3_ast) dest;
 
 	Z3_ast r = Z3_mk_rotate_right(context, i, t);
-	printf("<sym> ror %p 0x%08X <= %p\n", t, i, r);
+	printf("<sym> ror %p <= %p 0x%08X\n", r, t, i);
 	return r;
 }
 
@@ -524,7 +524,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteShl(DWORD dest, DWORD src) {
 	Z3_ast t2 = (Z3_ast) src;
 
 	Z3_ast r = Z3_mk_bvshl(context, t1, t2);
-	printf("<sym> shl %p %p <= %p\n", t1, t2, r);
+	printf("<sym> shl %p <= %p %p\n", r, t1, t2);
 	return r;
 }
 
@@ -533,7 +533,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteShr(DWORD dest, DWORD src) {
 	Z3_ast t2 = (Z3_ast) src;
 
 	Z3_ast r = Z3_mk_bvlshr(context, t1, t2);
-	printf("<sym> shr %p %p <= %p\n", t1, t2, r);
+	printf("<sym> shr %p <= %p %p\n", r, t1, t2);
 	return r;
 }
 
@@ -547,7 +547,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteSar(DWORD dest, DWORD src) {
 	Z3_ast t2 = (Z3_ast) src;
 
 	Z3_ast r = Z3_mk_bvashr(context, t1, t2);
-	printf("<sym> sar %p %p <= %p\n", t1, t2, r);
+	printf("<sym> sar %p <= %p %p\n", r, t1, t2);
 	return r;
 }
 
@@ -611,14 +611,16 @@ template <Z3SymbolicExecutor::RotateFunc func, unsigned int funcCode> void Z3Sym
 			ret = (this->*func)((DWORD)ops->sv[0], (DWORD)ops->sv[1]);
 			break;
 		default:
+			// will break for unhandled operations
 			DEBUG_BREAK;
 	}
 	void *symValue = (void *)ret;
 	for (int i = 0; i < 7; ++i) {
 		if ((1 << i) & instruction->modFlags) {
-			//TODO
-			//lazyFlags[i]->SetSource(ret, (Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1], nullptr, funcCode);
-			//env->SetFlgValue(1 << i, lazyFlags[i]);
+			Z3_ast o1 = (Z3_ast)ops->sv[0];
+			Z3_ast o2 = ops->tr[1] ? (Z3_ast)ops->sv[1] : nullptr;
+			lazyFlags[i]->SetSource(ret, o1, o2, nullptr, funcCode);
+			env->SetFlgValue(1 << i, lazyFlags[i]);
 		}
 	}
 }
