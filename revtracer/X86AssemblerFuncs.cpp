@@ -92,7 +92,7 @@ void AssembleRegModRMOp(const RiverInstruction &ri, RelocableCodeBuffer &px86) {
 	// TODO duplicated code
 	nodep::BYTE reg = ri.operands[0].asRegister.name;
 	if (RIVER_MODIFIER_O8 & ri.modifiers) {
-		if (RIVER_REG_SZ8_H & reg) {
+		if ((RIVER_REG_SZ8_H & reg) == RIVER_REG_SZ8_H) {
 			reg = GetFundamentalRegister(reg) + 4;
 		} else {
 			reg = GetFundamentalRegister(reg);
