@@ -51,6 +51,8 @@ private:
 	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovZx(RiverInstruction *instruction, SymbolicOperands *ops);
 
+	void SymbolicExecuteImul(RiverInstruction *instruction, SymbolicOperands *ops);
+
 	Z3_ast ExecuteInc(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteDec(Z3_ast o1, Z3_ast o2);
 	Z3_ast ExecuteAdd(Z3_ast o1, Z3_ast o2);
