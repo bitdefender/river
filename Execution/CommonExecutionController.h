@@ -22,6 +22,7 @@ typedef void (*MarkMemoryValueFunc)(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD
 class CommonExecutionController : public ExecutionController {
 private :
 	bool UpdateLayout();
+	void PrintModules();
 
 	vector<VirtualMemorySection> sec;
 	vector<ModuleInfo> mod;

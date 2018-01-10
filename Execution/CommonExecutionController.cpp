@@ -193,6 +193,13 @@ char *TrimModulePath(char *modulePath) {
 	return basename(modulePath);
 }
 
+void CommonExecutionController::PrintModules() {
+	for (auto it = mod.begin(); it != mod.end(); ++it) {
+		printf("## %s base: 0x%08X size: 0x%08X\n", it->Name, it->ModuleBase,
+				it->Size);
+	}
+}
+
 bool CommonExecutionController::UpdateLayout() {
 	if (updated) {
 		return true;
