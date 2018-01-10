@@ -88,7 +88,7 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 template <nodep::BYTE offset, nodep::BYTE size> void *RevSymbolicEnvironment::GetSubexpression(nodep::DWORD address) {
 	void *symExpr = (void *)TrackAddr(pEnv, address, 0);
 	if (symExpr == nullptr) {
-		DEBUG_BREAK;
+		return nullptr;
 	}
 
 	return exec->ExtractBits(symExpr, (4 - offset - size) << 3, size << 3);
@@ -180,7 +180,15 @@ template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(voi
 }
 
 template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOff0(void *expr, nodep::DWORD address, void *value) {
-	void *ret1 = exec->ExtractBits(value, 0, (4 - size) << 3);
+	unsigned operandSzR = (4 - size) << 3;
+	unsigned operandSzL = size << 3;
+	void *ret1 = exec->ExtractBits(value, 0, operandSzR);
+	/*
+	 * may result in a fix ...
+	if (expr == nullptr) {
+		expr = exec->MakeConst(((nodep::DWORD)value) >> operandSzR,
+				operandSzL);
+	}*/
 	void *ret2 = exec->ConcatBits(expr, ret1);
 
 	decRefFunc(ret1);

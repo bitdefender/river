@@ -845,14 +845,18 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		// unset all modified operands
 		for (int i = 0; i < 4; ++i) {
 			if (RIVER_SPEC_MODIFIES_OP(i) & instruction->specifiers) {
-				env->UnsetOperand(i);
+				if (ops.sv[i] != nullptr) {
+					env->UnsetOperand(i);
+				}
 			}
 		}
 
 		// unset all modified flags
 		for (int i = 0; i < flagCount; ++i) {
 			if (flagList[i] & instruction->modFlags) {
-				env->UnsetFlgValue(flagList[i]);
+				if (ops.svf[i] != nullptr) {
+					env->UnsetFlgValue(flagList[i]);
+				}
 			}
 		}
 	}
