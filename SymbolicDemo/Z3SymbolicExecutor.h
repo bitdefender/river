@@ -55,31 +55,37 @@ private:
 
 	void SymbolicExecuteImul(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	Z3_ast ExecuteInc(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteDec(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteAdd(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteOr (Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteAdc(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteSbb(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteAnd(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteSub(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteXor(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteCmp(Z3_ast o1, Z3_ast o2);
-	Z3_ast ExecuteTest(Z3_ast o1, Z3_ast o2);
+	typedef Z3_ast (Z3SymbolicExecutor::*CommonOperation)(unsigned nOps, Z3_ast *ops);
+	template <Z3SymbolicExecutor::CommonOperation func, unsigned int funcCode>
+	void SymbolicExecuteCommonOperation(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	typedef Z3_ast (Z3SymbolicExecutor::*IntegerFunc)(Z3_ast o1, Z3_ast o2);
-	template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void SymbolicExecuteInteger(RiverInstruction *instruction, SymbolicOperands *ops);
+	Z3_ast ExecuteInc(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteDec(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteAdd(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteOr (unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteAdc(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteSbb(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteAnd(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteSub(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteXor(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteCmp(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteTest(unsigned nOps, Z3_ast *ops);
 
-	typedef Z3_ast (Z3SymbolicExecutor::*RotateFunc)(DWORD dest, DWORD src);
-	template <Z3SymbolicExecutor::RotateFunc func, unsigned int funcCode> void SymbolicExecuteRotation(RiverInstruction *instruction, SymbolicOperands *ops);
-	Z3_ast ExecuteRol(DWORD dest, DWORD src);
-	Z3_ast ExecuteRor(DWORD dest, DWORD src);
-	Z3_ast ExecuteRcl(DWORD dest, DWORD src);
-	Z3_ast ExecuteRcr(DWORD dest, DWORD src);
-	Z3_ast ExecuteShl(DWORD dest, DWORD src);
-	Z3_ast ExecuteShr(DWORD dest, DWORD src);
-	Z3_ast ExecuteSal(DWORD dest, DWORD src);
-	Z3_ast ExecuteSar(DWORD dest, DWORD src);
+	Z3_ast ExecuteRol(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteRor(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteRcl(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteRcr(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteShl(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteShr(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteSal(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteSar(unsigned nOps, Z3_ast *ops);
+
+	Z3_ast ExecuteNot(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteNeg(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteMul(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteImul(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteDiv(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteIdiv(unsigned nOps, Z3_ast *ops);
 
 	void GetSymbolicValues(RiverInstruction *instruction, SymbolicOperands *ops, nodep::DWORD mask);
 public:
@@ -123,10 +129,11 @@ public:
 
 	typedef void(Z3SymbolicExecutor::*SymbolicExecute)(RiverInstruction *instruction, SymbolicOperands *ops);
 	template <Z3SymbolicExecutor::SymbolicExecute fSubOps[8]> void SymbolicExecuteSubOp(RiverInstruction *instruction, SymbolicOperands *ops);
-	
+
 	static SymbolicExecute executeFuncs[2][0x100];
-	static SymbolicExecute executeIntegerFuncs[8];
-	static SymbolicExecute executeRotationFuncs[8];
+	static SymbolicExecute executeAssignmentOperations[8];
+	static SymbolicExecute executeRotationOperations[8];
+	static SymbolicExecute executeAssignmentLogicalOperations[8];
 
 	Z3SymbolicExecutor(sym::SymbolicEnvironment *e);
 	~Z3SymbolicExecutor();
@@ -190,14 +197,19 @@ protected:
 #define Z3_FLAG_OP_CMP		0xA7
 #define Z3_FLAG_OP_INC		0xA8
 
-#define Z3_FLAG_OP_ROL		0xA0
-#define Z3_FLAG_OP_ROR		0xA1
-#define Z3_FLAG_OP_RCL		0xA2
-#define Z3_FLAG_OP_RCR		0xA3
-#define Z3_FLAG_OP_SHL		0xA4
-#define Z3_FLAG_OP_SHR		0xA5
-#define Z3_FLAG_OP_SAL		0xA6
-#define Z3_FLAG_OP_SAR		0xA7
+#define Z3_FLAG_OP_ROL		0xA9
+#define Z3_FLAG_OP_ROR		0xAA
+#define Z3_FLAG_OP_RCL		0xAB
+#define Z3_FLAG_OP_RCR		0xAC
+#define Z3_FLAG_OP_SHL		0xAD
+#define Z3_FLAG_OP_SHR		0xAE
+#define Z3_FLAG_OP_SAL		0xAF
+#define Z3_FLAG_OP_SAR		0xB0
+
+#define Z3_FLAG_OP_NOT		0xB1
+#define Z3_FLAG_OP_NEG		0xB2
+#define Z3_FLAG_OP_MUL		0xB3
+#define Z3_FLAG_OP_DIV		0xB4
 
 class Z3FlagCF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
 private:
