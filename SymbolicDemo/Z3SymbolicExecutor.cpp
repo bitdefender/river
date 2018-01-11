@@ -936,7 +936,7 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x6C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0x70*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>,
-		/*0x74*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x74*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteJBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, true>, &Z3SymbolicExecutor::SymbolicExecuteJBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, false>,
 		/*0x78*/ &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>, &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>,
 		/*0x7C*/ &Z3SymbolicExecutor::SymbolicExecuteJCCCompare<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, false>, &Z3SymbolicExecutor::SymbolicExecuteJCCCompare<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, true>, 
 		/*0x7E*/ &Z3SymbolicExecutor::SymbolicExecuteJCCCompareEq<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, RIVER_SPEC_IDX_ZF, false>, &Z3SymbolicExecutor::SymbolicExecuteJCCCompareEq<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, RIVER_SPEC_IDX_ZF, false>,
