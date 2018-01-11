@@ -619,8 +619,12 @@ Z3_ast Z3SymbolicExecutor::ExecuteNot(unsigned nOps, Z3_ast *ops) {
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteNeg(unsigned nOps, Z3_ast *ops) {
-	DEBUG_BREAK;
-	return nullptr;
+	if (nOps < 1) DEBUG_BREAK;
+
+	Z3_ast r = Z3_mk_bvneg(context, ops[0]);
+	printf("<sym> neg %p <= %p\n", r, ops[0]);
+	env->SetOperand(0, r);
+	return r;
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteMul(unsigned nOps, Z3_ast *ops) {
