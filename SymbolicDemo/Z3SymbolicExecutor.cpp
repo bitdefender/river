@@ -587,20 +587,31 @@ void Z3SymbolicExecutor::SymbolicExecuteMovZx(RiverInstruction *instruction, Sym
 }
 
 void Z3SymbolicExecutor::SymbolicExecuteImul(RiverInstruction *instruction, SymbolicOperands *ops) {
-	if (ops->sv[1] == nullptr) {
-		env->UnsetOperand(0);
-		return;
+	// all ops and result must have same sort size
+	unsigned ssz = 0xffffffff;
+	for (int i = 1; i <= 2; ++i) {
+		if (ops->sv[i] == nullptr) {
+			env->UnsetOperand(0);
+		}
+		if ( i == 2) return;
 	}
-	Z3_ast op2 = Z3_mk_int(context, ops->cv[2], Z3_get_sort(context, (Z3_ast)ops->sv[1]));
-	Z3_ast res = Z3_mk_bvmul(context, (Z3_ast)ops->sv[1], op2);
 
-	unsigned op1SortSize = Z3_get_bv_sort_size(context, Z3_get_sort(context, (Z3_ast)ops->sv[1]));
-	unsigned resSortSize = Z3_get_bv_sort_size(context, Z3_get_sort(context, res));
-	if (op1SortSize != resSortSize) {
+	for (int i = 1; i <= 2; ++i) {
+		unsigned tempssz = Z3_get_bv_sort_size(context, Z3_get_sort(context, (Z3_ast)ops->sv[i]));
+		if (tempssz == 0xffffffff) {
+			ssz = tempssz;
+		} else if (tempssz != ssz) {
+			DEBUG_BREAK;
+		}
+	}
+	Z3_ast res = Z3_mk_bvmul(context, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
+
+	unsigned tempssz = Z3_get_bv_sort_size(context, Z3_get_sort(context, res));
+	if (tempssz != ssz) {
 		DEBUG_BREAK;
 	}
 
-	printf("<sym> imul %p <= %p %p\n", res, ops->sv[1], op2);
+	printf("<sym> imul %p[%d] <= %p[%d] %p[%d]\n", res, ssz, ops->sv[1], ssz, ops->sv[2], ssz);
 	env->SetOperand(0, res);
 }
 
