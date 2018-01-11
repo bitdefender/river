@@ -626,6 +626,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteNeg(unsigned nOps, Z3_ast *ops) {
 Z3_ast Z3SymbolicExecutor::ExecuteMul(unsigned nOps, Z3_ast *ops) {
 	if (nOps < 3) DEBUG_BREAK;
 	Z3_ast r = Z3_mk_bvmul(context, ops[1], ops[2]);
+	printf("<sym> mul %p <= %p %p\n", r, ops[1], ops[2]);
 	env->SetOperand(0, r);
 	return r;
 }
@@ -633,6 +634,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteMul(unsigned nOps, Z3_ast *ops) {
 Z3_ast Z3SymbolicExecutor::ExecuteImul(unsigned nOps, Z3_ast *ops) {
 	if (nOps < 3) DEBUG_BREAK;
 	Z3_ast r = Z3_mk_bvmul(context, ops[1], ops[2]);
+	printf("<sym> imul %p <= %p %p\n", r, ops[1], ops[2]);
 	env->SetOperand(0, r);
 	return r;
 }
@@ -642,6 +644,9 @@ Z3_ast Z3SymbolicExecutor::ExecuteDiv(unsigned nOps, Z3_ast *ops) {
 	if (nOps < 4) DEBUG_BREAK;
 	Z3_ast quotient = Z3_mk_bvudiv(context, ops[2], ops[3]);
 	Z3_ast remainder = Z3_mk_bvurem(context, ops[2], ops[3]);
+
+	printf("<sym> div %p %p <= %p %p\n", quotient, remainder, ops[1], ops[2]);
+
 	env->SetOperand(0, quotient);
 	env->SetOperand(1, remainder);
 }
@@ -650,6 +655,9 @@ Z3_ast Z3SymbolicExecutor::ExecuteIdiv(unsigned nOps, Z3_ast *ops) {
 	if (nOps < 4) DEBUG_BREAK;
 	Z3_ast quotient = Z3_mk_bvsdiv(context, ops[2], ops[3]);
 	Z3_ast remainder = Z3_mk_bvsrem(context, ops[2], ops[3]);
+
+	printf("<sym> idiv %p %p <= %p %p\n", quotient, remainder, ops[1], ops[2]);
+
 	env->SetOperand(0, quotient);
 	env->SetOperand(1, remainder);
 }
