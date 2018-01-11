@@ -29,6 +29,8 @@ private:
 
 	//void EvalZF(Z3_ast result);
 
+	bool CheckSameSort(unsigned size, Z3_ast *ops);
+
 	void SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	template <unsigned int flag>

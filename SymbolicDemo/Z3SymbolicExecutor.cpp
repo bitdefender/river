@@ -3,6 +3,20 @@
 #include "../CommonCrossPlatform/Common.h"
 #include <assert.h>
 
+bool Z3SymbolicExecutor::CheckSameSort(unsigned size, Z3_ast *ops) {
+	unsigned sortSize = 0xffffffff;
+	for (int i = 0; i < size; ++i) {
+		unsigned tempSortSize = Z3_get_bv_sort_size(context,
+				Z3_get_sort(context, ops[i]));
+		if (sortSize == 0xffffffff) {
+			sortSize = tempSortSize;
+		} else if (tempSortSize != sortSize) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void *Z3SymbolicExecutor::CreateVariable(const char *name, nodep::DWORD size) {
 	Z3_symbol s = Z3_mk_string_symbol(context, name);
 	Z3_sort srt;
@@ -486,6 +500,9 @@ Z3_ast Z3SymbolicExecutor::ExecuteCmp(Z3_ast o1, Z3_ast o2) {
 }
 
 Z3_ast Z3SymbolicExecutor::ExecuteTest(Z3_ast o1, Z3_ast o2) {
+	Z3_ast ops[] = {o1, o2};
+	if (!CheckSameSort(2, ops)) DEBUG_BREAK;
+
 	Z3_ast r = Z3_mk_bvand(context, o1, o2);
 	printf("<sym> test %p <= %p, %p\n", r, o1, o2);
 	return r;
@@ -588,7 +605,6 @@ void Z3SymbolicExecutor::SymbolicExecuteMovZx(RiverInstruction *instruction, Sym
 
 void Z3SymbolicExecutor::SymbolicExecuteImul(RiverInstruction *instruction, SymbolicOperands *ops) {
 	// all ops and result must have same sort size
-	unsigned ssz = 0xffffffff;
 	for (int i = 1; i <= 2; ++i) {
 		if (ops->sv[i] == nullptr) {
 			env->UnsetOperand(0);
@@ -596,26 +612,17 @@ void Z3SymbolicExecutor::SymbolicExecuteImul(RiverInstruction *instruction, Symb
 		if ( i == 2) return;
 	}
 
-	for (int i = 1; i <= 2; ++i) {
-		unsigned tempssz = Z3_get_bv_sort_size(context, Z3_get_sort(context, (Z3_ast)ops->sv[i]));
-		if (tempssz == 0xffffffff) {
-			ssz = tempssz;
-		} else if (tempssz != ssz) {
-			DEBUG_BREAK;
-		}
-	}
-	Z3_ast res = Z3_mk_bvmul(context, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
+	if (!CheckSameSort(2, (Z3_ast *)(ops->sv + 1))) DEBUG_BREAK;
+	ops->sv[0] = Z3_mk_bvmul(context, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
 
-	unsigned tempssz = Z3_get_bv_sort_size(context, Z3_get_sort(context, res));
-	if (tempssz != ssz) {
-		DEBUG_BREAK;
-	}
+	if (!CheckSameSort(2, (Z3_ast *)ops->sv)) DEBUG_BREAK;
 
-	printf("<sym> imul %p[%d] <= %p[%d] %p[%d]\n", res, ssz, ops->sv[1], ssz, ops->sv[2], ssz);
-	env->SetOperand(0, res);
+	printf("<sym> imul %p <= %p %p\n", ops->sv[0], ops->sv[1], ops->sv[2]);
+	env->SetOperand(0, ops->sv[0]);
 }
 
 template <Z3SymbolicExecutor::IntegerFunc func, unsigned int funcCode> void Z3SymbolicExecutor::SymbolicExecuteInteger(RiverInstruction *instruction, SymbolicOperands *ops) {
+
 	Z3_ast ret = (this->*func)((Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1]); //Z3_mk_bvadd(context, (Z3_ast)sv[0], (Z3_ast)sv[1]);
 	void *symValue = (void *)ret;
 	for (int i = 0; i < 7; ++i) {
@@ -946,7 +953,7 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 
 		/*0xA0*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0xA4*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0xA8*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0xA8*/ &Z3SymbolicExecutor::SymbolicExecuteInteger<&Z3SymbolicExecutor::ExecuteTest, Z3_FLAG_OP_AND>, &Z3SymbolicExecutor::SymbolicExecuteInteger<&Z3SymbolicExecutor::ExecuteTest, Z3_FLAG_OP_AND>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0xAC*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0xB0*/ &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov, &Z3SymbolicExecutor::SymbolicExecuteMov,
