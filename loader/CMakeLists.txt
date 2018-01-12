@@ -19,7 +19,6 @@ add_library(${LIBRARY_NAME} SHARED
 target_link_libraries(${LIBRARY_NAME}
 	rt
 	dl
-	disablesse
 	)
 
 # disable -${LIBRARY_NAME}_EXPORTS

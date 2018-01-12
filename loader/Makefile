@@ -12,8 +12,8 @@ OBJ_FILES := Loader.Linux.o Loader.Linux.Stub.o
 CC_FLAGS += -m32 -std=c++11
 AS_FLAGS += --32
 LIB_BINLOADER_PATH := ../BinLoader/libbinloader.a
-LD_FLAGS := -lrt -ldl -ldisablesse
-LD_PATHS := -L$(makefile_dir)/../DisableSSE
+LD_FLAGS := -lrt -ldl
+LD_PATHS :=
 
 prefix := /usr/local
 

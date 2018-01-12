@@ -40,10 +40,6 @@ void *MapMemory(unsigned long access, unsigned long offset, unsigned long size, 
 	return mmap(address, size, access, MAP_SHARED, loaderConfig.sharedMemory, offset);
 }
 
-extern "C" {
-	void patch__rtld_global_ro();
-}
-
 unsigned long FindFreeVirtualMemory(int shmFd, DWORD size) {
 	void *addr = mmap(0, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, shmFd, 0);
 
@@ -57,20 +53,32 @@ unsigned long FindFreeVirtualMemory(int shmFd, DWORD size) {
 }
 
 void InitSegmentDescriptors() {
+
 	struct user_desc* table_entry_ptr = NULL;
 
 	table_entry_ptr = (struct user_desc*)malloc(sizeof(struct user_desc));
 
-	for (int i = 0; i < 0x100; ++i) {
-		table_entry_ptr->entry_number = i;
+	// segments max size if 0xff, so index max is 0x1f
+	for (int index = 0; index < 0x1f; ++index) {
+		table_entry_ptr->entry_number = index;
 		int ret = syscall( __NR_get_thread_area,
 				table_entry_ptr);
-		if (ret == -1 && errno == EINVAL) {
-			loaderConfig.osData.linux.segments[i] = 0xFFFFFFFF;
+		// if entry number is not available
+		unsigned value = 0x0;
+		if (ret == -1 && errno != EINVAL) {
+			printf("[Child]Error found when get_thread_area. errno %d\n", errno);
 		} else if (ret == 0) {
-			loaderConfig.osData.linux.segments[i] = table_entry_ptr->base_addr;
-		} else {
-			printf("[Child] Error found when get_thread_area. errno %d\n", errno);
+			value = table_entry_ptr->base_addr;
+		}
+
+		for (int j = 0; j < 8; ++j) {
+			WORD segmentvalue = (index << 3) | j;
+			// bit #2 specifies LDT(set) or GDT(unset)
+			if (j & 0x4) {
+				loaderConfig.osData.linux.segments[segmentvalue] = 0xffffffff;
+			} else {
+				loaderConfig.osData.linux.segments[segmentvalue] = value;
+			}
 		}
 	}
 	free(table_entry_ptr);
@@ -203,8 +211,8 @@ extern "C" {
 		printf("[Child] Shared mem address is %p. Fd is [%ld]\n", (void*)loaderConfig.shmBase, loaderConfig.sharedMemory);
 		//fflush(stdout);
 
-		// disable sse mmx
-		//patch__rtld_global_ro();
+		// TODO check if disable sse is still needed
+		// cleanup done in this commit
 	}
 };
 
