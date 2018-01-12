@@ -19,6 +19,7 @@ struct RiverRuntime {
 	nodep::DWORD taintedRegisters[8];			// + 0x40
 
 	nodep::UINT_PTR trackStack;				// + 0x60
+	nodep::UINT_PTR secondaryRegister;		// + 0x64
 };
 
 #endif

@@ -4,8 +4,27 @@
 
 using namespace rev;
 
+nodep::BYTE LogB2(nodep::BYTE x) {
+	nodep::BYTE r = 0;
+
+	if (x & 0xF0) { r += 4; x >>= 4; }
+	if (x & 0x0C) { r += 2; x >>= 2; }
+	if (x & 0x02) { r += 1; x >>= 1; }
+
+	return r;
+}
+
+
+nodep::BYTE SelectUnusedRegister(nodep::BYTE &uIn) {
+	nodep::BYTE reg = uIn;
+	reg &= -reg;
+	uIn &= ~reg;
+
+	return LogB2(reg);
+}
+
 void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal, nodep::BYTE riverFamily, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
-	const nodep::BYTE regByte[] = { 0x05, 0x0D, 0x15, 0x1D };
+	const nodep::BYTE regByte[] = { 0x05, 0x0D, 0x15, 0x1D, 0x25, 0x2D, 0x35, 0x3D };
 
 	const nodep::BYTE preTrackMemPrefix[] = {
 		0x89, 0x05, 0x00, 0x00, 0x00, 0x00
@@ -15,24 +34,9 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 		0x8B, 0x05, 0x00, 0x00, 0x00, 0x00
 	};
 
-	nodep::BYTE unusedRegisters = addr->GetUnusedRegisters();
-	nodep::BYTE cReg;
-
-	if (unusedRegisters & 0x03) {
-		if (unusedRegisters & 0x01) {
-			cReg = RIVER_REG_xAX;
-		}
-		cReg = RIVER_REG_xCX;
-	}
-	else if (unusedRegisters & 0x0C) {
-		if (unusedRegisters & 0x04) {
-			cReg = RIVER_REG_xDX;
-		}
-		cReg = RIVER_REG_xBX;
-	}
-	else {
-		DEBUG_BREAK;
-	}
+	nodep::DWORD flags = 0;
+	nodep::BYTE unusedRegisters = addr->GetUnusedRegisters() & 0xCF;
+	nodep::BYTE cReg = SelectUnusedRegister(unusedRegisters);
 
 	rev_memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
 	px86.cursor[1] = regByte[cReg];
@@ -55,43 +59,118 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 	rLea.TrackEspAsParameter();
 	rLea.TrackUnusedRegisters();
 
-	if (addr->HasSegment()) {
-		switch (addr->GetSegment()) {
-		case RIVER_MODIFIER_ESSEG:
-			px86.cursor[0] = 0x06; // push es
-			px86.cursor += 1;
-			break;
-		case RIVER_MODIFIER_CSSEG:
-			px86.cursor[0] = 0x0E; // push cs
-			px86.cursor += 1;
-			break;
-		case RIVER_MODIFIER_SSSEG:
-			px86.cursor[0] = 0x16; // push ss
-			px86.cursor += 1;
-			break;
-		case RIVER_MODIFIER_DSSEG:
-			px86.cursor[0] = 0x1E; // push ds
-			px86.cursor += 1;
-			break;
-		case RIVER_MODIFIER_FSSEG:
-			px86.cursor[0] = 0x0F; // push fs
-			px86.cursor[1] = 0xA0;
-			px86.cursor += 2;
-			break;
-		case RIVER_MODIFIER_GSSEG:
-			px86.cursor[0] = 0x0F; // push gs
-			px86.cursor[1] = 0xA8;
-			px86.cursor += 2;
-			break;
-		}
-		instrCounter++;
-	}
-
-	nodep::DWORD flags = 0;
 	GeneratePrefixes(rLea, px86.cursor);
 	AssembleDefaultInstr(rLea, px86, flags, instrCounter);
 	AssembleRegModRMOp(rLea, px86);
-	
+
+	if (addr->HasSegment()) {
+		nodep::BYTE sReg = SelectUnusedRegister(unusedRegisters);
+
+		// save reg
+		rev_memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
+		px86.cursor[1] = regByte[sReg];
+		*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->secondaryRegister;
+		px86.cursor += sizeof(preTrackMemPrefix);
+		instrCounter++;
+
+		{	// wrap up in RAII - mov <sReg>, segment
+			RiverInstruction rOps;
+			RiverAddress32 rAddr;
+			rOps.opCode = 0x8C;
+			rOps.modifiers = rOps.specifiers = 0;
+			rOps.family = RIVER_FAMILY_PRETRACK;
+
+			rOps.opTypes[0] = RIVER_OPTYPE_REG;
+			rOps.operands[0].asRegister.versioned = addr->GetSegment() - 1; //sReg;
+
+			rOps.opTypes[1] = RIVER_OPTYPE_MEM;
+			rOps.operands[1].asAddress = &rAddr;
+
+			rAddr.type = RIVER_ADDR_DIRTY;
+			rAddr.scaleAndSegment = 0;
+			rAddr.index.versioned = 0;
+			rAddr.base.versioned = 0;
+			rAddr.base.name = sReg; //addr->GetSegment() - 1;
+			rAddr.disp.d32 = 0;
+
+			rOps.opTypes[2] = rOps.opTypes[3] = RIVER_OPTYPE_NONE;
+			rOps.PromoteModifiers();
+			rOps.TrackEspAsParameter();
+			rOps.TrackUnusedRegisters();
+
+			GeneratePrefixes(rOps, px86.cursor);
+			AssembleDefaultInstr(rOps, px86, flags, instrCounter);
+			AssembleRegModRMOp(rOps, px86);
+		}
+
+		{	// wrap up in RAII - lea <sReg>, [sReg * 4 + segmentOffsets]
+			RiverInstruction rOps;
+			RiverAddress32 rAddr;
+			rOps.opCode = 0x8D;
+			rOps.modifiers = rOps.specifiers = 0;
+			rOps.family = RIVER_FAMILY_PRETRACK;
+
+			rOps.opTypes[0] = RIVER_OPTYPE_REG;
+			rOps.operands[0].asRegister.versioned = sReg;
+
+			rOps.opTypes[1] = RIVER_OPTYPE_MEM;
+			rOps.operands[1].asAddress = &rAddr;
+
+			rAddr.type = RIVER_ADDR_SCALE | RIVER_ADDR_INDEX | RIVER_ADDR_DISP | RIVER_ADDR_DIRTY;
+			rAddr.scaleAndSegment = 0;
+			rAddr.SetScale(4);
+			rAddr.index.versioned = sReg;
+			rAddr.base.versioned = 0;
+			rAddr.disp.d32 = (nodep::DWORD)revtracerConfig.segmentOffsets;
+
+			rOps.opTypes[2] = rOps.opTypes[3] = RIVER_OPTYPE_NONE;
+			rOps.PromoteModifiers();
+			rOps.TrackEspAsParameter();
+			rOps.TrackUnusedRegisters();
+
+			GeneratePrefixes(rOps, px86.cursor);
+			AssembleDefaultInstr(rOps, px86, flags, instrCounter);
+			AssembleRegModRMOp(rOps, px86);
+		}
+
+		{	// wrap up in RAII - lea <cReg>, [cReg + sReg]
+			RiverInstruction rOps;
+			RiverAddress32 rAddr;
+			rOps.opCode = 0x8D;
+			rOps.modifiers = rOps.specifiers = 0;
+			rOps.family = RIVER_FAMILY_PRETRACK;
+
+			rOps.opTypes[0] = RIVER_OPTYPE_REG;
+			rOps.operands[0].asRegister.versioned = cReg;
+
+			rOps.opTypes[1] = RIVER_OPTYPE_MEM;
+			rOps.operands[1].asAddress = &rAddr;
+
+			rAddr.type = RIVER_ADDR_SCALE | RIVER_ADDR_INDEX | RIVER_ADDR_BASE | RIVER_ADDR_DIRTY;
+			rAddr.scaleAndSegment = 0;
+			rAddr.SetScale(1);
+			rAddr.index.versioned = sReg;
+			rAddr.base.versioned = cReg;
+			rAddr.disp.d32 = 0;
+
+			rOps.opTypes[2] = rOps.opTypes[3] = RIVER_OPTYPE_NONE;
+			rOps.PromoteModifiers();
+			rOps.TrackEspAsParameter();
+			rOps.TrackUnusedRegisters();
+
+			GeneratePrefixes(rOps, px86.cursor);
+			AssembleDefaultInstr(rOps, px86, flags, instrCounter);
+			AssembleRegModRMOp(rOps, px86);
+		}
+
+		// restore reg
+		rev_memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
+		px86.cursor[1] = regByte[sReg];
+		*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->secondaryRegister;
+		px86.cursor += sizeof(preTrackMemSuffix);
+		instrCounter++;
+	}
+
 	px86.cursor[0] = 0x50 + cReg; // push reg;
 	px86.cursor++;
 	instrCounter++;

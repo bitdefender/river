@@ -15,7 +15,7 @@ void RiverAddress::DecodeFlags(nodep::WORD flags) {
 }
 
 nodep::BYTE RiverAddress::GetUnusedRegisters() const {
-	nodep::BYTE ret = 0x0F;
+	nodep::BYTE ret = 0xCF;
 	nodep::BYTE tmp;
 
 	if ((0 == type) || (type & RIVER_ADDR_BASE)) {
@@ -153,6 +153,7 @@ void RiverAddress32::FixEsp() {
 bool RiverAddress32::CleanAddr(nodep::WORD flags) {
 	unsigned char mod, rm;
 	
+	type &= ~RIVER_ADDR_DIRTY;
 	if (0 == type) {
 		mod = 3;
 		rm = EncodeRegister(flags);
@@ -204,8 +205,7 @@ bool RiverAddress32::CleanAddr(nodep::WORD flags) {
 			if (type & RIVER_ADDR_BASE) {
 				bs = base.name;
 			} else {
-				DEBUG_BREAK;
-				bs = 4;
+				bs = 5;
 			}
 
 			if (type & RIVER_ADDR_INDEX) {
@@ -245,6 +245,7 @@ bool RiverAddress32::EncodeTox86(unsigned char *&px86, nodep::BYTE extra, nodep:
 
 	if (type & RIVER_ADDR_DIRTY) {
 		if (!CleanAddr(modifiers)) {
+			DEBUG_BREAK;
 			return false;
 		}
 	}
