@@ -206,6 +206,7 @@ bool RiverAddress32::CleanAddr(nodep::WORD flags) {
 				bs = base.name;
 			} else {
 				bs = 5;
+				mod = 0;
 			}
 
 			if (type & RIVER_ADDR_INDEX) {
