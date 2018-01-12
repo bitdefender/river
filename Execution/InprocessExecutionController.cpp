@@ -237,6 +237,8 @@ bool InprocessExecutionController::Execute() {
 
 #ifdef _WIN32
 	InitSegments(hThread, revtracer.pConfig->segmentOffsets);
+#elif defined(__linux__)
+	InitSegments(nullptr, revtracer.pConfig->segmentOffsets);
 #endif
 
 	return TRUE == ret;

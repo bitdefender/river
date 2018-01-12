@@ -12,6 +12,7 @@
 #include <sys/resource.h>
 
 #include <libgen.h> //basename
+#include <asm/ldt.h>
 #else
 #include <Windows.h>
 #include <Psapi.h>
@@ -45,6 +46,39 @@ void InitSegments(void *hThread, nodep::DWORD *segments) {
 	for (DWORD i = 0; i < 0x100; ++i) {
 		InitSegment((HANDLE)hThread, i, segments[i]);
 	}
+}
+#elif defined(__linux__)
+#define __NR_get_thread_area 244
+void InitSegments(void *hThread, nodep::DWORD *segments) {
+	struct user_desc* table_entry_ptr = nullptr;
+
+	table_entry_ptr = (struct user_desc*)malloc(sizeof(struct user_desc));
+
+	// segments max size if 0xff, so index max is 0x1f
+	for (int index = 0; index < 0x1f; ++index) {
+		table_entry_ptr->entry_number = index;
+		int ret = syscall( __NR_get_thread_area,
+				table_entry_ptr);
+		// if entry number is not available
+		unsigned value = 0x0;
+		if (ret == -1 && errno != EINVAL) {
+			printf("Error found when get_thread_area. errno %d\n", errno);
+			DEBUG_BREAK;
+		} else if (ret == 0) {
+			value = table_entry_ptr->base_addr;
+		}
+
+		for (int j = 0; j < 8; ++j) {
+			nodep::WORD segmentvalue = (index << 3) | j;
+			// bit #2 specifies LDT(set) or GDT(unset)
+			if (j & 0x4) {
+				segments[segmentvalue] = 0xffffffff;
+			} else {
+				segments[segmentvalue] = value;
+			}
+		}
+	}
+	free(table_entry_ptr);
 }
 #endif
 
