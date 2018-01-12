@@ -38,7 +38,7 @@ private:
 	template <unsigned int f1, unsigned int f2, bool eq>
 	void SymbolicExecuteJBE(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	template <unsigned int flag>
+	template <unsigned int flag, bool eq = true>
 	void SymbolicExecuteSetCC(RiverInstruction *instruction, SymbolicOperands *ops);
 	template <unsigned int f1, unsigned int f2, bool eq>
 	void SymbolicExecuteSetBE(RiverInstruction *instruction, SymbolicOperands *ops);

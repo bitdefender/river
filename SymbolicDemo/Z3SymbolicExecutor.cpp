@@ -315,12 +315,16 @@ template <unsigned int f1, unsigned int f2, bool eq> void Z3SymbolicExecutor::Sy
 }
 
 
-template <unsigned int flag> void Z3SymbolicExecutor::SymbolicExecuteSetCC(RiverInstruction *instruction, SymbolicOperands *ops) {
+template <unsigned int flag, bool eq = true> void Z3SymbolicExecutor::SymbolicExecuteSetCC(RiverInstruction *instruction, SymbolicOperands *ops) {
 	printf("<sym> setcc %p\n", ops->svf[flag]);
+	Z3_ast flagSym = (Z3_ast)ops->svf[flag];
+	if (!eq) {
+		flagSym = Z3_mk_bvneg(context, flagSym);
+	}
 	Z3_ast res = Z3_mk_concat(
 			context,
 			zero7,
-			(Z3_ast)ops->svf[flag]
+			flagSym
 			);
 	env->SetOperand(0, res);
 }
@@ -1099,7 +1103,7 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x8C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0x90*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x94*/ &Z3SymbolicExecutor::SymbolicExecuteSetCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteSetBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, true>, &Z3SymbolicExecutor::SymbolicExecuteSetBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, false>,
+		/*0x94*/ &Z3SymbolicExecutor::SymbolicExecuteSetCC<RIVER_SPEC_IDX_ZF>, &Z3SymbolicExecutor::SymbolicExecuteSetCC<RIVER_SPEC_IDX_ZF, false>, &Z3SymbolicExecutor::SymbolicExecuteSetBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, true>, &Z3SymbolicExecutor::SymbolicExecuteSetBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, false>,
 		/*0x98*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0x9C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
