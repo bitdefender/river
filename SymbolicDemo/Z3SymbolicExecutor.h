@@ -32,6 +32,8 @@ private:
 	bool CheckSameSort(unsigned size, Z3_ast *ops);
 
 	void SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops);
+	void SymbolicExecuteNop(RiverInstruction *instruction, SymbolicOperands *ops);
+	void SymbolicExecuteCmpxchg(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	template <unsigned int flag>
 	void SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops);
