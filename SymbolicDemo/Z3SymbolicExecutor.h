@@ -35,21 +35,15 @@ private:
 	void SymbolicExecuteNop(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteCmpxchg(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	template <unsigned int flag>
-	void SymbolicExecuteJCC(RiverInstruction *instruction, SymbolicOperands *ops);
-	template <unsigned int f1, unsigned int f2, bool eq>
-	void SymbolicExecuteJBE(RiverInstruction *instruction, SymbolicOperands *ops);
+	typedef Z3_ast(Z3SymbolicExecutor::*BVFunc)(SymbolicOperands * ops);
 
-	template <unsigned int flag, bool eq = true>
-	void SymbolicExecuteSetCC(RiverInstruction *instruction, SymbolicOperands *ops);
-	template <unsigned int f1, unsigned int f2, bool eq>
-	void SymbolicExecuteSetBE(RiverInstruction *instruction, SymbolicOperands *ops);
-
-	template <unsigned int f1, unsigned int f2, bool eq>
-	void SymbolicExecuteJCCCompare(RiverInstruction *instruction, SymbolicOperands *ops);
-
-	template <unsigned int f1, unsigned int f2, unsigned int f3, bool eq>
-	void SymbolicExecuteJCCCompareEq(RiverInstruction *instruction, SymbolicOperands *ops);
+	template<unsigned int flag> Z3_ast Flag(SymbolicOperands * ops);
+	template<Z3SymbolicExecutor::BVFunc func> Z3_ast Negate(SymbolicOperands * ops);
+	template<Z3SymbolicExecutor::BVFunc func1, Z3SymbolicExecutor::BVFunc func2> Z3_ast Equals(SymbolicOperands * ops);
+	template<Z3SymbolicExecutor::BVFunc func1, Z3SymbolicExecutor::BVFunc func2> Z3_ast Or(SymbolicOperands * ops);
+	
+	template<Z3SymbolicExecutor::BVFunc func> void SymbolicJumpCC(RiverInstruction * instruction, SymbolicOperands * ops);
+	template<Z3SymbolicExecutor::BVFunc func> void SymbolicSetCC(RiverInstruction * instruction, SymbolicOperands * ops);
 
 	void SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);
