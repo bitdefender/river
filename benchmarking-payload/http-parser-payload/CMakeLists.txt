@@ -3,7 +3,7 @@
 
 set(LIBRARY_NAME "http-parser")
 
-set(CMAKE_C_FLAGS "-m32 -O2 -g")
+set(CMAKE_C_FLAGS "-m32 -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -D_PAYLOAD_EXPORTS")
 
 add_library(${LIBRARY_NAME} SHARED

@@ -4,7 +4,7 @@ makefile_dir := $(patsubst %/,%,$(dir $(mkfile_path)))
 libpng := libpng.so
 CC := gcc
 CXX := g++
-INCLUDE_PATHS = -I$(makefile_dir)/libpng-src/src
+INCLUDE_PATHS = -I$(makefile_dir)/libpng-src
 OBJ_FILES := Payload.o $(makefile_dir)/libpng-src/.libs/libpng16.a
 CXX_FLAGS += -m32 -std=c++11 -D_PAYLOAD_EXPORTS
 prefix := /usr/local

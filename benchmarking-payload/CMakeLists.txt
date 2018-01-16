@@ -1,0 +1,7 @@
+add_subdirectory(jsmn-payload)
+add_subdirectory(gumbo-payload)
+add_subdirectory(libxml2-payload)
+add_subdirectory(libpng-payload)
+add_subdirectory(freetype-payload)
+add_subdirectory(http-parser-payload)
+add_subdirectory(libjpeg-turbo-payload)
