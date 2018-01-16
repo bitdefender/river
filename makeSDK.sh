@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 
-mkdir $1
+[ $# -ne 2 ] && { echo "Usage: $0 <cmake-build-path> <dst>"; exit 1; }
+
+if [ ! -d $1 ]; then
+	echo "Src dir: $1 does not exist. Pass the build directory of river"
+	exit 1;
+fi
+
+if [ -d $2 ]; then
+	echo "Dst dir exists! Pass a non-existing destination dir"
+	exit 1;
+fi
+
+mkdir $2
 mkdir $1/include
 
 mkdir $1/include/CommonCrossPlatform
@@ -31,3 +43,12 @@ cp Execution/libexecution.so $1/lin/lib
 cp loader/libloader.so $1/lin/lib
 cp ipclib/libipc.so $1/lin/lib
 cp SymbolicEnvironment/libsymbolicenvironment.so  $1/lin/lib
+
+mkdir $1/libs
+cp http-parser-payload/libhttp-parser.so $1/libs
+cp freetype-payload/libfreetype.so $1/libs
+cp gumbo-payload/libgumbo.so $1/libs
+cp jsmn-payload/libjsmn.so $1/libs
+cp libjpeg-turbo-payload/libjpeg_turbo.so $1/libs
+cp libpng-payload/libpng.so $1/libs
+cp libxml-payload/libxml.so $1/libs

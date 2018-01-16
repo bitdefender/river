@@ -1,5 +1,5 @@
 DIRS := BinLoader VirtualMemory wrapper.setup revtracer-wrapper \
-	revtracer ipclib  DisableSSE  Execution loader ParserPayload \
+	revtracer ipclib  DisableSSE  Execution loader http-parser-payload \
 	SymbolicEnvironment SymbolicDemo
 prefix := /usr/local
 
