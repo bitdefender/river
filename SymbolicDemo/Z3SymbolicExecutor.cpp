@@ -886,7 +886,8 @@ void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
 		// unset all modified operands
 		for (int i = 0; i < 4; ++i) {
 			if (RIVER_SPEC_MODIFIES_OP(i) & instruction->specifiers) {
-				if (ops.sv[i] != nullptr) {
+				if (ops.sv[i] != nullptr ||
+						(RIVER_SPEC_IGNORES_OP(i) & instruction->specifiers)) {
 					env->UnsetOperand(i);
 				}
 			}
