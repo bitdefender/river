@@ -6,7 +6,7 @@ CXX := g++
 OBJ_FILES := http_parser.o Payload.o
 DEFAULT_CFLAGS := -m32 -O2 -g
 CC_FLAGS += $(DEFAULT_CFLAGS)
-CXX_FLAGS += $(DEFAULT_CFLAGS) -std=c++11 -D_PAYLOAD_EXPORTS
+CXX_FLAGS += $(DEFAULT_CFLAGS) -nostdlib -std=c++11 -D_PAYLOAD_EXPORTS
 prefix := /usr/local
 
 all: $(lib_http_parser)

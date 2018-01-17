@@ -1,12 +1,9 @@
 #include "http_parser.h"
 #include "Common.h"
-
-#include <malloc.h>
-#define NDEBUG
 #include <assert.h>
-#include <string.h>
-//#include <stdio.h>
-#include <stdlib.h>
+
+#define NDEBUG
+#define NULL 0
 
 static http_parser *parser = nullptr;
 
@@ -102,17 +99,23 @@ typedef void *(*my_memset_t) (void *s, int c, size_t n);
 typedef void *(*my_memcpy_t) (void *dest, const void *src, size_t n);
 typedef size_t (*my_strlen_t) (const char *s);
 typedef size_t (*my_strnlen_t) (const char *s, size_t maxlen);
+typedef void* (*my_malloc_t) (size_t size);
+typedef void (*my_free_t) (void *ptr);
+typedef void (*my_abort_t) (void);
 
 my_memset_t my_memset;
 my_memcpy_t my_memcpy;
 my_strlen_t my_strlen;
 my_strnlen_t my_strnlen;
+my_malloc_t my_malloc;
+my_free_t my_free;
+my_abort_t my_abort;
 #endif
 
 void parser_init(enum http_parser_type type) {
 	num_messages = 0;
 
-	parser = (http_parser *)malloc(sizeof(*parser));
+	parser = (http_parser *)my_malloc(sizeof(*parser));
 	http_parser_init(parser, type);
 
 	my_memset(&messages, 0, sizeof(messages));
@@ -120,7 +123,7 @@ void parser_init(enum http_parser_type type) {
 
 void parser_free() {
 	assert(parser);
-	free(parser);
+	my_free(parser);
 	parser = nullptr;
 }
 
@@ -237,7 +240,7 @@ void check_body_is_final(const http_parser *p) {
 			"on last on_body callback call "
 			"but it doesn't! ***\n\n");*/
 		assert(0);
-		abort();
+		my_abort();
 	}
 	messages[num_messages].body_is_final = http_body_is_final(p);
 }
@@ -274,7 +277,7 @@ int message_complete_cb(http_parser *p) {
 			"value in both on_message_complete and on_headers_complete "
 			"but it doesn't! ***\n\n");*/
 		assert(0);
-		abort();
+		my_abort();
 	}
 
 	if (messages[num_messages].body_size &&
@@ -285,7 +288,7 @@ int message_complete_cb(http_parser *p) {
 			"on last on_body callback call "
 			"but it doesn't! ***\n\n");*/
 		assert(0);
-		abort();
+		my_abort();
 	}
 
 	messages[num_messages].message_complete_cb_called = TRUE;
@@ -295,7 +298,7 @@ int message_complete_cb(http_parser *p) {
 	if (num_messages < (sizeof(messages) / sizeof(messages[0]) - 1)) {
 		num_messages++;
 	} else {
-		memset(messages + num_messages, 0, sizeof(messages[0]));
+		my_memset(messages + num_messages, 0, sizeof(messages[0]));
 	}
 	return 0;
 }
@@ -383,5 +386,8 @@ __attribute__((constructor)) void somain(void) {
 	my_strnlen = (my_strnlen_t) dlsym(libhandler, "strnlen");
 	my_memset = (my_memset_t) dlsym(libhandler, "memset");
 	my_memcpy = (my_memcpy_t) dlsym(libhandler, "memcpy");
+	my_malloc = (my_malloc_t) dlsym(libhandler, "malloc");
+	my_free = (my_free_t) dlsym(libhandler, "free");
+	my_abort = (my_abort_t) dlsym(libhandler, "abort");
 }
 #endif
