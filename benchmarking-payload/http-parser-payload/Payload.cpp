@@ -116,6 +116,7 @@ void parser_init(enum http_parser_type type) {
 	num_messages = 0;
 
 	parser = (http_parser *)my_malloc(sizeof(*parser));
+	my_memset(parser, 0, sizeof(struct http_parser));
 	http_parser_init(parser, type);
 
 	my_memset(&messages, 0, sizeof(messages));
@@ -341,7 +342,7 @@ static http_parser_settings settings = {
 	chunk_complete_cb
 };
 
-size_t parse (const char *buf, size_t len) {
+size_t parse (const char *buf, const size_t len) {
 	size_t nparsed;
 	currently_parsing_eof = (len == 0);
 	nparsed = http_parser_execute(parser, &settings, buf, len);
@@ -355,7 +356,6 @@ void test_simple(const unsigned char *buf) {
 
 	parse((const char *)buf, MAX_PAYLOAD_BUF);
 	err = HTTP_PARSER_ERRNO(parser);
-	parse(NULL, 0);
 
 	parser_free();
 	num_messages = 0;
