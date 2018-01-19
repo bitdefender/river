@@ -1,6 +1,6 @@
 set(LIBRARY_NAME png-payload)
 set(CMAKE_C_FLAGS "-m32 -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -D_PAYLOAD_EXPORTS")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -nostdlib -D_PAYLOAD_EXPORTS")
 
 add_library(${LIBRARY_NAME} SHARED
 	Payload.cpp

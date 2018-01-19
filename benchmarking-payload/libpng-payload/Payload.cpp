@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <vector>
 
 #define PNG_INTERNAL
 #include "png.h"
@@ -54,8 +53,7 @@ void test_simple(const unsigned char *data) {
     return;
   }
 
-  std::vector<unsigned char> v(data, data + size);
-  if (png_sig_cmp(v.data(), 0, kPngHeaderSize)) {
+  if (png_sig_cmp(data, 0, kPngHeaderSize)) {
     // not a PNG.
     return;
   }

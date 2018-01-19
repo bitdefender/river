@@ -3,9 +3,10 @@
 # Init source code
 SRC_DIR="$(pwd)/libpng-src"
 
-DEFAULT_CFLAGS="-m32"
+DEFAULT_CFLAGS="-m32 -fno-stack-protector"
 DEFAULT_LDFLAGS="-m32"
 CC=gcc
+CXX=g++
 
 init_target() {
 	if ! [ -d $SRC_DIR ]; then
@@ -22,8 +23,11 @@ init_target() {
 # Build http-parser with the given `name` and flags.
 build_target() {
 	cd $SRC_DIR
+	make clean
 	CC="$CC" CFLAGS="$DEFAULT_CFLAGS" LDFLAGS="$DEFAULT_LDFLAGS" \
-	LD="ld -m elf_i386"  ./configure
+	LD="ld -m elf_i386"  ./configure --enable-werror=no \
+	--enable-hardware-optimizations=no --enable-shared=no \
+	--enable-unversioned-links=no
 
 	make libpng16.la
 	cd -
