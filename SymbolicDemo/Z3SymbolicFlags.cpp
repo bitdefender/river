@@ -281,25 +281,34 @@ Z3_ast Z3FlagOF::Eval() {
 			DEBUG_BREAK;
 	}
 
+	unsigned resSize = Z3_get_bv_sort_size(parent->context,
+			Z3_get_sort(parent->context, source));
+	unsigned opSize = Z3_get_bv_sort_size(parent->context,
+			Z3_get_sort(parent->context, p[0]));
+
+	if (opSize != resSize) DEBUG_BREAK;
+
+	unsigned msb = resSize - 1;
+
 	Z3_ast r = Z3_mk_extract(
 		parent->context,
-		31,
-		31,
+		msb,
+		msb,
 		source
 	);
 
 	Z3_ast a = Z3_mk_extract(
 		parent->context,
-		31,
-		31,
+		msb,
+		msb,
 		p[0]
 	);
 
 	Z3_ast b = Z3_mk_extract(
 		parent->context,
-		31,
-		31,
-		p[0]
+		msb,
+		msb,
+		p[1]
 	);
 
 	if ((func == Z3_FLAG_OP_SUB) || (func == Z3_FLAG_OP_CMP)) {
@@ -309,21 +318,21 @@ Z3_ast Z3FlagOF::Eval() {
 		);
 	}
 
-	printf("<sym> lazyOF %p <= %p, %p\n", source, p[0], p[1]);
-
-	return Z3_mk_bvand(
-		parent->context,
-		Z3_mk_bvxor(
+	Z3_ast res = Z3_mk_bvand(
 			parent->context,
-			a,
-			r
-		),
-		Z3_mk_bvxor(
-			parent->context,
-			b,
-			r
-		)
+			Z3_mk_bvxor(
+				parent->context,
+				a,
+				r
+				),
+			Z3_mk_bvxor(
+				parent->context,
+				b,
+				r
+				)
 	);
+	printf("<sym> lazyOF %p <= source[%p], p0[%p] p1[%p]\n", res, source, p[0], p[1]);
+	return res;
 }
 
 void Z3FlagOF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
