@@ -51,37 +51,37 @@ private:
 
 	void SymbolicExecuteImul(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	typedef Z3_ast (Z3SymbolicExecutor::*CommonOperation)(unsigned nOps, Z3_ast *ops);
+	typedef Z3_ast (Z3SymbolicExecutor::*CommonOperation)(unsigned nOps, SymbolicOperands *ops);
 	template <Z3SymbolicExecutor::CommonOperation func, unsigned int funcCode>
 	void SymbolicExecuteCommonOperation(RiverInstruction *instruction, SymbolicOperands *ops);
 
-	Z3_ast ExecuteInc(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteDec(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteAdd(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteOr (unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteAdc(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteSbb(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteAnd(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteSub(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteXor(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteCmp(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteTest(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteInc(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteDec(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteAdd(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteOr (unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteAdc(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteSbb(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteAnd(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteSub(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteXor(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteCmp(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteTest(unsigned nOps, SymbolicOperands *ops);
 
-	Z3_ast ExecuteRol(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteRor(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteRcl(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteRcr(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteShl(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteShr(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteSal(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteSar(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteRol(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteRor(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteRcl(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteRcr(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteShl(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteShr(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteSal(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteSar(unsigned nOps, SymbolicOperands *ops);
 
-	Z3_ast ExecuteNot(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteNeg(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteMul(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteImul(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteDiv(unsigned nOps, Z3_ast *ops);
-	Z3_ast ExecuteIdiv(unsigned nOps, Z3_ast *ops);
+	Z3_ast ExecuteNot(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteNeg(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteMul(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteImul(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteDiv(unsigned nOps, SymbolicOperands *ops);
+	Z3_ast ExecuteIdiv(unsigned nOps, SymbolicOperands *ops);
 
 	void GetSymbolicValues(RiverInstruction *instruction, SymbolicOperands *ops, nodep::DWORD mask);
 public:

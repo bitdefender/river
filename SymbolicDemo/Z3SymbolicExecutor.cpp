@@ -347,9 +347,9 @@ void Z3SymbolicExecutor::SymbolicExecuteCmpxchg(RiverInstruction *instruction, S
 }
 
 // should have one parameter only
-Z3_ast Z3SymbolicExecutor::ExecuteInc(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteInc(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 1) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
 
 	printf("<sym> inc %p\n", (void *)o1);
 	Z3_ast res = Z3_mk_bvadd(context, o1, one32);
@@ -358,9 +358,9 @@ Z3_ast Z3SymbolicExecutor::ExecuteInc(unsigned nOps, Z3_ast *ops) {
 }
 
 // should have one parameter only
-Z3_ast Z3SymbolicExecutor::ExecuteDec(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteDec(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 1) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
 
 	printf("<sym> dec %p\n", (void *)o1);
 	Z3_ast res = Z3_mk_bvsub(context, o1, one32);
@@ -368,10 +368,10 @@ Z3_ast Z3SymbolicExecutor::ExecuteDec(unsigned nOps, Z3_ast *ops) {
 	return res;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteAdd(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteAdd(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
-	Z3_ast o2 = ops[1];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
+	Z3_ast o2 = (Z3_ast)ops->sv[1];
 
 	Z3_ast r = Z3_mk_bvadd(context, o1, o2);
 	env->SetOperand(0, r);
@@ -386,10 +386,10 @@ Z3_ast Z3SymbolicExecutor::ExecuteAdd(unsigned nOps, Z3_ast *ops) {
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteOr(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteOr(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
-	Z3_ast o2 = ops[1];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
+	Z3_ast o2 = (Z3_ast)ops->sv[1];
 
 	Z3_ast r = Z3_mk_bvor(context, o1, o2);
 	env->SetOperand(0, r);
@@ -400,22 +400,39 @@ Z3_ast Z3SymbolicExecutor::ExecuteOr(unsigned nOps, Z3_ast *ops) {
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteAdc(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteAdc(unsigned nOps, SymbolicOperands *ops) {
 	//return Z3_mk_bvadd(context, o1, o2);
 	DEBUG_BREAK;
 	return nullptr;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteSbb(unsigned nOps, Z3_ast *ops) {
-	//return Z3_mk_bvor(context, o1, o2);
-	DEBUG_BREAK;
-	return nullptr;
+Z3_ast Z3SymbolicExecutor::ExecuteSbb(unsigned nOps, SymbolicOperands *ops) {
+	Z3_ast dest = (Z3_ast)ops->sv[0];
+	Z3_ast source = (Z3_ast)ops->sv[1];
+	Z3_ast cf = (Z3_ast)ops->svf[RIVER_SPEC_IDX_CF];
+
+	unsigned sourceSize = Z3_get_bv_sort_size(context,
+			Z3_get_sort(context, source));
+	unsigned cfSize = Z3_get_bv_sort_size(context,
+			Z3_get_sort(context, cf));
+
+	Z3_ast cfExtend = Z3_mk_concat(context,
+			Z3_mk_int(context, 0, Z3_mk_bv_sort(context, sourceSize - 1)),
+			cf);
+
+	printf("<sym> concat %p <= 0[%d] cf:%p[%d]\n",
+			cfExtend, sourceSize - 1, cf, cfSize);
+
+	Z3_ast op = Z3_mk_bvadd(context, source, cfExtend);
+	Z3_ast res = Z3_mk_bvsub(context, dest, op);
+	printf("<sym> sbb %p <= %p %p cf %p\n", res, dest, source, cf);
+	return res;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteAnd(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteAnd(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
-	Z3_ast o2 = ops[1];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
+	Z3_ast o2 = (Z3_ast)ops->sv[1];
 
 	Z3_ast r = Z3_mk_bvand(context, o1, o2);
 	env->SetOperand(0, r);
@@ -424,10 +441,10 @@ Z3_ast Z3SymbolicExecutor::ExecuteAnd(unsigned nOps, Z3_ast *ops) {
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteSub(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteSub(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
-	Z3_ast o2 = ops[1];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
+	Z3_ast o2 = (Z3_ast)ops->sv[1];
 
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
 	env->SetOperand(0, r);
@@ -436,10 +453,10 @@ Z3_ast Z3SymbolicExecutor::ExecuteSub(unsigned nOps, Z3_ast *ops) {
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteXor(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteXor(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
-	Z3_ast o2 = ops[1];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
+	Z3_ast o2 = (Z3_ast)ops->sv[1];
 
 	if (o1 == o2) {
 		return nullptr;
@@ -452,148 +469,148 @@ Z3_ast Z3SymbolicExecutor::ExecuteXor(unsigned nOps, Z3_ast *ops) {
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteCmp(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteCmp(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
-	Z3_ast o2 = ops[1];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
+	Z3_ast o2 = (Z3_ast)ops->sv[1];
 
 	Z3_ast r = Z3_mk_bvsub(context, o1, o2);
 	printf("<sym> cmp %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteTest(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteTest(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast o1 = ops[0];
-	Z3_ast o2 = ops[1];
+	Z3_ast o1 = (Z3_ast)ops->sv[0];
+	Z3_ast o2 = (Z3_ast)ops->sv[1];
 
-	if (!CheckSameSort(2, ops)) DEBUG_BREAK;
+	if (!CheckSameSort(2, (Z3_ast *)ops->sv)) DEBUG_BREAK;
 
 	Z3_ast r = Z3_mk_bvand(context, o1, o2);
 	printf("<sym> test %p <= %p, %p\n", r, o1, o2);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteRol(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteRol(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
 
 	unsigned i;
-	Z3_get_numeral_uint(context, ops[1], &i);
-	Z3_ast t = ops[0];
+	Z3_get_numeral_uint(context, (Z3_ast)ops->sv[1], &i);
+	Z3_ast t = (Z3_ast)ops->sv[0];
 
 	Z3_ast r = Z3_mk_rotate_left(context, i, t);
 	printf("<sym> rol %p <= %p 0x%08X\n", r, t, i);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteRor(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteRor(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
 
 	unsigned i;
-	Z3_get_numeral_uint(context, ops[1], &i);
-	Z3_ast t = ops[0];
+	Z3_get_numeral_uint(context, (Z3_ast)ops->sv[1], &i);
+	Z3_ast t = (Z3_ast)ops->sv[0];
 
 	Z3_ast r = Z3_mk_rotate_right(context, i, t);
 	printf("<sym> ror %p <= %p 0x%08X\n", r, t, i);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteRcl(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteRcl(unsigned nOps, SymbolicOperands *ops) {
 	DEBUG_BREAK;
 	return nullptr;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteRcr(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteRcr(unsigned nOps, SymbolicOperands *ops) {
 	DEBUG_BREAK;
 	return nullptr;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteShl(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteShl(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast t1 = ops[0];
-	Z3_ast t2 = ops[1];
+	Z3_ast t1 = (Z3_ast)ops->sv[0];
+	Z3_ast t2 = (Z3_ast)ops->sv[1];
 
 	Z3_ast r = Z3_mk_bvshl(context, t1, t2);
 	printf("<sym> shl %p <= %p %p\n", r, t1, t2);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteShr(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteShr(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast t1 = ops[0];
-	Z3_ast t2 = ops[1];
+	Z3_ast t1 = (Z3_ast)ops->sv[0];
+	Z3_ast t2 = (Z3_ast)ops->sv[1];
 
 	Z3_ast r = Z3_mk_bvlshr(context, t1, t2);
 	printf("<sym> shr %p <= %p %p\n", r, t1, t2);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteSal(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteSal(unsigned nOps, SymbolicOperands *ops) {
 	DEBUG_BREAK;
 	return nullptr;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteSar(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteSar(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 2) DEBUG_BREAK;
-	Z3_ast t1 = ops[0];
-	Z3_ast t2 = ops[1];
+	Z3_ast t1 = (Z3_ast)ops->sv[0];
+	Z3_ast t2 = (Z3_ast)ops->sv[1];
 
 	Z3_ast r = Z3_mk_bvashr(context, t1, t2);
 	printf("<sym> sar %p <= %p %p\n", r, t1, t2);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteNot(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteNot(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 1) DEBUG_BREAK;
 
-	Z3_ast r = Z3_mk_not(context, ops[0]);
-	printf("<sym> not %p <= %p\n", r, ops[0]);
+	Z3_ast r = Z3_mk_not(context, (Z3_ast)ops->sv[0]);
+	printf("<sym> not %p <= %p\n", r, (Z3_ast)ops->sv[0]);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteNeg(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteNeg(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 1) DEBUG_BREAK;
 
-	Z3_ast r = Z3_mk_bvneg(context, ops[0]);
-	printf("<sym> neg %p <= %p\n", r, ops[0]);
+	Z3_ast r = Z3_mk_bvneg(context, (Z3_ast)ops->sv[0]);
+	printf("<sym> neg %p <= %p\n", r, (Z3_ast)ops->sv[0]);
 	env->SetOperand(0, r);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteMul(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteMul(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 3) DEBUG_BREAK;
-	Z3_ast r = Z3_mk_bvmul(context, ops[1], ops[2]);
-	printf("<sym> mul %p <= %p %p\n", r, ops[1], ops[2]);
+	Z3_ast r = Z3_mk_bvmul(context, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
+	printf("<sym> mul %p <= %p %p\n", r, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
 	env->SetOperand(0, r);
 	return r;
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteImul(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteImul(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 3) DEBUG_BREAK;
-	Z3_ast r = Z3_mk_bvmul(context, ops[1], ops[2]);
-	printf("<sym> imul %p <= %p %p\n", r, ops[1], ops[2]);
+	Z3_ast r = Z3_mk_bvmul(context, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
+	printf("<sym> imul %p <= %p %p\n", r, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
 	env->SetOperand(0, r);
 	return r;
 }
 
 // AL AH AX reg
-Z3_ast Z3SymbolicExecutor::ExecuteDiv(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteDiv(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 4) DEBUG_BREAK;
-	Z3_ast quotient = Z3_mk_bvudiv(context, ops[2], ops[3]);
-	Z3_ast remainder = Z3_mk_bvurem(context, ops[2], ops[3]);
+	Z3_ast quotient = Z3_mk_bvudiv(context, (Z3_ast)ops->sv[2], (Z3_ast)ops->sv[3]);
+	Z3_ast remainder = Z3_mk_bvurem(context, (Z3_ast)ops->sv[2], (Z3_ast)ops->sv[3]);
 
-	printf("<sym> div %p %p <= %p %p\n", quotient, remainder, ops[1], ops[2]);
+	printf("<sym> div %p %p <= %p %p\n", quotient, remainder, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
 
 	env->SetOperand(0, quotient);
 	env->SetOperand(1, remainder);
 }
 
-Z3_ast Z3SymbolicExecutor::ExecuteIdiv(unsigned nOps, Z3_ast *ops) {
+Z3_ast Z3SymbolicExecutor::ExecuteIdiv(unsigned nOps, SymbolicOperands *ops) {
 	if (nOps < 4) DEBUG_BREAK;
-	Z3_ast quotient = Z3_mk_bvsdiv(context, ops[2], ops[3]);
-	Z3_ast remainder = Z3_mk_bvsrem(context, ops[2], ops[3]);
+	Z3_ast quotient = Z3_mk_bvsdiv(context, (Z3_ast)ops->sv[2], (Z3_ast)ops->sv[3]);
+	Z3_ast remainder = Z3_mk_bvsrem(context, (Z3_ast)ops->sv[2], (Z3_ast)ops->sv[3]);
 
-	printf("<sym> idiv %p %p <= %p %p\n", quotient, remainder, ops[1], ops[2]);
+	printf("<sym> idiv %p %p <= %p %p\n", quotient, remainder, (Z3_ast)ops->sv[1], (Z3_ast)ops->sv[2]);
 
 	env->SetOperand(0, quotient);
 	env->SetOperand(1, remainder);
@@ -654,7 +671,7 @@ void Z3SymbolicExecutor::SymbolicExecuteImul(RiverInstruction *instruction, Symb
 
 template <Z3SymbolicExecutor::CommonOperation func, unsigned int funcCode> void Z3SymbolicExecutor::SymbolicExecuteCommonOperation(RiverInstruction *instruction, SymbolicOperands *ops) {
 
-	Z3_ast ret = (this->*func)(4, (Z3_ast *)ops->sv);
+	Z3_ast ret = (this->*func)(4, ops);
 	void *symValue = (void *)ret;
 	for (int i = 0; i < 7; ++i) {
 		if ((1 << i) & instruction->modFlags) {
