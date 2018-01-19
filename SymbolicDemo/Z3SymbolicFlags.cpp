@@ -58,14 +58,18 @@ void Z3FlagZF::LoadState(stk::LargeStack &stack) {
 
 // Sign flag - extract msb
 Z3_ast Z3FlagSF::Eval() {
-	printf("<sym> lazySF %p\n", source);
+	unsigned msb = Z3_get_bv_sort_size(parent->context,
+			Z3_get_sort(parent->context, source)) - 1;
+	Z3_ast res = Z3_mk_extract(
+			parent->context,
+			msb,
+			msb,
+			source
+			);
 
-	return Z3_mk_extract(
-		parent->context,
-		31,
-		31,
-		source
-	);
+	printf("<sym> lazySF: extract [%p] <= start[%d] size[%d] source[%p]\n",
+			res, msb, 1, source);
+	return res;
 }
 
 void Z3FlagSF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
