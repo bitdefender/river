@@ -27,6 +27,9 @@ private:
 		void *svf[7];
 	};
 
+	static const unsigned char flagList[6];
+	static const int flagCount = sizeof(flagList) / sizeof(flagList[0]);
+
 	//void EvalZF(Z3_ast result);
 
 	bool CheckSameSort(unsigned size, Z3_ast *ops);

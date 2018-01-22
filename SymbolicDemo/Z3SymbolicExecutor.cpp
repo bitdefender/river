@@ -3,6 +3,15 @@
 #include "../CommonCrossPlatform/Common.h"
 #include <assert.h>
 
+const unsigned char Z3SymbolicExecutor::flagList[] = {
+	RIVER_SPEC_FLAG_CF,
+	RIVER_SPEC_FLAG_PF,
+	RIVER_SPEC_FLAG_AF,
+	RIVER_SPEC_FLAG_ZF,
+	RIVER_SPEC_FLAG_SF,
+	RIVER_SPEC_FLAG_OF
+};
+
 bool Z3SymbolicExecutor::CheckSameSort(unsigned size, Z3_ast *ops) {
 	unsigned sortSize = 0xffffffff;
 	for (int i = 0; i < size; ++i) {
@@ -425,6 +434,7 @@ Z3_ast Z3SymbolicExecutor::ExecuteSbb(unsigned nOps, SymbolicOperands *ops) {
 
 	Z3_ast op = Z3_mk_bvadd(context, source, cfExtend);
 	Z3_ast res = Z3_mk_bvsub(context, dest, op);
+	env->SetOperand(0, res);
 	printf("<sym> sbb %p <= %p %p cf %p\n", res, dest, source, cf);
 	return res;
 }
@@ -677,7 +687,7 @@ template <Z3SymbolicExecutor::CommonOperation func, unsigned int funcCode> void 
 		if ((1 << i) & instruction->modFlags) {
 			lazyFlags[i]->SetSource(ret,
 					(Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1],
-					(Z3_ast)ops->sv[1], funcCode);
+					(Z3_ast)ops->sv[2], funcCode);
 			env->SetFlgValue(1 << i, lazyFlags[i]);
 		}
 	}
@@ -688,22 +698,12 @@ template <Z3SymbolicExecutor::SymbolicExecute fSubOps[8]> void Z3SymbolicExecuto
 }
 
 void Z3SymbolicExecutor::GetSymbolicValues(RiverInstruction *instruction, SymbolicOperands *ops, nodep::DWORD mask) {
-	static const unsigned char flagList[] = {
-		RIVER_SPEC_FLAG_CF,
-		RIVER_SPEC_FLAG_PF,
-		RIVER_SPEC_FLAG_AF,
-		RIVER_SPEC_FLAG_ZF,
-		RIVER_SPEC_FLAG_SF,
-		RIVER_SPEC_FLAG_OF
-	};
-
-	static const int flagCount = sizeof(flagList) / sizeof(flagList[0]);
-	nodep::DWORD m = mask & ops->av;
+	nodep::DWORD opsFlagsMask = mask & ops->av;
 
 	bool foundSort = false;
 	Z3_sort operandsSort = dwordSort;
 	for (int i = 0; i < 4; ++i) {
-		if ((OPERAND_BITMASK(i) & m) && ops->tr[i]) {
+		if ((OPERAND_BITMASK(i) & opsFlagsMask) && ops->tr[i]) {
 			 Z3_sort localSort = Z3_get_sort(context, (Z3_ast)ops->sv[i]);
 			 if (foundSort && !Z3_is_eq_sort(context, localSort, operandsSort)) {
 				 DEBUG_BREAK;
@@ -716,7 +716,7 @@ void Z3SymbolicExecutor::GetSymbolicValues(RiverInstruction *instruction, Symbol
 	}
 
 	for (int i = 0; i < 4; ++i) {
-		if ((OPERAND_BITMASK(i) & m) && !ops->tr[i]) {
+		if ((OPERAND_BITMASK(i) & opsFlagsMask) && !ops->tr[i]) {
 			ops->sv[i] = Z3_mk_int(context, ops->cv[i], operandsSort);
 			printf("<sym> mkint %lu size: %u\n", ops->cv[i],
 					Z3_get_bv_sort_size(context, operandsSort));
@@ -724,16 +724,12 @@ void Z3SymbolicExecutor::GetSymbolicValues(RiverInstruction *instruction, Symbol
 	}
 
 	for (int i = 0; i < flagCount; ++i) {
-		if (flagList[i] & m) {
-			if (!ops->trf[i]) {
-				ops->svf[i] = Z3_mk_int(context, ops->cvf[i], bitSort);
-			} else {
+		if (flagList[i] & opsFlagsMask) {
+			if (ops->trf[i]) {
 				ops->svf[i] = ((Z3SymbolicCpuFlag *)ops->svf[i])->GetValue();
+			} else {
+				ops->svf[i] = Z3_mk_int(context, ops->cvf[i], bitSort);
 			}
-		}
-
-		if ((flagList[i] & m) && !ops->trf[i]) {
-			ops->svf[i] = Z3_mk_int(context, ops->cvf[i], bitSort);
 		}
 	}
 }
@@ -817,17 +813,6 @@ void Z3SymbolicExecutor::AddOperands(struct OperandInfo &left,
 }
 
 void Z3SymbolicExecutor::Execute(RiverInstruction *instruction) {
-	static const unsigned char flagList[] = {
-		RIVER_SPEC_FLAG_CF,
-		RIVER_SPEC_FLAG_PF,
-		RIVER_SPEC_FLAG_AF,
-		RIVER_SPEC_FLAG_ZF,
-		RIVER_SPEC_FLAG_SF,
-		RIVER_SPEC_FLAG_OF
-	};
-
-	static const int flagCount = sizeof(flagList) / sizeof(flagList[0]);
-
 	SymbolicOperands ops;
 
 	ops.av = 0;
