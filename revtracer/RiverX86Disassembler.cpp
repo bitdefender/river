@@ -3,6 +3,7 @@
 
 extern const nodep::WORD specTbl[2][0x100];
 extern const nodep::WORD _specTblExt[][8];
+extern const nodep::WORD testFlagExt[][8];
 
 nodep::WORD GetSpecifiers(RiverInstruction &ri) {
 	//const WORD *specTbl = specTbl00;
@@ -65,7 +66,7 @@ void RiverX86Disassembler::TrackFlagUsage(RiverInstruction &ri) {
 	}
 
 	if (tmp & RIVER_SPEC_FLAG_EXT) {
-		tmp = 0; //testFlagExt[tmp & 0x7F][ri.subOpCode];
+		tmp = testFlagExt[tmp & 0x7F][ri.subOpCode];
 	}
 
 	if (tmp == 0xFF) {
@@ -924,4 +925,14 @@ const nodep::WORD _specTblExt[][8] = {
 			RIVER_SPEC_MODIFIES_OP2 | RIVER_SPEC_MODIFIES_OP3 | RIVER_SPEC_MODIFIES_FLG
 		},
 		/* for 0x0FBA  */{ 0xFF, 0xFF, 0xFF, 0xFF, RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG, RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_FLG },
+};
+
+const nodep::WORD testFlagExt[][8] = {
+	{ //0x80 0x81 0x82 0x83
+	  //0xc0 0xc1
+		0, 0,
+		RIVER_SPEC_FLAG_CF, RIVER_SPEC_FLAG_CF,
+		0, 0,
+		0, 0
+	}
 };
