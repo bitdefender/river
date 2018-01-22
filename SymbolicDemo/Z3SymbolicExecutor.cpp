@@ -26,6 +26,17 @@ bool Z3SymbolicExecutor::CheckSameSort(unsigned size, Z3_ast *ops) {
 	return true;
 }
 
+void Z3SymbolicExecutor::InitLazyFlagsOperands(
+		struct SymbolicOperandsLazyFlags *solf,
+		struct SymbolicOperands *ops) {
+	for (int i = 0; i < 4; ++i) {
+		solf->svBefore[i] = ops->sv[i];
+	}
+	for (int i = 0; i < 7; ++i) {
+		solf->svfBefore[i] = ops->svf[i];
+	}
+}
+
 void *Z3SymbolicExecutor::CreateVariable(const char *name, nodep::DWORD size) {
 	Z3_symbol s = Z3_mk_string_symbol(context, name);
 	Z3_sort srt;
@@ -679,15 +690,18 @@ void Z3SymbolicExecutor::SymbolicExecuteImul(RiverInstruction *instruction, Symb
 	env->SetOperand(0, ops->sv[0]);
 }
 
+
+
 template <Z3SymbolicExecutor::CommonOperation func, unsigned int funcCode> void Z3SymbolicExecutor::SymbolicExecuteCommonOperation(RiverInstruction *instruction, SymbolicOperands *ops) {
 
+	SymbolicOperandsLazyFlags solf;
+	InitLazyFlagsOperands(&solf, ops);
+
 	Z3_ast ret = (this->*func)(4, ops);
-	void *symValue = (void *)ret;
+	solf.svAfter[0] = ret;
 	for (int i = 0; i < 7; ++i) {
 		if ((1 << i) & instruction->modFlags) {
-			lazyFlags[i]->SetSource(ret,
-					(Z3_ast)ops->sv[0], (Z3_ast)ops->sv[1],
-					(Z3_ast)ops->sv[2], funcCode);
+			lazyFlags[i]->SetSource(solf, funcCode);
 			env->SetFlgValue(1 << i, lazyFlags[i]);
 		}
 	}

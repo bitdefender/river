@@ -10,6 +10,13 @@
 
 #define OPERAND_BITMASK(idx) (0x00010000 << (idx))
 
+struct SymbolicOperandsLazyFlags {
+	void *svBefore[4];
+	void *svAfter[4];
+
+	void *svfBefore[7];
+};
+
 class Z3SymbolicExecutor : public sym::SymbolicExecutor {
 private:
 	stk::DWORD saveTop;
@@ -33,6 +40,9 @@ private:
 	//void EvalZF(Z3_ast result);
 
 	bool CheckSameSort(unsigned size, Z3_ast *ops);
+	void InitLazyFlagsOperands(
+			struct SymbolicOperandsLazyFlags *solf,
+			struct SymbolicOperands *ops);
 
 	void SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteNop(RiverInstruction *instruction, SymbolicOperands *ops);
@@ -110,7 +120,8 @@ public:
 		Z3SymbolicCpuFlag();
 		void SetParent(Z3SymbolicExecutor *p);
 
-		virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) = 0;
+		virtual void SetSource(struct SymbolicOperandsLazyFlags &ops,
+				unsigned int op) = 0;
 		virtual void SaveState(stk::LargeStack &stack) = 0;
 		virtual void LoadState(stk::LargeStack &stack) = 0;
 
@@ -157,7 +168,7 @@ private :
 	Z3_ast source;
 protected :
 	virtual Z3_ast Eval();
-	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+	virtual void SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op);
 
 	virtual void SaveState(stk::LargeStack &stack);
 	virtual void LoadState(stk::LargeStack &stack);
@@ -169,7 +180,7 @@ private:
 	Z3_ast source;
 protected:
 	virtual Z3_ast Eval();
-	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+	virtual void SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op);
 
 	virtual void SaveState(stk::LargeStack &stack);
 	virtual void LoadState(stk::LargeStack &stack);
@@ -180,7 +191,7 @@ private:
 	Z3_ast source;
 protected:
 	virtual Z3_ast Eval();
-	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+	virtual void SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op);
 
 	virtual void SaveState(stk::LargeStack &stack);
 	virtual void LoadState(stk::LargeStack &stack);
@@ -213,10 +224,11 @@ protected:
 class Z3FlagCF : public Z3SymbolicExecutor::Z3SymbolicCpuFlag {
 private:
 	Z3_ast source, p[2];
+	Z3_ast cf;
 	unsigned int func;
 protected:
 	virtual Z3_ast Eval();
-	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+	virtual void SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op);
 
 	virtual void SaveState(stk::LargeStack &stack);
 	virtual void LoadState(stk::LargeStack &stack);
@@ -228,7 +240,7 @@ private:
 	unsigned int func;
 protected:
 	virtual Z3_ast Eval();
-	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+	virtual void SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op);
 
 	virtual void SaveState(stk::LargeStack &stack);
 	virtual void LoadState(stk::LargeStack &stack);
@@ -239,7 +251,7 @@ private:
 	Z3_ast source;
 protected:
 	virtual Z3_ast Eval();
-	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+	virtual void SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op);
 
 	virtual void SaveState(stk::LargeStack &stack);
 	virtual void LoadState(stk::LargeStack &stack);
@@ -250,7 +262,7 @@ private:
 	Z3_ast source;
 protected:
 	virtual Z3_ast Eval();
-	virtual void SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op);
+	virtual void SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op);
 
 	virtual void SaveState(stk::LargeStack &stack);
 	virtual void LoadState(stk::LargeStack &stack);

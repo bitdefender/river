@@ -42,8 +42,8 @@ Z3_ast Z3FlagZF::Eval() {
 	);
 }
 
-void Z3FlagZF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
-	source = src;
+void Z3FlagZF::SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op) {
+	source = (Z3_ast)ops.svAfter[0];
 	value = (Z3_ast)&lazyMarker;
 }
 
@@ -72,8 +72,8 @@ Z3_ast Z3FlagSF::Eval() {
 	return res;
 }
 
-void Z3FlagSF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
-	source = src;
+void Z3FlagSF::SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op) {
+	source = (Z3_ast)ops.svAfter[0];
 	value = (Z3_ast)&lazyMarker;
 }
 
@@ -139,8 +139,8 @@ Z3_ast Z3FlagPF::Eval() {
 	);
 }
 
-void Z3FlagPF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
-	source = src;
+void Z3FlagPF::SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op) {
+	source = (Z3_ast)ops.svAfter[0];
 	value = (Z3_ast)&lazyMarker;
 }
 
@@ -165,6 +165,7 @@ Z3_ast Z3FlagCF::Eval() {
 	switch (func) {
 		case Z3_FLAG_OP_ADD:
 		case Z3_FLAG_OP_SUB:
+		case Z3_FLAG_OP_SBB:
 		case Z3_FLAG_OP_CMP:
 			break;
 		default :
@@ -234,15 +235,22 @@ Z3_ast Z3FlagCF::Eval() {
 		);
 	}
 
+	// for sbb, verify result with zero. If zero, cf if previous cf
+	if (func == Z3_FLAG_OP_SBB) {
+		Z3_ast cond = Z3_mk_eq(parent->context, p[0], p[1]);
+		c = Z3_mk_ite(parent->context, cond, cf, c);
+	}
+
 	printf("<sym> lazyCF %p <= %p, %p\n", source, p[0], p[1]);
 
 	return c;
 }
 
-void Z3FlagCF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
-	source = src;
-	p[0] = o1;
-	p[1] = o2;
+void Z3FlagCF::SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op) {
+	source = (Z3_ast)ops.svAfter[0];
+	p[0] = (Z3_ast)ops.svBefore[0];
+	p[1] = (Z3_ast)ops.svBefore[1];
+	cf = (Z3_ast)ops.svfBefore[RIVER_SPEC_IDX_CF];
 	func = op;
 	value = (Z3_ast)&lazyMarker;
 }
@@ -335,10 +343,10 @@ Z3_ast Z3FlagOF::Eval() {
 	return res;
 }
 
-void Z3FlagOF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
-	source = src;
-	p[0] = o1;
-	p[1] = o2;
+void Z3FlagOF::SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op) {
+	source = (Z3_ast)ops.svAfter[0];
+	p[0] = (Z3_ast)ops.svBefore[0];
+	p[1] = (Z3_ast)ops.svBefore[1];
 	func = op;
 	value = (Z3_ast)&lazyMarker;
 }
@@ -362,8 +370,8 @@ Z3_ast Z3FlagAF::Eval() {
 	DEBUG_BREAK;
 }
 
-void Z3FlagAF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
-	source = src;
+void Z3FlagAF::SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op) {
+	source = (Z3_ast)ops.svAfter[0];
 	value = (Z3_ast)&lazyMarker;
 }
 
@@ -380,8 +388,8 @@ Z3_ast Z3FlagDF::Eval() {
 	DEBUG_BREAK;
 }
 
-void Z3FlagDF::SetSource(Z3_ast src, Z3_ast o1, Z3_ast o2, Z3_ast o3, unsigned int op) {
-	source = src;
+void Z3FlagDF::SetSource(struct SymbolicOperandsLazyFlags &ops, unsigned int op) {
+	source = (Z3_ast)ops.svAfter[0];
 	value = (Z3_ast)&lazyMarker;
 }
 
