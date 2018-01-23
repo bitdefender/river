@@ -197,18 +197,10 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 		px86.cursor[2] += cReg;
 		px86.cursor += sizeof(andRegVal);
 
-		if (addr->HasSegment()) {
-			px86.cursor[0] = segmentPrefix[addr->GetSegment()];
-			px86.cursor += 1;
-		}
 		rev_memcpy(px86.cursor, pushEax4, sizeof(pushEax4));
 		px86.cursor[1] += cReg;
 		px86.cursor += sizeof(pushEax4);
 
-		if (addr->HasSegment()) {
-			px86.cursor[0] = segmentPrefix[addr->GetSegment()];
-			px86.cursor += 1;
-		}
 		rev_memcpy(px86.cursor, pushEax, sizeof(pushEax));
 		px86.cursor[1] += cReg;
 		px86.cursor += sizeof(pushEax);
