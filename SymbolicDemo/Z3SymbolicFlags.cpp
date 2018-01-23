@@ -278,6 +278,7 @@ void Z3FlagCF::LoadState(stk::LargeStack &stack) {
 // SBB: ?
 // MUL: ?
 // IMUL: ?
+// AND : c = 0
 // ??
 Z3_ast Z3FlagOF::Eval() {
 	switch (func) {
@@ -285,6 +286,8 @@ Z3_ast Z3FlagOF::Eval() {
 		case Z3_FLAG_OP_SUB:
 		case Z3_FLAG_OP_CMP:
 			break;
+		case Z3_FLAG_OP_AND:
+			return parent->zeroFlag;
 		default:
 			DEBUG_BREAK;
 	}
