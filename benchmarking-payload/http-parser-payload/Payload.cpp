@@ -1,5 +1,5 @@
 #include "http_parser.h"
-#include "Common.h"
+#include "CommonCrossPlatform/CommonSpecifiers.h"
 #include <assert.h>
 
 #define NDEBUG

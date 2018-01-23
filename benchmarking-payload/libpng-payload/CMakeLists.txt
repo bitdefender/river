@@ -6,7 +6,9 @@ add_library(${LIBRARY_NAME} SHARED
 	Payload.cpp
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libpng-src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libpng-src
+	$ENV{RIVER_SDK_DIR}/include
+	)
 
 target_link_libraries(${LIBRARY_NAME}
 	${CMAKE_CURRENT_SOURCE_DIR}/libpng-src/.libs/libpng16.a

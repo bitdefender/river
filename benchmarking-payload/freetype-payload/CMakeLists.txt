@@ -8,6 +8,7 @@ add_library(${LIBRARY_NAME} SHARED
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/freetype-src/include
 	${CMAKE_CURRENT_SOURCE_DIR}/freetype-src
+	$ENV{RIVER_SDK_DIR}/include
 )
 
 target_link_libraries(${LIBRARY_NAME}

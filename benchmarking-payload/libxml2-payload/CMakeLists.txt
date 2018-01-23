@@ -7,7 +7,9 @@ add_library(${LIBRARY_NAME} SHARED
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/include
-	${CMAKE_CURRENT_SOURCE_DIR}/libxml2-src/include)
+	${CMAKE_CURRENT_SOURCE_DIR}/libxml2-src/include
+	$ENV{RIVER_SDK_DIR}/include
+	)
 
 target_link_libraries(${LIBRARY_NAME}
 	${CMAKE_CURRENT_SOURCE_DIR}/build/.libs/libxml2.a

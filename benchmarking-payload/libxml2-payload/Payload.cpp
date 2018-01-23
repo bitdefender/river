@@ -1,4 +1,4 @@
-#include "Common.h"
+#include "CommonCrossPlatform/CommonSpecifiers.h"
 
 #include "libxml/parser.h"
 #include "libxml/tree.h"

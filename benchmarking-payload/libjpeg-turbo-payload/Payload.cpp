@@ -1,4 +1,4 @@
-#include "Common.h"
+#include "CommonCrossPlatform/CommonSpecifiers.h"
 
 #include <turbojpeg.h>
 #include <stdint.h>
