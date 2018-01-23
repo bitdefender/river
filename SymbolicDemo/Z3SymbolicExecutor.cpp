@@ -346,6 +346,17 @@ template <Z3SymbolicExecutor::BVFunc func> void Z3SymbolicExecutor::SymbolicSetC
 	env->SetOperand(0, res);
 }
 
+template <Z3SymbolicExecutor::BVFunc func> void Z3SymbolicExecutor::SymbolicCmovCC(RiverInstruction *instruction, SymbolicOperands *ops) {
+	Z3_ast cond = Z3_mk_eq(context, (this->*func)(ops), oneFlag);
+	Z3_ast res = Z3_mk_ite(context,
+			cond,
+			(Z3_ast)ops->sv[1],
+			(Z3_ast)ops->sv[0]
+			);
+	printf("<sym> cmovcc %p <= src: %p cond: %p\n", res, cond, ops->sv[1]);
+	env->SetOperand(0, res);
+}
+
 /**/
 
 void Z3SymbolicExecutor::SymbolicExecuteNop(RiverInstruction *instruction, SymbolicOperands *ops) {}
@@ -966,37 +977,21 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x6C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
 		/*0x70*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3FLAG(RIVER_SPEC_IDX_OF)>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, 
 		/*0x71*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_OF))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_OF>, 
 		/*0x72*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3FLAG(RIVER_SPEC_IDX_CF)>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>, 
 		/*0x73*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_CF))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_CF>,
 		/*0x74*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3FLAG(RIVER_SPEC_IDX_ZF)>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, 
 		/*0x75*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_ZF))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_ZF>, 
 		/*0x76*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3OR(Z3FLAG(RIVER_SPEC_IDX_ZF), Z3FLAG(RIVER_SPEC_IDX_CF))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, true>,
 		/*0x77*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3NOT(Z3OR(Z3FLAG(RIVER_SPEC_IDX_ZF), Z3FLAG(RIVER_SPEC_IDX_CF)))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJBE<RIVER_SPEC_IDX_ZF, RIVER_SPEC_IDX_CF, false>,
 		/*0x78*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3FLAG(RIVER_SPEC_IDX_SF)>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, 
 		/*0x79*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_SF))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_SF>, 
 		/*0x7A*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3FLAG(RIVER_SPEC_IDX_PF)>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>, 
 		/*0x7B*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_PF))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCC<RIVER_SPEC_IDX_PF>,
 		/*0x7C*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3NOT(Z3EQUALS(Z3FLAG(RIVER_SPEC_IDX_SF), Z3FLAG(RIVER_SPEC_IDX_OF)))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCCCompare<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, false>, 
 		/*0x7D*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3EQUALS(Z3FLAG(RIVER_SPEC_IDX_SF), Z3FLAG(RIVER_SPEC_IDX_OF))>,
-			//&Z3SymbolicExecutor::SymbolicExecuteJCCCompare<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, true>,
 		/*0x7E*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3OR(Z3FLAG(RIVER_SPEC_IDX_ZF), Z3NOT(Z3EQUALS(Z3FLAG(RIVER_SPEC_IDX_SF), Z3FLAG(RIVER_SPEC_IDX_OF))))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCCCompareEq<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, RIVER_SPEC_IDX_ZF, false>, 
 		/*0x7F*/ &Z3SymbolicExecutor::SymbolicJumpCC<Z3NOT(Z3OR(Z3FLAG(RIVER_SPEC_IDX_ZF), Z3NOT(Z3EQUALS(Z3FLAG(RIVER_SPEC_IDX_SF), Z3FLAG(RIVER_SPEC_IDX_OF)))))>,
-			// &Z3SymbolicExecutor::SymbolicExecuteJCCCompareEq<RIVER_SPEC_IDX_SF, RIVER_SPEC_IDX_OF, RIVER_SPEC_IDX_ZF, false>,
 
 		/*0x80*/ &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeAssignmentOperations>, &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeAssignmentOperations>, &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeAssignmentOperations>, &Z3SymbolicExecutor::SymbolicExecuteSubOp<Z3SymbolicExecutor::executeAssignmentOperations>,
 		/*0x84*/ &Z3SymbolicExecutor::SymbolicExecuteCommonOperation<&Z3SymbolicExecutor::ExecuteTest, Z3_FLAG_OP_AND>, &Z3SymbolicExecutor::SymbolicExecuteCommonOperation<&Z3SymbolicExecutor::ExecuteTest, Z3_FLAG_OP_AND>, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
@@ -1058,10 +1053,22 @@ Z3SymbolicExecutor::SymbolicExecute Z3SymbolicExecutor::executeFuncs[2][0x100] =
 		/*0x38*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0x3C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 
-		/*0x40*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x44*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x48*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
-		/*0x4C*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
+		/*0x40*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3FLAG(RIVER_SPEC_IDX_OF)>,
+		/*0x41*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_OF))>,
+		/*0x42*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3FLAG(RIVER_SPEC_IDX_CF)>,
+		/*0x43*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_CF))>,
+		/*0x44*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3FLAG(RIVER_SPEC_IDX_ZF)>,
+		/*0x45*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_ZF))>,
+		/*0x46*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3OR(Z3FLAG(RIVER_SPEC_IDX_ZF), Z3FLAG(RIVER_SPEC_IDX_CF))>,
+		/*0x47*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3NOT(Z3OR(Z3FLAG(RIVER_SPEC_IDX_ZF), Z3FLAG(RIVER_SPEC_IDX_CF)))>,
+		/*0x48*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3FLAG(RIVER_SPEC_IDX_SF)>,
+		/*0x49*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_SF))>,
+		/*0x4A*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3FLAG(RIVER_SPEC_IDX_PF)>,
+		/*0x4B*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3NOT(Z3FLAG(RIVER_SPEC_IDX_PF))>,
+		/*0x4C*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3NOT(Z3EQUALS(Z3FLAG(RIVER_SPEC_IDX_SF), Z3FLAG(RIVER_SPEC_IDX_OF)))>,
+		/*0x4D*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3EQUALS(Z3FLAG(RIVER_SPEC_IDX_SF), Z3FLAG(RIVER_SPEC_IDX_OF))>,
+		/*0x4E*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3OR(Z3FLAG(RIVER_SPEC_IDX_ZF), Z3NOT(Z3EQUALS(Z3FLAG(RIVER_SPEC_IDX_SF), Z3FLAG(RIVER_SPEC_IDX_OF))))>,
+		/*0x4F*/ &Z3SymbolicExecutor::SymbolicCmovCC<Z3NOT(Z3OR(Z3FLAG(RIVER_SPEC_IDX_ZF), Z3NOT(Z3EQUALS(Z3FLAG(RIVER_SPEC_IDX_SF), Z3FLAG(RIVER_SPEC_IDX_OF)))))>,
 
 		/*0x50*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,
 		/*0x54*/ &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk, &Z3SymbolicExecutor::SymbolicExecuteUnk,

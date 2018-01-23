@@ -54,9 +54,10 @@ private:
 	template<Z3SymbolicExecutor::BVFunc func> Z3_ast Negate(SymbolicOperands * ops);
 	template<Z3SymbolicExecutor::BVFunc func1, Z3SymbolicExecutor::BVFunc func2> Z3_ast Equals(SymbolicOperands * ops);
 	template<Z3SymbolicExecutor::BVFunc func1, Z3SymbolicExecutor::BVFunc func2> Z3_ast Or(SymbolicOperands * ops);
-	
+
 	template<Z3SymbolicExecutor::BVFunc func> void SymbolicJumpCC(RiverInstruction * instruction, SymbolicOperands * ops);
 	template<Z3SymbolicExecutor::BVFunc func> void SymbolicSetCC(RiverInstruction * instruction, SymbolicOperands * ops);
+	template<Z3SymbolicExecutor::BVFunc func> void SymbolicCmovCC(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	void SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);
