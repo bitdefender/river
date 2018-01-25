@@ -1,0 +1,448 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% writeLaTeX Example: A quick guide to LaTeX
+%
+% Source: Dave Richeson (divisbyzero.com), Dickinson College
+% 
+% A one-size-fits-all LaTeX cheat sheet. Kept to two pages, so it 
+% can be printed (double-sided) on one piece of paper
+% 
+% Feel free to distribute this example, but please keep the referral
+% to divisbyzero.com
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% How to use writeLaTeX: 
+%
+% You edit the source code here on the left, and the preview on the
+% right shows you the result within a few seconds.
+%
+% Bookmark this page and share the URL with your co-authors. They can
+% edit at the same time!
+%
+% You can upload figures, bibliographies, custom classes and
+% styles using the files menu.
+%
+% If you're new to LaTeX, the wikibook is a great place to start:
+% http://en.wikibooks.org/wiki/LaTeX
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt,landscape]{article}
+\usepackage{amssymb,amsmath,amsthm,amsfonts}
+\usepackage{multicol,multirow}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage[landscape]{geometry}
+\usepackage[colorlinks=true,citecolor=blue,linkcolor=blue]{hyperref}
+
+
+\ifthenelse{\lengthtest { \paperwidth = 11in}}
+    { \geometry{top=.5in,left=.5in,right=.5in,bottom=.5in} }
+	{\ifthenelse{ \lengthtest{ \paperwidth = 297mm}}
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+	}
+\pagestyle{empty}
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%x
+                                {\normalfont\large\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
+                                {-1explus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%
+                                {\normalfont\normalsize\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {1ex plus .2ex}%
+                                {\normalfont\small\bfseries}}
+\makeatother
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+% -----------------------------------------------------------------------
+
+\title{Quick Guide to LaTeX}
+
+\begin{document}
+
+\raggedright
+\footnotesize
+
+\begin{center}
+     \Large{\textbf{A quick guide to \LaTeX}} \\
+\end{center}
+\begin{multicols}{3}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{2pt}
+
+\section{What is \LaTeX?}
+\LaTeX (usually pronounced ``LAY teck,'' sometimes ``LAH teck,'' and never ``LAY tex'') is a mathematics typesetting program that is the standard for most professional mathematics writing. It is based on the typesetting program \TeX\ created by Donald Knuth of Stanford University (his first version appeared in 1978). Leslie Lamport was responsible for creating \LaTeX\, a more user friendly version of \TeX. A team of \LaTeX\ programmers created the current version,  \LaTeX\ 2$\varepsilon$.
+
+\section{Math vs. text vs. functions}
+In properly typeset mathematics  variables appear in italics (e.g., $f(x)=x^{2}+2x-3$). The exception to this rule is predefined functions (e.g., $\sin (x)$). Thus it is important to \textbf{always} treat text, variables, and functions correctly. See the difference between $x$ and x, -1 and $-1$, and $sin(x)$ and $\sin(x)$.  
+
+There are two ways to present a mathematical expression--- \emph{inline} or as an \emph{equation}.
+
+\subsection{Inline mathematical expressions}
+Inline expressions occur in the middle of a sentence.  To produce an inline expression, place the math expression between dollar signs (\verb!$!).  For example, typing \verb!$90^{\circ}$ is the same as $\frac{\pi}{2}$ radians!  yields $90^{\circ}$ is the same as $\frac{\pi}{2}$ radians.
+
+\subsection{Equations}
+Equations are mathematical expressions that are given their own line and are centered on the page.  These are usually used for important equations that deserve to be showcased on their own line or for large equations that cannot fit inline. To produce an inline expression, place the mathematical expression  between the symbols  \verb!\[! and \verb!\]!. Typing \verb!\[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}\]! yields \[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}.\]
+ 
+\subsection{Displaystyle} 
+To get full-sized inline mathematical expressions  use  \verb!\displaystyle!. Use this sparingly. Typing \verb!I want this $\displaystyle \sum_{n=1}^{\infty}! \verb!\frac{1}{n}$, not this $\sum_{n=1}^{\infty}! \verb!\frac{1}{n}$.! yields\\ I want  this $\displaystyle \sum_{n=1}^{\infty}\frac{1}{n}$, not this $\sum_{n=1}^{\infty}\frac{1}{n}.$
+
+
+\section{Images}
+
+You can put images (pdf, png, jpg, or gif) in your document. They need to be in the same location as your .tex file when you compile the document. Omit   \verb![width=.5in]! if you want the image to be full-sized.
+
+\verb!\begin{figure}[ht]!\\
+\verb!\includegraphics[width=.5in]{imagename.jpg}!\\
+\verb!\caption{The (optional) caption goes here.}!\\
+\verb!\end{figure}!
+
+\subsection{Text decorations}
+
+Your text can be \textit{italics} (\verb!\textit{italics}!), \textbf{boldface} (\verb!\textbf{boldface}!), or \underline{underlined} (\verb!\underline{underlined}!).
+
+Your math can contain boldface, $\mathbf{R}$ (\verb!\mathbf{R}!), or blackboard bold, $\mathbb{R}$ (\verb!\mathbb{R}!). You may want to used these to express the sets of real numbers ($\mathbb{R}$ or $\mathbf{R}$), integers ($\mathbb{Z}$ or $\mathbf{Z}$), rational numbers ($\mathbb{Q}$ or $\mathbf{Q}$), and natural numbers ($\mathbb{N}$ or $\mathbf{N}$).
+
+To have text appear in a math expression use \verb!\text!. \verb!(0,1]=\{x\in\mathbb{R}:x>0\text{ and }x\le 1\}! yields $(0,1]=\{x\in\mathbb{R}:x>0\text{ and }x\le 1\}$. (Without the \verb!\text! command it treats ``and'' as three variables: $(0,1]=\{x\in\mathbb{R}:x>0 and x\le 1\}$.)
+
+
+
+\section{Spaces and new lines}
+
+\LaTeX\ ignores extra spaces and new lines. For example, 
+
+\verb!This   sentence will       look!
+
+\verb!fine after      it is     compiled.!
+
+This   sentence will       look
+fine after      it is     compiled.
+
+
+Leave one full empty line between two paragraphs. Place \verb!\\! at the end of a line to create a new line (but not create a new paragraph).
+
+\verb!This!
+
+\verb!compiles!
+
+~
+
+\verb!like\\!
+
+\verb!this.!
+
+This
+compiles 
+
+like\\
+this.
+
+Use  \verb!\noindent! to prevent a paragraph from indenting.
+
+\section{Comments}
+
+Use \verb!%! to create a comment. Nothing on the line after the \verb!%! will be typeset. \verb!$f(x)=\sin(x)$ %this is the sine function! yields $f(x)=\sin(x)$%this is the sine function
+
+\section{Delimiters}
+
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+parentheses &\verb!(x)! & (x)\\
+brackets &\verb![x]! & [x]\\
+curly braces& \verb!\{x\}! & \{x\}\\
+\end{tabular}
+
+To make your delimiters large enough to fit the content, use them together with \verb!\right! and \verb!\left!. For example, \verb!\left\{\sin\left(\frac{1}{n}\right)\right\}_{n}^! \verb!{\infty}! produces\\ $\displaystyle \left\{\sin\left(\frac{1}{n}\right)\right\}_{n}^{\infty}$.
+
+Curly braces are non-printing characters that are used to gather text that has more than one character. Observe the differences between the four expressions \verb!x^2!, \verb!x^{2}!, \verb!x^2t!, \verb!x^{2t}! when typeset: $x^2$, $x^{2}$, $x^2t$, $x^{2t}$.
+
+
+\section{Lists}
+
+You can produce ordered and unordered lists.
+
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+unordered list&
+\begin{tabular}{l}
+\verb!\begin{itemize}!\\
+\verb!  \item!\\
+\verb!  Thing 1!\\
+\verb!  \item!\\
+\verb!  Thing 2!\\
+\verb!\end{itemize}!
+\end{tabular}&
+\begin{tabular}{l}
+$\bullet$ Thing 1\\
+$\bullet$ Thing 2
+\end{tabular}\\
+~\\
+ordered list&
+\begin{tabular}{l}
+\verb!\begin{enumerate}!\\
+\verb!  \item!\\
+\verb!  Thing 1!\\
+\verb!  \item!\\
+\verb!  Thing 2!\\
+\verb!\end{enumerate}!
+\end{tabular}&
+\begin{tabular}{l}
+1.~Thing 1\\
+2.~Thing 2
+\end{tabular}
+\end{tabular}
+
+
+\section{Symbols (in \emph{math} mode)}
+
+\subsection{The basics}
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+addition & \verb!+! & $+$\\
+subtraction & \verb!-! & $-$\\
+plus or minus & \verb!\pm! & $\pm$\\
+multiplication (times) & \verb!\times! & $\times$\\
+multiplication (dot) & \verb!\cdot! & $\cdot$\\
+division symbol & \verb!\div! & $\div$\\
+division (slash) & \verb!/! & $/$\\
+circle plus & \verb!\oplus! & $\oplus$\\
+circle times & \verb!\otimes! & $\otimes$\\
+equal & \verb!=! & $=$\\
+not equal & \verb!\ne! & $\ne$\\
+less than & \verb!<! & $<$\\
+greater than & \verb!>! & $>$\\
+less than or equal to & \verb!\le! & $\le$\\
+greater than or equal to & \verb!\ge! & $\ge$\\
+approximately equal to & \verb!\approx! & $\approx$\\
+infinity & \verb!\infty! & $\infty$\\
+dots & \verb!1,2,3,\ldots! & $1,2,3,\ldots$\\
+dots & \verb!1+2+3+\cdots! & $1+2+3+\cdots$\\
+fraction & \verb!\frac{a}{b}! & $\frac{a}{b}$\\
+square root & \verb!\sqrt{x}! & $\sqrt{x}$\\
+$n$th root & \verb!\sqrt[n]{x}! & $\sqrt[n]{x}$\\
+exponentiation & \verb!a^b! & $a^{b}$\\
+subscript & \verb!a_b! & $a_{b}$\\
+absolute value & \verb!|x|! & $|x|$\\
+natural log  & \verb!\ln(x)! & $\ln(x)$\\
+logarithms & \verb!\log_{a}b! & $\log_{a}b$\\
+exponential function & \verb!e^x=\exp(x)! & $e^{x}=\exp(x)$\\
+degree & \verb!\deg(f)! & $\deg(f)$\\
+\end{tabular}
+\newpage
+
+\subsection{Functions}
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+maps to & \verb!\to! & $\to$\\
+composition& \verb!\circ! & $\circ$\\
+piecewise& \verb!|x|=! & \multirow{5}{*}{$\displaystyle |x|=\begin{cases}x&x\ge 0\\-x&x<0\end{cases}$}\\
+function&\verb!\begin{cases}!&\\ 
+&\verb!x & x\ge 0\\!&\\ 
+&\verb!-x & x<0!&\\ 
+&\verb!\end{cases}!&
+\end{tabular}
+
+\subsection{Greek and Hebrew letters}
+\begin{tabular}{llll}
+\emph{command} & \emph{output}&\emph{command} & \emph{output}\\
+\verb!\alpha! & $\alpha$&\verb!\tau! & $\tau$\\
+\verb!\beta! & $\beta$&\verb!\theta! & $\theta$\\
+\verb!\chi! & $\chi$&\verb!\upsilon! & $\upsilon$\\
+\verb!\delta! & $\delta$&\verb!\xi! & $\xi$\\
+\verb!\epsilon! & $\epsilon$&\verb!\zeta! & $\zeta$\\
+\verb!\varepsilon! & $\varepsilon$&\verb!\Delta! & $\Delta$\\
+\verb!\eta! & $\eta$&\verb!\Gamma! & $\Gamma$\\
+\verb!\gamma! & $\gamma$&\verb!\Lambda! & $\Lambda$\\
+\verb!\iota! & $\iota$&\verb!\Omega! & $\Omega$\\
+\verb!\kappa! & $\kappa$&\verb!\Phi! & $\Phi$\\
+\verb!\lambda! & $\lambda$&\verb!\Pi! & $\Pi$\\
+\verb!\mu! & $\mu$&\verb!\Psi! & $\Psi$\\
+\verb!\nu! & $\nu$&\verb!\Sigma! & $\Sigma$\\
+\verb!\omega! & $\omega$&\verb!\Theta! & $\Theta$\\
+\verb!\phi! & $\phi$&\verb!\Upsilon! & $\Upsilon$\\
+\verb!\varphi! & $\varphi$&\verb!\Xi! & $\Xi$\\
+\verb!\pi! & $\pi$&\verb!\aleph! & $\aleph$\\
+\verb!\psi! & $\psi$&\verb!\beth! & $\beth$\\
+\verb!\rho! & $\rho$&\verb!\daleth! & $\daleth$\\
+\verb!\sigma! & $\sigma$&\verb!\gimel! & $\gimel$
+\end{tabular}
+
+
+\subsection{Set theory}
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+set brackets & \verb!\{1,2,3\}! & $\{1,2,3\}$\\
+element of & \verb!\in! & $\in$\\
+not an element of & \verb!\not\in! & $\not\in$\\
+subset of & \verb!\subset! & $\subset$\\
+subset of & \verb!\subseteq! & $\subseteq$\\
+not a subset of & \verb!\not\subset! & $\not\subset$\\
+contains & \verb!\supset! & $\supset$\\
+contains & \verb!\supseteq! & $\supseteq$\\
+union & \verb!\cup! & $\cup$\\
+intersection & \verb!\cap! & $\cap$\\
+big union & 
+\verb!\bigcup_{n=1}^{10}A_n! &
+$\displaystyle \bigcup_{n=1}^{10}A_{n}$\\
+big intersection & \verb!\bigcap_{n=1}^{10}A_n! &$\displaystyle \bigcap_{n=1}^{10}A_{n}$\\
+empty set & \verb!\emptyset! & $\emptyset$\\
+power set & \verb!\mathcal{P}! & $\mathcal{P}$\\
+minimum & \verb!\min! & $\min$\\
+maximum & \verb!\max! & $\max$\\
+supremum & \verb!\sup! & $\sup$\\
+infimum & \verb!\inf! & $\inf$\\
+limit superior & \verb!\limsup! & $\limsup$\\
+limit inferior & \verb!\liminf! & $\liminf$\\
+closure & \verb!\overline{A}! & $\overline{A}$
+\end{tabular}
+
+\subsection{Calculus}
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+derivative & \verb!\frac{df}{dx}! & $\displaystyle \frac{df}{dx}$\\
+derivative & \verb!\f'! & $f'$\\
+partial derivative & 
+\begin{tabular}{l}
+\verb!\frac{\partial f}!\\ \verb!{\partial x}! 
+\end{tabular}& $\displaystyle \frac{\partial f}{\partial x}$\\
+integral & \verb!\int! & $\displaystyle\int$\\
+double integral & \verb!\iint! & $\displaystyle\iint$\\
+triple integral & \verb!\iiint! & $\displaystyle\iiint$\\
+limits & \verb!\lim_{x\to \infty}! & $\displaystyle \lim_{x\to \infty}$\\
+summation  & 
+\verb!\sum_{n=1}^{\infty}a_n! &
+$\displaystyle \sum_{n=1}^{\infty}a_n$\\
+product  & 
+\verb!\prod_{n=1}^{\infty}a_n! &
+$\displaystyle \prod_{n=1}^{\infty}a_n$
+\end{tabular}
+
+
+
+
+\subsection{Logic}
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+not & \verb!\sim! & $\sim$\\
+and & \verb!\land! & $\land$\\
+or & \verb!\lor! & $\lor$\\
+if...then & \verb!\to! & $\to$\\
+if and only if & \verb!\leftrightarrow! & $\leftrightarrow$\\
+logical equivalence & \verb!\equiv! & $\equiv$\\
+therefore & \verb!\therefore! & $\therefore$\\
+there exists  & \verb!\exists! & $\exists$\\
+for all & \verb!\forall! & $\forall$\\
+implies & \verb!\Rightarrow! & $\Rightarrow$\\
+equivalent & \verb!\Leftrightarrow! & $\Leftrightarrow$
+\end{tabular}
+
+\subsection{Linear algebra}
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+vector & \verb!\vec{v}! & $\vec{v}$\\
+vector & \verb!\mathbf{v}! & $\mathbf{v}$\\
+norm & \verb!||\vec{v}||! & $||\vec{v}||$\\
+matrix&
+\begin{tabular}{l}
+\verb!\left[!\\
+\verb!\begin{array}{ccc}!\\
+\verb!1 & 2 & 3 \\!\\
+\verb!4 & 5 & 6\\!\\
+\verb!7 & 8 & 0!\\
+\verb!\end{array}!\\
+\verb!\right]!\end{tabular}&
+$\displaystyle \left[\begin{array}{ccc}1 & 2 & 3 \\4 & 5 & 6 \\7 & 8 & 0\end{array}\right]$\\
+\\determinant&
+\begin{tabular}{l}
+\verb!\left|!\\
+\verb!\begin{array}{ccc}!\\
+\verb!1 & 2 & 3 \\!\\
+\verb!4 & 5 & 6 \\!\\
+\verb!7 & 8 & 0!\\
+\verb!\end{array}!\\
+\verb!\right|!
+\end{tabular}&
+$\displaystyle \left|\begin{array}{ccc}1 & 2 & 3 \\4 & 5 & 6 \\7 & 8 & 0\end{array}\right|$\\
+determinant & \verb!\det(A)! & $ \det(A)$\\
+trace & \verb!\operatorname{tr}(A)! & $\operatorname{tr}(A)$\\
+dimension & \verb!\dim(V)! & $\dim(V)$\\
+\end{tabular}
+
+\subsection{Number theory}
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+divides & \verb!|! & $|$\\
+does not divide & \verb!\not |! & $\not |$\\
+div & \verb!\operatorname{div}! & $\operatorname{div}$\\
+mod & \verb!\mod! & $\operatorname{mod}$\\
+greatest common divisor & \verb!\gcd! & $\gcd$\\
+ceiling & \verb!\lceil x \rceil! & $\lceil x\rceil$\\
+floor & \verb!\lfloor x \rfloor! & $\lfloor x \rfloor$\\
+\end{tabular}
+
+
+
+
+\subsection{Geometry and trigonometry}
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+angle& \verb!\angle ABC! & $\angle ABC$\\
+degree& \verb!90^{\circ}! & $90^{\circ}$\\
+triangle& \verb!\triangle ABC! & $\triangle ABC$\\
+segment& \verb!\overline{AB}! & $\overline{AB}$\\
+sine& \verb!\sin! & $\sin$\\
+cosine& \verb!\cos! & $\cos$\\
+tangent& \verb!\tan! & $\tan$\\
+cotangent& \verb!\cot! & $\cot$\\
+secant& \verb!\sec! & $\sec$\\
+cosecant& \verb!\csc! & $\csc$\\
+inverse sine& \verb!\arcsin! & $\arcsin$\\
+inverse cosine& \verb!\arccos! & $\arccos$\\
+inverse tangent& \verb!\arctan! & $\arctan$\\
+\end{tabular}
+
+\section{Symbols (in \emph{text} mode)}
+
+The followign symbols do \textbf{not} have to be surrounded by dollar signs.
+
+\begin{tabular}{lll}
+\emph{description} & \emph{command} & \emph{output}\\
+dollar sign & \verb!\$! & \$ \\
+percent & \verb!\%! & \% \\
+ampersand & \verb!\&! & \& \\
+pound & \verb!\#! & \# \\
+backslash & \verb!\textbackslash! & \textbackslash \\
+left quote marks & \verb!``! & `` \\
+right quote marks & \verb!''! & '' \\
+single left quote  & \verb!`! & ` \\
+single right quote  & \verb!'! & ' \\
+hyphen & \verb!X-ray! & X-ray\\
+en-dash & \verb!pp. 5--15! & pp. 5--15 \\
+em-dash & \verb!Yes---or no?! & Yes---or no? 
+\end{tabular}
+
+\section{Resources}
+Great symbol look-up site: \href{http://detexify.kirelabs.org/}{Detexify}\\
+\href{http://amath.colorado.edu/documentation/LaTeX/Symbols.pdf}{\LaTeX\ Mathematical Symbols}\\
+\href{ftp://tug.ctan.org/pub/tex-archive/info/symbols/comprehensive/symbols-letter.pdf}{The Comprehensive \LaTeX\ Symbol List}\\ 
+\href{http://mirrors.med.harvard.edu/ctan/info/lshort/english/lshort.pdf}{The Not So Short Introduction to \LaTeX\ 2$\varepsilon$}\\
+\href{http://www.tug.org/}{TUG: The \TeX\ Users Group}\\
+\href{http://www.ctan.org/}{CTAN: The Comprehensive \TeX\ Archive Network}\\
+~\\
+\LaTeX\ for the Mac: \href{http://www.tug.org/mactex/}{Mac\TeX}\\
+\LaTeX\ for the PC: \href{http://www.texniccenter.org/}{{\TeX}nicCenter} and \href{http://miktex.org/}{MiK\TeX}\\
+\LaTeX\ online: \href{http://www.writelatex.com/}{WriteLaTeX}.
+\vfill
+\hrule
+~\\
+Dave Richeson, Dickinson College, \href{http://divisbyzero.com/}{http://divisbyzero.com/}
+\end{multicols}
+
+\end{document}
