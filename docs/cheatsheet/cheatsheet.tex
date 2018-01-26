@@ -34,6 +34,7 @@
 \usepackage[landscape]{geometry}
 \usepackage[colorlinks=true,citecolor=blue,linkcolor=blue]{hyperref}
 \usepackage{listings}
+\usepackage{balance}
 
 
 \ifthenelse{\lengthtest { \paperwidth = 11in}}
@@ -75,7 +76,7 @@
 \begin{center}
 	\Large{\textbf{{\river} Cheat Sheet}} \\
 \end{center}
-\begin{multicols}{3}
+\begin{multicols*}{3}
 \setlength{\premulticols}{1pt}
 \setlength{\postmulticols}{1pt}
 \setlength{\multicolsep}{1pt}
@@ -206,9 +207,6 @@
 		RIVER\_ADDR\_DIRTY & 0x80\\
 	\end{tabular}
 
-	\subsection{struct RiverAddress}
-	\lstinputlisting[language=C]{code/RiverAddress.h}
-
 	\subsection{{\river} Operand Types}
 	\begin{tabular}{p{6cm} p{1.3cm}}
 		RIVER\_OPTYPE\_NONE & 0x00\\
@@ -236,26 +234,17 @@
 		RIVER\_SPEC\_IDX\_DF & 0x06\\
 	\end{tabular}
 
+	\section{Structure Definitions}
+	\subsection{struct RiverAddress}
+	\lstinputlisting[language=C]{code/RiverAddress.h}
 
+	\newpage
 	\subsection{struct RiverOperand}
 	\lstinputlisting[language=C]{code/RiverOperand.h}
 
+	\subsection{struct RiverInstruction}
+	\lstinputlisting[language=C]{code/RiverInstruction.h}
 
-\section{Resources}
-Great symbol look-up site: \href{http://detexify.kirelabs.org/}{Detexify}\\
-\href{http://amath.colorado.edu/documentation/LaTeX/Symbols.pdf}{\LaTeX\ Mathematical Symbols}\\
-\href{ftp://tug.ctan.org/pub/tex-archive/info/symbols/comprehensive/symbols-letter.pdf}{The Comprehensive \LaTeX\ Symbol List}\\ 
-\href{http://mirrors.med.harvard.edu/ctan/info/lshort/english/lshort.pdf}{The Not So Short Introduction to \LaTeX\ 2$\varepsilon$}\\
-\href{http://www.tug.org/}{TUG: The \TeX\ Users Group}\\
-\href{http://www.ctan.org/}{CTAN: The Comprehensive \TeX\ Archive Network}\\
-~\\
-\LaTeX\ for the Mac: \href{http://www.tug.org/mactex/}{Mac\TeX}\\
-\LaTeX\ for the PC: \href{http://www.texniccenter.org/}{{\TeX}nicCenter} and \href{http://miktex.org/}{MiK\TeX}\\
-\LaTeX\ online: \href{http://www.writelatex.com/}{WriteLaTeX}.
-\vfill
-\hrule
-~\\
-Dave Richeson, Dickinson College, \href{http://divisbyzero.com/}{http://divisbyzero.com/}
-\end{multicols}
+\end{multicols*}
 
 \end{document}
