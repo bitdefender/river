@@ -223,6 +223,29 @@
 		RIVER\_OPSIZE\_8 & 0x02\\
 	\end{tabular}
 
+	\subsection{{\river} Operation Specifiers}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_SPEC\_MODIFIES\_OP1 & 0x0001\\
+		RIVER\_SPEC\_MODIFIES\_OP2 & 0x0002\\
+		RIVER\_SPEC\_MODIFIES\_OP3 & 0x0004\\
+		RIVER\_SPEC\_MODIFIES\_OP4 & 0x0008\\
+		\\
+		RIVER\_SPEC\_MODIFIES\_FLG & 0x0010\\
+		\\
+		RIVER\_SPEC\_MODIFIES\_xSP & 0x0020\\
+		\\
+		RIVER\_SPEC\_MODIFIES\_CUSTOM & 0x0040\\
+		\\
+		RIVER\_SPEC\_IGNORES\_MEMORY & 0x0080\\
+		\\
+		RIVER\_SPEC\_IGNORES\_OP1 & 0x0100\\
+		RIVER\_SPEC\_IGNORES\_OP2 & 0x0200\\
+		RIVER\_SPEC\_IGNORES\_OP3 & 0x0400\\
+		RIVER\_SPEC\_IGNORES\_OP4 & 0x0800\\
+		\\
+		RIVER\_SPEC\_IGNORES\_FLG & 0x1000\\
+	\end{tabular}
+
 	\subsection{{\river} Operation Flags}
 	\begin{tabular}{p{6cm} p{1.3cm}}
 		RIVER\_SPEC\_IDX\_CF & 0x00\\
@@ -234,14 +257,15 @@
 		RIVER\_SPEC\_IDX\_DF & 0x06\\
 	\end{tabular}
 
+	\newpage
 	\section{Structure Definitions}
 	\subsection{struct RiverAddress}
 	\lstinputlisting[language=C]{code/RiverAddress.h}
 
-	\newpage
 	\subsection{struct RiverOperand}
 	\lstinputlisting[language=C]{code/RiverOperand.h}
 
+	\columnbreak
 	\subsection{struct RiverInstruction}
 	\lstinputlisting[language=C]{code/RiverInstruction.h}
 
