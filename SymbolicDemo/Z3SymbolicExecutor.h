@@ -61,6 +61,7 @@ private:
 
 	void SymbolicExecuteMov(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovSx(RiverInstruction *instruction, SymbolicOperands *ops);
+	void SymbolicExecuteMovS(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteMovZx(RiverInstruction *instruction, SymbolicOperands *ops);
 
 	void SymbolicExecuteImul(RiverInstruction *instruction, SymbolicOperands *ops);
