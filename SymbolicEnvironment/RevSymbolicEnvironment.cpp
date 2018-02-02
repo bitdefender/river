@@ -14,6 +14,17 @@ static nodep::BYTE _GetFundamentalRegister(nodep::BYTE reg) {
 void NoAddRef(void *) {}
 void NoDecRef(void *) {}
 
+nodep::DWORD TrackAddrWrapper(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD segSel) {
+	nodep::DWORD ret = TrackAddr(pEnv, dwAddr, segSel);
+	printf("<info> TrackAddr 0x%08lx => 0x%08lx\n", dwAddr, ret);
+	return ret;
+}
+
+nodep::DWORD MarkAddrWrapper(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel) {
+	printf("<info> MarkAddr 0x%08lx <= %lu\n", dwAddr, value);
+	return MarkAddr(pEnv, dwAddr, value, segSel);
+}
+
 RevSymbolicEnvironment::RevSymbolicEnvironment(void *revEnv, ExecutionController *ctl) {
 	ctrl = ctl;
 	pEnv = revEnv;
@@ -86,7 +97,7 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 }
 
 template <nodep::BYTE offset, nodep::BYTE size> void *RevSymbolicEnvironment::GetSubexpression(nodep::DWORD address) {
-	void *symExpr = (void *)TrackAddr(pEnv, address, 0);
+	void *symExpr = (void *)TrackAddrWrapper(pEnv, address, 0);
 	if (symExpr == nullptr) {
 		return nullptr;
 	}
@@ -95,7 +106,7 @@ template <nodep::BYTE offset, nodep::BYTE size> void *RevSymbolicEnvironment::Ge
 }
 
 template <> void *RevSymbolicEnvironment::GetSubexpression<0, 4>(nodep::DWORD address) {
-	void *symExpr = (void *)TrackAddr(pEnv, address, 0);
+	void *symExpr = (void *)TrackAddrWrapper(pEnv, address, 0);
 
 	if (nullptr != symExpr) {
 		addRefFunc(symExpr);
@@ -160,7 +171,7 @@ template<nodep::BYTE offset, nodep::BYTE size> void RevSymbolicEnvironment::SetS
 	decRefFunc(ret2);
 	decRefFunc(ret3);
 		
-	nodep::DWORD r = MarkAddr(pEnv, address, (nodep::DWORD)ret4, 0);
+	nodep::DWORD r = MarkAddrWrapper(pEnv, address, (nodep::DWORD)ret4, 0);
 	if (0 != r) {
 		decRefFunc((void *)r);
 	}
@@ -173,7 +184,7 @@ template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(voi
 	
 	decRefFunc(ret1);
 	//addRefFunc(ret2);
-	nodep::DWORD r = MarkAddr(pEnv, address, (nodep::DWORD)ret2, 0);
+	nodep::DWORD r = MarkAddrWrapper(pEnv, address, (nodep::DWORD)ret2, 0);
 	if (0 != r) {
 		decRefFunc((void *)r);
 	}
@@ -371,7 +382,7 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 		}
 
 		symExpr = GetExpression(opBase[-((int)addressOffsets[opInfo.opIdx])],
-				RIVER_OPSIZE(current->opTypes[opInfo.opIdx])); //(void *)TrackAddr(pEnv, opBase[-(addressOffsets[opInfo.opIdx])], 0);
+				RIVER_OPSIZE(current->opTypes[opInfo.opIdx])); //(void *)TrackAddrWrapper(pEnv, opBase[-(addressOffsets[opInfo.opIdx])], 0);
 		opInfo.isTracked = (symExpr != NULL);
 		opInfo.symbolic = symExpr;
 		opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
@@ -457,7 +468,7 @@ bool RevSymbolicEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, 
 			//printf("[%d] SetOperand Mem Reg <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
 		}
 		else {
-			//MarkAddr(pEnv, opBase[-(addressOffsets[opIdx])], (rev::DWORD)symbolicValue, 0);
+			//MarkAddrWrapper(pEnv, opBase[-(addressOffsets[opIdx])], (rev::DWORD)symbolicValue, 0);
 			SetExpression(symbolicValue, opBase[-((int)addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx]), &opBase[-((int)valueOffsets[opIdx])]);
 			//printf("[%d] SetOperand Mem <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
 		}
