@@ -45,7 +45,7 @@ public :
 
 private :
 	/* Translation helpers */
-	void MakeInitTrack(RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
+	void MakeInitTrack(const RiverInstruction &rIn, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 	void MakeCleanTrack(RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 
 	nodep::DWORD MakeTrackFlg(nodep::BYTE flags, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);

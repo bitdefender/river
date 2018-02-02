@@ -36,7 +36,7 @@ bool SymbopTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *
 	return true;
 }
 
-void SymbopTranslator::MakeInitTrack(RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+void SymbopTranslator::MakeInitTrack(const RiverInstruction &rIn, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
 	trackedValues = 0;
 
 	rTrackOut->opCode = 0xB8; // mov eax, 0
@@ -51,6 +51,7 @@ void SymbopTranslator::MakeInitTrack(RiverInstruction *&rTrackOut, nodep::DWORD 
 	rTrackOut->operands[1].asImm32 = 0;
 
 	rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
+	rTrackOut->instructionAddress = rIn.instructionAddress;
 
 	rTrackOut++;
 	trackCount++;
@@ -387,7 +388,7 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 	nodep::DWORD valueOffsets[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
 	nodep::DWORD flagOffset = 0xFFFFFFFF;
 
-	MakeInitTrack(rTrackOut, trackCount);
+	MakeInitTrack(rIn, rTrackOut, trackCount);
 
 	if ((0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) || (rIn.modFlags)) {
 		// TODO: flag unset for ignored flags!
