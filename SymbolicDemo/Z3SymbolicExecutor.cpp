@@ -678,7 +678,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMovZx(RiverInstruction *instruction, Sym
 		Z3_ast dst = Z3_mk_zero_ext(context, 32 - size, (Z3_ast)ops->sv[1]);
 		env->SetOperand(0, (void *)dst);
 
-		printf("<sym> movzx %p <= %p\n", dst, ops->sv[1]);
+		printf("<sym> movzx %p <= %p[%d]\n", dst, ops->sv[1], size);
 	}
 	else {
 		env->UnsetOperand(0);
