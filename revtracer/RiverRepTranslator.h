@@ -11,6 +11,8 @@ class RiverRepTranslator {
 		bool Translate(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount);
 	private:
 		RiverCodeGen *codegen;
+		void TranslateDefault(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount);
+		void TranslateCommon(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount, nodep::DWORD riverModifier);
 };
 
 #endif
