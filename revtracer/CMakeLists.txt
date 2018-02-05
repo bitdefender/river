@@ -33,7 +33,9 @@ add_library(revtracer SHARED
 	RelocableCodeBuffer.cpp
 	revtracer.cpp
 	RiverAddress.cpp
+	TranslatorUtil.cpp
 	RiverMetaTranslator.cpp
+	RiverRepTranslator.cpp
 	RiverPrintTable.cpp
 	RiverReverseTranslator.cpp
 	RiverSaveTranslator.cpp

@@ -1,17 +1,6 @@
 #include "SymbopReverseTranslator.h"
 #include "CodeGen.h"
-
-void SymbopReverseTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	rev_memcpy(&rOut, &rIn, sizeof(rOut));
-
-	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[0])) {
-		rOut.operands[0].asAddress = codegen->CloneAddress(*rIn.operands[0].asAddress, rIn.modifiers);
-	}
-
-	if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[1])) {
-		rOut.operands[1].asAddress = codegen->CloneAddress(*rIn.operands[1].asAddress, rIn.modifiers);
-	}
-}
+#include "TranslatorUtil.h"
 
 bool SymbopReverseTranslator::Init(RiverCodeGen *cg) {
 	codegen = cg;
@@ -47,22 +36,22 @@ bool SymbopReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstru
 				return false;
 				break;
 			default :
-				CopyInstruction(rOut, rIn);
+				CopyInstruction(codegen, rOut, rIn);
 				rOut.family |= RIVER_FAMILY_FLAG_IGNORE;
 				break;
 		};
 	} else if (RIVER_FAMILY_TRACK == RIVER_FAMILY(rIn.family)) {
 		switch (rIn.opCode) {
 			case 0x8F :
-				CopyInstruction(rOut, rIn);
+				CopyInstruction(codegen, rOut, rIn);
 				break;
 			default :
-				CopyInstruction(rOut, rIn);
+				CopyInstruction(codegen, rOut, rIn);
 				rOut.family |= RIVER_FAMILY_FLAG_IGNORE;
 				break;
 		}
 	} else {
-		CopyInstruction(rOut, rIn);
+		CopyInstruction(codegen, rOut, rIn);
 		rOut.family |= RIVER_FAMILY_FLAG_IGNORE;
 	}
 
@@ -70,17 +59,17 @@ bool SymbopReverseTranslator::Translate(const RiverInstruction &rIn, RiverInstru
 }
 
 void SymbopReverseTranslator::TranslatePushReg(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	CopyInstruction(rOut, rIn);
+	CopyInstruction(codegen, rOut, rIn);
 	rOut.opCode += 8;
 }
 
 void SymbopReverseTranslator::TranslatePushFlg(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	CopyInstruction(rOut, rIn);
+	CopyInstruction(codegen, rOut, rIn);
 	rOut.opCode += 1;
 }
 
 void SymbopReverseTranslator::TranslatePushMem(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	CopyInstruction(rOut, rIn);
+	CopyInstruction(codegen, rOut, rIn);
 	rOut.opCode = 0x8F;
 	rOut.subOpCode = 0;
 }

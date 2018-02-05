@@ -11,8 +11,6 @@ class RiverCodeGen;
 class RiverReverseTranslator {
 private :
 	RiverCodeGen *codegen;
-	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
-
 	typedef void(RiverReverseTranslator::*TranslateOpcodeFunc)(RiverInstruction &rOut, const RiverInstruction &rIn);
 
 	static TranslateOpcodeFunc translateOpcodes[2][0x100];

@@ -11,7 +11,6 @@ class RiverCodeGen;
 class SymbopReverseTranslator {
 private :
 	RiverCodeGen *codegen;
-	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
 
 public :
 	bool Init(RiverCodeGen *cg);

@@ -32,8 +32,6 @@ private :
 
 	RiverCodeGen *codegen;
 
-	void CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn);
-
 	nodep::DWORD GetMemRepr(const RiverAddress &mem);
 
 	typedef void(SymbopTranslator::*TranslateOpcodeFunc)(const RiverInstruction &rIn, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount, nodep::DWORD dwTranslationFlags);

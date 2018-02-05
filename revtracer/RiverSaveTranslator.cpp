@@ -1,15 +1,6 @@
 #include "RiverSaveTranslator.h"
 #include "CodeGen.h"
-
-void RiverSaveTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	rev_memcpy(&rOut, &rIn, sizeof(rOut));
-
-	for (int i = 0; i < 4; ++i) {
-		if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[i])) {
-			rOut.operands[i].asAddress = codegen->CloneAddress(*rIn.operands[i].asAddress, rIn.modifiers);
-		}
-	}
-}
+#include "TranslatorUtil.h"
 
 bool RiverSaveTranslator::Init(RiverCodeGen *cg) {
 	codegen = cg;
@@ -22,7 +13,7 @@ bool RiverSaveTranslator::Translate(const RiverInstruction &rIn, RiverInstructio
 	if (RIVER_FAMILY(rIn.family) == RIVER_FAMILY_NATIVE) {
 		(this->*translateOpcodes[dwTable][rIn.opCode])(rOut, rIn, instrCount);
 	} else {
-		CopyInstruction(rOut[0], rIn);
+		CopyInstruction(codegen, rOut[0], rIn);
 		instrCount++;
 	}
 
@@ -150,7 +141,7 @@ void RiverSaveTranslator::SaveOperands(RiverInstruction *rOut, const RiverInstru
 		}
 	}
 
-	CopyInstruction(*rOut, rIn);
+	CopyInstruction(codegen, *rOut, rIn);
 	instrCount++;
 }
 
@@ -191,7 +182,7 @@ void RiverSaveTranslator::TranslateSaveCPUID(RiverInstruction *rOut, const River
 	instrCount++;
 	rOut++;
 
-	CopyInstruction(*rOut, rIn);
+	CopyInstruction(codegen, *rOut, rIn);
 	instrCount++;
 	rOut++;
 }
@@ -221,7 +212,7 @@ void RiverSaveTranslator::TranslateSaveCMPXCHG8B(RiverInstruction *rOut, const R
 	instrCount++;
 	rOut++;
 
-	CopyInstruction(*rOut, rIn);
+	CopyInstruction(codegen, *rOut, rIn);
 	instrCount++;
 	rOut++;
 }

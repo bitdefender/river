@@ -1,16 +1,7 @@
 #include "SymbopTranslator.h"
 
 #include "CodeGen.h"
-
-void SymbopTranslator::CopyInstruction(RiverInstruction &rOut, const RiverInstruction &rIn) {
-	rev_memcpy(&rOut, &rIn, sizeof(rOut));
-
-	for (int i = 0; i < 4; ++i) {
-		if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[i])) {
-			rOut.operands[i].asAddress = codegen->CloneAddress(*rIn.operands[i].asAddress, rIn.modifiers);
-		}
-	}
-}
+#include "TranslatorUtil.h"
 
 nodep::DWORD SymbopTranslator::GetMemRepr(const RiverAddress &mem) {
 	return 0;
@@ -24,7 +15,7 @@ bool SymbopTranslator::Init(RiverCodeGen *cg) {
 bool SymbopTranslator::Translate(const RiverInstruction &rIn, RiverInstruction *rMainOut, nodep::DWORD &instrCount, RiverInstruction *rTrackOut, nodep::DWORD &trackCount, nodep::DWORD dwTranslationFlags) {
 	if ((RIVER_FAMILY(rIn.family) == RIVER_FAMILY_RIVER) || (RIVER_FAMILY_FLAG_METAPROCESSED & rIn.family)) {
 		/* do not track river operations */
-		CopyInstruction(*rMainOut, rIn);
+		CopyInstruction(codegen, *rMainOut, rIn);
 		rMainOut++;
 		instrCount++;
 		return true;
@@ -406,7 +397,7 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 	}
 
 	// make opcode
-	CopyInstruction(*rMainOut, rIn);
+	CopyInstruction(codegen, *rMainOut, rIn);
 	rMainOut++;
 	instrCount++;
 
