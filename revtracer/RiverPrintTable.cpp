@@ -54,6 +54,9 @@ void PrintPrefixes(nodep::DWORD printMask, struct RiverInstruction *ri) {
 		case RIVER_FAMILY_RIVER_TRACK:
 			revtracerImports.dbgPrintFunc(printMask, "rivertrack");
 			break;
+		case RIVER_FAMILY_REP:
+			revtracerImports.dbgPrintFunc(printMask, "rep");
+			break;
 	}
 }
 
@@ -68,6 +71,21 @@ void PrintMnemonic(nodep::DWORD printMask, struct RiverInstruction *ri) {
 		revtracerImports.dbgPrintFunc(printMask, "%s ", mTable[ri->opCode]);
 	} else {
 		revtracerImports.dbgPrintFunc(printMask, "%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
+	}
+
+	if (ri->family == RIVER_FAMILY_REP) {
+		switch(ri->opCode) {
+			case 0xF2:
+				revtracerImports.dbgPrintFunc(printMask, "repinit");
+				break;
+			case 0xF3:
+				revtracerImports.dbgPrintFunc(printMask, "repfini");
+				break;
+			case 0xE9: case 0xE0: case 0xE1: case 0xE2:
+				break;
+			default:
+				DEBUG_BREAK;
+		}
 	}
 }
 
@@ -212,7 +230,7 @@ const char PrintMnemonicTable00[][10] = {
 	/*0xB0*/"mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov", "mov",
 	/*0xC0*/"\2", "\2", "retn", "retn", "", "", "mov", "mov", "", "leave", "", "", "", "", "", "",
 	/*0xD0*/"\2", "\2", "\2", "\2", "", "", "", "", "", "", "", "", "", "", "", "",
-	/*0xE0*/"", "", "", "jecx", "", "", "", "", "call", "jmp", "jmpf", "jmp", "", "", "", "",
+	/*0xE0*/"loopnz", "loopz", "loop", "jecx", "", "", "", "", "call", "jmp", "jmpf", "jmp", "", "", "", "",
 	/*0xF0*/"", "", "", "", "", "", "\4", "\4", "", "", "", "", "cld", "std", "\6", "\3"
 };
 

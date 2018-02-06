@@ -142,8 +142,10 @@ bool X86Assembler::TranslateNative(const RiverInstruction &ri, RelocableCodeBuff
 
 	if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_RIVER) {
 		casm = &rAsm;
+	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_REP) {
+		casm = &rrAsm;
 	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_TRACK) {
-		casm = &tAsm; 
+		casm = &tAsm;
 	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_PRETRACK) {
 		casm = &ptAsm;
 	} else if (RIVER_FAMILY(rOut->family) == RIVER_FAMILY_RIVER_TRACK) {
@@ -422,6 +424,7 @@ bool X86Assembler::Init(RiverRuntime *runtime, nodep::DWORD dwTranslationFlags) 
 
 	nAsm.Init(runtime);
 	rAsm.Init(runtime);
+	rrAsm.Init(runtime);
 	ptAsm.Init(runtime);
 	tAsm.Init(runtime);
 	tAsm.SetTranslationFlags(dwTranslationFlags);

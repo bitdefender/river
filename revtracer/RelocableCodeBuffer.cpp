@@ -13,8 +13,9 @@ void RelocableCodeBuffer::Init(nodep::BYTE *buff) {
 }
 
 void RelocableCodeBuffer::Reset() {
-	needsRAFix = false;
+	needsRAFix = needsRepFix = false;
 	rvAddress = NULL;
+	repInitCursor = NULL;
 	cursor = buffer;
 }
 
@@ -32,3 +33,22 @@ void RelocableCodeBuffer::CopyToFixed(nodep::BYTE *dst) const {
 		*(nodep::DWORD *)(&dst[offset]) += (nodep::DWORD)dst;
 	}
 }
+ void RelocableCodeBuffer::MarkRepInit() {
+	 needsRepFix = true;
+	 repInitCursor = cursor;
+ }
+
+void RelocableCodeBuffer::MarkRepFini() {
+	nodep::DWORD actualCodeSize = cursor - repInitCursor - 10 /*2 * jmp imm32*/;
+
+	// fix jumps
+	nodep::BYTE *jmpRepFiniImm = repInitCursor + 1; /*jmp imm32*/
+	*(nodep::DWORD *)(jmpRepFiniImm) += actualCodeSize;
+
+	nodep::BYTE *jmpLoopImm = repInitCursor + 5 + actualCodeSize + 1;
+	*(nodep::DWORD *)(jmpLoopImm) = -1 * (1 /*jmp imm32*/ + actualCodeSize + 5 /*repinit*/ + 2 /*loop imm8*/);
+	needsRepFix = false;
+	repInitCursor = NULL;
+}
+
+

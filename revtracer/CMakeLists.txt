@@ -36,6 +36,7 @@ add_library(revtracer SHARED
 	TranslatorUtil.cpp
 	RiverMetaTranslator.cpp
 	RiverRepTranslator.cpp
+	RiverRepAssembler.cpp
 	RiverPrintTable.cpp
 	RiverReverseTranslator.cpp
 	RiverSaveTranslator.cpp

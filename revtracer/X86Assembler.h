@@ -6,6 +6,7 @@
 // also include sub assemblers
 #include "NativeX86Assembler.h"
 #include "RiverX86Assembler.h"
+#include "RiverRepAssembler.h"
 #include "PreTrackingX86Assembler.h"
 #include "TrackingX86Assembler.h"
 #include "RiverTrackingX86Assembler.h"
@@ -17,6 +18,7 @@ private :
 
 	NativeX86Assembler nAsm;
 	RiverX86Assembler rAsm;
+	RiverRepAssembler rrAsm;
 	PreTrackingAssembler ptAsm;
 	TrackingX86Assembler tAsm;
 	RiverTrackingX86Assembler rtAsm;

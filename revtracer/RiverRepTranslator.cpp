@@ -7,9 +7,9 @@ bool RiverRepTranslator::Init(RiverCodeGen *cg) {
 	return true;
 }
 
-void MakeInitRepInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD addr) {
-	rOut->opCode = 0xA1; //pretty obvious, right?
-	rOut->subOpCode = 0xE; // too leet to be true
+void MakeRepInitInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD addr) {
+	rOut->opCode = 0xF2;
+	rOut->subOpCode = 0x0;
 	rOut->family = family;
 	rOut->modifiers = rOut->specifiers = 0;
 
@@ -17,9 +17,9 @@ void MakeInitRepInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::D
 	rOut->instructionAddress = addr;
 }
 
-void MakeFiniRepInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD addr) {
-	rOut->opCode = 0xAE;
-	rOut->subOpCode = 0x1;
+void MakeRepFiniInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD addr) {
+	rOut->opCode = 0xF3;
+	rOut->subOpCode = 0x0;
 	rOut->family = family;
 	rOut->modifiers = rOut->specifiers = 0;
 
@@ -81,12 +81,10 @@ void RiverRepTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInst
  *      jmp code
  *    loop:
  *      loop init
- *      repinit
- *     |---jmp repfini
+ *     |repinit <=> jmp repfini
  *     | code:
  *	   |   //actual code//
- *	   |   jmp loop
- *	   |-->repfini
+ *	   |-->repfini <=> jmp loop
  */
 void RiverRepTranslator::TranslateCommon(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount, nodep::DWORD riverModifier) {
 	nodep::DWORD localInstrCount = 0;
@@ -94,20 +92,16 @@ void RiverRepTranslator::TranslateCommon(const RiverInstruction &rIn, RiverInstr
 
 	// add jump instruction to jump to actual code
 	nodep::DWORD jmpCodeOffset = 5 /*jmp imm32*/ + 2 /*loopcc imm8*/ + 5 /*jmp repfini*/;
-	MakeJmpInstruction(&rOut[localInstrCount], RIVER_FAMILY_NATIVE, jmpCodeOffset, rIn.instructionAddress);
+	MakeJmpInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, jmpCodeOffset, rIn.instructionAddress);
 	localInstrCount++;
 
-	// add loop instruction to initrep
+	// add loop instruction to repinit
 	nodep::DWORD loopInitOffset = -1 * (5 /*jmp imm32*/ + 2 /*loop imm8*/);
-	MakeLoopInstruction(&rOut[localInstrCount], RIVER_FAMILY_NATIVE, riverModifier, loopInitOffset, rIn.instructionAddress);
+	MakeLoopInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, riverModifier, loopInitOffset, rIn.instructionAddress);
 	localInstrCount++;
 
 	// add custom instruction to mark the beggining of a rep sequence
-	MakeInitRepInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, rIn.instructionAddress);
-	localInstrCount++;
-
-	// add jump instruction to fini marker
-	MakeJmpInstruction(&rOut[localInstrCount], RIVER_FAMILY_NATIVE, 0 /*actual code*/ + 5 /*jmp imm32*/, rIn.instructionAddress);
+	MakeRepInitInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, rIn.instructionAddress);
 	localInstrCount++;
 
 	// insert body (for the moment, the input instruction, other
@@ -117,13 +111,8 @@ void RiverRepTranslator::TranslateCommon(const RiverInstruction &rIn, RiverInstr
 	rOut[localInstrCount].modifiers &= ~(RIVER_MODIFIER_REP | RIVER_MODIFIER_REPZ | RIVER_MODIFIER_REPNZ);
 	localInstrCount++;
 
-	// add jump instruction to the loop marker
-	nodep::DWORD loopOffset = -1 * (5 /*jmp imm32*/ + 0 /*actual code size*/ + 5 /*jmp imm32*/ + 2 /*repinit*/ + 2 /*loopcc imm8*/);
-	MakeJmpInstruction(&rOut[localInstrCount], RIVER_FAMILY_NATIVE, 0x0 /*actual code size*/, rIn.instructionAddress);
-	localInstrCount++;
-
-	//insert fini marker
-	MakeFiniRepInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, rIn.instructionAddress);
+	//insert repfini marker
+	MakeRepFiniInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, rIn.instructionAddress);
 	localInstrCount++;
 
 	instrCount += localInstrCount;
@@ -149,9 +138,10 @@ bool RiverRepTranslator::Translate(const RiverInstruction &rIn, RiverInstruction
 			rInFixed.modifiers |= RIVER_MODIFIER_REP;
 			// we need this workaround to fix the modifier
 			TranslateCommon(rInFixed, rOut, instrCount, RIVER_MODIFIER_REP);
-			break;
+			return true;
 		default:
 			TranslateDefault(rIn, rOut, instrCount);
+			return true;
 	}
 
 	if (rIn.modifiers & RIVER_MODIFIER_REPZ) {
@@ -159,9 +149,10 @@ bool RiverRepTranslator::Translate(const RiverInstruction &rIn, RiverInstruction
 			case 0xA6: case 0xA7: //CMPS 8/16/32
 			case 0xAE: case 0xAF: //SCAS 8/16/32
 				TranslateCommon(rIn, rOut, instrCount, RIVER_MODIFIER_REPZ);
-				break;
+				return true;
 			default:
 				TranslateDefault(rIn, rOut, instrCount);
+				return true;
 		}
 	}
 
@@ -170,12 +161,11 @@ bool RiverRepTranslator::Translate(const RiverInstruction &rIn, RiverInstruction
 			case 0xA6: case 0xA7: //CMPS 8/16/32
 			case 0xAE: case 0xAF: //SCAS 8/16/32
 				TranslateCommon(rIn, rOut, instrCount, RIVER_MODIFIER_REPNZ);
-				break;
+				return true;
 			default:
 				TranslateDefault(rIn, rOut, instrCount);
+				return true;
 		}
 	}
-
-	return true;
 }
 

@@ -7,7 +7,8 @@
 class RelocableCodeBuffer {
 private :
 	nodep::BYTE *buffer;
-	bool needsRAFix;
+	nodep::BYTE *repInitCursor;
+	bool needsRAFix, needsRepFix;
 	nodep::BYTE *rvAddress;
 public :
 	nodep::BYTE *cursor;
@@ -18,6 +19,17 @@ public :
 	void Reset();
 	void SetRelocation(nodep::BYTE *reloc);
 	void CopyToFixed(nodep::BYTE *dst) const;
+
+
+	/* ->>> loop init
+	 * repinit <=> jmp repfini
+	 * **actual code**
+	 * repfini <=> jmp loop
+	 */
+	// start counting instructions
+	void MarkRepInit();
+	// fix jump offsets
+	void MarkRepFini();
 };
 
 #endif
