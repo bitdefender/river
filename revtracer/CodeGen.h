@@ -11,6 +11,8 @@
 
 #include "RiverMetaTranslator.h"
 
+#include "RiverRepTranslator.h"
+
 #include "RiverReverseTranslator.h"
 #include "RiverSaveTranslator.h"
 
@@ -34,6 +36,8 @@ private :
 	X86Assembler assembler;
 
 	RiverMetaTranslator metaTranslator;
+
+	RiverRepTranslator repTranslator;
 
 	RiverReverseTranslator revTranslator;
 	RiverSaveTranslator saveTranslator;

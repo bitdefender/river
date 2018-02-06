@@ -17,16 +17,6 @@ void MakeInitRepInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::D
 	rOut->instructionAddress = addr;
 }
 
-void MakeLoopRepMakerInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD addr) {
-	rOut->opCode = 0x1A;
-	rOut->subOpCode = 0xE;
-	rOut->family = family;
-	rOut->modifiers = rOut->specifiers = 0;
-
-	rOut->modFlags = rOut->testFlags = 0;
-	rOut->instructionAddress = addr;
-}
-
 void MakeFiniRepInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD addr) {
 	rOut->opCode = 0xAE;
 	rOut->subOpCode = 0x1;
@@ -123,9 +113,9 @@ void RiverRepTranslator::TranslateCommon(const RiverInstruction &rIn, RiverInstr
 	// insert body (for the moment, the input instruction, other
 	// translators will decorate it
 	CopyInstruction(codegen, rOut[localInstrCount], rIn);
-	localInstrCount++;
 	// remove rep modifier
-	rOut[localInstrCount].modifiers |= ~(RIVER_MODIFIER_REP | RIVER_MODIFIER_REPZ | RIVER_MODIFIER_REPNZ);
+	rOut[localInstrCount].modifiers &= ~(RIVER_MODIFIER_REP | RIVER_MODIFIER_REPZ | RIVER_MODIFIER_REPNZ);
+	localInstrCount++;
 
 	// add jump instruction to the loop marker
 	nodep::DWORD loopOffset = -1 * (5 /*jmp imm32*/ + 0 /*actual code size*/ + 5 /*jmp imm32*/ + 2 /*repinit*/ + 2 /*loopcc imm8*/);
@@ -155,7 +145,8 @@ bool RiverRepTranslator::Translate(const RiverInstruction &rIn, RiverInstruction
 		case 0xAA: case 0xAB: //STOS 8/16/32
 			RiverInstruction rInFixed;
 			CopyInstruction(codegen, rInFixed, rIn);
-			rInFixed.modifiers |= ~(RIVER_MODIFIER_REPZ);
+			rInFixed.modifiers &= ~(RIVER_MODIFIER_REPZ);
+			rInFixed.modifiers |= RIVER_MODIFIER_REP;
 			// we need this workaround to fix the modifier
 			TranslateCommon(rInFixed, rOut, instrCount, RIVER_MODIFIER_REP);
 			break;

@@ -37,6 +37,8 @@ bool RiverCodeGen::Init(RiverHeap *hp, RiverRuntime *rt, nodep::DWORD buffSz, no
 
 	metaTranslator.Init(this);
 
+	repTranslator.Init(this);
+
 	revTranslator.Init(this);
 	saveTranslator.Init(this);
 
@@ -159,20 +161,40 @@ bool RiverCodeGen::DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut,
 
 	if (!ret) {
 		rerror->errorCode = RERROR_UNK_INSTRUCTION;
+		rerror->instructionAddress = dis.instructionAddress;
 		rerror->translatorId = RIVER_DISASSEMBLER_ID;
 		return ret;
 	}
 
-	ret = metaTranslator.Translate(dis, rOut, count);
+	nodep::DWORD localRepCount = 0;
+	RiverInstruction localInstrBuffer[16];
+	ret = repTranslator.Translate(dis,
+			(RiverInstruction *)&localInstrBuffer,
+			localRepCount);
 
 	if (!ret) {
 		rerror->errorCode = RERROR_UNK_INSTRUCTION;
-		rerror->translatorId = RIVER_META_TRANSLATOR_ID;
+		rerror->instructionAddress = dis.instructionAddress;
+		rerror->translatorId = RIVER_REP_TRANSLATOR_ID;
 		return ret;
+	}
+
+	for (unsigned i = 0; i < localRepCount; ++i) {
+		nodep::DWORD localMetaCount = 0;
+		ret = metaTranslator.Translate(localInstrBuffer[i], rOut + count, localMetaCount);
+		count += localMetaCount;
+
+		if (!ret) {
+			rerror->errorCode = RERROR_UNK_INSTRUCTION;
+			rerror->translatorId = RIVER_META_TRANSLATOR_ID;
+			rerror->instructionAddress = dis.instructionAddress;
+			return ret;
+		}
 	}
 
 	rerror->errorCode = RERROR_OK;
 	rerror->translatorId = RIVER_NONE_ID;
+	rerror->instructionAddress = dis.instructionAddress;
 	return ret;
 }
 
