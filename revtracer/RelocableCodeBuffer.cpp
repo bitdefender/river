@@ -39,13 +39,13 @@ void RelocableCodeBuffer::CopyToFixed(nodep::BYTE *dst) const {
  }
 
 void RelocableCodeBuffer::MarkRepFini() {
-	nodep::DWORD actualCodeSize = cursor - repInitCursor - 10 /*2 * jmp imm32*/;
+	nodep::DWORD actualCodeSize = cursor - repInitCursor - 17 /*3 * jmp imm32 + loop imm8*/;
 
 	// fix jumps
-	nodep::BYTE *jmpRepFiniImm = repInitCursor + 1; /*jmp imm32*/
+	nodep::BYTE *jmpRepFiniImm = repInitCursor + 5 /*jmp imm32*/ + 2/*loop imm8*/ + 1; /*jmp imm32*/
 	*(nodep::DWORD *)(jmpRepFiniImm) = actualCodeSize + 5 /*jmp loop*/;
 
-	nodep::BYTE *jmpLoopImm = repInitCursor + 5 + actualCodeSize + 1;
+	nodep::BYTE *jmpLoopImm = repInitCursor + 5 /*jmp imm32*/ + 2 /*loop imm8*/ + 5 /*jmp imm32*/ + actualCodeSize + 1;
 	*(nodep::DWORD *)(jmpLoopImm) = -1 * (5 /*jmp imm32*/ + actualCodeSize + 5 /*repinit*/ + 2 /*loop imm8*/);
 	needsRepFix = false;
 	repInitCursor = NULL;

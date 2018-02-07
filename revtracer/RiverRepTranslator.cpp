@@ -16,13 +16,19 @@ void MakeDebugBreak(RiverInstruction *rOut, nodep::BYTE family) {
 	rOut->instructionAddress = 0;
 }
 
-void MakeRepInitInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD addr) {
+void MakeRepInitInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD modifiers, nodep::DWORD addr) {
 	rOut->opCode = 0xF2;
 	rOut->subOpCode = 0x0;
 	rOut->family = family;
-	rOut->modifiers = rOut->specifiers = 0;
+	rOut->modifiers = modifiers;
+	rOut->specifiers = 0;
 
 	rOut->modFlags = rOut->testFlags = 0;
+
+	for (int i = 0; i < 4; ++i) {
+		rOut->opTypes[i] = RIVER_OPTYPE_NONE;
+	}
+
 	rOut->instructionAddress = addr;
 }
 
@@ -33,48 +39,10 @@ void MakeRepFiniInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::D
 	rOut->modifiers = rOut->specifiers = 0;
 
 	rOut->modFlags = rOut->testFlags = 0;
-	rOut->instructionAddress = addr;
-}
 
-void MakeJmpInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD offset, nodep::DWORD addr) {
-	rOut->opCode = 0xE9; //jmp rel32
-	rOut->subOpCode = 0x0;
-	rOut->family = family;
-	rOut->modifiers = rOut->specifiers = 0;
-
-	rOut->modFlags = rOut->testFlags = 0;
-
-	rOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_32;
-	rOut->operands[0].asImm32 = offset;
-
-	rOut->instructionAddress = addr;
-}
-
-void MakeLoopInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD riverModifier, nodep::BYTE offset, nodep::DWORD addr) {
-	switch(riverModifier) {
-		case RIVER_MODIFIER_REP:
-			rOut->opCode = 0xE2;
-			rOut->testFlags = 0x0;
-			break;
-		case RIVER_MODIFIER_REPZ:
-			rOut->opCode = 0xE1;
-			rOut->testFlags = RIVER_SPEC_FLAG_ZF;
-			break;
-		case RIVER_MODIFIER_REPNZ:
-			rOut->opCode = 0xE0;
-			rOut->testFlags = RIVER_SPEC_FLAG_ZF;
-			break;
-		default:
-			DEBUG_BREAK;
+	for (int i = 0; i < 4; ++i) {
+		rOut->opTypes[i] = RIVER_OPTYPE_NONE;
 	}
-	rOut->subOpCode = 0x0;
-	rOut->family = family;
-	rOut->modifiers = rOut->specifiers = 0;
-
-	rOut->modFlags = 0;
-
-	rOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
-	rOut->operands[0].asImm8 = offset;
 
 	rOut->instructionAddress = addr;
 }
@@ -86,31 +54,24 @@ void RiverRepTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInst
 }
 
 /* translation layout
- *    init:
- *      jmp code
- *    loop:
- *      loop init
- *     |repinit <=> jmp repfini
- *     | code:
- *	   |   //actual code//
- *	   |-->repfini <=> jmp loop
+ *  repinit
+ * code:
+ *	//actual code//
+ *	repfini
+ *
+ *	repinit translates to:
+ *	 jmp code
+ *	 loop init
+ *	 jmp repfini
+ *
+ *	repfini translates to:
+ *	 jmp loop
  */
 void RiverRepTranslator::TranslateCommon(const RiverInstruction &rIn, RiverInstruction *rOut, nodep::DWORD &instrCount, nodep::DWORD riverModifier) {
 	nodep::DWORD localInstrCount = 0;
-	//translate rep
-
-	// add jump instruction to jump to actual code
-	nodep::DWORD jmpCodeOffset =  2 /*loopcc imm8*/ + 5 /*jmp repfini*/;
-	MakeJmpInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, jmpCodeOffset, rIn.instructionAddress);
-	localInstrCount++;
-
-	// add loop instruction to repinit
-	nodep::DWORD loopInitOffset = -1 * (5 /*jmp imm32*/ + 2 /*loop imm8*/);
-	MakeLoopInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, riverModifier, loopInitOffset, rIn.instructionAddress);
-	localInstrCount++;
 
 	// add custom instruction to mark the beggining of a rep sequence
-	MakeRepInitInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, rIn.instructionAddress);
+	MakeRepInitInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, rIn.modifiers, rIn.instructionAddress);
 	localInstrCount++;
 
 	// insert body (for the moment, the input instruction, other
@@ -120,12 +81,9 @@ void RiverRepTranslator::TranslateCommon(const RiverInstruction &rIn, RiverInstr
 	rOut[localInstrCount].modifiers &= ~(RIVER_MODIFIER_REP | RIVER_MODIFIER_REPZ | RIVER_MODIFIER_REPNZ);
 	localInstrCount++;
 
-	//insert repfini marker
+	//insert repfini
 	MakeRepFiniInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, rIn.instructionAddress);
 	localInstrCount++;
-
-	//MakeDebugBreak(&rOut[localInstrCount], RIVER_FAMILY_REP);
-	//localInstrCount++;
 
 	instrCount += localInstrCount;
 }

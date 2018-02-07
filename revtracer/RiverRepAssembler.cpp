@@ -13,7 +13,7 @@ void AssembleKnownJmpInstruction(const RiverInstruction &ri, RelocableCodeBuffer
 	static const nodep::BYTE jmpCode[] = {
 		0xE9, 0x00, 0x00, 0x00, 0x00
 	};
-	int addrJump = (int)(ri.operands[0].asImm32);
+	int addrJump = 2/*loop init*/ + 5 /*jmp repfini*/;
 
 	rev_memcpy(px86.cursor, jmpCode, sizeof(jmpCode));
 
@@ -28,9 +28,19 @@ void AssembleLoopInstruction(const RiverInstruction &ri, RelocableCodeBuffer &px
 		0x00, 0x00
 	};
 
-	nodep::BYTE addrLoop = ri.operands[0].asImm8;
+	nodep::BYTE addrLoop = -1 * (2 /*loop init*/ + 5 /*jmp code*/);
 
-	nodep::BYTE opcode = ri.opCode;
+	nodep::BYTE opcode = 0x0;
+	if (ri.modifiers & RIVER_MODIFIER_REP) {
+		opcode = 0xE2;
+	} else if (ri.modifiers & RIVER_MODIFIER_REPZ) {
+		opcode = 0xE1;
+	} else if (ri.modifiers & RIVER_MODIFIER_REPNZ) {
+		opcode = 0xE0;
+	} else {
+		DEBUG_BREAK;
+	}
+
 	rev_memcpy(px86.cursor, loopCode, sizeof(loopCode));
 
 	*(nodep::BYTE *)(px86.cursor) = opcode;
@@ -57,17 +67,13 @@ bool RiverRepAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffe
 	switch(ri.opCode) {
 		case 0xF2:
 			px86.MarkRepInit();
+			AssembleKnownJmpInstruction(ri, px86, instrCounter);
+			AssembleLoopInstruction(ri, px86, instrCounter);
 			AssembleJmpInstruction(px86, instrCounter);
 			break;
 		case 0xF3:
 			AssembleJmpInstruction(px86, instrCounter);
 			px86.MarkRepFini();
-			break;
-		case 0xE9:
-			AssembleKnownJmpInstruction(ri, px86, instrCounter);
-			break;
-		case 0xE0: case 0xE1: case 0xE2:
-			AssembleLoopInstruction(ri, px86, instrCounter);
 			break;
 		case 0xcc:
 			AssembleDebugBreak(ri, px86, instrCounter);

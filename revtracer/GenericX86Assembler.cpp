@@ -3,9 +3,6 @@
 #define X86_OPZISE_PREFIX			0x66
 
 #define X86_LOCK_PREFIX				0xF0
-#define X86_REPNZ_PREFIX			0xF2
-#define X86_REPZ_PREFIX				0xF3
-#define X86_REP_PREFIX				0xF3
 
 #define X86_ESSEG_PREFIX			0x26
 #define X86_CSSEG_PREFIX			0x2E
@@ -27,21 +24,6 @@ bool GeneratePrefixes(const RiverInstruction &ri, nodep::BYTE *&px86) {
 
 	if (ri.modifiers & RIVER_MODIFIER_O16) {
 		*px86 = X86_OPZISE_PREFIX;
-		px86++;
-	}
-
-	if (ri.modifiers & RIVER_MODIFIER_REP) {
-		*px86 = X86_REP_PREFIX;
-		px86++;
-	}
-
-	if (ri.modifiers & RIVER_MODIFIER_REPZ) {
-		*px86 = X86_REPZ_PREFIX;
-		px86++;
-	}
-
-	if (ri.modifiers & RIVER_MODIFIER_REPNZ) {
-		*px86 = X86_REPNZ_PREFIX;
 		px86++;
 	}
 

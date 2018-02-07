@@ -14,19 +14,6 @@ extern const char RegNames[][4];
 extern const char MemSizes[][6];
 
 void PrintPrefixes(nodep::DWORD printMask, struct RiverInstruction *ri) {
-	if (ri->modifiers & RIVER_MODIFIER_REP) {
-		revtracerImports.dbgPrintFunc(printMask, "rep ");
-	}
-
-	if (ri->modifiers & RIVER_MODIFIER_REPZ) {
-		revtracerImports.dbgPrintFunc(printMask, "repz ");
-	}
-
-	if (ri->modifiers & RIVER_MODIFIER_REPNZ) {
-		revtracerImports.dbgPrintFunc(printMask, "repnz ");
-	}
-
-
 	if (ri->family & RIVER_FAMILY_FLAG_IGNORE) {
 		revtracerImports.dbgPrintFunc(printMask, "ignore");
 	}
@@ -55,7 +42,6 @@ void PrintPrefixes(nodep::DWORD printMask, struct RiverInstruction *ri) {
 			revtracerImports.dbgPrintFunc(printMask, "rivertrack");
 			break;
 		case RIVER_FAMILY_REP:
-			revtracerImports.dbgPrintFunc(printMask, "rep");
 			break;
 	}
 }
@@ -67,12 +53,6 @@ void PrintMnemonic(nodep::DWORD printMask, struct RiverInstruction *ri) {
 		mTable = PrintMnemonicTable0F;
 	}
 
-	if ('a' <= mTable[ri->opCode][0]) {
-		revtracerImports.dbgPrintFunc(printMask, "%s ", mTable[ri->opCode]);
-	} else {
-		revtracerImports.dbgPrintFunc(printMask, "%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
-	}
-
 	if (ri->family == RIVER_FAMILY_REP) {
 		switch(ri->opCode) {
 			case 0xF2:
@@ -81,12 +61,16 @@ void PrintMnemonic(nodep::DWORD printMask, struct RiverInstruction *ri) {
 			case 0xF3:
 				revtracerImports.dbgPrintFunc(printMask, "repfini");
 				break;
-			case 0xE9: case 0xE0: case 0xE1: case 0xE2:
-				break;
 			case 0xCC:
 				break;
 			default:
 				DEBUG_BREAK;
+		}
+	} else {
+		if ('a' <= mTable[ri->opCode][0]) {
+			revtracerImports.dbgPrintFunc(printMask, "%s ", mTable[ri->opCode]);
+		} else {
+			revtracerImports.dbgPrintFunc(printMask, "%s ", PrintMnemonicExt[mTable[ri->opCode][0]][ri->subOpCode]);
 		}
 	}
 }
