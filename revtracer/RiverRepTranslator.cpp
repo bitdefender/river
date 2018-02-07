@@ -91,7 +91,7 @@ void RiverRepTranslator::TranslateCommon(const RiverInstruction &rIn, RiverInstr
 	//translate rep
 
 	// add jump instruction to jump to actual code
-	nodep::DWORD jmpCodeOffset = 5 /*jmp imm32*/ + 2 /*loopcc imm8*/ + 5 /*jmp repfini*/;
+	nodep::DWORD jmpCodeOffset =  2 /*loopcc imm8*/ + 5 /*jmp repfini*/;
 	MakeJmpInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, jmpCodeOffset, rIn.instructionAddress);
 	localInstrCount++;
 
@@ -140,8 +140,7 @@ bool RiverRepTranslator::Translate(const RiverInstruction &rIn, RiverInstruction
 			TranslateCommon(rInFixed, rOut, instrCount, RIVER_MODIFIER_REP);
 			return true;
 		default:
-			TranslateDefault(rIn, rOut, instrCount);
-			return true;
+			break;
 	}
 
 	if (rIn.modifiers & RIVER_MODIFIER_REPZ) {

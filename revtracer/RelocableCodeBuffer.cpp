@@ -43,10 +43,10 @@ void RelocableCodeBuffer::MarkRepFini() {
 
 	// fix jumps
 	nodep::BYTE *jmpRepFiniImm = repInitCursor + 1; /*jmp imm32*/
-	*(nodep::DWORD *)(jmpRepFiniImm) += actualCodeSize;
+	*(nodep::DWORD *)(jmpRepFiniImm) = actualCodeSize + 5 /*jmp loop*/;
 
 	nodep::BYTE *jmpLoopImm = repInitCursor + 5 + actualCodeSize + 1;
-	*(nodep::DWORD *)(jmpLoopImm) = -1 * (1 /*jmp imm32*/ + actualCodeSize + 5 /*repinit*/ + 2 /*loop imm8*/);
+	*(nodep::DWORD *)(jmpLoopImm) = -1 * (5 /*jmp imm32*/ + actualCodeSize + 5 /*repinit*/ + 2 /*loop imm8*/);
 	needsRepFix = false;
 	repInitCursor = NULL;
 }

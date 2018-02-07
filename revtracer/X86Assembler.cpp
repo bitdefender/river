@@ -257,7 +257,10 @@ bool X86Assembler::Assemble(RiverInstruction *pRiver, nodep::DWORD dwInstrCount,
 				return false;
 			}
 		}
-		
+
+		// some instructions (repinit/repfini) are fixed after
+		// this print so the jump offsets could be 00 00 00 00
+		//  in logs.
 		for (; pTmp < px86.cursor; ++pTmp) {
 			TRANSLATE_PRINT(printMask, "%02x ", *pTmp);
 		}
@@ -335,6 +338,12 @@ bool X86Assembler::SwitchToNative(RelocableCodeBuffer &px86, nodep::BYTE &curren
 bool X86Assembler::GenerateTransitionsNative(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &pFlags, nodep::BYTE &currentFamily, nodep::BYTE &repReg, nodep::DWORD &instrCounter) {
 	nodep::BYTE cf = RIVER_FAMILY(currentFamily);
 	nodep::BYTE tf = RIVER_FAMILY(ri.family);
+
+	if (cf == RIVER_FAMILY_REP)
+		cf = RIVER_FAMILY_NATIVE;
+
+	if (tf == RIVER_FAMILY_REP)
+		tf = RIVER_FAMILY_NATIVE;
 
 	nodep::DWORD currentStack = 0;
 

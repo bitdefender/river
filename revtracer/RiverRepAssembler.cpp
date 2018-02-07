@@ -52,8 +52,8 @@ bool RiverRepAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffe
 			AssembleJmpInstruction(px86, instrCounter);
 			break;
 		case 0xF3:
-			px86.MarkRepFini();
 			AssembleJmpInstruction(px86, instrCounter);
+			px86.MarkRepFini();
 			break;
 		case 0xE9:
 			AssembleKnownJmpInstruction(ri, px86, instrCounter);
