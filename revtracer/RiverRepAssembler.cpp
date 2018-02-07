@@ -40,6 +40,14 @@ void AssembleLoopInstruction(const RiverInstruction &ri, RelocableCodeBuffer &px
 	instrCounter += 1;
 }
 
+void AssembleDebugBreak(const RiverInstruction &ri, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
+	static const nodep::BYTE intCode = 0xcc;
+
+	*px86.cursor = intCode;
+	px86.cursor += 1;
+	instrCounter += 1;
+}
+
 /* rep prefixed instructions are translated as described in RiverRepTranslator
  * instructions repinit and repfini are used to compute the actual code size.
  * The jump offsets are fixed afterwards
@@ -60,6 +68,9 @@ bool RiverRepAssembler::Translate(const RiverInstruction &ri, RelocableCodeBuffe
 			break;
 		case 0xE0: case 0xE1: case 0xE2:
 			AssembleLoopInstruction(ri, px86, instrCounter);
+			break;
+		case 0xcc:
+			AssembleDebugBreak(ri, px86, instrCounter);
 			break;
 		default:
 			DEBUG_BREAK;

@@ -7,6 +7,15 @@ bool RiverRepTranslator::Init(RiverCodeGen *cg) {
 	return true;
 }
 
+void MakeDebugBreak(RiverInstruction *rOut, nodep::BYTE family) {
+	rOut->opCode = 0xcc;
+	rOut->family = family;
+	rOut->modifiers = rOut->specifiers = 0;
+
+	rOut->modFlags = rOut->testFlags = 0;
+	rOut->instructionAddress = 0;
+}
+
 void MakeRepInitInstruction(RiverInstruction *rOut, nodep::BYTE family, nodep::DWORD addr) {
 	rOut->opCode = 0xF2;
 	rOut->subOpCode = 0x0;
@@ -114,6 +123,9 @@ void RiverRepTranslator::TranslateCommon(const RiverInstruction &rIn, RiverInstr
 	//insert repfini marker
 	MakeRepFiniInstruction(&rOut[localInstrCount], RIVER_FAMILY_REP, rIn.instructionAddress);
 	localInstrCount++;
+
+	//MakeDebugBreak(&rOut[localInstrCount], RIVER_FAMILY_REP);
+	//localInstrCount++;
 
 	instrCount += localInstrCount;
 }

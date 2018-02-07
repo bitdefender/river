@@ -83,6 +83,8 @@ void PrintMnemonic(nodep::DWORD printMask, struct RiverInstruction *ri) {
 				break;
 			case 0xE9: case 0xE0: case 0xE1: case 0xE2:
 				break;
+			case 0xCC:
+				break;
 			default:
 				DEBUG_BREAK;
 		}
