@@ -11,23 +11,26 @@ PDFLATEX = pdflatex
 #
 # PDF output files
 # * cheatsheet
+# * abi
 #
 # BASENAME is defined in top-level Makefile including this file.
 #
-CHEATSHEET = $(addsuffix .pdf, $(BASENAME))
+TARGET = $(addsuffix .pdf, $(BASENAME))
 
 .PHONY: main all clean
-.PHONY: cheatsheet
+.PHONY: target
 
 # If running `make' with no arguments, only generate slides.
-main: cheatsheet
+main: target
 
-all: cheatsheet
+all: target
 
 # Phony targets depend on PDF output files.
-cheatsheet: $(CHEATSHEET)
+target: $(TARGET)
 
-$(CHEATSHEET): cheatsheet.tex
+TARGET_TEX = $(addsuffix .tex, $(BASENAME))
+
+$(TARGET): $(TARGET_TEX)
 	# Rebuild source files, if any.
 	-test -d $(CODE_DIR) && make -C $(CODE_DIR)
 	# Rebuild image files, if any.
@@ -42,5 +45,5 @@ $(CHEATSHEET): cheatsheet.tex
 
 clean:
 	-test -d $(OUT_DIR) && rm -fr $(OUT_DIR)
-	-rm -f $(CHEATSHEET)
+	-rm -f $(TARGET)
 	-test -d $(CODE_DIR) && make -C $(CODE_DIR) clean
