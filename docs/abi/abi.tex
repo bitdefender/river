@@ -19,7 +19,7 @@ Version \version}
 \section*{Revision History}
 
 \begin{description}
-	\item[1.0][09.02.2018] Document rep prefix instrumentation \autoref{}.
+	\item[1.0][09.02.2018] Document rep prefix instrumentation \autoref{sec:rep-family-abi}.
 \item[0.3][28.01.2016] Added \autoref{sec:reassembly} detailing instruction reassembly.
 \item[0.2][26.01.2016] Added chapter detailing the binary translation - \autoref{chapter:binary-translation-process}.
 Added several new meta instructions - \autoref{sec:tracking-translator}.
@@ -99,11 +99,13 @@ Instruction families are the core of the river design. \autoref{chapter:instruct
 		\hline
 		\textbf{Family name} & \textbf{Family meaning}\\ \hline
 		RIVER_FAMILY_NATIVE & Native instructions produced by the x86 disassembler.\\ \hline
+		RIVER_FAMILY_RIVER & Instruction family that enables reversible code.\\ \hline
 		RIVER_FAMILY_PRETRACK & Instruction family that handles symbolic variable tracking. These instructions are inserted directly into the original instruction stream.\\ \hline
 		RIVER_FAMILY_TRACK & Instruction family that handles symbolic variable tracking. These instructions are inserted in a separate instruction stream.\\ \hline
 		RIVER_FAMILY_PREMETA & Instruction produced by the disassembler that further specify the following native instruction.\\ \hline
 		RIVER_FAMILY_POSTMETA & Instruction produced by the disassembler that further specify the previous native instruction.\\ \hline
-		RIVER_FAMILY_RIVER & Instruction family that enables reversible code.\\ \hline
+		RIVER_FAMILY_RIVER_TRACK & Instruction family that handles symbolic variable tracking during reverse execution.\\ \hline
+		RIVER_FAMILY_REP & Instuctions that handle \textbf{rep} prefix instrumentation.\\ \hline
 	\end{tabular}
 	\caption{Instruction Families}
 	\label{table:instruction-families}
@@ -333,6 +335,38 @@ Track instructions generate a separate code block responsibile for tracking mark
 	\caption{Track instructions}
 	\label{table:track-instructions}
 \end{table}
+
+\section{Rep family ABI}
+\label{sec:rep-family-abi}
+Rep instructions wrap the original instruction prefixed by rep/repz/repnz. \autoref{table:rep-instructions} shows how rep instrumentation works.\\
+\begin{table}[H]
+	\begin{tabular}{| l | l | l |}
+		\hline
+		\textbf{Instruction mnemonic} & \textbf{Opcode} & \textbf{Native equivalent}\\ \hline
+		\multirow{7}{*}{repinit} & \multirow{4}{*}{0xF2} & \tab jmp wrapin\\
+		& & init:\\
+		& & \tab jmp codein\\
+		& & loop:\\
+		& & \tab loop init\\
+		& & \tab jmp codeout\\
+		& & codein:\\ \hline
+		\multirow{9}{*}{repfini} & \multirow{5}{*}{0xF3} & \tab jmp loop\\
+		& & codeout:\\
+		& & \tab jmp wrapout\\
+		& & farloop:\\
+		& & \tab jmp init\\
+		& & wrapin:\\
+		& & \tab lea ecx, [ecx + 1]\\
+		& & \tab loop farloop\\
+		& & wrapout:\\ \hline
+	\end{tabular}
+	\caption{Rep prefix instrumentation}
+	\label{table:rep-instructions}
+\end{table}
+
+\textbf{codein} label marks the actual instructions that are prefixed by rep. The original code contains only one instruction, but it may be translated into more instructions, depending on the tracking type. The instrumentation performs a far loop instruction that also ensures that null ecx register value doesn't result in an internal crash.\\
+A far loop is a loop that jumps to the actual code that is executed because loop instruction operand size is signed 8-bit, while jmp operand can be as large as signed 32-bit.\\
+The extra loop verifies if ecx value is zero. Consult x86 documetation\footnote{Rep/Repz/Repnz\url{https://c9x.me/x86/html/file_module_x86_id_279.html}} \footnote{Loop/Loopz/Loopnz\url{https://c9x.me/x86/html/file_module_x86_id_161.html}} for further details.
 
 \chapter{Binary translation process}
 \label{chapter:binary-translation-process}
