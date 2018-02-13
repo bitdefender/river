@@ -44,24 +44,24 @@ Modifiers are described in \autoref{sec:modifiers}, specifiers in \autoref{sec:s
 \label{sec:modifiers}
 Instruction modifiers are optional instruction features introduced by x86 instruction prefixes.\\
 \begin{table}[H]
-	\begin{tabular}[t]{| p{6cm} | p{10cm} |}
+	\begin{tabular}{| p{6cm} | p{10cm} |}
 		\hline
 		\textbf{Modifier name} & \textbf{Modifier meaning}\\ \hline
-		RIVER\_MODIFIER\_NOSEG & Default modifier, used as a placeholder when no other modifiers are specified.\\ \hline
-		RIVER\_MODIFIER\_ESSEG & \multirow{6}{*}{The instruction has been prefixed with a segment selector.} \\
-		RIVER\_MODIFIER\_CSSEG &\\
-		RIVER\_MODIFIER\_SSSEG &\\
-		RIVER\_MODIFIER\_DSSEG &\\
-		RIVER\_MODIFIER\_FSSEG &\\
-		RIVER\_MODIFIER\_GSSEG &\\ \hline
-		RIVER\_MODIFIER\_EXT & The instruction has a two byte opcode. (0x0F is the first byte)\\ \hline
-		RIVER\_MODIFIER\_O8 & (No corresponding prefix) The instruction operates on 8 bit operands.\\ \hline
-		RIVER\_MODIFIER\_O16 & The instruction operates on 16 bit operands.\\ \hline
-		RIVER\_MODIFIER\_A16 & The instruction uses 16 bit addressing mode.\\ \hline
-		RIVER\_MODIFIER\_LOCK & The instruction has a LOCK prefix.\\ \hline
-		RIVER\_MODIFIER\_REP & \multirow{3}{*}{The instruction has a REP/REPZ/REPNZ prefix.}\\
-		RIVER\_MODIFIER\_REPZ &\\
-		RIVER\_MODIFIER\_REPNZ &\\ \hline
+		\texttt{RIVER\_MODIFIER\_NOSEG} & Default modifier, used as a placeholder when no other modifiers are specified.\\ \hline
+		\texttt{RIVER\_MODIFIER\_ESSEG} & \multirow{6}{*}{The instruction has been prefixed with a segment selector.} \\
+		\texttt{RIVER\_MODIFIER\_CSSEG} &\\
+		\texttt{RIVER\_MODIFIER\_SSSEG} &\\
+		\texttt{RIVER\_MODIFIER\_DSSEG} &\\
+		\texttt{RIVER\_MODIFIER\_FSSEG} &\\
+		\texttt{RIVER\_MODIFIER\_GSSEG} &\\ \hline
+		\texttt{RIVER\_MODIFIER\_EXT} & The instruction has a two byte opcode. (0x0F is the first byte)\\ \hline
+		\texttt{RIVER\_MODIFIER\_O8} & (No corresponding prefix) The instruction operates on 8 bit operands.\\ \hline
+		\texttt{RIVER\_MODIFIER\_O16} & The instruction operates on 16 bit operands.\\ \hline
+		\texttt{RIVER\_MODIFIER\_A16} & The instruction uses 16 bit addressing mode.\\ \hline
+		\texttt{RIVER\_MODIFIER\_LOCK} & The instruction has a LOCK prefix.\\ \hline
+		\texttt{RIVER\_MODIFIER\_REP} & \multirow{3}{*}{The instruction has a REP/REPZ/REPNZ prefix.}\\
+		\texttt{RIVER\_MODIFIER\_REPZ} &\\
+		\texttt{RIVER\_MODIFIER\_REPNZ} &\\ \hline
 	\end{tabular}
 	\caption{River Modifiers}
 	\label{table:river-modifiers}
@@ -71,21 +71,22 @@ Instruction modifiers are optional instruction features introduced by x86 instru
 \label{sec:specifiers}
 Instruction specifiers are decorations introduced by the disassembler in order to aid data flow analysis.\\
 \begin{table}[H]
-\begin{tabular}[t]{| p{6cm} | p{10cm} |}
+\begin{tabular}{| p{6.3cm} | p{10cm} |}
 		\hline
 		\textbf{Specifier name} & \textbf{Specifier meaning}\\ \hline
-		RIVER\_SPEC\_MODIFIES\_OP(x) & \multirow{5}{10cm}{The current instruction modifies the specified operand. NOTE: Keep in mind that RIVER_SPEC_MODIFIES_OP1 actually corresponds to RIVER_SPEC_MODIFIES_OP(0).}\\
-		RIVER\_SPEC\_MODIFIES\_OP1 &\\
-		RIVER\_SPEC\_MODIFIES\_OP2 &\\
-		RIVER\_SPEC\_MODIFIES\_OP3 &\\
-		RIVER\_SPEC\_MODIFIES\_OP4 &\\ \hline
-		RIVER\_SPEC\_MODIFIES\_FLG & The instruction modifies at least one CPU flag. (This specifier might be deprecated in the future and replaced with individual per-flag versions)\\ \hline
-		RIVER\_SPEC\_IGNORES\_OP(idx) & \multirow{5}{10cm}{Used in combination with RIVER\_SPEC\_MODIFIES\_OP(x), specifies that the current operand is only used as an output operand. NOTE: Keep in mind that RIVER\_SPEC\_IGNORES\_OP1 actually corresponds to RIVER\_SPEC\_IGNORES\_OP(0).} \\
-		RIVER\_SPEC\_IGNORES\_OP1 &\\
-		RIVER\_SPEC\_IGNORES\_OP2 &\\
-		RIVER\_SPEC\_IGNORES\_OP3 &\\
-		RIVER\_SPEC\_IGNORES\_OP4 &\\ \hline
-		RIVER\_SPEC\_IGNORES\_FLG & The instruction ignores all CPU flags. (To be deprecated soon).\\ \hline
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP(x}) & \multirow{5}{10cm}{The current instruction modifies the specified operand. NOTE: Keep in mind that \texttt{RIVER_SPEC_MODIFIES_OP1} actually corresponds to \texttt{RIVER_SPEC_MODIFIES_OP(0)}.}\\
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP1} &\\
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP2} &\\
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP3} &\\
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP4} &\\ \hline
+		\texttt{RIVER\_SPEC\_MODIFIES\_FLG} & The instruction modifies at least one CPU flag. (This specifier might be deprecated in the future and replaced with individual per-flag versions)\\ \hline
+		\texttt{RIVER\_SPEC\_IGNORES\_OP(idx)} & \multirow{6}{10cm}{Used in combination with \texttt{RIVER\_SPEC\_MODIFIES\_OP(x)}, specifies that the current operand is only used as an output operand. NOTE: Keep in mind that \texttt{RIVER\_SPEC\_IGNORES\_OP1} actually corresponds to \texttt{RIVER\_SPEC\_IGNORES\_OP(0)}.} \\
+		\texttt{RIVER\_SPEC\_IGNORES\_OP1} &\\
+		\texttt{RIVER\_SPEC\_IGNORES\_OP2} &\\
+		\texttt{RIVER\_SPEC\_IGNORES\_OP3} &\\
+		\texttt{RIVER\_SPEC\_IGNORES\_OP4} &\\
+		& \\\hline
+		\texttt{RIVER\_SPEC\_IGNORES\_FLG} & The instruction ignores all CPU flags. (To be deprecated soon).\\ \hline
 	\end{tabular}
 	\caption{River Specifiers}
 	\label{table:river-specifiers}
@@ -98,14 +99,14 @@ Instruction families are the core of the river design. \autoref{chapter:instruct
 	\begin{tabular}{| p{6cm} | p{10cm} |}
 		\hline
 		\textbf{Family name} & \textbf{Family meaning}\\ \hline
-		RIVER_FAMILY_NATIVE & Native instructions produced by the x86 disassembler.\\ \hline
-		RIVER_FAMILY_RIVER & Instruction family that enables reversible code.\\ \hline
-		RIVER_FAMILY_PRETRACK & Instruction family that handles symbolic variable tracking. These instructions are inserted directly into the original instruction stream.\\ \hline
-		RIVER_FAMILY_TRACK & Instruction family that handles symbolic variable tracking. These instructions are inserted in a separate instruction stream.\\ \hline
-		RIVER_FAMILY_PREMETA & Instruction produced by the disassembler that further specify the following native instruction.\\ \hline
-		RIVER_FAMILY_POSTMETA & Instruction produced by the disassembler that further specify the previous native instruction.\\ \hline
-		RIVER_FAMILY_RIVER_TRACK & Instruction family that handles symbolic variable tracking during reverse execution.\\ \hline
-		RIVER_FAMILY_REP & Instuctions that handle \textbf{rep} prefix instrumentation.\\ \hline
+		\texttt{RIVER_FAMILY_NATIVE} & Native instructions produced by the x86 disassembler.\\ \hline
+		\texttt{RIVER_FAMILY_RIVER} & Instruction family that enables reversible code.\\ \hline
+		\texttt{RIVER_FAMILY_PRETRACK} & Instruction family that handles symbolic variable tracking. These instructions are inserted directly into the original instruction stream.\\ \hline
+		\texttt{RIVER_FAMILY_TRACK} & Instruction family that handles symbolic variable tracking. These instructions are inserted in a separate instruction stream.\\ \hline
+		\texttt{RIVER_FAMILY_PREMETA} & Instruction produced by the disassembler that further specify the following native instruction.\\ \hline
+		\texttt{RIVER_FAMILY_POSTMETA} & Instruction produced by the disassembler that further specify the previous native instruction.\\ \hline
+		\texttt{RIVER_FAMILY_RIVER_TRACK} & Instruction family that handles symbolic variable tracking during reverse execution.\\ \hline
+		\texttt{RIVER_FAMILY_REP} & Instuctions that handle \texttt{rep} prefix instrumentation.\\ \hline
 	\end{tabular}
 	\caption{Instruction Families}
 	\label{table:instruction-families}
@@ -115,60 +116,60 @@ Furthermore some instruction families may be further decorated with the followin
 	\begin{tabular}{| p{8cm} | p{8cm} |}
 		\hline
 		\textbf{Family name} & \textbf{Family meaning}\\ \hline
-		RIVER_FAMILY_FLAG_IGNORE & The current instruction has been marked for lazy deletion.\\ \hline
-		RIVER_FAMILY_FLAG_ORIG_xSP & The current instruction needs access to the native stack pointer.\\ \hline
-		RIVER_FAMILY_FLAG_METAPROCESSED & The current instruction has been completely split up in metaoperations.\\ \hline
+		\texttt{RIVER_FAMILY_FLAG_IGNORE} & The current instruction has been marked for lazy deletion.\\ \hline
+		\texttt{RIVER_FAMILY_FLAG_METAPROCESSED} & The current instruction has been completely split up in metaoperations.\\ \hline
+		\texttt{RIVER_FAMILY_FLAG_ORIG_xSP} & The current instruction needs access to the native stack pointer.\\ \hline
 	\end{tabular}
 	\caption{Instruction families characteristics}
 \end{table}
 
 \section{Operands and operand types}
 \label{sec:operands-and-operand-types}
-The opTypes field encodes the operand type while the operands field encodes the actual operand. The opTypes field base values are shown in \autoref{table:river-operand-types}.\\
+\texttt{opTypes} field encodes the operand type while \texttt{operands} field encodes the actual operand. \texttt{opTypes} field base values are shown in \autoref{table:river-operand-types}.\\
 \begin{table}[H]
 	\begin{tabular}{| p{6cm} | p{10cm} |}
 		\hline
 		\textbf{Operand type} & \textbf{Meaning}\\ \hline
-		RIVER_OPTYPE_NONE & This type specifies that the current operand is not used.\\ \hline
-		RIVER_OPTYPE_IMM & The current operand is an immediate value.\\ \hline
-		RIVER_OPTYPE_REG & The current operand is a CPU register.\\ \hline
-		RIVER_OPTYPE_MEM & The current operand is an address.\\ \hline
+		\texttt{RIVER_OPTYPE_NONE} & This type specifies that the current operand is not used.\\ \hline
+		\texttt{RIVER_OPTYPE_IMM} & The current operand is an immediate value.\\ \hline
+		\texttt{RIVER_OPTYPE_REG} & The current operand is a CPU register.\\ \hline
+		\texttt{RIVER_OPTYPE_MEM} & The current operand is an address.\\ \hline
 	\end{tabular}
 	\caption{River operand types}
 	\label{table:river-operand-types}
 \end{table}
 Furthermore the basic operand types can be combined with size specifiers shown in \autoref{table:river-operand-size}.\\
 \begin{table}[H]
-	\begin{tabular}[t]{| p{6cm} | p{10cm} |}
+	\begin{tabular}{| p{6cm} | p{10cm} |}
 		\hline
 		\textbf{Operand size} & \textbf{Meaning}\\ \hline
-		RIVER_OPSIZE_32 & 32-bit operand. (This is the default value)\\ \hline
-		RIVER_OPSIZE_16 & 16-bit operand.\\ \hline
-		RIVER_OPSIZE_8 & 8-bit operand.\\ \hline
+		\texttt{RIVER_OPSIZE_32} & 32-bit operand. (This is the default value)\\ \hline
+		\texttt{RIVER_OPSIZE_16} & 16-bit operand.\\ \hline
+		\texttt{RIVER_OPSIZE_8} & 8-bit operand.\\ \hline
 	\end{tabular}
 	\caption{River operand size}
 	\label{table:river-operand-size}
 \end{table}
-Last but not least the operand type can have the RIVER_OPFLAG_IMPLICIT flag set in order to distinguish between explicit operands and operands implicitly added by the disassembler.\\
+Last but not least the operand type can have the \texttt{RIVER_OPFLAG_IMPLICIT} flag set in order to distinguish between explicit operands and operands implicitly added by the disassembler.\\
 \newline
-The RiverOperand union encapsulates all possible operand configurations and is described in the following chapters.\\
+The \texttt{RiverOperand} union encapsulates all possible operand configurations and is described in the following chapters.\\
 
 \subsection{Immediate operands}
 \label{ssec:immediate-operands}
-Depending on the operand size immediate values are stored in the RiverOperand::asImm8, RiverOperand::asImm16 or RiverOperand::asImm32 members.\\
+Depending on the operand size immediate values are stored in \texttt{RiverOperand::asImm8}, \texttt{RiverOperand::asImm16} or \texttt{RiverOperand::asImm32} members.\\
 \subsection{Register operands}
 \label{ssec:register-operands}
-Register operands are stored in the RiverOperand::asRegister member. This is a 32-bit field where the least significant eight bits encode the register name, while the remaining bits are used for register versioning (in order to achieve SSA at a basic block level). Register name encoding is divided between general purpose and other registers.\\
+Register operands are stored in \texttt{RiverOperand::asRegister} member. This is a 32-bit field where the least significant eight bits encode the register name, while the remaining bits are used for register versioning (in order to achieve SSA at a basic block level). Register name encoding is divided between general purpose and other registers.\\
 \newline
 The general purpose registers can be specified by combining the register name with the register size as described in \autoref{table:river-registers}.\\
 \begin{table}[H]
 	\begin{tabular}{| p{3.6cm} | p{3.2cm} | p{1cm} | p{1cm} | p{1cm} | p{1cm} | p{1cm} | p{1cm} | p{1cm} |}
-	\hline
-	& RIVER_REG_xAX & *_xCX & *_xDX & *_xBX & *_xSP & *_xBP & *_xSI & *_xDI\\ \hline
-	RIVER_REG_SZ32 & EAX & ECX & EDX & EBX & ESP & EBP & ESI & EDI\\ \hline
-	RIVER_REG_SZ16 & AX & CX & DX & BX & SP & BP & SI & DI\\ \hline
-	RIVER_REG_SZ8_L & AL & CL & DL & BL & - & - & - & -\\ \hline
-	RIVER_REG_SZ8_H & AH & CH & DH & BH & - & - & - & -\\ \hline
+		\hline
+		& \texttt{RIVER_REG_xAX}  & \texttt{*_xCX}  & \texttt{*_xDX}  & \texttt{*_xBX}  & \texttt{*_xSP}  & \texttt{*_xBP}  & \texttt{*_xSI}  & \texttt{*_xDI}\\ \hline
+		\texttt{RIVER_REG_SZ32}  & \texttt{EAX}  & \texttt{ECX}  & \texttt{EDX}  & \texttt{EBX}  & \texttt{ESP}  & \texttt{EBP}  & \texttt{ESI}  & \texttt{EDI}\\ \hline
+		\texttt{RIVER_REG_SZ16}  & \texttt{AX}  & \texttt{CX}  & \texttt{DX}  & \texttt{BX}  & \texttt{SP}  & \texttt{BP}  & \texttt{SI}  & \texttt{DI}\\ \hline
+		\texttt{RIVER_REG_SZ8_L}  & \texttt{AL}  & \texttt{CL}  & \texttt{DL}  & \texttt{BL}  & \texttt{-}  & \texttt{-}  & \texttt{-}  & \texttt{-}\\ \hline
+		\texttt{RIVER_REG_SZ8_H}  & \texttt{AH}  & \texttt{CH}  & \texttt{DH}  & \texttt{BH}  & \texttt{-}  & \texttt{-}  & \texttt{-}  & \texttt{-}\\ \hline
 	\end{tabular}
 	\caption{River Registers}
 	\label{table:river-registers}
@@ -178,9 +179,9 @@ Other registers have individual register notations. See \autoref{table:extra-reg
 	\begin{tabular}{| p{5cm} | p{5cm} | p{5cm} |}
 		\hline
 		\textbf{Segment registers} & \textbf{Control registers} & \textbf{Debug registers} \\ \hline
-		RIVER_REG_ES RIVER_REG_CS RIVER_REG_SS RIVER_REG_DS RIVER_REG_FS RIVER_REG_GS &
-		RIVER_REG_CR0 RIVER_REG_CR2 RIVER_REG_CR3 RIVER_REG_CR4 &
-		RIVER_REG_DR0 RIVER_REG_DR1 RIVER_REG_DR2 RIVER_REG_DR3 RIVER_REG_DR4 RIVER_REG_DR5 RIVER_REG_DR6 RIVER_REG_DR7\\ \hline
+		\texttt{RIVER_REG_ES} \texttt{RIVER_REG_CS} \texttt{RIVER_REG_SS} \texttt{RIVER_REG_DS} \texttt{RIVER_REG_FS} \texttt{RIVER_REG_GS} &
+		\texttt{RIVER_REG_CR0} \texttt{RIVER_REG_CR2} \texttt{RIVER_REG_CR3} \texttt{RIVER_REG_CR4} &
+		\texttt{RIVER_REG_DR0} \texttt{RIVER_REG_DR1} \texttt{RIVER_REG_DR2} \texttt{RIVER_REG_DR3} \texttt{RIVER_REG_DR4} \texttt{RIVER_REG_DR5} \texttt{RIVER_REG_DR6} \texttt{RIVER_REG_DR7}\\ \hline
 	\end{tabular}
 	\caption{Extra registers}
 	\label{table:extra-registers}
@@ -193,12 +194,12 @@ Address operands are stored as a pointer to a structure containing fields shown 
 	\begin{tabular}{| p{6cm} | p{10cm} |}
 		\hline
 		\textbf{RiverAddress field name} & \textbf{Meaning}\\ \hline
-		type & Encodes valid address fields as described below.\\ \hline
-		base & Encodes the base register. Valid only if type has the RIVER_ADDR_BASE flag set.\\ \hline
-		index & Encodes the index register. Valid only if type has the RIVER_ADDR_INDEX flag set.\\ \hline
-		disp.d8 & Encodes a 8-bit displacement. Valid only if type has the RIVER_ADDR_DISP8 flag set.\\ \hline
-		disp.d32 & Encodes a 32-bit displacement. Valid only if type has the RIVER_ADDR_DISP flag set. (Mutually exclusive with disp.d8)\\ \hline
-		scaleAndSegment & Encodes the address scale and segment in a single byte. Use the provided getters and setters for convenient access. The scale is only valid if type has the RIVER_ADDR_SCALE flag set.\\ \hline
+		\texttt{type} & Encodes valid address fields as described below.\\ \hline
+		\texttt{base} & Encodes the base register. Valid only if type has the \texttt{RIVER_ADDR_BASE} flag set.\\ \hline
+		\texttt{index} & Encodes the index register. Valid only if type has the \texttt{RIVER_ADDR_INDEX} flag set.\\ \hline
+		\texttt{disp.d8} & Encodes a 8-bit displacement. Valid only if type has the \texttt{RIVER_ADDR_DISP8} flag set.\\ \hline
+		\texttt{disp.d32} & Encodes a 32-bit displacement. Valid only if type has the \texttt{RIVER_ADDR_DISP} flag set. (Mutually exclusive with disp.d8)\\ \hline
+		\texttt{scaleAndSegment} & Encodes the address scale and segment in a single byte. Use the provided getters and setters for convenient access. The scale is only valid if type has the \texttt{RIVER_ADDR_SCALE} flag set.\\ \hline
 	\end{tabular}
 	\caption{Address operand structure fields}
 	\label{table:address-operand-fields}
@@ -214,9 +215,9 @@ Where:
 
 \section{Unused registers}
 \label{sec:unused-register}
-The RiverInstruction contains a unusedRegisters member. The disassembler marks all the general purpose registers unaffected by the current instruction. This comes in handy while reassembling.\\
+\texttt{RiverInstruction} contains the \texttt{unusedRegisters} member. The disassembler marks all the general purpose registers unaffected by the current instruction. This comes in handy while reassembling.\\
 \newline
-For instance, non-native instructions make use of a modified stack pointer register (ESP). When these instructions need access to the original ESP (RIVER_FAMILY_ORIG_xSP is set) some form of register reallocation needs to be performed. The assembler makes use of one of the unused registers to hold the original ESP value.\\
+For instance, non-native instructions make use of a modified stack pointer register (\texttt{ESP}). When these instructions need access to the original \texttt{ESP} (\texttt{RIVER_FAMILY_ORIG_xSP} is set) some form of register reallocation needs to be performed. The assembler makes use of one of the unused registers to hold the original \texttt{ESP} value.\\
 
 \chapter{Instruction families ABI}
 \label{chapter:instruction-families-abi}
