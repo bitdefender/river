@@ -313,11 +313,13 @@ Below is the disassembler output for the input block. The implicit operands are 
 \begin{tabular}{| l |}
 	\hline
 	\textbf{Disassembled code}\\ \hline
-	mov edi\textcolor{blue}{\$1}, edi\textcolor{blue}{\$0}\\
-	\textit{premetamov dword ptr [esp\textcolor{blue}{\$0}+0xfc], ebp\textcolor{blue}{\$0}}\\
-	\textit{premetasub esp\textcolor{blue}{\$1}, 4}\\
-	push ebp\textcolor{blue}{\$0}, \textcolor{orange}{\{esp}\textcolor{blue}{\$1}\textcolor{orange}{\}}, \textcolor{orange}{\{dword ptr [esp}\textcolor{blue}{\$0 }\textcolor{orange}{+ 0xfc]\}}\\
-	mov ebp\textcolor{blue}{\$1}, esp\textcolor{blue}{\$1}\\
+	mov edi\blue{\$1}, edi\blue{\$0}\\
+	\textit{premetamov dword ptr {[}esp\blue{\$0}+0xfc{]}, ebp\blue{\$0}}\\
+	\textit{premetasub esp\blue{\$1}, 4}\\
+	push ebp\blue{\$0},
+	\orange{\{esp}\blue{\$1}\orange{\}},
+	\orange{\{dword ptr {[}esp}\blue{\$0 }\orange{+ 0xfc{]}\}}\\
+	mov ebp\blue{\$1}, esp\blue{\$1}\\
 	cmp dword ptr[0x77b40150], 0x01\\
 	jnz 0x000571d6, \textcolor{green}{0x77a79831}\\ \hline
 \end{tabular}
@@ -400,6 +402,74 @@ The main role of the pretrack instructions is to store a copy of every operand i
 \section{Reassembly}
 \label{sec:reassembly}
 The last translation stage handles reassembly back to x86 binary. The assembler handles the transitions between instruction families, and all particularities that come with each instruction family.\\
+
+\subsection{Transition handling}
+\autoref{img:river-transition-handling} details transitions between families. The track family is not present in the diagram below because it cannot be combined with other families.\\
+\begin{figure}[h]
+	\includegraphics[width=\textwidth]{river-transition-handling}
+	\label{img:river-transition-handling}
+	\caption{River transition handling}
+\end{figure}
+
+\subsection{Assembling native instructions}
+\label{ssec:assembling-native-instructions}
+Most native instructions are assembled back to their original representations. The sole exceptions are branch instructions (jumps, conditional jumps, calls, returns, syscalls). Details will follow in future versions of this document.\\
+
+\subsection{Assembling river instructions}
+All river instructions are assembled directly to their binary counterpart.\\
+
+\subsection{Assembling pretrack instructions}
+Some pretrack instructions do not have a direct binary correspondent. See \autoref{table:assembling-pretrack-instructions}.\\
+\begin{table}[h]
+	\begin{tabular}{| l | l |}
+		\hline
+		\textbf{Instruction mnemonic} & \textbf{Native equivalent}\\ \hline
+		pretrackpushf &	pushf\\ \hline
+		pretrackpush reg & push reg\\ \hline
+		\multirow{4}{*}{pretracklea mem} & mov [tmp], <unused_reg>\\
+		& lea <unused_reg>, mem\\
+		& push <unused_reg>\\
+		& mov <unused_reg>, [tmp]\\ \hline
+		pretrackpush mem & push mem\\ \hline
+	\end{tabular}
+	\caption{Pretrack transition table}
+	\label{table:assembling-pretrack-instructions}
+\end{table}
+
+\chapter{Execution API}
+\label{chapter:execution-api}
+\textit{Note: The documentation in \autoref{chapter:execution-api} is subject to a lot of changes.}\\
+While evaluating binary code the user regains control of the execution after each basic block. The user must implement the following callback in order to steer the program execution:
+\lstinputlisting[language=C]{./code/BranchHandler.h}
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Parameter name} & \textbf{Meaning}\\ \hline
+		\multirow{2}{*}{pEnv} & An object encapsulating the entire execution environment. The user may store generic data under the pEnv->userContext field.\\
+		& For allocating space for the userContext the user needs to call the AllocUserContext function.\\ \hline
+		address & The address of the next instruction that will be executed (in case the execution goes forward.\\ \hline
+	\end{tabular}
+	\caption{Branch Handler Parameters}
+\end{table}
+The BranchHandler needs to return one of the two values in \autoref{table:branchhandler-return}.\\
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Return value} & \textbf{Meaning}\\ \hline
+		EVALUATE_FORWARD & Execution goes forward. The callback will be called after the next basic block is executed.\\ \hline
+		EVALUATE_BACKWARD & All changes made by the last executed basic block are rolled back. The callback gets called after the rollback.\\ \hline
+	\end{tabular}
+	\label{table:branchhandler-return}
+	\caption{Branch Handler Return Values}
+\end{table}
+If a basic block ends with a syscall the following callback is called:
+\lstinputlisting[language=C]{./code/SysHandler.h}
+This allows the user to globally save the machine state.\\
+\begin{tabular}{| p{6cm} | p{10cm} |}
+	\hline
+	\textbf{Parameter name} & \textbf{Meaning}\\ \hline
+	pEnv & An object encapsulating the entire execution environment. The user may store generic data under the pEnv->userContext field.\\ \hline
+\end{tabular}
 
 \appendix
 
