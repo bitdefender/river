@@ -92,7 +92,8 @@ unsigned int RiverCodeGen::GetPrevReg(unsigned char regName) const {
 }
 
 unsigned int RiverCodeGen::NextReg(unsigned char regName) {
-	regVersions[regName] += 0x100;
+	if (regName > 0x20) DEBUG_BREAK;
+	regVersions[regName & 0x07] += 0x100;
 	return GetCurrentReg(regName);
 }
 

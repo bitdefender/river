@@ -694,7 +694,11 @@ RiverX86Disassembler::DisassembleOperandsFunc RiverX86Disassembler::disassembleO
 		/*0xA2*/ &RiverX86Disassembler::DisassembleNoOp,
 		/*0xA3*/ &RiverX86Disassembler::DisassembleModRMReg,
 		/*0xA4*/ &RiverX86Disassembler::DisassembleModRMRegImm8,
-		/*0xA5*/ &RiverX86Disassembler::DisassembleConstRegOperand<2, 0, RIVER_REG_CL, &RiverX86Disassembler::DisassembleModRMReg>,
+		/*0xA5*/ &RiverX86Disassembler::DisassembleConstMemOperand<0, RIVER_OPFLAG_IMPLICIT, RIVER_REG_xSI, 0x0,
+					&RiverX86Disassembler::DisassembleConstMemOperand<1, RIVER_OPFLAG_IMPLICIT, RIVER_REG_xDI, 0x0,
+						&RiverX86Disassembler::DisassembleConstRegOperand<2, 0, RIVER_REG_CL, &RiverX86Disassembler::DisassembleNoOp>
+					>
+				 >,
 		/*0xA6*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0xA7*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0xA8*/ &RiverX86Disassembler::DisassembleUnkOp,
