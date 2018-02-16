@@ -43,6 +43,8 @@ private:
 	void InitLazyFlagsOperands(
 			struct SymbolicOperandsLazyFlags *solf,
 			struct SymbolicOperands *ops);
+	void PrintSetOperands(unsigned idx);
+	void PrintAST(Z3_ast ast);
 
 	void SymbolicExecuteUnk(RiverInstruction *instruction, SymbolicOperands *ops);
 	void SymbolicExecuteNop(RiverInstruction *instruction, SymbolicOperands *ops);
