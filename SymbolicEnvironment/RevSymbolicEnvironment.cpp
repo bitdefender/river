@@ -73,7 +73,7 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 	}
 
 	for (int i = 3; i >= 0; --i) {
-		if (0 == (RIVER_SPEC_IGNORES_OP(i) & rIn.specifiers)) {
+		//if (0 == (RIVER_SPEC_IGNORES_OP(i) & rIn.specifiers)) {
 			switch (RIVER_OPTYPE(rIn.opTypes[i])) {
 			case RIVER_OPTYPE_NONE:
 			case RIVER_OPTYPE_IMM:
@@ -92,7 +92,7 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 			default:
 				DEBUG_BREAK;
 			}
-		}
+		//}
 	}
 }
 
@@ -371,9 +371,9 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 			return true;
 		}
 
-		if (RIVER_SPEC_IGNORES_MEMORY & current->specifiers) {
+		/*if (RIVER_SPEC_IGNORES_MEMORY & current->specifiers) {
 			return false; // for now!
-		}
+		}*/
 
 		//symExpr = get from opBase[opOffset[opInfo.opIdx]]
 

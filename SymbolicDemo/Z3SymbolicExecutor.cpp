@@ -14,7 +14,7 @@ const unsigned char Z3SymbolicExecutor::flagList[] = {
 
 bool Z3SymbolicExecutor::CheckSameSort(unsigned size, Z3_ast *ops) {
 	unsigned sortSize = 0xffffffff;
-	for (int i = 0; i < size; ++i) {
+	for (unsigned int i = 0; i < size; ++i) {
 		unsigned tempSortSize = Z3_get_bv_sort_size(context,
 				Z3_get_sort(context, ops[i]));
 		if (sortSize == 0xffffffff) {
