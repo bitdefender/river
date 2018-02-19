@@ -315,16 +315,16 @@ void SymbopTranslator::MakeTrackOp(nodep::DWORD opIdx, const nodep::BYTE type, c
 		valueOffset = 0xFFFFFFFF;
 		break;
 	case RIVER_OPTYPE_REG :
-		//if ((0 == (RIVER_SPEC_IGNORES_OP(opIdx) & specifiers))) {
+		if ((0 == (RIVER_SPEC_IGNORES_OP(opIdx) & specifiers))) {
 			valueOffset = MakePreTrackReg(op.asRegister, rMainOut, instrCount);
-		//}
+		}
 		MakeTrackReg(op.asRegister, rTrackOut, trackCount);
 		break;
 	case RIVER_OPTYPE_MEM:
 		if (0 == op.asAddress->type) {
-			//if ((0 == (RIVER_SPEC_IGNORES_OP(opIdx) & specifiers))) {
+			if ((0 == (RIVER_SPEC_IGNORES_OP(opIdx) & specifiers))) {
 				valueOffset = MakePreTrackReg(op.asAddress->base, rMainOut, instrCount);
-			//}
+			}
 			MakeTrackReg(op.asAddress->base, rTrackOut, trackCount);
 		} else {
 			MakeTrackMem(*op.asAddress, specifiers, addrOffset, rTrackOut, trackCount);

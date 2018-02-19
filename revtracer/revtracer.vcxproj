@@ -20,14 +20,11 @@
     <ClInclude Include="AddressContainer.h" />
     <ClInclude Include="PreTrackingX86Assembler.h" />
     <ClInclude Include="revtracer.h" />
-    <ClInclude Include="RiverRepAssembler.h" />
-    <ClInclude Include="RiverRepTranslator.h" />
     <ClInclude Include="RiverTrackingX86Assembler.h" />
     <ClInclude Include="SymbopReverseTranslator.h" />
     <ClInclude Include="SymbopSaveTranslator.h" />
     <ClInclude Include="Tracking.h" />
     <ClInclude Include="TrackingX86Assembler.h" />
-    <ClInclude Include="TranslatorUtil.h" />
     <ClInclude Include="X86AssemblerFuncs.h" />
     <ClInclude Include="RelocableCodeBuffer.h" />
     <ClInclude Include="X86Assembler.h" />
@@ -77,8 +74,6 @@
     <ClCompile Include="RiverAddress.cpp" />
     <ClCompile Include="RiverMetaTranslator.cpp" />
     <ClCompile Include="RiverPrintTable.cpp" />
-    <ClCompile Include="RiverRepAssembler.cpp" />
-    <ClCompile Include="RiverRepTranslator.cpp" />
     <ClCompile Include="RiverReverseTranslator.cpp" />
     <ClCompile Include="RiverSaveTranslator.cpp" />
     <ClCompile Include="RiverTrackingX86Assembler.cpp" />
@@ -93,7 +88,6 @@
     <ClCompile Include="sync.cpp" />
     <ClCompile Include="Tracking.cpp" />
     <ClCompile Include="TrackingX86Assembler.cpp" />
-    <ClCompile Include="TranslatorUtil.cpp" />
     <ClCompile Include="X86Assembler.cpp" />
     <ClCompile Include="X86AssemblerFuncs.cpp" />
   </ItemGroup>
