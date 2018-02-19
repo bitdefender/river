@@ -3,6 +3,8 @@
 #include "../CommonCrossPlatform/Common.h"
 #include <assert.h>
 
+//#define PRINT_DEBUG_SYMBOLIC
+
 #ifndef PRINT_DEBUG_SYMBOLIC
 #define PRINTF_SYM
 #else
@@ -215,8 +217,8 @@ const unsigned int Z3SymbolicExecutor::Z3SymbolicCpuFlag::lazyMarker = 0xDEADBEE
 
 /*====================================================================================================*/
 
-Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e) :
-		sym::SymbolicExecutor(e)
+Z3SymbolicExecutor::Z3SymbolicExecutor(sym::SymbolicEnvironment *e, AbstractFormat *aFormat) :
+		sym::SymbolicExecutor(e), aFormat(aFormat)
 {
 	symIndex = 1;
 
@@ -360,7 +362,10 @@ void Z3SymbolicExecutor::PrintSetOperands(unsigned idx) {
 	struct OperandInfo opInfo;
 	opInfo.opIdx = idx;
 	env->GetOperand(opInfo);
-	printf("%s\n", Z3_ast_to_string(context, (Z3_ast)opInfo.symbolic));
+
+	if (opInfo.symbolic != nullptr) {
+		printf("%s\n", Z3_ast_to_string(context, (Z3_ast)opInfo.symbolic));
+	}
 }
 
 void Z3SymbolicExecutor::PrintAST(Z3_ast ast) {
@@ -695,6 +700,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMov(RiverInstruction *instruction, Symbo
 		env->SetOperand(0, ops->sv[1]);
 		PRINTF_SYM("mov <= %p[%d]\n", ops->sv[1],
 				Z3_get_bv_sort_size(context, Z3_get_sort(context, (Z3_ast)ops->sv[1])));
+		PrintSetOperands(0);
 	} else {
 		env->UnsetOperand(0);
 	}
@@ -706,6 +712,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMovSx(RiverInstruction *instruction, Sym
 		env->SetOperand(0, (void *)dst);
 
 		PRINTF_SYM("movsx %p <= %p\n", dst, ops->sv[1]);
+		PrintSetOperands(0);
 	}
 	else {
 		env->UnsetOperand(0);
@@ -724,6 +731,7 @@ void Z3SymbolicExecutor::SymbolicExecuteMovZx(RiverInstruction *instruction, Sym
 		env->SetOperand(0, (void *)dst);
 
 		PRINTF_SYM("movzx %p <= %p[%d]\n", dst, ops->sv[1], size);
+		PrintSetOperands(0);
 	}
 	else {
 		env->UnsetOperand(0);

@@ -7,6 +7,7 @@
 #include "../SymbolicEnvironment/LargeStack.h"
 
 #include "VariableTracker.h"
+#include "AbstractLog.h"
 
 #define OPERAND_BITMASK(idx) (0x00010000 << (idx))
 
@@ -22,6 +23,8 @@ private:
 	stk::DWORD saveTop;
 	stk::DWORD saveStack[0x10000];
 	stk::LargeStack *ls;
+
+	AbstractFormat *aFormat;
 
 	struct SymbolicOperands {
 		nodep::DWORD av;
@@ -149,7 +152,7 @@ public:
 	static SymbolicExecute executeRotationOperations[8];
 	static SymbolicExecute executeAssignmentLogicalOperations[8];
 
-	Z3SymbolicExecutor(sym::SymbolicEnvironment *e);
+	Z3SymbolicExecutor(sym::SymbolicEnvironment *e, AbstractFormat *aFormat);
 	~Z3SymbolicExecutor();
 
 	void StepForward();

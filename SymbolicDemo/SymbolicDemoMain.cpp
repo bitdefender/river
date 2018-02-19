@@ -15,10 +15,9 @@
 
 #include "z3.h"
 
-#include "util.h"
-
 #include "../CommonCrossPlatform/Common.h"
 #include "../CommonCrossPlatform/BasicTypes.h"
+#include "../CommonCrossPlatform/CommonSpecifiers.h"
 
 ExecutionController *ctrl;
 
