@@ -16,12 +16,12 @@ void NoDecRef(void *) {}
 
 nodep::DWORD TrackAddrWrapper(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD segSel) {
 	nodep::DWORD ret = TrackAddr(pEnv, dwAddr, segSel);
-	printf("<info> TrackAddr 0x%08lx => 0x%08lx\n", dwAddr, ret);
+	fprintf(stderr, "<info> TrackAddr 0x%08lx => 0x%08lx\n", dwAddr, ret);
 	return ret;
 }
 
 nodep::DWORD MarkAddrWrapper(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel) {
-	printf("<info> MarkAddr 0x%08lx <= %lu\n", dwAddr, value);
+	fprintf(stderr, "<info> MarkAddr 0x%08lx <= %lu\n", dwAddr, value);
 	return MarkAddr(pEnv, dwAddr, value, segSel);
 }
 
@@ -295,7 +295,7 @@ bool RevSymbolicEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
 		current->operands[opInfo.opIdx].asAddress->base.name)];
 	opInfo.isTracked = (opInfo.symbolic != NULL);
 	if (opInfo.isTracked)
-		printf("GetAddressBase [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+		fprintf(stderr, "GetAddressBase [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 	opInfo.concrete = opBase[-((int)baseOffsets[opInfo.opIdx])];
 	return true;
 }
@@ -315,7 +315,7 @@ bool RevSymbolicEnvironment::GetAddressScaleAndIndex(struct OperandInfo &opInfo,
 		current->operands[opInfo.opIdx].asAddress->index.name)];
 	opInfo.isTracked = (opInfo.symbolic != NULL);
 	if (opInfo.isTracked) {
-		printf("GetAddressScaleAndIndex [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+		fprintf(stderr, "GetAddressScaleAndIndex [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 	}
 	opInfo.concrete = opBase[-((int)indexOffsets[opInfo.opIdx])];
 	return true;
@@ -354,7 +354,7 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 		opInfo.isTracked = (symExpr != NULL);
 		opInfo.symbolic = symExpr;
 		opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
-		//printf("[%d] <= getOperand reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+		//fprintf(stderr, "[%d] <= getOperand reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 		return true;
 
 	case RIVER_OPTYPE_MEM:
@@ -367,7 +367,7 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 			opInfo.isTracked = (symExpr != NULL);
 			opInfo.symbolic = symExpr;
 			opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
-			//printf("[%d] <= getOperand mem reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+			//fprintf(stderr, "[%d] <= getOperand mem reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 			return true;
 		}
 
@@ -450,7 +450,7 @@ bool RevSymbolicEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, 
 		if (doRefCount && (nullptr != symbolicValue)) {
 			addRefFunc(symbolicValue);
 		}
-		//printf("[%d] SetOperand Reg <= 0x%08lX TR: %08lX Freg: %d reg: %d\n", opIdx, (DWORD)symbolicValue,
+		//fprintf(stderr, "[%d] SetOperand Reg <= 0x%08lX TR: %08lX Freg: %d reg: %d\n", opIdx, (DWORD)symbolicValue,
 		//		&((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(current->operands[opIdx].asRegister.name)],
 		//		current->operands[opIdx].asRegister.name);
 		return true;
@@ -465,12 +465,12 @@ bool RevSymbolicEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, 
 			if (doRefCount && (nullptr != symbolicValue)) {
 				addRefFunc(symbolicValue);
 			}
-			//printf("[%d] SetOperand Mem Reg <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
+			//fprintf(stderr, "[%d] SetOperand Mem Reg <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
 		}
 		else {
 			//MarkAddrWrapper(pEnv, opBase[-(addressOffsets[opIdx])], (rev::DWORD)symbolicValue, 0);
 			SetExpression(symbolicValue, opBase[-((int)addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx]), &opBase[-((int)valueOffsets[opIdx])]);
-			//printf("[%d] SetOperand Mem <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
+			//fprintf(stderr, "[%d] SetOperand Mem <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
 		}
 		return true;
 
