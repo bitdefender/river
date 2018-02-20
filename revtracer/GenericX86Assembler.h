@@ -13,6 +13,10 @@
 #define ASSEMBLER_CODE_NATIVE		0x00
 #define ASSEMBLER_CODE_TRACKING		0x02
 
+class UnusedRegister {
+	//virtual nodep::Acquire()
+};
+
 class GenericX86Assembler {
 protected :
 	RiverRuntime *runtime;

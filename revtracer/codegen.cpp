@@ -182,9 +182,9 @@ bool RiverCodeGen::DisassembleSingle(nodep::BYTE *&px86, RiverInstruction *rOut,
 
 	for (unsigned i = 0; i < localRepCount; ++i) {
 		nodep::DWORD localMetaCount = 0;
-		TRANSLATE_PRINT(PRINT_INFO, "instrIndex[%d], count[%d], opcode[0x%02X], instraddr[%p]\n", i, count,
+		/*TRANSLATE_PRINT(PRINT_INFO, "instrIndex[%d], count[%d], opcode[0x%02X], instraddr[%p]\n", i, count,
 				localInstrBuffer[i].opCode,
-				dis.instructionAddress);
+				dis.instructionAddress);*/
 		ret = metaTranslator.Translate(localInstrBuffer[i], rOut + count, localMetaCount);
 		count += localMetaCount;
 

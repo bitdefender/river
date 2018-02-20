@@ -46,24 +46,34 @@ private :
 	void MakeInitTrack(const RiverInstruction &rIn, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 	void MakeCleanTrack(RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 
+	nodep::DWORD SaveFlagValues(RiverInstruction *& rMainOut, nodep::DWORD & instrCount);
 	nodep::DWORD MakeTrackFlg(nodep::BYTE flags, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
+	nodep::DWORD MakeMarkFlg(nodep::BYTE flags, nodep::DWORD offset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 
-	nodep::DWORD MakePreTrackReg(const RiverRegister &reg, RiverInstruction *&rMainOut, nodep::DWORD &instrCount);
-	void MakeTrackReg(const RiverRegister &reg, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 	
+	nodep::DWORD SaveRegValue(const RiverRegister &reg, RiverInstruction *&rMainOut, nodep::DWORD &instrCount);
+	nodep::DWORD MakeTrackReg(bool ignoresValue, const RiverRegister &reg, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
+	nodep::DWORD MakeMarkReg(const RiverRegister &reg, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
+
+
+	nodep::DWORD SaveMemValue(bool ignoresMemory, const RiverAddress & mem, RiverInstruction *& rMainOut, nodep::DWORD & instrCount);
+	nodep::DWORD MakeTrackMem(bool ignoresValue, bool ignoresMemory, const RiverAddress & mem, RiverInstruction *& rMainOut, nodep::DWORD & instrCount, RiverInstruction *& rTrackOut, nodep::DWORD & trackCount);
+	nodep::DWORD MakeMarkMem(bool ignoresMemory, const RiverAddress & mem, RiverInstruction *& rMainOut, nodep::DWORD & instrCount, RiverInstruction *& rTrackOut, nodep::DWORD & trackCount);
+
+	nodep::DWORD SaveAddrValue(const RiverAddress &mem, RiverInstruction *&rMainOut, nodep::DWORD &instrCount);
+
 	//nodep::DWORD MakePreTrackMem(const RiverAddress &mem, nodep::WORD specifiers, nodep::DWORD addrOffset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount);
-	void MakeTrackMem(const RiverAddress &mem, nodep::WORD specifiers, nodep::DWORD addrOffset, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
+	//void MakeTrackMem(const RiverAddress &mem, nodep::WORD specifiers, nodep::DWORD addrOffset, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 	
-	nodep::DWORD MakeTrackAddress(nodep::WORD specifiers, const RiverOperand &op, nodep::BYTE optype, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount, nodep::DWORD &valuesOut);
+	
+	//nodep::DWORD MakeTrackAddress(nodep::WORD specifiers, const RiverOperand &op, nodep::BYTE optype, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount, nodep::DWORD &valuesOut);
 
-	void MakeMarkFlg(nodep::BYTE flags, nodep::DWORD offset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
-	void MakeMarkReg(const RiverRegister &reg, nodep::DWORD addrOffset, nodep::DWORD valueOffset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
-	void MakeMarkMem(const RiverAddress &mem, nodep::WORD specifiers, nodep::DWORD addrOffset, nodep::DWORD valueOffset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
+	//void MakeMarkMem(const RiverAddress &mem, nodep::WORD specifiers, nodep::DWORD addrOffset, nodep::DWORD valueOffset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 	//void MakeSkipMem(const RiverAddress &mem, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 	
 	/*  */
-	void MakeTrackOp(nodep::DWORD opIdx, const nodep::BYTE type, const RiverOperand &op, nodep::WORD specifiers, nodep::DWORD addrOffset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount, nodep::DWORD &valueOffset);
-	void MakeMarkOp(const nodep::BYTE type, nodep::WORD specifiers, nodep::DWORD addrOffset, nodep::DWORD valueOffset, const RiverOperand &op, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
+	nodep::DWORD MakeTrackOp(nodep::DWORD opIdx, const nodep::BYTE type, const RiverOperand &op, nodep::WORD specifiers, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
+	nodep::DWORD MakeMarkOp(const nodep::BYTE type, nodep::WORD specifiers, const RiverOperand &op, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 
 	void MakeCallSymbolic(const RiverInstruction &rIn, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount);
 

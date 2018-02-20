@@ -10,7 +10,14 @@ private :
 	RiverInstruction *current;
 	ExecutionController *ctrl;
 	nodep::DWORD *opBase;
-	nodep::DWORD addressOffsets[4], valueOffsets[4], baseOffsets[4], indexOffsets[4], flagOffset;
+	
+	nodep::DWORD addressOffsets[4];
+	nodep::DWORD baseOffsets[4];
+	nodep::DWORD indexOffsets[4];
+	nodep::DWORD inValueOffsets[4];
+	nodep::DWORD outValueOffsets[4];
+	nodep::DWORD inFlagOffset;
+	nodep::DWORD outFlagOffset;
 
 	AddRefFunc addRefFunc;
 	DecRefFunc decRefFunc;

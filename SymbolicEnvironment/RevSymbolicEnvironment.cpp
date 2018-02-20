@@ -38,17 +38,13 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 
 	for (unsigned int i = 0; i < 4; ++i) {
 		addressOffsets[i] = 0xFFFFFFFF;
-		valueOffsets[i] = 0xFFFFFFFF;
+		inValueOffsets[i] = 0xFFFFFFFF;
+		outValueOffsets[i] = 0xFFFFFFFF;
 		baseOffsets[i] = 0xFFFFFFFF;
 		indexOffsets[i] = 0xFFFFFFFF;
 	}
 
-	flagOffset = 0xFFFFFFFF;
-
-	if ((0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) || (rIn.modFlags)) {
-		flagOffset = trackIndex;
-		trackIndex++;
-	}
+	inFlagOffset = outFlagOffset = 0xFFFFFFFF;
 
 	for (int i = 3; i >= 0; --i) {
 		if ((RIVER_OPTYPE(rIn.opTypes[i]) == RIVER_OPTYPE_MEM) && (0 != rIn.operands[i].asAddress->type)) {
@@ -65,11 +61,17 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 				trackIndex++;
 			}
 
-			if (0 == (rIn.specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
+			/*if (0 == (rIn.specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
 				valueOffsets[i] = trackIndex + 1; // look at the layout one more time
 				trackIndex += 2;
-			}
+			}*/
 		}
+	}
+
+	//if ((0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) || (rIn.modFlags)) {
+	if (rIn.testFlags) {
+		inFlagOffset = trackIndex;
+		trackIndex++;
 	}
 
 	for (int i = 3; i >= 0; --i) {
@@ -78,17 +80,53 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 			case RIVER_OPTYPE_NONE:
 			case RIVER_OPTYPE_IMM:
 				break;
-			case RIVER_OPTYPE_MEM: // holy shit this is an effed up switch
-				if (0 == rIn.operands[i].asAddress->type) {
-			case RIVER_OPTYPE_REG:
-					valueOffsets[i] = trackIndex;
-					trackIndex++;
+			case RIVER_OPTYPE_MEM:
+				if (0 == (rIn.specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
+					if (0 == rIn.operands[i].asAddress->type) {
+						inValueOffsets[i] = trackIndex;
+						trackIndex++;
+					} else {
+						inValueOffsets[i] = trackIndex + 1;
+						trackIndex += 2;
+					}
 				}
-				break;
-			/*case RIVER_OPTYPE_REG:
-				valueOffsets[i] = trackIndex;
+			case RIVER_OPTYPE_REG:
+				inValueOffsets[i] = trackIndex;
 				trackIndex++;
-				break;*/
+				break;
+			default:
+				DEBUG_BREAK;
+			}
+		}
+	}
+
+
+	if (rIn.modFlags) {
+		outFlagOffset = trackIndex;
+		trackIndex++;
+	}
+
+	for (int i = 3; i >= 0; --i) {
+		if (RIVER_SPEC_MODIFIES_OP(i) & rIn.specifiers) {
+			switch (RIVER_OPTYPE(rIn.opTypes[i])) {
+			case RIVER_OPTYPE_NONE:
+			case RIVER_OPTYPE_IMM:
+				break;
+			case RIVER_OPTYPE_MEM:
+				if (0 == (rIn.specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
+					if (0 == rIn.operands[i].asAddress->type) {
+						inValueOffsets[i] = trackIndex;
+						trackIndex++;
+					}
+					else {
+						inValueOffsets[i] = trackIndex + 1;
+						trackIndex += 2;
+					}
+				}
+			case RIVER_OPTYPE_REG:
+				inValueOffsets[i] = trackIndex;
+				trackIndex++;
+				break;
 			default:
 				DEBUG_BREAK;
 			}
@@ -293,10 +331,12 @@ bool RevSymbolicEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
 
 	opInfo.symbolic = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
 		current->operands[opInfo.opIdx].asAddress->base.name)];
-	opInfo.isTracked = (opInfo.symbolic != NULL);
-	if (opInfo.isTracked)
+	opInfo.fields = (opInfo.symbolic != NULL) ? OP_HAS_SYMBOLIC : 0;
+	if (opInfo.fields) {
 		printf("GetAddressBase [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
-	opInfo.concrete = opBase[-((int)baseOffsets[opInfo.opIdx])];
+	}
+	opInfo.concreteBefore = opBase[-((int)baseOffsets[opInfo.opIdx])];
+	opInfo.fields |= OP_HAS_CONCRETE_BEFORE;
 	return true;
 }
 
@@ -313,11 +353,12 @@ bool RevSymbolicEnvironment::GetAddressScaleAndIndex(struct OperandInfo &opInfo,
 	scale = current->operands[opInfo.opIdx].asAddress->GetScale();
 	opInfo.symbolic = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
 		current->operands[opInfo.opIdx].asAddress->index.name)];
-	opInfo.isTracked = (opInfo.symbolic != NULL);
-	if (opInfo.isTracked) {
+	opInfo.fields = (opInfo.symbolic != NULL) ? OP_HAS_SYMBOLIC : 0;
+	if (opInfo.fields) {
 		printf("GetAddressScaleAndIndex [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 	}
-	opInfo.concrete = opBase[-((int)indexOffsets[opInfo.opIdx])];
+	opInfo.concreteBefore = opBase[-((int)indexOffsets[opInfo.opIdx])];
+	opInfo.fields |= OP_HAS_CONCRETE_BEFORE;
 	return true;
 }
 
@@ -333,16 +374,16 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 		return false;
 
 	case RIVER_OPTYPE_IMM:
-		opInfo.isTracked = false;
+		opInfo.fields = OP_HAS_CONCRETE_BEFORE | OP_HAS_CONCRETE_AFTER;
 		switch (RIVER_OPSIZE(current->opTypes[opInfo.opIdx])) {
 		case RIVER_OPSIZE_32:
-			opInfo.concrete = current->operands[opInfo.opIdx].asImm32;
+			opInfo.concreteBefore = opInfo.concreteAfter = current->operands[opInfo.opIdx].asImm32;
 			break;
 		case RIVER_OPSIZE_16:
-			opInfo.concrete = current->operands[opInfo.opIdx].asImm16;
+			opInfo.concreteBefore = opInfo.concreteAfter = current->operands[opInfo.opIdx].asImm16;
 			break;
 		case RIVER_OPSIZE_8:
-			opInfo.concrete = current->operands[opInfo.opIdx].asImm8;
+			opInfo.concreteBefore = opInfo.concreteAfter = current->operands[opInfo.opIdx].asImm8;
 			break;
 		}
 		return true;
@@ -351,9 +392,23 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 		symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
 				current->operands[opInfo.opIdx].asRegister.name)];
 
-		opInfo.isTracked = (symExpr != NULL);
-		opInfo.symbolic = symExpr;
-		opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
+		opInfo.fields = 0;
+
+		if (symExpr) {
+			opInfo.symbolic = symExpr;
+			opInfo.fields |= OP_HAS_SYMBOLIC;
+		}
+		
+		if (0xFFFFFFFF != inValueOffsets[opInfo.opIdx]) {
+			opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+			opInfo.fields |= OP_HAS_CONCRETE_BEFORE;
+		}
+
+		if (0xFFFFFFFF != outValueOffsets[opInfo.opIdx]) {
+			opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+			opInfo.fields |= OP_HAS_CONCRETE_AFTER;
+		}
+
 		//printf("[%d] <= getOperand reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 		return true;
 
@@ -362,11 +417,24 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 
 		if (0 == current->operands[opInfo.opIdx].asAddress->type) {
 			symExpr = (void *)((ExecutionEnvironment *)pEnv)->runtimeContext.taintedRegisters[_GetFundamentalRegister(
-					current->operands[opInfo.opIdx].asAddress->base.name)];
+				current->operands[opInfo.opIdx].asAddress->base.name)];
 
-			opInfo.isTracked = (symExpr != NULL);
-			opInfo.symbolic = symExpr;
-			opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
+			opInfo.fields = 0;
+
+			if (symExpr) {
+				opInfo.symbolic = symExpr;
+				opInfo.fields |= OP_HAS_SYMBOLIC;
+			}
+
+			if (0xFFFFFFFF != inValueOffsets[opInfo.opIdx]) {
+				opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+				opInfo.fields |= OP_HAS_CONCRETE_BEFORE;
+			}
+
+			if (0xFFFFFFFF != outValueOffsets[opInfo.opIdx]) {
+				opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+				opInfo.fields |= OP_HAS_CONCRETE_AFTER;
+			}
 			//printf("[%d] <= getOperand mem reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 			return true;
 		}
@@ -383,9 +451,22 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 
 		symExpr = GetExpression(opBase[-((int)addressOffsets[opInfo.opIdx])],
 				RIVER_OPSIZE(current->opTypes[opInfo.opIdx])); //(void *)TrackAddrWrapper(pEnv, opBase[-(addressOffsets[opInfo.opIdx])], 0);
-		opInfo.isTracked = (symExpr != NULL);
-		opInfo.symbolic = symExpr;
-		opInfo.concrete = opBase[-((int)valueOffsets[opInfo.opIdx])];
+		opInfo.fields = 0;
+
+		if (symExpr) {
+			opInfo.symbolic = symExpr;
+			opInfo.fields |= OP_HAS_SYMBOLIC;
+		}
+
+		if (0xFFFFFFFF != inValueOffsets[opInfo.opIdx]) {
+			opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+			opInfo.fields |= OP_HAS_CONCRETE_BEFORE;
+		}
+
+		if (0xFFFFFFFF != outValueOffsets[opInfo.opIdx]) {
+			opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+			opInfo.fields |= OP_HAS_CONCRETE_AFTER;
+		}
 		return true;
 	}
 
@@ -425,10 +506,21 @@ bool RevSymbolicEnvironment::GetFlgValue(struct FlagInfo &flagInfo) {
 
 	nodep::DWORD val = ((ExecutionEnvironment *)pEnv)->runtimeContext.taintedFlags[flgIdx];
 
-	flagInfo.isTracked = (0 != val);
-	flagInfo.concrete = (opBase[flagOffset] >> flagShifts[flgIdx]) & 1;
-	if (flagInfo.isTracked) {
+	flagInfo.fields = 0;
+
+	if (0 != val) {
 		flagInfo.symbolic = (void *)val;
+		flagInfo.fields |= OP_HAS_SYMBOLIC;
+	}
+
+	if (0xFFFFFFFF != inFlagOffset) {
+		flagInfo.concreteBefore = (opBase[inFlagOffset] >> flagShifts[flgIdx]) & 1;
+		flagInfo.fields |= OP_HAS_CONCRETE_BEFORE;
+	}
+
+	if (0xFFFFFFFF != outFlagOffset) {
+		flagInfo.concreteBefore = (opBase[outFlagOffset] >> flagShifts[flgIdx]) & 1;
+		flagInfo.fields |= OP_HAS_CONCRETE_BEFORE;
 	}
 
 	return true;
@@ -469,7 +561,7 @@ bool RevSymbolicEnvironment::SetOperand(nodep::BYTE opIdx, void *symbolicValue, 
 		}
 		else {
 			//MarkAddrWrapper(pEnv, opBase[-(addressOffsets[opIdx])], (rev::DWORD)symbolicValue, 0);
-			SetExpression(symbolicValue, opBase[-((int)addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx]), &opBase[-((int)valueOffsets[opIdx])]);
+			SetExpression(symbolicValue, opBase[-((int)addressOffsets[opIdx])], RIVER_OPSIZE(current->opTypes[opIdx]), &opBase[-((int)outValueOffsets[opIdx])]);
 			//printf("[%d] SetOperand Mem <= 0x%08lX\n", opIdx, (DWORD)symbolicValue);
 		}
 		return true;

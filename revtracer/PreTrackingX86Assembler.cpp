@@ -23,54 +23,71 @@ nodep::BYTE SelectUnusedRegister(nodep::BYTE &uIn) {
 	return LogB2(reg);
 }
 
-void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal, nodep::BYTE riverFamily, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
-	const nodep::BYTE regByte[] = { 0x05, 0x0D, 0x15, 0x1D, 0x25, 0x2D, 0x35, 0x3D };
+const nodep::BYTE PreTrackingAssembler::regByte[] = { 0x05, 0x0D, 0x15, 0x1D, 0x25, 0x2D, 0x35, 0x3D };
 
+void PreTrackingAssembler::SaveUnusedRegister(nodep::BYTE reg, RelocableCodeBuffer &px86) {
 	const nodep::BYTE preTrackMemPrefix[] = {
 		0x89, 0x05, 0x00, 0x00, 0x00, 0x00
 	};
 
+	rev_memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
+	px86.cursor[1] = regByte[reg];
+	*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->returnRegister;
+	px86.cursor += sizeof(preTrackMemPrefix);
+
+}
+
+void PreTrackingAssembler::RestoreUnusedRegister(nodep::BYTE reg, RelocableCodeBuffer &px86) {
 	const nodep::BYTE preTrackMemSuffix[] = {
 		0x8B, 0x05, 0x00, 0x00, 0x00, 0x00
 	};
 
+	rev_memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
+	px86.cursor[1] = regByte[reg];
+	*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->returnRegister;
+	px86.cursor += sizeof(preTrackMemSuffix);
+}
+
+void PreTrackingAssembler::AssemblePreTrackAddr(RiverAddress *addr, nodep::BYTE riverFamily, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
+
 	nodep::DWORD flags = 0;
 	nodep::BYTE unusedRegisters = addr->GetUnusedRegisters() & 0xCF;
+
+	if (riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) {
+		unusedRegisters &= ~0x01;
+	}
+
 	nodep::BYTE cReg = SelectUnusedRegister(unusedRegisters);
 
-	rev_memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
-	px86.cursor[1] = regByte[cReg];
-	*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->returnRegister;
-	px86.cursor += sizeof(preTrackMemPrefix);
+	SaveUnusedRegister(cReg, px86);
 	instrCounter++;
 
-	RiverInstruction rLea;
-	rLea.opCode = 0x8D;
-	rLea.modifiers = rLea.specifiers = 0;
-	rLea.family = RIVER_FAMILY_PRETRACK;
-	rLea.opTypes[0] = RIVER_OPTYPE_REG;
-	rLea.operands[0].asRegister.versioned = cReg;
-	
-	rLea.opTypes[1] = RIVER_OPTYPE_MEM;
-	rLea.operands[1].asAddress = addr;
+	{   // wrap up in RAII - lea <cReg>, <address>
+		RiverInstruction rLea;
+		rLea.opCode = 0x8D;
+		rLea.modifiers = rLea.specifiers = 0;
+		rLea.family = RIVER_FAMILY_PRETRACK;
+		rLea.opTypes[0] = RIVER_OPTYPE_REG;
+		rLea.operands[0].asRegister.versioned = cReg;
 
-	rLea.opTypes[2] = rLea.opTypes[3] = RIVER_OPTYPE_NONE;
-	rLea.PromoteModifiers();
-	rLea.TrackEspAsParameter();
-	rLea.TrackUnusedRegisters();
+		rLea.opTypes[1] = RIVER_OPTYPE_MEM;
+		rLea.operands[1].asAddress = addr;
 
-	GeneratePrefixes(rLea, px86.cursor);
-	AssembleDefaultInstr(rLea, px86, flags, instrCounter);
-	AssembleRegModRMOp(rLea, px86);
+		rLea.opTypes[2] = rLea.opTypes[3] = RIVER_OPTYPE_NONE;
+		rLea.PromoteModifiers();
+		rLea.TrackEspAsParameter();
+		rLea.TrackUnusedRegisters();
+
+		GeneratePrefixes(rLea, px86.cursor);
+		AssembleDefaultInstr(rLea, px86, flags, instrCounter);
+		AssembleRegModRMOp(rLea, px86);
+	}
 
 	if (addr->HasSegment()) {
 		nodep::BYTE sReg = SelectUnusedRegister(unusedRegisters);
 
 		// save reg
-		rev_memcpy(px86.cursor, preTrackMemPrefix, sizeof(preTrackMemPrefix));
-		px86.cursor[1] = regByte[sReg];
-		*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->secondaryRegister;
-		px86.cursor += sizeof(preTrackMemPrefix);
+		SaveUnusedRegister(sReg, px86);
 		instrCounter++;
 
 		{	// wrap up in RAII - mov <sReg>, segment
@@ -164,10 +181,7 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 		}
 
 		// restore reg
-		rev_memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
-		px86.cursor[1] = regByte[sReg];
-		*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->secondaryRegister;
-		px86.cursor += sizeof(preTrackMemSuffix);
+		RestoreUnusedRegister(sReg, px86);
 		instrCounter++;
 	}
 
@@ -176,42 +190,83 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, bool saveVal,
 	instrCounter++;
 
 	if (addr->type & RIVER_ADDR_BASE) {
-		px86.cursor[0] = 0x50 + GetFundamentalRegister(addr->base.name); // push reg;
+		nodep::BYTE reg = GetFundamentalRegister(addr->base.name);
+
+		if ((riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) && (reg == RIVER_REG_xSP)) {
+			reg = RIVER_REG_xAX;
+		}
+
+		px86.cursor[0] = 0x50 + GetFundamentalRegister(reg); // push reg;
 		px86.cursor++;
 		instrCounter++;
 	}
 
 	if (addr->type & RIVER_ADDR_INDEX) {
-		px86.cursor[0] = 0x50 + GetFundamentalRegister(addr->index.name); // push reg;
+		nodep::BYTE reg = GetFundamentalRegister(addr->base.name);
+
+		if ((riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) && (reg == RIVER_REG_xSP)) {
+			reg = RIVER_REG_xAX;
+		}
+		
+		px86.cursor[0] = 0x50 + GetFundamentalRegister(reg); // push reg;
 		px86.cursor++;
 		instrCounter++;
 	}
 
-	if (saveVal) {
-		const nodep::BYTE andRegVal[] = { 0x9C, 0x83, 0xE0, 0xFC, 0x9D };
-		const nodep::BYTE pushEax4[] = { 0xFF, 0x70, 0x04 };
-		const nodep::BYTE pushEax[] = { 0xFF, 0x30 };
-		const nodep::BYTE segmentPrefix[] = { 0x00, 0x26, 0x2E, 0x36, 0x3E, 0x64, 0x65 };
+	RestoreUnusedRegister(cReg, px86);
+	instrCounter++;
+}
 
-		rev_memcpy(px86.cursor, andRegVal, sizeof(andRegVal));
-		px86.cursor[2] += cReg;
-		px86.cursor += sizeof(andRegVal);
+void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
 
-		rev_memcpy(px86.cursor, pushEax4, sizeof(pushEax4));
-		px86.cursor[1] += cReg;
-		px86.cursor += sizeof(pushEax4);
+	const nodep::BYTE andRegVal[] = { 0x9C, 0x83, 0xE0, 0xFC, 0x9D };
+	const nodep::BYTE pushEax4[] = { 0xFF, 0x70, 0x04 };
+	const nodep::BYTE pushEax[] = { 0xFF, 0x30 };
+	const nodep::BYTE segmentPrefix[] = { 0x00, 0x26, 0x2E, 0x36, 0x3E, 0x64, 0x65 };
 
-		rev_memcpy(px86.cursor, pushEax, sizeof(pushEax));
-		px86.cursor[1] += cReg;
-		px86.cursor += sizeof(pushEax);
+	nodep::DWORD flags = 0;
+	nodep::BYTE unusedRegisters = addr->GetUnusedRegisters() & 0xCF;
+	nodep::BYTE cReg = SelectUnusedRegister(unusedRegisters);
 
-		instrCounter += 5;
+	SaveUnusedRegister(cReg, px86);
+	instrCounter++;
+
+	{   // wrap up in RAII - lea <cReg>, <address>
+		RiverInstruction rLea;
+		rLea.opCode = 0x8D;
+		rLea.modifiers = rLea.specifiers = 0;
+		rLea.family = RIVER_FAMILY_PRETRACK;
+		rLea.opTypes[0] = RIVER_OPTYPE_REG;
+		rLea.operands[0].asRegister.versioned = cReg;
+
+		rLea.opTypes[1] = RIVER_OPTYPE_MEM;
+		rLea.operands[1].asAddress = addr;
+
+		rLea.opTypes[2] = rLea.opTypes[3] = RIVER_OPTYPE_NONE;
+		rLea.PromoteModifiers();
+		rLea.TrackEspAsParameter();
+		rLea.TrackUnusedRegisters();
+
+		GeneratePrefixes(rLea, px86.cursor);
+		AssembleDefaultInstr(rLea, px86, flags, instrCounter);
+		AssembleRegModRMOp(rLea, px86);
 	}
 
-	rev_memcpy(px86.cursor, preTrackMemSuffix, sizeof(preTrackMemSuffix));
-	px86.cursor[1] = regByte[cReg];
-	*(nodep::DWORD *)(&px86.cursor[2]) = (nodep::DWORD)&runtime->returnRegister;
-	px86.cursor += sizeof(preTrackMemSuffix);
+	rev_memcpy(px86.cursor, andRegVal, sizeof(andRegVal));
+	px86.cursor[2] += cReg;
+	px86.cursor += sizeof(andRegVal);
+
+	rev_memcpy(px86.cursor, pushEax4, sizeof(pushEax4));
+	px86.cursor[1] += cReg;
+	px86.cursor += sizeof(pushEax4);
+
+	rev_memcpy(px86.cursor, pushEax, sizeof(pushEax));
+	px86.cursor[1] += cReg;
+	px86.cursor += sizeof(pushEax);
+
+	instrCounter += 5;
+
+	RestoreUnusedRegister(cReg, px86);
 	instrCounter++;
 }
 
@@ -230,19 +285,17 @@ bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 
 		case 0x8D :
 			ClearPrefixes(ri, px86.cursor);
-			AssemblePreTrackMem(ri.operands[0].asAddress, ri.operands[1].asImm8 == 1, ri.family, px86, instrCounter);
+			AssemblePreTrackAddr(ri.operands[0].asAddress, ri.family, px86, instrCounter);
 			break;
 
-		/*case 0xFF :
+		case 0xFF :
 			if (6 == ri.subOpCode) {
-				::GeneratePrefixes(ri, px86.cursor);
-				::AssembleDefaultInstr(ri, px86, pFlags, instrCounter);
-				::AssembleModRMOp<6>(ri, px86);
-				instrCounter++;
+				ClearPrefixes(ri, px86.cursor);
+				AssemblePreTrackMem(ri.operands[0].asAddress, px86, instrCounter);
 				break;
 			} else {
 				DEBUG_BREAK;
-			}*/
+			}
 
 		default :
 			DEBUG_BREAK;

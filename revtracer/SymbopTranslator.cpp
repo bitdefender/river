@@ -64,7 +64,9 @@ void SymbopTranslator::MakeCleanTrack(RiverInstruction *&rTrackOut, nodep::DWORD
 
 }
 
-nodep::DWORD SymbopTranslator::MakeTrackFlg(nodep::BYTE flags, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+/*= FLAGS ====================================================================*/
+
+nodep::DWORD SymbopTranslator::SaveFlagValues(RiverInstruction *&rMainOut, nodep::DWORD &instrCount) {
 	trackedValues += 1;
 
 	rMainOut->opCode = 0x9C;
@@ -75,7 +77,10 @@ nodep::DWORD SymbopTranslator::MakeTrackFlg(nodep::BYTE flags, RiverInstruction 
 	rMainOut++;
 	instrCount++;
 
+	return trackedValues - 1;
+}
 
+nodep::DWORD SymbopTranslator::MakeTrackFlg(nodep::BYTE flags, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
 	rTrackOut->opCode = 0x9C; // pushf
 	rTrackOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
 	rTrackOut->operands[0].asImm8 = flags;
@@ -89,10 +94,10 @@ nodep::DWORD SymbopTranslator::MakeTrackFlg(nodep::BYTE flags, RiverInstruction 
 	rTrackOut++;
 	trackCount++;
 
-	return trackedValues - 1;
+	return SaveFlagValues(rMainOut, instrCount);
 }
 
-void SymbopTranslator::MakeMarkFlg(nodep::BYTE flags, nodep::DWORD offset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+nodep::DWORD SymbopTranslator::MakeMarkFlg(nodep::BYTE flags, nodep::DWORD offset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
 	rTrackOut->opCode = 0x9D; // popf
 	rTrackOut->opTypes[0] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
 	rTrackOut->operands[0].asImm8 = flags;
@@ -104,9 +109,13 @@ void SymbopTranslator::MakeMarkFlg(nodep::BYTE flags, nodep::DWORD offset, River
 
 	rTrackOut++;
 	trackCount++;
+
+	return SaveFlagValues(rMainOut, instrCount);
 }
 
-nodep::DWORD SymbopTranslator::MakePreTrackReg(const RiverRegister &reg, RiverInstruction *&rMainOut, nodep::DWORD &instrCount) {
+/*= REGISTER =================================================================*/
+
+nodep::DWORD SymbopTranslator::SaveRegValue(const RiverRegister &reg, RiverInstruction *&rMainOut, nodep::DWORD &instrCount) {
 	trackedValues += 1; 
 	
 	rMainOut->opCode = 0x50; // lea eax, [mem]
@@ -123,7 +132,7 @@ nodep::DWORD SymbopTranslator::MakePreTrackReg(const RiverRegister &reg, RiverIn
 	return trackedValues - 1;
 }
 
-void SymbopTranslator::MakeTrackReg(const RiverRegister &reg, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+nodep::DWORD SymbopTranslator::MakeTrackReg(bool ignoresValue, const RiverRegister &reg, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
 	rTrackOut->opCode = 0x50; // push + r
 	rTrackOut->opTypes[0] = RIVER_OPTYPE_REG;
 	rTrackOut->operands[0].asRegister.versioned = reg.versioned;
@@ -134,9 +143,11 @@ void SymbopTranslator::MakeTrackReg(const RiverRegister &reg, RiverInstruction *
 	rTrackOut->TrackUnusedRegisters();
 	rTrackOut++;
 	trackCount++;
+
+	return ignoresValue ? 0xFFFFFFFF : SaveRegValue(reg, rMainOut, instrCount);
 }
 
-void SymbopTranslator::MakeMarkReg(const RiverRegister &reg, nodep::DWORD addrOffset, nodep::DWORD valueOffset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+nodep::DWORD SymbopTranslator::MakeMarkReg(const RiverRegister &reg, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
 	rTrackOut->opCode = 0x58; // pop + r
 
 	rTrackOut->opTypes[0] = RIVER_OPTYPE_REG;
@@ -152,9 +163,122 @@ void SymbopTranslator::MakeMarkReg(const RiverRegister &reg, nodep::DWORD addrOf
 	
 	rTrackOut++;
 	trackCount++;
+
+	return SaveRegValue(reg, rMainOut, instrCount);
 }
 
-nodep::DWORD SymbopTranslator::MakeTrackAddress(nodep::WORD specifiers, const RiverOperand &op, nodep::BYTE optype, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount, nodep::DWORD &valuesOut) {
+/*= MEMORY ===================================================================*/
+
+nodep::DWORD SymbopTranslator::SaveMemValue(bool ignoresMemory, const RiverAddress &mem, RiverInstruction *&rMainOut, nodep::DWORD &instrCount) {
+	if (0 == mem.type) {
+		return SaveRegValue(mem.base, rMainOut, instrCount);
+	}
+
+	if (!ignoresMemory) {
+		trackedValues += 2;
+
+		rMainOut->opCode = 0xFF;
+		rMainOut->specifiers = 0;
+		rMainOut->subOpCode = 0x06;
+		rMainOut->modifiers = 0;
+		rMainOut->family = RIVER_FAMILY_PRETRACK;
+		rMainOut->opTypes[0] = RIVER_OPTYPE_MEM;
+		rMainOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
+		rMainOut->opTypes[1] = rMainOut->opTypes[2] = rMainOut->opTypes[3] = RIVER_OPTYPE_NONE;
+		rMainOut->TrackEspAsParameter();
+		rMainOut->TrackUnusedRegisters();
+		rMainOut++;
+		instrCount++;
+
+		return trackedValues - 2;
+	}
+
+	return 0xFFFFFFFF;
+}
+
+nodep::DWORD SymbopTranslator::MakeTrackMem(bool ignoresValue, bool ignoresMemory, const RiverAddress &mem, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+	if (0 == mem.type) {
+		return MakeTrackReg(ignoresValue, mem.base, rMainOut, instrCount, rTrackOut, trackCount);
+	}
+
+	rTrackOut->opCode = 0xFF;
+	rTrackOut->subOpCode = 6;
+	rTrackOut->specifiers = 0;
+	rTrackOut->modifiers = 0;
+	rTrackOut->family = RIVER_FAMILY_TRACK;
+	rTrackOut->opTypes[0] = RIVER_OPTYPE_MEM;
+	rTrackOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
+	rTrackOut->opTypes[1] = rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
+	rTrackOut->TrackEspAsParameter();
+	rTrackOut->TrackUnusedRegisters();
+	rTrackOut++;
+	trackCount++;
+
+	return ignoresValue ? 0xFFFFFFFF : SaveMemValue(ignoresMemory, mem, rMainOut, instrCount);
+}
+
+nodep::DWORD SymbopTranslator::MakeMarkMem(bool ignoresMemory, const RiverAddress &mem, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+	if (0 == mem.type) {
+		return MakeMarkReg(mem.base, rMainOut, instrCount, rTrackOut, trackCount);
+	}
+
+	rTrackOut->opCode = 0x8D;
+	rTrackOut->specifiers = 0;
+	rTrackOut->modifiers = 0;
+	rTrackOut->family = RIVER_FAMILY_TRACK;
+	rTrackOut->opTypes[0] = RIVER_OPTYPE_MEM;
+	rTrackOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
+	rTrackOut->opTypes[1] = rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
+	rTrackOut->TrackEspAsParameter();
+	rTrackOut->TrackUnusedRegisters();
+	rTrackOut++;
+	trackCount++;
+
+	return SaveMemValue(ignoresMemory, mem, rMainOut, instrCount);
+}
+
+/*= ADDRESS ==================================================================*/
+
+nodep::DWORD SymbopTranslator::SaveAddrValue(const RiverAddress &mem, RiverInstruction *&rMainOut, nodep::DWORD &instrCount) {
+	if (0 == mem.type) {
+		return 0xFFFFFFFF;
+	}
+
+	nodep::DWORD ret = trackedValues;
+
+	trackedValues++; // put address value on the stack
+
+	rMainOut->opCode = 0x8D;
+	rMainOut->specifiers = 0;
+	rMainOut->modifiers = 0;
+	rMainOut->family = RIVER_FAMILY_PRETRACK;
+	rMainOut->opTypes[0] = RIVER_OPTYPE_MEM;
+	rMainOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
+
+	//rMainOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
+	//rMainOut->operands[1].asImm8 = (specifiers & RIVER_SPEC_IGNORES_MEMORY) ? 0 : 1;
+
+	rMainOut->opTypes[1] = rMainOut->opTypes[2] = rMainOut->opTypes[3] = RIVER_OPTYPE_NONE;
+
+	if (mem.type & RIVER_ADDR_BASE) {
+		trackedValues++; // put the base register value on the stack
+	}
+
+	if (mem.type & RIVER_ADDR_INDEX) {
+		trackedValues++; // put the index register value on the stack
+	}
+
+	rMainOut->PromoteModifiers();
+	rMainOut->TrackEspAsParameter();
+	rMainOut->TrackUnusedRegisters();
+	rMainOut++;
+	instrCount++;
+
+	return ret;
+}
+
+
+/*nodep::DWORD SymbopTranslator::MakeTrackAddress(nodep::WORD specifiers, const RiverOperand &op, nodep::BYTE optype, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount, nodep::DWORD &valuesOut) {
 	if (RIVER_OPTYPE_MEM != RIVER_OPTYPE(optype)) {
 		return 0xFFFFFFFF;
 	}
@@ -189,12 +313,6 @@ nodep::DWORD SymbopTranslator::MakeTrackAddress(nodep::WORD specifiers, const Ri
 	if (op.asAddress->type & RIVER_ADDR_INDEX) {
 		trackedValues++;
 	}
-
-	if (0 == (specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
-		trackedValues += 2; // we push two operands on the stack [addr], [addr + 4]
-		rMainOut->opTypes[2] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
-		rMainOut->operands[2].asImm8 = trackedValues - 2;
-	}
 	
 	rMainOut->PromoteModifiers();
 	rMainOut->TrackEspAsParameter();
@@ -216,36 +334,6 @@ nodep::DWORD SymbopTranslator::MakeTrackAddress(nodep::WORD specifiers, const Ri
 
 	return ret;
 }
-
-/*DWORD SymbopTranslator::MakePreTrackMem(const RiverAddress &mem, WORD specifiers, DWORD addrOffset, RiverInstruction *&rMainOut, DWORD &instrCount) {
-	if (0 == mem.type) {
-		return MakePreTrackReg(mem.base, rMainOut, instrCount);
-	}
-
-	if (0 == (specifiers & RIVER_SPEC_IGNORES_MEMORY)) {
-		trackedValues += 1;
-
-		rMainOut->opCode = 0xFF; // lea eax, [mem]
-		rMainOut->specifiers = 0;
-		rMainOut->subOpCode = 6;
-		rMainOut->modifiers = 0;
-		rMainOut->family = RIVER_FAMILY_PRETRACK;
-		rMainOut->opTypes[0] = RIVER_OPTYPE_MEM;
-		rMainOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
-		rMainOut->opTypes[1] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8;
-		rMainOut->operands[1].asImm8 = trackedValues - 1;
-		rMainOut->opTypes[2] = rMainOut->opTypes[3] = RIVER_OPTYPE_NONE;
-		rMainOut->PromoteModifiers();
-		rMainOut->TrackEspAsParameter();
-		rMainOut->TrackUnusedRegisters();
-		rMainOut++;
-		instrCount++;
-
-		return trackedValues - 1;
-	}
-
-	return 0xFFFFFFFF;
-}*/
 
 void SymbopTranslator::MakeTrackMem(const RiverAddress &mem, nodep::WORD specifiers, nodep::DWORD addrOffset, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
 	if (0 == mem.type) {
@@ -292,28 +380,11 @@ void SymbopTranslator::MakeMarkMem(const RiverAddress &mem, nodep::WORD specifie
 		rTrackOut++;
 		trackCount++;
 	}
-}
-
-/*void SymbopTranslator::MakeSkipMem(const RiverAddress &mem, RiverInstruction *&rMainOut, DWORD &instrCount, RiverInstruction *&rTrackOut, DWORD &trackCount) {
-	rTrackOut->opCode = 0x8F;
-	rTrackOut->subOpCode = 0x07;
-	rTrackOut->modifiers = 0;
-	rTrackOut->family = RIVER_FAMILY_TRACK;
-	rTrackOut->opTypes[0] = RIVER_OPTYPE_MEM;
-	rTrackOut->operands[0].asAddress = codegen->CloneAddress(mem, 0);
-	rTrackOut->opTypes[1] = rTrackOut->opTypes[2] = rTrackOut->opTypes[3] = RIVER_OPTYPE_NONE;
-	rTrackOut->TrackEspAsParameter();
-	rTrackOut->TrackUnusedRegisters();
-
-	rTrackOut++;
-	trackCount++;
 }*/
 
-void SymbopTranslator::MakeTrackOp(nodep::DWORD opIdx, const nodep::BYTE type, const RiverOperand &op, nodep::WORD specifiers, nodep::DWORD addrOffset, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount, nodep::DWORD &valueOffset) {
+nodep::DWORD SymbopTranslator::MakeTrackOp(nodep::DWORD opIdx, const nodep::BYTE type, const RiverOperand &op, nodep::WORD specifiers, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+	nodep::DWORD valueOffset = 0xFFFFFFFF;
 	switch (RIVER_OPTYPE(type)) {
-	case RIVER_OPTYPE_IMM :
-		valueOffset = 0xFFFFFFFF;
-		break;
 	case RIVER_OPTYPE_REG :
 		if ((0 == (RIVER_SPEC_IGNORES_OP(opIdx) & specifiers))) {
 			valueOffset = MakePreTrackReg(op.asRegister, rMainOut, instrCount);
@@ -330,22 +401,24 @@ void SymbopTranslator::MakeTrackOp(nodep::DWORD opIdx, const nodep::BYTE type, c
 			MakeTrackMem(*op.asAddress, specifiers, addrOffset, rTrackOut, trackCount);
 		}
 		break;
-	default : 
-		valueOffset = 0xFFFFFFFF;
 	}
+
+	return valueOffset;
 }
 
-void SymbopTranslator::MakeMarkOp(const nodep::BYTE type, nodep::WORD specifiers, nodep::DWORD addrOffset, nodep::DWORD valueOffset, const RiverOperand &op, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+nodep::DWORD SymbopTranslator::MakeMarkOp(const nodep::BYTE type, nodep::WORD specifiers, const RiverOperand &op, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
+	nodep::DWORD valueOffset = 0xFFFFFFFF;
+	
 	switch (RIVER_OPTYPE(type)) {
-	case RIVER_OPTYPE_IMM:
-		break;
 	case RIVER_OPTYPE_REG:
-		MakeMarkReg(op.asRegister, addrOffset, valueOffset, rMainOut, instrCount, rTrackOut, trackCount);
+		valueOffset = MakeMarkReg(op.asRegister, rMainOut, instrCount, rTrackOut, trackCount);
 		break;
 	case RIVER_OPTYPE_MEM:
-		MakeMarkMem(*op.asAddress, specifiers, addrOffset, valueOffset, rMainOut, instrCount, rTrackOut, trackCount);
+		valueOffset = MakeMarkMem(RIVER_SPEC_IGNORES_MEMORY & specifiers, *op.asAddress, rMainOut, instrCount, rTrackOut, trackCount);
 		break;
 	}
+
+	return valueOffset;
 }
 
 void SymbopTranslator::MakeCallSymbolic(const RiverInstruction &rIn, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
@@ -376,23 +449,27 @@ void SymbopTranslator::TranslateUnk(const RiverInstruction &rIn, RiverInstructio
 
 void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount, nodep::DWORD dwTranslationFlags) {
 	nodep::DWORD addressOffsets[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
-	nodep::DWORD valueOffsets[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
-	nodep::DWORD flagOffset = 0xFFFFFFFF;
+	nodep::DWORD inValueOffsets[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
+	nodep::DWORD outValueOffsets[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
+	nodep::DWORD inFlagOffset = 0xFFFFFFFF, outFlagOffset = 0xFFFFFFFF;
 
 	MakeInitTrack(rIn, rTrackOut, trackCount);
 
-	if ((0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) || (rIn.modFlags)) {
-		// TODO: flag unset for ignored flags!
-		flagOffset = MakeTrackFlg(rIn.testFlags | rIn.modFlags, rMainOut, instrCount, rTrackOut, trackCount);
+	for (int i = 3; i >= 0; --i) {
+		if (RIVER_OPTYPE_MEM == RIVER_OPTYPE(rIn.opTypes[i])) {
+			addressOffsets[i] = SaveAddrValue(*rIn.operands[i].asAddress, rMainOut, instrCount);
+			//MakeTrackAddress(rIn.specifiers, rIn.operands[i], rIn.opTypes[i], rMainOut, instrCount, rTrackOut, trackCount, inValueOffsets[i]);
+		}
 	}
 
-	for (int i = 3; i >= 0; --i) {
-		addressOffsets[i] = MakeTrackAddress(rIn.specifiers, rIn.operands[i], rIn.opTypes[i], rMainOut, instrCount, rTrackOut, trackCount, valueOffsets[i]);
+	if ((0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) || (rIn.modFlags)) {
+		// TODO: flag unset for ignored flags!
+		inFlagOffset = MakeTrackFlg(rIn.testFlags | rIn.modFlags, rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
 	for (int i = 3; i >= 0; --i) {
 		if (RIVER_OPTYPE_NONE != rIn.opTypes[i]) {
-			MakeTrackOp(i, rIn.opTypes[i], rIn.operands[i], rIn.specifiers, addressOffsets[i], rMainOut, instrCount, rTrackOut, trackCount, valueOffsets[i]);
+			inValueOffsets[i] = MakeTrackOp(i, rIn.opTypes[i], rIn.operands[i], rIn.specifiers, rMainOut, instrCount, rTrackOut, trackCount);
 		}
 	}
 
@@ -402,12 +479,12 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 	instrCount++;
 
 	if (RIVER_SPEC_MODIFIES_FLG & rIn.specifiers) {
-		MakeMarkFlg(rIn.modFlags, flagOffset, rMainOut, instrCount, rTrackOut, trackCount);
+		outFlagOffset = MakeMarkFlg(rIn.modFlags, inFlagOffset, rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
 	for (int i = 3; i >= 0; --i) {
 		if ((RIVER_OPTYPE_NONE != rIn.opTypes[i]) && (RIVER_SPEC_MODIFIES_OP(i) & rIn.specifiers)) {
-			MakeMarkOp(rIn.opTypes[i], rIn.specifiers, addressOffsets[i], valueOffsets[i], rIn.operands[i], rMainOut, instrCount, rTrackOut, trackCount);
+			outValueOffsets[i] = MakeMarkOp(rIn.opTypes[i], rIn.specifiers, rIn.operands[i], rMainOut, instrCount, rTrackOut, trackCount);
 		}
 	}
 

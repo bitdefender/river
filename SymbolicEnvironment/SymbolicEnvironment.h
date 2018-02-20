@@ -5,17 +5,23 @@
 #include "../Execution/Execution.h"
 #include "LargeStack.h"
 
+#define OP_HAS_SYMBOLIC				1
+#define OP_HAS_CONCRETE_BEFORE		2
+#define OP_HAS_CONCRETE_AFTER		4
+
 struct OperandInfo {
 	nodep::BYTE opIdx;
-	nodep::BOOL isTracked;
-	nodep::DWORD concrete;
+	nodep::BYTE fields;
+	nodep::DWORD concreteBefore;
+	nodep::DWORD concreteAfter;
 	void *symbolic;
 };
 
 struct FlagInfo {
 	nodep::BYTE opIdx;
-	nodep::BOOL isTracked;
-	nodep::BYTE concrete;
+	nodep::BYTE fields;
+	nodep::BYTE concreteBefore;
+	nodep::BYTE concreteAfter;
 	void *symbolic;
 };
 

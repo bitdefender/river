@@ -316,10 +316,11 @@ bool OverlappedRegistersEnvironment::GetAddressBase(struct OperandInfo &opInfo) 
 		return ret;
 	}
 
-	if (opInfo.isTracked) {
+	if (opInfo.fields & OP_HAS_SYMBOLIC) {
 		opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
-				current->operands[opInfo.opIdx].asAddress->base, opInfo.concrete);
-		opInfo.isTracked = (opInfo.symbolic != nullptr);
+				current->operands[opInfo.opIdx].asAddress->base, opInfo.concreteBefore);
+		opInfo.fields &= ~OP_HAS_SYMBOLIC;
+		opInfo.fields |= (opInfo.symbolic != nullptr) ? OP_HAS_SYMBOLIC : 0;
 	}
 
 	return true;
@@ -337,10 +338,11 @@ bool OverlappedRegistersEnvironment::GetAddressScaleAndIndex(struct OperandInfo 
 		return ret;
 	}
 
-	if (opInfo.isTracked) {
+	if (opInfo.fields & OP_HAS_SYMBOLIC) {
 		opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
-				current->operands[opInfo.opIdx].asAddress->index, opInfo.concrete);
-		opInfo.isTracked = (opInfo.symbolic != nullptr);
+				current->operands[opInfo.opIdx].asAddress->index, opInfo.concreteBefore);
+		opInfo.fields &= ~OP_HAS_SYMBOLIC;
+		opInfo.fields |= (opInfo.symbolic != nullptr) ? OP_HAS_SYMBOLIC : 0;
 	}
 	return true;
 }
@@ -355,10 +357,11 @@ bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 				return false;
 			}
 
-			if (opInfo.isTracked) {
+			if (opInfo.fields & OP_HAS_SYMBOLIC) {
 				opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
-						current->operands[opInfo.opIdx].asRegister, opInfo.concrete);
-				opInfo.isTracked = (opInfo.symbolic != nullptr);
+						current->operands[opInfo.opIdx].asRegister, opInfo.concreteBefore);
+				opInfo.fields &= ~OP_HAS_SYMBOLIC;
+				opInfo.fields |= (opInfo.symbolic != nullptr) ? OP_HAS_SYMBOLIC : 0;
 			}
 			return true;
 
@@ -368,10 +371,11 @@ bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {
 					return false;
 				}
 
-				if (opInfo.isTracked) {
+				if (opInfo.fields & OP_HAS_SYMBOLIC) {
 					opInfo.symbolic = ((OverlappedRegister *)opInfo.symbolic)->Get(
-							current->operands[opInfo.opIdx].asAddress->base, opInfo.concrete);
-					opInfo.isTracked = (opInfo.symbolic != nullptr);
+							current->operands[opInfo.opIdx].asAddress->base, opInfo.concreteBefore);
+					opInfo.fields &= ~OP_HAS_SYMBOLIC;
+					opInfo.fields |= (opInfo.symbolic != nullptr) ? OP_HAS_SYMBOLIC : 0;
 				}
 
 				return true;
