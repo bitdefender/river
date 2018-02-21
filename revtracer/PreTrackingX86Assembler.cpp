@@ -86,6 +86,10 @@ void PreTrackingAssembler::AssemblePreTrackAddr(RiverAddress *addr, nodep::BYTE 
 	if (addr->HasSegment()) {
 		nodep::BYTE sReg = SelectUnusedRegister(unusedRegisters);
 
+		if (riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) {
+			unusedRegisters &= ~(1 << repReg);
+		}
+
 		// save reg
 		SaveUnusedRegister(sReg, px86);
 		instrCounter++;
@@ -235,6 +239,112 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, nodep::BYTE r
 
 	SaveUnusedRegister(cReg, px86);
 	instrCounter++;
+
+	if (addr->HasSegment()) {
+		nodep::BYTE sReg = SelectUnusedRegister(unusedRegisters);
+
+		if (riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) {
+			unusedRegisters &= ~(1 << repReg);
+		}
+
+		// save reg
+		SaveUnusedRegister(sReg, px86);
+		instrCounter++;
+
+		{	// wrap up in RAII - mov <sReg>, segment
+			RiverInstruction rOps;
+			RiverAddress32 rAddr;
+			rOps.opCode = 0x8C;
+			rOps.modifiers = rOps.specifiers = 0;
+			rOps.family = RIVER_FAMILY_PRETRACK;
+
+			rOps.opTypes[0] = RIVER_OPTYPE_REG;
+			rOps.operands[0].asRegister.versioned = addr->GetSegment() - 1; //sReg;
+
+			rOps.opTypes[1] = RIVER_OPTYPE_MEM;
+			rOps.operands[1].asAddress = &rAddr;
+
+			rAddr.type = RIVER_ADDR_DIRTY;
+			rAddr.scaleAndSegment = 0;
+			rAddr.index.versioned = 0;
+			rAddr.base.versioned = 0;
+			rAddr.base.name = sReg; //addr->GetSegment() - 1;
+			rAddr.disp.d32 = 0;
+
+			rOps.opTypes[2] = rOps.opTypes[3] = RIVER_OPTYPE_NONE;
+			rOps.PromoteModifiers();
+			rOps.TrackEspAsParameter();
+			rOps.TrackUnusedRegisters();
+
+			GeneratePrefixes(rOps, px86.cursor);
+			AssembleDefaultInstr(rOps, px86, flags, instrCounter);
+			AssembleRegModRMOp(rOps, px86);
+		}
+
+		{	// wrap up in RAII - lea <sReg>, [sReg * 4 + segmentOffsets]
+			RiverInstruction rOps;
+			RiverAddress32 rAddr;
+			rOps.opCode = 0x8D;
+			rOps.modifiers = rOps.specifiers = 0;
+			rOps.family = RIVER_FAMILY_PRETRACK;
+
+			rOps.opTypes[0] = RIVER_OPTYPE_REG;
+			rOps.operands[0].asRegister.versioned = sReg;
+
+			rOps.opTypes[1] = RIVER_OPTYPE_MEM;
+			rOps.operands[1].asAddress = &rAddr;
+
+			rAddr.type = RIVER_ADDR_SCALE | RIVER_ADDR_INDEX | RIVER_ADDR_DISP | RIVER_ADDR_DIRTY;
+			rAddr.scaleAndSegment = 0;
+			rAddr.SetScale(4);
+			rAddr.index.versioned = sReg;
+			rAddr.base.versioned = 0;
+			rAddr.disp.d32 = (nodep::DWORD)revtracerConfig.segmentOffsets;
+
+			rOps.opTypes[2] = rOps.opTypes[3] = RIVER_OPTYPE_NONE;
+			rOps.PromoteModifiers();
+			rOps.TrackEspAsParameter();
+			rOps.TrackUnusedRegisters();
+
+			GeneratePrefixes(rOps, px86.cursor);
+			AssembleDefaultInstr(rOps, px86, flags, instrCounter);
+			AssembleRegModRMOp(rOps, px86);
+		}
+
+		{	// wrap up in RAII - lea <cReg>, [cReg + sReg]
+			RiverInstruction rOps;
+			RiverAddress32 rAddr;
+			rOps.opCode = 0x8D;
+			rOps.modifiers = rOps.specifiers = 0;
+			rOps.family = RIVER_FAMILY_PRETRACK;
+
+			rOps.opTypes[0] = RIVER_OPTYPE_REG;
+			rOps.operands[0].asRegister.versioned = cReg;
+
+			rOps.opTypes[1] = RIVER_OPTYPE_MEM;
+			rOps.operands[1].asAddress = &rAddr;
+
+			rAddr.type = RIVER_ADDR_SCALE | RIVER_ADDR_INDEX | RIVER_ADDR_BASE | RIVER_ADDR_DIRTY;
+			rAddr.scaleAndSegment = 0;
+			rAddr.SetScale(1);
+			rAddr.index.versioned = sReg;
+			rAddr.base.versioned = cReg;
+			rAddr.disp.d32 = 0;
+
+			rOps.opTypes[2] = rOps.opTypes[3] = RIVER_OPTYPE_NONE;
+			rOps.PromoteModifiers();
+			rOps.TrackEspAsParameter();
+			rOps.TrackUnusedRegisters();
+
+			GeneratePrefixes(rOps, px86.cursor);
+			AssembleDefaultInstr(rOps, px86, flags, instrCounter);
+			AssembleRegModRMOp(rOps, px86);
+		}
+
+		// restore reg
+		RestoreUnusedRegister(sReg, px86);
+		instrCounter++;
+	}
 
 	{   // wrap up in RAII - lea <cReg>, <address>
 		RiverInstruction rLea;
