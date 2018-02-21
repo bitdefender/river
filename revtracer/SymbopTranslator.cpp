@@ -385,21 +385,11 @@ void SymbopTranslator::MakeMarkMem(const RiverAddress &mem, nodep::WORD specifie
 nodep::DWORD SymbopTranslator::MakeTrackOp(nodep::DWORD opIdx, const nodep::BYTE type, const RiverOperand &op, nodep::WORD specifiers, RiverInstruction *&rMainOut, nodep::DWORD &instrCount, RiverInstruction *&rTrackOut, nodep::DWORD &trackCount) {
 	nodep::DWORD valueOffset = 0xFFFFFFFF;
 	switch (RIVER_OPTYPE(type)) {
-	case RIVER_OPTYPE_REG :
-		if ((0 == (RIVER_SPEC_IGNORES_OP(opIdx) & specifiers))) {
-			valueOffset = MakePreTrackReg(op.asRegister, rMainOut, instrCount);
-		}
-		MakeTrackReg(op.asRegister, rTrackOut, trackCount);
+	case RIVER_OPTYPE_REG:
+		valueOffset = MakeTrackReg((specifiers & RIVER_SPEC_IGNORES_OP(opIdx)) != 0, op.asRegister, rMainOut, instrCount, rTrackOut, trackCount);
 		break;
 	case RIVER_OPTYPE_MEM:
-		if (0 == op.asAddress->type) {
-			if ((0 == (RIVER_SPEC_IGNORES_OP(opIdx) & specifiers))) {
-				valueOffset = MakePreTrackReg(op.asAddress->base, rMainOut, instrCount);
-			}
-			MakeTrackReg(op.asAddress->base, rTrackOut, trackCount);
-		} else {
-			MakeTrackMem(*op.asAddress, specifiers, addrOffset, rTrackOut, trackCount);
-		}
+		valueOffset = MakeTrackMem((specifiers & RIVER_SPEC_IGNORES_OP(opIdx)) != 0, RIVER_SPEC_IGNORES_MEMORY & specifiers, *op.asAddress, rMainOut, instrCount, rTrackOut, trackCount);
 		break;
 	}
 
