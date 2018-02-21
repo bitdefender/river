@@ -240,6 +240,27 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, nodep::BYTE r
 	SaveUnusedRegister(cReg, px86);
 	instrCounter++;
 
+	{   // wrap up in RAII - lea <cReg>, <address>
+		RiverInstruction rLea;
+		rLea.opCode = 0x8D;
+		rLea.modifiers = rLea.specifiers = 0;
+		rLea.family = RIVER_FAMILY_PRETRACK;
+		rLea.opTypes[0] = RIVER_OPTYPE_REG;
+		rLea.operands[0].asRegister.versioned = cReg;
+
+		rLea.opTypes[1] = RIVER_OPTYPE_MEM;
+		rLea.operands[1].asAddress = addr;
+
+		rLea.opTypes[2] = rLea.opTypes[3] = RIVER_OPTYPE_NONE;
+		rLea.PromoteModifiers();
+		rLea.TrackEspAsParameter();
+		rLea.TrackUnusedRegisters();
+
+		GeneratePrefixes(rLea, px86.cursor);
+		AssembleDefaultInstr(rLea, px86, flags, instrCounter);
+		AssembleRegModRMOp(rLea, px86);
+	}
+
 	if (addr->HasSegment()) {
 		nodep::BYTE sReg = SelectUnusedRegister(unusedRegisters);
 
@@ -344,27 +365,6 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, nodep::BYTE r
 		// restore reg
 		RestoreUnusedRegister(sReg, px86);
 		instrCounter++;
-	}
-
-	{   // wrap up in RAII - lea <cReg>, <address>
-		RiverInstruction rLea;
-		rLea.opCode = 0x8D;
-		rLea.modifiers = rLea.specifiers = 0;
-		rLea.family = RIVER_FAMILY_PRETRACK;
-		rLea.opTypes[0] = RIVER_OPTYPE_REG;
-		rLea.operands[0].asRegister.versioned = cReg;
-
-		rLea.opTypes[1] = RIVER_OPTYPE_MEM;
-		rLea.operands[1].asAddress = addr;
-
-		rLea.opTypes[2] = rLea.opTypes[3] = RIVER_OPTYPE_NONE;
-		rLea.PromoteModifiers();
-		rLea.TrackEspAsParameter();
-		rLea.TrackUnusedRegisters();
-
-		GeneratePrefixes(rLea, px86.cursor);
-		AssembleDefaultInstr(rLea, px86, flags, instrCounter);
-		AssembleRegModRMOp(rLea, px86);
 	}
 
 	rev_memcpy(px86.cursor, andRegVal, sizeof(andRegVal));
