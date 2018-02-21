@@ -389,7 +389,7 @@ nodep::DWORD SymbopTranslator::MakeTrackOp(nodep::DWORD opIdx, const nodep::BYTE
 		valueOffset = MakeTrackReg((specifiers & RIVER_SPEC_IGNORES_OP(opIdx)) != 0, op.asRegister, rMainOut, instrCount, rTrackOut, trackCount);
 		break;
 	case RIVER_OPTYPE_MEM:
-		valueOffset = MakeTrackMem((specifiers & RIVER_SPEC_IGNORES_OP(opIdx)) != 0, RIVER_SPEC_IGNORES_MEMORY & specifiers, *op.asAddress, rMainOut, instrCount, rTrackOut, trackCount);
+		valueOffset = MakeTrackMem((specifiers & RIVER_SPEC_IGNORES_OP(opIdx)) != 0, (RIVER_SPEC_IGNORES_MEMORY & specifiers) != 0, *op.asAddress, rMainOut, instrCount, rTrackOut, trackCount);
 		break;
 	}
 
@@ -404,7 +404,7 @@ nodep::DWORD SymbopTranslator::MakeMarkOp(const nodep::BYTE type, nodep::WORD sp
 		valueOffset = MakeMarkReg(op.asRegister, rMainOut, instrCount, rTrackOut, trackCount);
 		break;
 	case RIVER_OPTYPE_MEM:
-		valueOffset = MakeMarkMem(RIVER_SPEC_IGNORES_MEMORY & specifiers, *op.asAddress, rMainOut, instrCount, rTrackOut, trackCount);
+		valueOffset = MakeMarkMem((RIVER_SPEC_IGNORES_MEMORY & specifiers) != 0, *op.asAddress, rMainOut, instrCount, rTrackOut, trackCount);
 		break;
 	}
 

@@ -48,13 +48,13 @@ void PreTrackingAssembler::RestoreUnusedRegister(nodep::BYTE reg, RelocableCodeB
 	px86.cursor += sizeof(preTrackMemSuffix);
 }
 
-void PreTrackingAssembler::AssemblePreTrackAddr(RiverAddress *addr, nodep::BYTE riverFamily, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
+void PreTrackingAssembler::AssemblePreTrackAddr(RiverAddress *addr, nodep::BYTE riverFamily, nodep::BYTE repReg, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
 
 	nodep::DWORD flags = 0;
 	nodep::BYTE unusedRegisters = addr->GetUnusedRegisters() & 0xCF;
 
 	if (riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) {
-		unusedRegisters &= ~0x01;
+		unusedRegisters &= ~(1 << repReg);
 	}
 
 	nodep::BYTE cReg = SelectUnusedRegister(unusedRegisters);
@@ -193,7 +193,7 @@ void PreTrackingAssembler::AssemblePreTrackAddr(RiverAddress *addr, nodep::BYTE 
 		nodep::BYTE reg = GetFundamentalRegister(addr->base.name);
 
 		if ((riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) && (reg == RIVER_REG_xSP)) {
-			reg = RIVER_REG_xAX;
+			reg = repReg;
 		}
 
 		px86.cursor[0] = 0x50 + GetFundamentalRegister(reg); // push reg;
@@ -205,7 +205,7 @@ void PreTrackingAssembler::AssemblePreTrackAddr(RiverAddress *addr, nodep::BYTE 
 		nodep::BYTE reg = GetFundamentalRegister(addr->base.name);
 
 		if ((riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) && (reg == RIVER_REG_xSP)) {
-			reg = RIVER_REG_xAX;
+			reg = repReg;
 		}
 		
 		px86.cursor[0] = 0x50 + GetFundamentalRegister(reg); // push reg;
@@ -217,7 +217,7 @@ void PreTrackingAssembler::AssemblePreTrackAddr(RiverAddress *addr, nodep::BYTE 
 	instrCounter++;
 }
 
-void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
+void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, nodep::BYTE riverFamily, nodep::BYTE repReg, RelocableCodeBuffer &px86, nodep::DWORD &instrCounter) {
 
 	const nodep::BYTE andRegVal[] = { 0x9C, 0x83, 0xE0, 0xFC, 0x9D };
 	const nodep::BYTE pushEax4[] = { 0xFF, 0x70, 0x04 };
@@ -226,6 +226,11 @@ void PreTrackingAssembler::AssemblePreTrackMem(RiverAddress *addr, RelocableCode
 
 	nodep::DWORD flags = 0;
 	nodep::BYTE unusedRegisters = addr->GetUnusedRegisters() & 0xCF;
+
+	if (riverFamily & RIVER_FAMILY_FLAG_ORIG_xSP) {
+		unusedRegisters &= ~(1 << repReg);
+	}
+
 	nodep::BYTE cReg = SelectUnusedRegister(unusedRegisters);
 
 	SaveUnusedRegister(cReg, px86);
@@ -285,13 +290,13 @@ bool PreTrackingAssembler::Translate(const RiverInstruction &ri, RelocableCodeBu
 
 		case 0x8D :
 			ClearPrefixes(ri, px86.cursor);
-			AssemblePreTrackAddr(ri.operands[0].asAddress, ri.family, px86, instrCounter);
+			AssemblePreTrackAddr(ri.operands[0].asAddress, ri.family, repReg, px86, instrCounter);
 			break;
 
 		case 0xFF :
 			if (6 == ri.subOpCode) {
 				ClearPrefixes(ri, px86.cursor);
-				AssemblePreTrackMem(ri.operands[0].asAddress, px86, instrCounter);
+				AssemblePreTrackMem(ri.operands[0].asAddress, ri.family, repReg, px86, instrCounter);
 				break;
 			} else {
 				DEBUG_BREAK;
