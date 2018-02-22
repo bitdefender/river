@@ -452,9 +452,9 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 		}
 	}
 
-	if ((0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) || (rIn.modFlags)) {
+	if (/*(0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) ||*/ (rIn.testFlags)) {
 		// TODO: flag unset for ignored flags!
-		inFlagOffset = MakeTrackFlg(rIn.testFlags | rIn.modFlags, rMainOut, instrCount, rTrackOut, trackCount);
+		inFlagOffset = MakeTrackFlg(rIn.testFlags, rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
 	for (int i = 3; i >= 0; --i) {
@@ -468,7 +468,7 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 	rMainOut++;
 	instrCount++;
 
-	if (RIVER_SPEC_MODIFIES_FLG & rIn.specifiers) {
+	if (rIn.modFlags) { //RIVER_SPEC_MODIFIES_FLG & rIn.specifiers) {
 		outFlagOffset = MakeMarkFlg(rIn.modFlags, inFlagOffset, rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
