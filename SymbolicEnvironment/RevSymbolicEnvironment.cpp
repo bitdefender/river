@@ -405,7 +405,7 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 		}
 
 		if (0xFFFFFFFF != outValueOffsets[opInfo.opIdx]) {
-			opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+			opInfo.concreteAfter = opBase[-((int)outValueOffsets[opInfo.opIdx])];
 			opInfo.fields |= OP_HAS_CONCRETE_AFTER;
 		}
 
@@ -432,7 +432,7 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 			}
 
 			if (0xFFFFFFFF != outValueOffsets[opInfo.opIdx]) {
-				opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+				opInfo.concreteAfter = opBase[-((int)outValueOffsets[opInfo.opIdx])];
 				opInfo.fields |= OP_HAS_CONCRETE_AFTER;
 			}
 			//printf("[%d] <= getOperand mem reg 0x%lX\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
@@ -464,7 +464,7 @@ bool RevSymbolicEnvironment::GetOperand(struct OperandInfo &opInfo) {
 		}
 
 		if (0xFFFFFFFF != outValueOffsets[opInfo.opIdx]) {
-			opInfo.concreteBefore = opBase[-((int)inValueOffsets[opInfo.opIdx])];
+			opInfo.concreteAfter = opBase[-((int)outValueOffsets[opInfo.opIdx])];
 			opInfo.fields |= OP_HAS_CONCRETE_AFTER;
 		}
 		return true;
@@ -519,8 +519,8 @@ bool RevSymbolicEnvironment::GetFlgValue(struct FlagInfo &flagInfo) {
 	}
 
 	if (0xFFFFFFFF != outFlagOffset) {
-		flagInfo.concreteBefore = (opBase[outFlagOffset] >> flagShifts[flgIdx]) & 1;
-		flagInfo.fields |= OP_HAS_CONCRETE_BEFORE;
+		flagInfo.concreteAfter = (opBase[outFlagOffset] >> flagShifts[flgIdx]) & 1;
+		flagInfo.fields |= OP_HAS_CONCRETE_AFTER;
 	}
 
 	return true;

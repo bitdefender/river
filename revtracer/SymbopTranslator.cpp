@@ -452,9 +452,9 @@ void SymbopTranslator::TranslateDefault(const RiverInstruction &rIn, RiverInstru
 		}
 	}
 
-	if (/*(0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) ||*/ (rIn.testFlags)) {
+	if (/*(0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) ||*/ (rIn.testFlags || rIn.modFlags)) {
 		// TODO: flag unset for ignored flags!
-		inFlagOffset = MakeTrackFlg(rIn.testFlags, rMainOut, instrCount, rTrackOut, trackCount);
+		inFlagOffset = MakeTrackFlg(rIn.testFlags | rIn.modFlags, rMainOut, instrCount, rTrackOut, trackCount);
 	}
 
 	for (int i = 3; i >= 0; --i) {
