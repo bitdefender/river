@@ -195,60 +195,97 @@ void *RevSymbolicEnvironment::GetExpression(nodep::DWORD address, nodep::DWORD s
 	return ret;
 }
 
+//set expr from offset to offset + size
 template<nodep::BYTE offset, nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpression(void *expr, nodep::DWORD address, void *value) {
-	nodep::DWORD rSz = (4 - offset - size) << 3;
-	nodep::DWORD lSz = offset << 3;
-	nodep::DWORD lLsb = (4 - offset) << 3;
+	/*  0 1 2 3 address
+	 * | |x| | |
+	 *  3 2 1 0 dword
+	 */
+	nodep::DWORD operandSzR = (4 - offset - size) << 3;
+	nodep::DWORD operandSzL = offset << 3;
+	nodep::DWORD operandSzM = size << 3;
 
-	void *ret1 = exec->ExtractBits(value, lLsb, lSz);
-	void *ret2 = exec->ConcatBits(ret1, expr);
-	decRefFunc(ret1);
+	void *retRight = exec->ExtractBits(value, 0, operandSzR);
 
-	void *ret3 = exec->ExtractBits(value, 0, rSz);
-	void *ret4 = exec->ConcatBits(ret2, ret3);
-	decRefFunc(ret2);
-	decRefFunc(ret3);
-		
-	nodep::DWORD r = MarkAddrWrapper(pEnv, address, (nodep::DWORD)ret4, 0);
+	if (expr == nullptr) {
+		expr = exec->MakeConst(((nodep::DWORD)value >> operandSzR) & ((1 << operandSzM) - 1),
+				operandSzM);
+	}
+	void *retMidRight = exec->ConcatBits(expr, retRight);
+	decRefFunc(retRight);
+
+	void *retLeft = exec->ExtractBits(value, operandSzM + operandSzR, operandSzL);
+	void *ret = exec->ConcatBits(retLeft, retMidRight);
+	decRefFunc(retMidRight);
+	decRefFunc(retLeft);
+
+	nodep::DWORD r = MarkAddrWrapper(pEnv, address, (nodep::DWORD)ret, 0);
 	if (0 != r) {
 		decRefFunc((void *)r);
 	}
 }
 
+/*set expr on right-most bytes*/
 template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(void *expr, nodep::DWORD address, void *value) {
-	nodep::DWORD rSz = (4 - size) << 3;
-	void *ret1 = exec->ExtractBits(value, size << 3, rSz);
-	void *ret2 = exec->ConcatBits(ret1, expr);
-	
-	decRefFunc(ret1);
+	/*  0 1 2 3 address
+	 * | | |x|x|
+	 *  3 2 1 0 dword
+	 */
+	nodep::DWORD operandSzL = (4 - size) << 3;
+	nodep::DWORD operandSzR = size << 3;
+	void *retLeft = exec->ExtractBits(value, operandSzR, operandSzL);
+
+	if (expr == nullptr) {
+		expr = exec->MakeConst(((nodep::DWORD)value) & ((1 << operandSzR) - 1),
+				operandSzR);
+	}
+
+	void *ret = exec->ConcatBits(retLeft, expr);
+
+	decRefFunc(retLeft);
 	//addRefFunc(ret2);
-	nodep::DWORD r = MarkAddrWrapper(pEnv, address, (nodep::DWORD)ret2, 0);
+	nodep::DWORD r = MarkAddrWrapper(pEnv, address, (nodep::DWORD)ret, 0);
 	if (0 != r) {
 		decRefFunc((void *)r);
 	}
 }
 
+/* `size` = size in bytes of `expr`
+ * `expr` = SE that marks letf-most `size` bytes
+ *
+ * why dword and address have different layout:
+ * we intend to mark left-most size bytes with SE `expr`
+ */
 template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOff0(void *expr, nodep::DWORD address, void *value) {
+    /*  0 1 2 3 address
+	 * |x|x| | |
+	 *  3 2 1 0 dword
+	 */
 	unsigned operandSzR = (4 - size) << 3;
 	unsigned operandSzL = size << 3;
-	void *ret1 = exec->ExtractBits(value, 0, operandSzR);
-	/*
-	 * may result in a fix ...
+	// extract bytes from zero to operandSzR. consider the `dword` layout
+	void *retRight = exec->ExtractBits(value, 0, operandSzR);
+
 	if (expr == nullptr) {
+		// here we consider the	`address` layout because we use
+		// x86 bit manipulation operators
 		expr = exec->MakeConst(((nodep::DWORD)value) >> operandSzR,
 				operandSzL);
-	}*/
-	void *ret2 = exec->ConcatBits(expr, ret1);
+	}
 
-	decRefFunc(ret1);
+	//considering `dword` layout, we concatenate SE `expr` with
+	//the remaining of `value`
+	void *ret = exec->ConcatBits(expr, retRight);
 
-	//addRefFunc(ret2);
-	nodep::DWORD r = MarkAddr(pEnv, address, (nodep::DWORD)ret2, 0);
+	decRefFunc(retRight);
+
+	nodep::DWORD r = MarkAddr(pEnv, address, (nodep::DWORD)ret, 0);
 	if (0 != r) {
 		decRefFunc((void *)r);
 	}
 }
 
+/* `expr` corresponds to memory at `address`, all 4 bytes from offset 0*/
 template <> void RevSymbolicEnvironment::SetSubexpression<0, 4>(void *expr, nodep::DWORD address, void *value) {
 	if (nullptr != expr) {
 		addRefFunc(expr);
@@ -270,6 +307,14 @@ RevSymbolicEnvironment::SetSubExpFunc RevSymbolicEnvironment::subExpsSet[4][5] =
 	{ nullptr, &RevSymbolicEnvironment::SetSubexpressionOffM<1>, &RevSymbolicEnvironment::SetSubexpressionInvalid, &RevSymbolicEnvironment::SetSubexpressionInvalid, &RevSymbolicEnvironment::SetSubexpressionInvalid }
 };
 
+/*this will set symbolic expression `expr` at address depending
+ * on the addressing type and size
+ * valid approaches are:
+ * * 4 bytes on 4 bytes
+ * * `size` bytes written from 0 offset
+ * * `size` bytes written to MAX offset
+ * * `size` bytes written from `offset`
+ */
 void RevSymbolicEnvironment::SetExpression(void *exp, nodep::DWORD address, nodep::DWORD size, nodep::DWORD *values) {
 	static const nodep::DWORD sizes[3] = { 4, 2, 1 };
 	nodep::DWORD sz = sizes[RIVER_OPSIZE(size)];
@@ -293,7 +338,7 @@ void RevSymbolicEnvironment::SetExpression(void *exp, nodep::DWORD address, node
 
 
 		(this->*subExpsSet[fo][copy])(ext, address, val);
-		
+
 		if (ext != exp) {
 			decRefFunc(ext);
 		}
