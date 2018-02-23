@@ -16,12 +16,12 @@ void NoDecRef(void *) {}
 
 nodep::DWORD TrackAddrWrapper(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD segSel) {
 	nodep::DWORD ret = TrackAddr(pEnv, dwAddr, segSel);
-	printf("<info> TrackAddr 0x%08lx => 0x%08lx\n", dwAddr, ret);
+	fprintf(stderr, "<info> TrackAddr 0x%08lx => 0x%08lx\n", dwAddr, ret);
 	return ret;
 }
 
 nodep::DWORD MarkAddrWrapper(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel) {
-	printf("<info> MarkAddr 0x%08lx <= %lu\n", dwAddr, value);
+	fprintf(stderr, "<info> MarkAddr 0x%08lx <= %lu\n", dwAddr, value);
 	return MarkAddr(pEnv, dwAddr, value, segSel);
 }
 
@@ -378,7 +378,7 @@ bool RevSymbolicEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
 		current->operands[opInfo.opIdx].asAddress->base.name)];
 	opInfo.fields = (opInfo.symbolic != NULL) ? OP_HAS_SYMBOLIC : 0;
 	if (opInfo.fields) {
-		printf("GetAddressBase [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+		fprintf(stderr, "GetAddressBase [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 	}
 	opInfo.concreteBefore = opBase[-((int)baseOffsets[opInfo.opIdx])];
 	opInfo.fields |= OP_HAS_CONCRETE_BEFORE;
@@ -400,7 +400,7 @@ bool RevSymbolicEnvironment::GetAddressScaleAndIndex(struct OperandInfo &opInfo,
 		current->operands[opInfo.opIdx].asAddress->index.name)];
 	opInfo.fields = (opInfo.symbolic != NULL) ? OP_HAS_SYMBOLIC : 0;
 	if (opInfo.fields) {
-		printf("GetAddressScaleAndIndex [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
+		fprintf(stderr, "GetAddressScaleAndIndex [%d] => symb [0x%08lX]\n", opInfo.opIdx, (DWORD)opInfo.symbolic);
 	}
 	opInfo.concreteBefore = opBase[-((int)indexOffsets[opInfo.opIdx])];
 	opInfo.fields |= OP_HAS_CONCRETE_BEFORE;
