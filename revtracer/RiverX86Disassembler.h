@@ -255,6 +255,12 @@ private :
 		DisassembleRegOp(0, ri, sec);
 	}
 
+	template <nodep::BYTE opIdx, nodep::BYTE opFlg, nodep::BYTE value, DisassembleOperandsFunc cont> void DisassembleConstImmOperand(nodep::BYTE *&px86, RiverInstruction &ri) {
+		(this->*cont)(px86, ri);
+		ri.opTypes[opIdx] = RIVER_OPTYPE_IMM | RIVER_OPSIZE_8 | opFlg;
+		ri.operands[opIdx].asImm8 = value;
+	}
+
 	template <nodep::BYTE opIdx, nodep::BYTE opFlg, nodep::BYTE regName, DisassembleOperandsFunc cont> void DisassembleConstRegOperand(nodep::BYTE *&px86, RiverInstruction &ri) {
 		(this->*cont)(px86, ri);
 
