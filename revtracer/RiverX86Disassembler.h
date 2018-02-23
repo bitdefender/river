@@ -54,6 +54,10 @@ private :
 		px86++;
 	}
 
+
+	void DisassembleConvertOperands(nodep::BYTE opIdx, RiverInstruction &ri);
+	void DisassembleConvertxAx(nodep::BYTE *&px86, RiverInstruction &ri, nodep::DWORD &flags);
+
 	template <nodep::WORD modifiers = 0, nodep::WORD tflags = 0> void DisassembleExtInstr(nodep::BYTE *&px86, RiverInstruction &ri, nodep::DWORD &flags) {
 		/*ri.opCode = *px86;
 		px86++;
@@ -226,7 +230,7 @@ private :
 	void DisassembleRegModRMImm32(nodep::BYTE *&px86, RiverInstruction &ri);
 	void DisassembleRegModRMImm8(nodep::BYTE *&px86, RiverInstruction &ri);
 	void DisassembleModRMRegImm8(nodep::BYTE *&px86, RiverInstruction &ri);
-	
+
 	template <nodep::BYTE opIdx> void DisassembleMoffs8(nodep::BYTE *&px86, RiverInstruction &ri) {
 		DisassembleMoffs32(opIdx, px86, ri);
 	}

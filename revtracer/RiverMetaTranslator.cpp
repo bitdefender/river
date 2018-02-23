@@ -426,7 +426,7 @@ RiverMetaTranslator::TranslateOpcodeFunc RiverMetaTranslator::translateOpcodes[2
 		/* 0x95 */ &RiverMetaTranslator::TranslateDefault, 
 		/* 0x96 */ &RiverMetaTranslator::TranslateDefault, 
 		/* 0x97 */ &RiverMetaTranslator::TranslateDefault, 
-		/* 0x98 */ &RiverMetaTranslator::TranslateUnk,
+		/* 0x98 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x99 */ &RiverMetaTranslator::TranslateDefault,
 		/* 0x9A */ &RiverMetaTranslator::TranslateUnk,
 		/* 0x9B */ &RiverMetaTranslator::TranslateUnk,

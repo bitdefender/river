@@ -371,6 +371,36 @@ void RiverX86Disassembler::DisassembleRegModRMImm32(nodep::BYTE *&px86, RiverIns
 	DisassembleImmOp(2, px86, ri, RIVER_OPSIZE_32);
 }
 
+// 32 EAX AX
+// 16 AX AL
+nodep::BYTE LookupConvertRegSize[2][2] = {
+	{ RIVER_REG_SZ32, RIVER_REG_SZ16 },
+	{ RIVER_REG_SZ16, RIVER_REG_SZ8_L }
+};
+
+void RiverX86Disassembler::DisassembleConvertOperands(nodep::BYTE opIdx, RiverInstruction &ri) {
+	nodep::BYTE reg = RIVER_REG_xAX;
+	unsigned indexLookup = 0;
+
+	if (ri.modifiers & RIVER_MODIFIER_O16) {
+		ri.opTypes[opIdx] = RIVER_OPTYPE_REG | (RIVER_OPSIZE_16 + opIdx);
+		indexLookup = 1;
+	} else {
+		ri.opTypes[opIdx] = RIVER_OPTYPE_REG | (RIVER_OPSIZE_32 + opIdx);
+	}
+
+	reg |= LookupConvertRegSize[indexLookup][opIdx];
+	ri.operands[opIdx].asRegister.versioned = codegen->GetCurrentReg(reg);
+}
+
+void RiverX86Disassembler::DisassembleConvertxAx(nodep::BYTE *&px86, RiverInstruction &ri, nodep::DWORD &flags) {
+	ri.opCode = *px86;
+	for (int i = 0; i < 2; ++i) {
+		DisassembleConvertOperands(i, ri);
+	}
+	px86++;
+}
+
 /* =========================================== */
 /* Specifier tables                            */
 /* =========================================== */
@@ -529,7 +559,7 @@ const nodep::WORD specTbl[2][0x100] = {
 			/*0x95*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_OP2 | RIVER_SPEC_IGNORES_FLG,
 			/*0x96*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_OP2 | RIVER_SPEC_IGNORES_FLG,
 			/*0x97*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_MODIFIES_OP2 | RIVER_SPEC_IGNORES_FLG,
-			/*0x98*/ 0xFF,
+			/*0x98*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_IGNORES_MEMORY,
 			/*0x99*/ RIVER_SPEC_MODIFIES_OP1 | RIVER_SPEC_IGNORES_FLG | RIVER_SPEC_IGNORES_OP1,
 			/*0x9A*/ 0xFF,
 			/*0x9B*/ 0xFF,

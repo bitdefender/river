@@ -79,7 +79,7 @@ RiverX86Disassembler::DisassembleOpcodeFunc RiverX86Disassembler::disassembleOpc
 
 			/*0x90*/ &RiverX86Disassembler::DisassemblePlusRegInstr<0x90>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x90>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x90>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x90>,
 			/*0x94*/ &RiverX86Disassembler::DisassemblePlusRegInstr<0x90>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x90>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x90>, &RiverX86Disassembler::DisassemblePlusRegInstr<0x90>,
-			/*0x98*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
+			/*0x98*/ &RiverX86Disassembler::DisassembleConvertxAx, &RiverX86Disassembler::DisassembleDefaultInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 			/*0x9C*/ &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr, &RiverX86Disassembler::DisassembleUnkInstr,
 
 			/*0xA0*/ &RiverX86Disassembler::DisassembleDefaultRegInstr<RIVER_REG_AL, RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultRegInstr<RIVER_REG_xAX>, &RiverX86Disassembler::DisassembleDefaultSecondRegInstr<RIVER_REG_AL, RIVER_MODIFIER_O8>, &RiverX86Disassembler::DisassembleDefaultSecondRegInstr<RIVER_REG_xAX>,
@@ -348,7 +348,7 @@ RiverX86Disassembler::DisassembleOperandsFunc RiverX86Disassembler::disassembleO
 		/*0x95*/ &RiverX86Disassembler::DisassembleConstRegOperand<1, 0, RIVER_REG_xAX, &RiverX86Disassembler::DisassembleNoOp>,
 		/*0x96*/ &RiverX86Disassembler::DisassembleConstRegOperand<1, 0, RIVER_REG_xAX, &RiverX86Disassembler::DisassembleNoOp>,
 		/*0x97*/ &RiverX86Disassembler::DisassembleConstRegOperand<1, 0, RIVER_REG_xAX, &RiverX86Disassembler::DisassembleNoOp>,
-		/*0x98*/ &RiverX86Disassembler::DisassembleUnkOp,
+		/*0x98*/ &RiverX86Disassembler::DisassembleNoOp,
 		/*0x99*/ &RiverX86Disassembler::DisassembleConstRegOperand<0, RIVER_OPFLAG_IMPLICIT, RIVER_REG_xDX, &RiverX86Disassembler::DisassembleConstRegOperand<1, RIVER_OPFLAG_IMPLICIT, RIVER_REG_xAX, &RiverX86Disassembler::DisassembleNoOp> >,
 		/*0x9A*/ &RiverX86Disassembler::DisassembleUnkOp,
 		/*0x9B*/ &RiverX86Disassembler::DisassembleUnkOp,

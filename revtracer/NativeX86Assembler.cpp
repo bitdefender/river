@@ -766,7 +766,7 @@ NativeX86Assembler::AssembleOpcodeFunc NativeX86Assembler::assembleOpcodes[2][0x
 
 		/*0x90*/ &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr,
 		/*0x94*/ &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr, &NativeX86Assembler::AssemblePlusRegInstr,
-		/*0x98*/ &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
+		/*0x98*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 		/*0x9C*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleUnkInstr, &NativeX86Assembler::AssembleUnkInstr,
 
 		/*0xA0*/ &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr, &NativeX86Assembler::AssembleDefaultInstr,
@@ -930,7 +930,7 @@ NativeX86Assembler::AssembleOperandsFunc NativeX86Assembler::assembleOperands[2]
 
 		/*0x90*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp,
 		/*0x94*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp,
-		/*0x98*/ &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
+		/*0x98*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 		/*0x9C*/ &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleNoOp, &NativeX86Assembler::AssembleUnknownOp, &NativeX86Assembler::AssembleUnknownOp,
 
 		/*0xA0*/ &NativeX86Assembler::AssembleMoffs8<1>, &NativeX86Assembler::AssembleMoffs32<1>, &NativeX86Assembler::AssembleMoffs8<0>, &NativeX86Assembler::AssembleMoffs32<0>,
