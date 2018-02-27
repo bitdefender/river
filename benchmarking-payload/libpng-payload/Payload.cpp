@@ -1,3 +1,4 @@
+#include "CommonCrossPlatform/Common.h"
 #include "CommonCrossPlatform/CommonSpecifiers.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -6,8 +7,6 @@
 
 #define PNG_INTERNAL
 #include "png.h"
-
-#define MAX_PAYLOAD_BUF (64 << 10)
 
 struct BufState {
   const uint8_t* data;

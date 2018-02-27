@@ -1,9 +1,8 @@
+#include "CommonCrossPlatform/Common.h"
 #include "CommonCrossPlatform/CommonSpecifiers.h"
 
 #include "gumbo.h"
 #include <stdint.h>
-
-#define MAX_PAYLOAD_BUF (64 << 10)
 
 void test_simple(const unsigned char *buf) {
 	GumboOutput* output = gumbo_parse_with_options(

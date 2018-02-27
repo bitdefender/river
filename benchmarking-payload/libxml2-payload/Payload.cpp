@@ -1,9 +1,8 @@
+#include "CommonCrossPlatform/Common.h"
 #include "CommonCrossPlatform/CommonSpecifiers.h"
 
 #include "libxml/parser.h"
 #include "libxml/tree.h"
-
-#define MAX_PAYLOAD_BUF (64 << 10)
 
 static void nopErrorHandlerFunction(void *ctx, const char *msg, ...) {}
 static xmlGenericErrorFunc nopErrorHandler = nopErrorHandlerFunction;

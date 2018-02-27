@@ -1,3 +1,4 @@
+#include "CommonCrossPlatform/Common.h"
 #include "CommonCrossPlatform/CommonSpecifiers.h"
 
 #include <turbojpeg.h>
@@ -5,8 +6,6 @@
 #include <stdlib.h>
 
 #include <memory>
-
-#define MAX_PAYLOAD_BUF (64 << 10)
 
 void test_simple(const unsigned char *data) {
 	tjhandle jpegDecompressor = tjInitDecompress();

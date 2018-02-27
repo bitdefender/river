@@ -1,9 +1,9 @@
 #include "http_parser.h"
 #include "CommonCrossPlatform/CommonSpecifiers.h"
+#include "CommonCrossPlatform/Common.h"
 #include <assert.h>
 
 #define NDEBUG
-#define NULL 0
 
 static http_parser *parser = nullptr;
 
@@ -15,8 +15,6 @@ static int currently_parsing_eof;
 
 #define TRUE 1
 #define FALSE 0
-
-#define MAX_PAYLOAD_BUF (64 << 10)
 
 struct message {
 	const char *name; // for debugging purposes

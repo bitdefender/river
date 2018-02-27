@@ -1,10 +1,10 @@
+#include "CommonCrossPlatform/Common.h"
 #include "CommonCrossPlatform/CommonSpecifiers.h"
 
 #include "jsmn.h"
 
 
 #define TOKEN_SIZE 256
-#define MAX_PAYLOAD_BUF (64 << 10)
 
 static jsmn_parser parser;
 static jsmntok_t tokens[TOKEN_SIZE];
