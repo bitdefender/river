@@ -366,7 +366,8 @@ void RevSymbolicEnvironment::PushState(stk::LargeStack &stack) { }
 void RevSymbolicEnvironment::PopState(stk::LargeStack &stack) { }
 
 bool RevSymbolicEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
-	if ((RIVER_OPTYPE(current->opTypes[opInfo.opIdx]) != RIVER_OPTYPE_MEM) || (0 == current->operands[opInfo.opIdx].asAddress->type)) {
+	if ((RIVER_OPTYPE(current->opTypes[opInfo.opIdx]) != RIVER_OPTYPE_MEM) ||
+			(0 == current->operands[opInfo.opIdx].asAddress->type)) {
 		return false;
 	}
 
@@ -404,6 +405,25 @@ bool RevSymbolicEnvironment::GetAddressScaleAndIndex(struct OperandInfo &opInfo,
 	}
 	opInfo.concreteBefore = opBase[-((int)indexOffsets[opInfo.opIdx])];
 	opInfo.fields |= OP_HAS_CONCRETE_BEFORE;
+	return true;
+}
+
+bool RevSymbolicEnvironment::GetAddressDisplacement(const nodep::BYTE opIdx, struct AddressDisplacement &addressDisplacement) {
+	if ((RIVER_OPTYPE(current->opTypes[opIdx]) != RIVER_OPTYPE_MEM) ||
+			(0 == current->operands[opIdx].asAddress->type)) {
+		return false;
+	}
+
+	if (current->operands[opIdx].asAddress->type & RIVER_ADDR_DISP8) {
+		addressDisplacement.type = RIVER_ADDR_DISP8;
+		addressDisplacement.disp = (nodep::DWORD)current->operands[opIdx].asAddress->disp.d8;
+	} else if (current->operands[opIdx].asAddress->type & RIVER_ADDR_DISP) {
+		addressDisplacement.type = RIVER_ADDR_DISP;
+		addressDisplacement.disp = current->operands[opIdx].asAddress->disp.d32;
+	} else {
+		return false;
+	}
+
 	return true;
 }
 

@@ -68,6 +68,10 @@ namespace sym {
 		return subEnv->GetAddressScaleAndIndex(opInfo, scale);
 	}
 
+	bool ScopedSymbolicEnvironment::GetAddressDisplacement(const nodep::BYTE opIdx, struct AddressDisplacement &addressDisplacement) {
+		return subEnv->GetAddressDisplacement(opIdx, addressDisplacement);
+	}
+
 	bool ScopedSymbolicEnvironment::GetFlgValue(struct FlagInfo &flagInfo) {
 		return subEnv->GetFlgValue(flagInfo);
 	}

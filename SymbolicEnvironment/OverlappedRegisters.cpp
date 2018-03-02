@@ -308,7 +308,8 @@ OverlappedRegistersEnvironment::OverlappedRegistersEnvironment() {
 
 bool OverlappedRegistersEnvironment::GetAddressBase(struct OperandInfo &opInfo) {
 	bool ret = subEnv->GetAddressBase(opInfo);
-	if ((RIVER_OPTYPE(current->opTypes[opInfo.opIdx]) != RIVER_OPTYPE_MEM) || (0 == current->operands[opInfo.opIdx].asAddress->type)) {
+	if ((RIVER_OPTYPE(current->opTypes[opInfo.opIdx]) != RIVER_OPTYPE_MEM) ||
+			(0 == current->operands[opInfo.opIdx].asAddress->type)) {
 		return ret;
 	}
 
@@ -345,6 +346,11 @@ bool OverlappedRegistersEnvironment::GetAddressScaleAndIndex(struct OperandInfo 
 		opInfo.fields |= (opInfo.symbolic != nullptr) ? OP_HAS_SYMBOLIC : 0;
 	}
 	return true;
+}
+
+// displacement cannot have symbolic values, it is stored in x86 code
+bool OverlappedRegistersEnvironment::GetAddressDisplacement(const nodep::BYTE opIdx, struct AddressDisplacement &addressDisplacement) {
+	return subEnv->GetAddressDisplacement(opIdx, addressDisplacement);
 }
 
 bool OverlappedRegistersEnvironment::GetOperand(struct OperandInfo &opInfo) {

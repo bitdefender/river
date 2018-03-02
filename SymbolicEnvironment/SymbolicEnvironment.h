@@ -25,6 +25,11 @@ struct FlagInfo {
 	void *symbolic;
 };
 
+struct AddressDisplacement {
+	nodep::BYTE type;
+	nodep::DWORD disp;
+};
+
 namespace sym {
 
 	class SymbolicExecutor;
@@ -89,6 +94,16 @@ namespace sym {
 		*/
 		virtual bool GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale) = 0;
 
+		/**
+		*	The GetAddressDisplacement function returns the displacement value and type
+		*	Params:
+		*	    opIdx - operand id
+		*		addressDisplacement - struct that is populated with actual info from `current`
+		*  Result:
+		*		true - if operand can be interogated
+		*		false - if the operand can't be interogated, (all excepting RIVER_OPTYPE_MEM)
+		*/
+		virtual bool GetAddressDisplacement(const nodep::BYTE opIdx, struct AddressDisplacement &addressDisplacement) = 0;
 
 		/**
 		*	The GetFlgValue function returns a flag by flag value.
@@ -164,6 +179,7 @@ namespace sym {
 		virtual bool GetOperand(struct OperandInfo &opInfo);
 		virtual bool GetAddressBase(struct OperandInfo &opInfo);
 		virtual bool GetAddressScaleAndIndex(struct OperandInfo &opInfo, nodep::BYTE &scale);
+		virtual bool GetAddressDisplacement(const nodep::BYTE opIdx, struct AddressDisplacement &addressDisplacement);
 		virtual bool GetFlgValue(struct FlagInfo &flagInfo);
 		virtual bool SetOperand(nodep::BYTE opIdx, void *symbolicValue, bool doRefCount);
 		virtual bool UnsetOperand(nodep::BYTE opIdx, bool doRefCount);
