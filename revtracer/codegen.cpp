@@ -439,23 +439,23 @@ bool SaveToStream(
 
 void SetBranchInfo(RiverBasicBlock *pCB, nodep::DWORD disassFlags) {
 	if (disassFlags & RIVER_BRANCH_INSTR_RET) {
-		pCB->dwBranchInstruction = RIVER_INSTR_RET;
+		pCB->dwBranchInstruction = RIVER_JUMP_INSTR_RET;
 	} else if (disassFlags & RIVER_BRANCH_INSTR_JMP) {
-		pCB->dwBranchInstruction = RIVER_INSTR_JMP;
+		pCB->dwBranchInstruction = RIVER_JUMP_INSTR_JMP;
 	} else if (disassFlags & RIVER_BRANCH_INSTR_JXX) {
-		pCB->dwBranchInstruction = RIVER_INSTR_JXX;
+		pCB->dwBranchInstruction = RIVER_JUMP_INSTR_JXX;
 	} else if (disassFlags & RIVER_BRANCH_INSTR_CALL) {
-		pCB->dwBranchInstruction = RIVER_INSTR_CALL;
+		pCB->dwBranchInstruction = RIVER_JUMP_INSTR_CALL;
 	} else if (disassFlags & RIVER_BRANCH_INSTR_SYSCALL) {
-		pCB->dwBranchInstruction = RIVER_INSTR_SYSCALL;
+		pCB->dwBranchInstruction = RIVER_JUMP_INSTR_SYSCALL;
 	}
 
 	if (disassFlags & RIVER_BRANCH_TYPE_IMM) {
-		pCB->dwBranchType = RIVER_OPTYPE_IMM;
+		pCB->dwBranchType = RIVER_JUMP_TYPE_IMM;
 	} else if (disassFlags & RIVER_BRANCH_TYPE_MEM) {
-		pCB->dwBranchType = RIVER_OPTYPE_MEM;
+		pCB->dwBranchType = RIVER_JUMP_TYPE_MEM;
 	} else if (disassFlags & RIVER_BRANCH_TYPE_REG) {
-		pCB->dwBranchType = RIVER_OPTYPE_REG;
+		pCB->dwBranchType = RIVER_JUMP_TYPE_REG;
 	}
 }
 

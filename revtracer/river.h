@@ -59,12 +59,17 @@
 #define RIVER_BRANCH_TYPE_REG		0x00040000
 #define RIVER_BRANCH_TYPE_MEM		0x00080000
 
-/* River branch instruction types */
-#define RIVER_INSTR_RET				0x00
-#define RIVER_INSTR_JMP				0x01
-#define RIVER_INSTR_JXX				0x02
-#define RIVER_INSTR_CALL			0x03
-#define RIVER_INSTR_SYSCALL			0x04
+/* River jump instruction used in tracers*/
+#define RIVER_JUMP_INSTR_RET				0x00
+#define RIVER_JUMP_INSTR_JMP				0x01
+#define RIVER_JUMP_INSTR_JXX				0x02
+#define RIVER_JUMP_INSTR_CALL				0x03
+#define RIVER_JUMP_INSTR_SYSCALL			0x04
+
+/* River jump types used in tracer */
+#define RIVER_JUMP_TYPE_IMM 				0x00
+#define RIVER_JUMP_TYPE_MEM 				0x01
+#define RIVER_JUMP_TYPE_REG 				0x02
 
 /* River virtual register names */
 #define RIVER_REG_xAX				0x00
