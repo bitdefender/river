@@ -26,5 +26,9 @@ Release/
 # node.js deps
 node_modules/
 
-#z3 subdir
+#source/libs dependencies
 z3/
+simpletracer/
+river.sdk/
+smtlib2parser/
+yices2/
