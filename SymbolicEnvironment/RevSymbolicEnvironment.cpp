@@ -269,6 +269,7 @@ template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOff0(voi
 	if (expr == nullptr) {
 		// here we consider the	`address` layout because we use
 		// x86 bit manipulation operators
+		// WARN: valid expr should not have value `0`
 		expr = exec->MakeConst(((nodep::DWORD)value) >> operandSzR,
 				operandSzL);
 	}

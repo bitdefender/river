@@ -200,6 +200,7 @@ namespace sym {
 		{}
 
 		// Create a new symbolic variable
+		// size - variable size in bytes
 		virtual void *CreateVariable(const char *name, nodep::DWORD size) = 0;
 
 		// Make a new constant
