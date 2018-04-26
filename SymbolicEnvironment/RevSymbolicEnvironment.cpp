@@ -47,15 +47,19 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 	inFlagOffset = outFlagOffset = 0xFFFFFFFF;
 
 	for (int i = 3; i >= 0; --i) {
+		// if memory operand and it is constructed from non-zero addr components
 		if ((RIVER_OPTYPE(rIn.opTypes[i]) == RIVER_OPTYPE_MEM) && (0 != rIn.operands[i].asAddress->type)) {
 			addressOffsets[i] = trackIndex;
+			// for segmented addresses both segment and address are tracked
 			trackIndex += rIn.operands[i].asAddress->HasSegment() ? 2 : 1;
 
+			// increase trackIndex if base exists
 			if (rIn.operands[i].asAddress->type & RIVER_ADDR_BASE) {
 				baseOffsets[i] = trackIndex;
 				trackIndex++;
 			}
 
+			// increase trackIndex if index exists
 			if (rIn.operands[i].asAddress->type & RIVER_ADDR_INDEX) {
 				indexOffsets[i] = trackIndex;
 				trackIndex++;
@@ -69,7 +73,7 @@ void RevSymbolicEnvironment::GetOperandLayout(const RiverInstruction &rIn) {
 	}
 
 	//if ((0 == (RIVER_SPEC_IGNORES_FLG & rIn.specifiers)) || (rIn.modFlags)) {
-	if (rIn.testFlags) {
+	if (rIn.testFlags | rIn.modFlags) {
 		inFlagOffset = trackIndex;
 		trackIndex++;
 	}
@@ -140,7 +144,7 @@ template <nodep::BYTE offset, nodep::BYTE size> void *RevSymbolicEnvironment::Ge
 		return nullptr;
 	}
 
-	return exec->ExtractBits(symExpr, (4 - offset - size) << 3, size << 3);
+	return exec->ExtractBits(symExpr, offset << 3, size << 3);
 }
 
 template <> void *RevSymbolicEnvironment::GetSubexpression<0, 4>(nodep::DWORD address) {
@@ -197,18 +201,19 @@ void *RevSymbolicEnvironment::GetExpression(nodep::DWORD address, nodep::DWORD s
 
 //set expr from offset to offset + size
 template<nodep::BYTE offset, nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpression(void *expr, nodep::DWORD address, void *value) {
-	/*  0 1 2 3 address
-	 * | |x| | |
-	 *  3 2 1 0 dword
+	/* z3: | |x| | |
+	 *      3 2 1 0
+	 * dw: | | |x| |
+	 *	    0 1 2 3
 	 */
-	nodep::DWORD operandSzR = (4 - offset - size) << 3;
-	nodep::DWORD operandSzL = offset << 3;
+	nodep::DWORD operandSzL = (4 - offset - size) << 3;
+	nodep::DWORD operandSzR = offset << 3;
 	nodep::DWORD operandSzM = size << 3;
 
 	void *retRight = exec->ExtractBits(value, 0, operandSzR);
 
 	if (expr == nullptr) {
-		expr = exec->MakeConst(((nodep::DWORD)value >> operandSzR) & ((1 << operandSzM) - 1),
+		expr = exec->MakeConst(((nodep::DWORD)value >> operandSzL) & ((1 << operandSzM) - 1),
 				operandSzM);
 	}
 	void *retMidRight = exec->ConcatBits(expr, retRight);
@@ -227,22 +232,23 @@ template<nodep::BYTE offset, nodep::BYTE size> void RevSymbolicEnvironment::SetS
 
 /*set expr on right-most bytes*/
 template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(void *expr, nodep::DWORD address, void *value) {
-	/*  0 1 2 3 address
-	 * | | |x|x|
-	 *  3 2 1 0 dword
+	/* z3: |x| | | |
+	 *      3 2 1 0
+	 * dw: | | | |x|
+	 *	    0 1 2 3
 	 */
-	nodep::DWORD operandSzL = (4 - size) << 3;
-	nodep::DWORD operandSzR = size << 3;
-	void *retLeft = exec->ExtractBits(value, operandSzR, operandSzL);
+	nodep::DWORD operandSzL = size << 3;
+	nodep::DWORD operandSzR = (4 - size) << 3;
+	void *retRight = exec->ExtractBits(value, 0, operandSzR);
 
 	if (expr == nullptr) {
-		expr = exec->MakeConst(((nodep::DWORD)value) & ((1 << operandSzR) - 1),
-				operandSzR);
+		expr = exec->MakeConst(((nodep::DWORD)value) >> operandSzR,
+				operandSzL);
 	}
 
-	void *ret = exec->ConcatBits(retLeft, expr);
+	void *ret = exec->ConcatBits(expr, retRight);
 
-	decRefFunc(retLeft);
+	decRefFunc(retRight);
 	//addRefFunc(ret2);
 	nodep::DWORD r = MarkAddrWrapper(pEnv, address, (nodep::DWORD)ret, 0);
 	if (0 != r) {
@@ -257,28 +263,28 @@ template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOffM(voi
  * we intend to mark left-most size bytes with SE `expr`
  */
 template<nodep::BYTE size> void RevSymbolicEnvironment::SetSubexpressionOff0(void *expr, nodep::DWORD address, void *value) {
-    /*  0 1 2 3 address
-	 * |x|x| | |
-	 *  3 2 1 0 dword
+    /* z3: | | | |x|
+	 *      3 2 1 0
+	 * dw: |x| | | |
+	 *	    0 1 2 3
 	 */
-	unsigned operandSzR = (4 - size) << 3;
-	unsigned operandSzL = size << 3;
+	unsigned operandSzL = (4 - size) << 3;
+	unsigned operandSzR = size << 3;
 	// extract bytes from zero to operandSzR. consider the `dword` layout
-	void *retRight = exec->ExtractBits(value, 0, operandSzR);
+	void *retLeft = exec->ExtractBits(value, operandSzR, operandSzL);
 
 	if (expr == nullptr) {
-		// here we consider the	`address` layout because we use
-		// x86 bit manipulation operators
+		// dw processing x86
 		// WARN: valid expr should not have value `0`
-		expr = exec->MakeConst(((nodep::DWORD)value) >> operandSzR,
-				operandSzL);
+		expr = exec->MakeConst(((nodep::DWORD)value) & ((1 << operandSzR) - 1),
+				operandSzR);
 	}
 
 	//considering `dword` layout, we concatenate SE `expr` with
 	//the remaining of `value`
-	void *ret = exec->ConcatBits(expr, retRight);
+	void *ret = exec->ConcatBits(retLeft, expr);
 
-	decRefFunc(retRight);
+	decRefFunc(retLeft);
 
 	nodep::DWORD r = MarkAddr(pEnv, address, (nodep::DWORD)ret, 0);
 	if (0 != r) {
