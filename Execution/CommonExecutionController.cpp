@@ -497,6 +497,11 @@ void CommonExecutionController::DebugPrintf(const unsigned long printMask, const
 	va_end(va);
 }
 
+
+void CommonExecutionController::GetFirstEsp(void *ctx, nodep::DWORD &esp) {
+	gfe(ctx, esp);
+}
+
 void CommonExecutionController::GetCurrentRegisters(void *ctx, rev::ExecutionRegs *regs) {
 	gcr(ctx, regs);
 }

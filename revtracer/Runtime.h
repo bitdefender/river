@@ -20,6 +20,7 @@ struct RiverRuntime {
 
 	nodep::UINT_PTR trackStack;				// + 0x60
 	nodep::UINT_PTR secondaryRegister;		// + 0x64
+	nodep::DWORD firstEsp;
 };
 
 #endif

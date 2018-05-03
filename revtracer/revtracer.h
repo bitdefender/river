@@ -193,6 +193,7 @@ namespace rev {
 		struct BranchNext branchNext[2];
 	};
 
+	typedef void (*GetFirstEspFunc)(void *ctx, nodep::DWORD &esp);
 	typedef void (*GetCurrentRegistersFunc)(void *ctx, ExecutionRegs *regs);
 	typedef void *(*GetMemoryInfoFunc)(void *ctx, ADDR_TYPE addr);
 	typedef bool (*GetLastBasicBlockInfoFunc)(void *ctx, BasicBlockInfo *info);
@@ -206,6 +207,7 @@ namespace rev {
 	};
 
 	struct RevtracerExports {
+		GetFirstEspFunc getFirstEsp;
 		GetCurrentRegistersFunc getCurrentRegisters;
 		GetMemoryInfoFunc getMemoryInfo;
 		GetLastBasicBlockInfoFunc getLastBasicBlockInfo;

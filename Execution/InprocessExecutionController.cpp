@@ -212,12 +212,13 @@ bool InprocessExecutionController::Execute() {
 	revtracer.pImports->memoryFreeFunc = wrapper.pExports->freeMemory;
 	revtracer.pImports->lowLevel.ntTerminateProcess = (rev::ADDR_TYPE)wrapper.pExports->terminateProcess;
 	revtracer.pImports->lowLevel.vsnprintf_s = (rev::ADDR_TYPE)wrapper.pExports->formattedPrint;
+	gfe = revtracer.pExports->getFirstEsp;
 	gcr = revtracer.pExports->getCurrentRegisters;
 	gmi = revtracer.pExports->getMemoryInfo;
 	mmv = revtracer.pExports->markMemoryValue;
 	glbbi = revtracer.pExports->getLastBasicBlockInfo;
 
-	if ((nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv) || (nullptr == glbbi)) {
+	if ((nullptr == gfe) || (nullptr == gcr) || (nullptr == gmi) || (nullptr == mmv) || (nullptr == glbbi)) {
 		DEBUG_BREAK;
 		return false;
 	}

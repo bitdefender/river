@@ -58,7 +58,6 @@ extern "C" {
 
 	void __stdcall BranchHandler(ExecutionEnvironment *pEnv, ADDR_TYPE a) {
 		//ExecutionRegs *currentRegs = (ExecutionRegs *)((&a) + 1);
-
 		pEnv->runtimeContext.registers = (UINT_PTR)((&a) + 1);
 		pEnv->runtimeContext.trackBuff = pEnv->runtimeContext.trackBase;
 
@@ -68,6 +67,7 @@ extern "C" {
 
 
 		DWORD *stk = (DWORD *)pEnv->runtimeContext.virtualStack;
+		DWORD esp = pEnv->runtimeContext.virtualStack;
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "EIP: 0x%08x Stack addr: %p stk: %p\n", a, &(pEnv->runtimeContext.virtualStack), stk);
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n", stk + 0x00, stk[0], stk[1], stk[2], stk[3]);
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "EAX: 0x%08x  ECX: 0x%08x  EDX: 0x%08x  EBX: 0x%08x\n",
@@ -76,7 +76,7 @@ extern "C" {
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->edx,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->ebx);
 		BRANCHING_PRINT(PRINT_BRANCHING_DEBUG, "ESP: 0x%08x  EBP: 0x%08x  ESI: 0x%08x  EDI: 0x%08x\n",
-			((ExecutionRegs*)pEnv->runtimeContext.registers)->esp,
+			esp,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->ebp,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->esi,
 			((ExecutionRegs*)pEnv->runtimeContext.registers)->edi);
@@ -112,6 +112,8 @@ bool ProcessDirection<EXECUTION_RESTART>(ExecutionEnvironment *pEnv, ADDR_TYPE n
 	BRANCHING_PRINT(PRINT_BRANCHING_INFO, "RESTART Requested\n", revtracerConfig.entryPoint);
 	pEnv->lastFwBlock = 0;
 	ClearExecutionBuffer(pEnv);
+
+	pEnv->runtimeContext.registers = (UINT_PTR)((&nextInstruction) + 1);
 
 	// need to push the return address again
 	DWORD nextDirection = revtracerImports.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint);

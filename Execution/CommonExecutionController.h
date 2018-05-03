@@ -12,6 +12,7 @@ nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE 
 nodep::DWORD ErrorHandlerFunc(void *context, void *userContext, rev::RevtracerError *rerror);
 void InitSegments(void *hThread, nodep::DWORD *segments);
 
+typedef void (*GetFirstEspFunc)(void *ctx, nodep::DWORD &esp);
 typedef void(*GetCurrentRegistersFunc)(void *ctx, rev::ExecutionRegs *regs);
 typedef void *(*GetMemoryInfoFunc)(void *ctx, void *ptr);
 typedef void (*SetSymbolicExecutorFunc)(rev::SymbolicExecutorConstructor);
@@ -54,6 +55,7 @@ protected:
 
 	ExecutionObserver *observer;
 
+	GetFirstEspFunc gfe;
 	GetCurrentRegistersFunc gcr;
 	GetMemoryInfoFunc gmi;
 	MarkMemoryValueFunc mmv;
@@ -81,6 +83,7 @@ public :
 	virtual unsigned int ExecutionEnd(void *cbCtx);
 	virtual unsigned int TranslationError(void *address, void *cbCtx);
 
+	virtual void GetFirstEsp(void *ctx, nodep::DWORD &esp);
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers);
 	virtual void *GetMemoryInfo(void *ctx, void *ptr);
 	virtual bool GetLastBasicBlockInfo(void *ctx, rev::BasicBlockInfo *bbInfo);

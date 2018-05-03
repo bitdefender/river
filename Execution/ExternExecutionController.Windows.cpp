@@ -207,6 +207,7 @@ bool ExternExecutionController::InitializeRevtracer() {
 		revtracer.pImports->symbolicHandler = symbCb;
 	}
 
+	gfe = revtracer.pExports->getFirstEsp;
 	gcr = revtracer.pExports->getCurrentRegisters;
 	gmi = revtracer.pExports->getMemoryInfo;
 	mmv = revtracer.pExports->markMemoryValue;

@@ -61,6 +61,7 @@ ExecutionEnvironment::ExecutionEnvironment(nodep::DWORD flags, unsigned int heap
 	runtimeContext.trackStack = (nodep::DWORD)executionBuffer + executionSize + trackSize - 4;
 	runtimeContext.trackBuff = runtimeContext.trackBase = (nodep::DWORD)executionBuffer + executionSize + trackSize + 4096;
 	runtimeContext.virtualStack = (nodep::DWORD)pStack + 0xFFFF0;
+	runtimeContext.firstEsp = 0xFFFFFFFF;
 
 	ac.Init();
 	//this is a major hack...

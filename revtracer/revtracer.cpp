@@ -145,6 +145,11 @@ namespace rev {
 	}
 
 	/* Execution context callbacks ********************************************************/
+	void GetFirstEsp(void *ctx, nodep::DWORD &esp) {
+		struct ExecutionEnvironment *pCtx = (struct ExecutionEnvironment *)ctx;
+		esp = pCtx->runtimeContext.firstEsp;
+	}
+
 	void GetCurrentRegisters(void *ctx, ExecutionRegs *regs) {
 		struct ExecutionEnvironment *pCtx = (struct ExecutionEnvironment *)ctx;
 		rev_memcpy(regs, (struct ExecutionEnvironment *)pCtx->runtimeContext.registers, sizeof(*regs));
@@ -248,7 +253,6 @@ namespace rev {
 			nodep::UINT_PTR rgs = (nodep::UINT_PTR)ADDR_OF_RET_ADDR() + sizeof(void *);
 
 			Initialize();
-			
 			pEnv->runtimeContext.registers = rgs;
 
 			revtracerImports.dbgPrintFunc(PRINT_INFO | PRINT_CONTAINER, "Entry point @%08x\n", (nodep::DWORD)revtracerConfig.entryPoint);
@@ -351,7 +355,9 @@ namespace rev {
 
 	void Execute(int argc, char *argv[]) {
 		nodep::DWORD ret;
-		//if (EXECUTION_ADVANCE == revtracerAPI.executionBegin(pEnv->userContext, revtracerConfig.entryPoint, pEnv)) {
+		struct ExecutionRegs regs;
+
+		pEnv->runtimeContext.registers = (nodep::UINT_PTR)&regs;
 		if (EXECUTION_ADVANCE == revtracerImports.branchHandler(pEnv, pEnv->userContext, revtracerConfig.entryPoint)) {
 			for (nodep::DWORD i = 0; i < revtracerConfig.hookCount; ++i) {
 				CreateHook(revtracerConfig.hooks[i].originalAddr, revtracerConfig.hooks[i].detourAddr);
@@ -389,6 +395,7 @@ extern "C" {
 
 namespace rev {
 	RevtracerExports revtracerExports = {
+		GetFirstEsp,
 		GetCurrentRegisters,
 		GetMemoryInfo,
 		GetLastBasicBlockInfo,

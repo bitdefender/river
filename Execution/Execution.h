@@ -155,6 +155,7 @@ public:
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
 
 	// in-execution api
+	virtual void GetFirstEsp(void *ctx, nodep::DWORD &esp) = 0;
 	virtual void GetCurrentRegisters(void *ctx, rev::ExecutionRegs *registers) = 0;
 	virtual void *GetMemoryInfo(void *ctx, void *ptr) = 0;
 	virtual bool GetLastBasicBlockInfo(void *ctx, rev::BasicBlockInfo *bbInfo) = 0;

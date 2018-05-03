@@ -24,12 +24,16 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 	pEnv->exitAddr = (DWORD)s;
 }
 
+void SetEsp(struct ExecutionEnvironment *pEnv, nodep::DWORD esp) {
+	pEnv->runtimeContext.firstEsp = esp;
+}
 
 #ifdef _MSC_VER
 #define GET_RETURN_ADDR _ReturnAddress
 #define CALLING_CONV(conv) __##conv
 #else
 #define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : "=r" (addr)); addr; })
+#define GET_ESP() ({ int esp; asm volatile("mov %%esp, %0" : "=r" (esp)); esp; })
 #define CALLING_CONV(conv) __attribute__((conv))
 #endif
 
@@ -39,6 +43,10 @@ void Stopper(struct ExecutionEnvironment *pEnv, BYTE *s) {
 	}
 
 #define _RET_ADDR_FUNC_(conv, paramCount, ...) _RET_ADDR_FUNC_2(conv, paramCount, __VA_ARGS__)
+
+nodep::DWORD CALLING_CONV(naked) EspAddr () {
+	return (nodep::DWORD)GET_ESP();
+}
 
 
 _RET_ADDR_FUNC_(cdecl, 0);
@@ -57,7 +65,7 @@ nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env,
 	DWORD ret;
 	RevtracerError rerror;
 	RiverBasicBlock *pBlock;
-	
+
 	pBlock = env->blockCache.NewBlock((UINT_PTR)f);
 	//pBlock->address = (DWORD) f;
 	env->codeGen.Translate(pBlock, env->generationFlags, &rerror);
@@ -67,14 +75,17 @@ nodep::DWORD __declspec(noinline) call_cdecl_0(struct ExecutionEnvironment *env,
 	//AddBlock(env, pBlock);
 
 	_fn_cdecl_0 funcs[] = {
+		EspAddr,
 		RetAddr_cdecl_0,
 		(_fn_cdecl_0)(pBlock->pFwCode)
 
 	};
 
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		ret = (funcs[i])();
 		if (0 == i) {
+			SetEsp(env, ret);
+		} else if (1 == i) {
 			Stopper(env, (BYTE *)ret);
 		}
 	}
