@@ -1,0 +1,202 @@
+\documentclass[format=acmsmall]{acmart}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{xspace} % Auto-insert of space after macros
+
+% To eliminate the hyperref space after the paragraph symbol
+\def\Snospace~{\S{}}
+\renewcommand*{\sectionautorefname}{\Snospace}
+\renewcommand*{\subsectionautorefname}{\Snospace}
+\renewcommand*{\subsubsectionautorefname}{\Snospace}
+
+% Nicer tables
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+% Other packages needed for the content
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{nicefrac}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning}
+
+% Some useful symbols
+\newcommand{\cmark}{\ding{51}\xspace}
+\newcommand{\xmark}{\ding{55}\xspace}
+
+% Relative fontsize
+\usepackage{relsize}
+% Abbreviations and acronyms
+\newcommand{\allcaps}[1]{\texorpdfstring{\textsmaller[.5]{#1}}{#1}\xspace}
+\newcommand{\code}[1]{\texttt{\small{#1}}}
+\newcommand{\approximately}{\ensuremath{\stackrel{\sim}{}}}
+
+\newcommand{\FIXME}[1]{\textcolor{Red}{#1}}
+%\renewcommand{\FIXME}[1]{#1}
+
+% Slowdown due to coverage instrumentation and coverage+ASan, on average over
+% our benchmarks.
+% \newcommand{\coverageSlowdown}{1.6\ensuremath{\times}\xspace}
+% \newcommand{\coverageAsanSlowdown}{2.8\ensuremath{\times}\xspace}
+
+% Fraction of CPU cycles spent in instrumentation code
+% \newcommand{\instrumentationCycles}{54\%\xspace}
+% Simply the inverse of \instrumentationCycles. This is not equal to the
+% average slowdown, because the average of inverses is not the inverse of
+% averages... Confusing.
+% \newcommand{\fuzzingSlowdown}{2.2\ensuremath{\times}\xspace}
+
+% Maximal speedup for bug finding
+% \newcommand{\fussSpeedup}{3.2\ensuremath{\times}\xspace}
+% \newcommand{\removedOverhead}{88\%\xspace}
+
+% Global listings config
+\lstset{ %
+  basicstyle=\small,
+  language=C,
+  numberstyle=\scriptsize\color{gray},
+  numbers=left,
+  xleftmargin=18pt,
+}
+
+\hyphenation{analy-sis}
+
+\newcommand{\mytitle}{Rosanne: River Offline Sanitizers}
+\newcommand{\tool}{Rosanne}
+\newcommand{\river}{\allcaps{RIVER}}
+
+\hypersetup{
+  pdfauthor={Teodor Stoenescu, Alexandra Sandulescu},
+  pdftitle={\mytitle},
+  pdfsubject={Computer Science},
+  pdfkeywords={Runtime Tracing, Instrumentation, Dynamic Binary Instrumentation, Program Analysis, Static Analysis},
+}
+
+% Metadata Information
+% \acmJournal{TOSEM}
+
+\author{Teodor Stoenescu}
+\affiliation{%
+  \institution{Bitdefender}
+  \city{Bucharest}
+  \country{Romania}}
+\email{tstoenescu@bitdefender.com}
+\author{Alexandra Sandulescu}
+\affiliation{%
+  \institution{Bitdefender}
+  \city{Bucharest}
+  \country{Romania}}
+\email{asandulescu@bitdefender.com}
+
+\title{\mytitle}
+\keywords{Runtime Tracing, Instrumentation, Dynamic Binary Instrumentation, Program Analysis, Static Analysis}
+
+
+\begin{document}
+
+\begin{abstract}
+
+\end{abstract}
+
+\maketitle
+\renewcommand{\shortauthors}{T. Stoenescu, A. Sandulescu}
+
+\section{\river Offline Traces}
+\river obtains runtime traces from executing target programs. It instruments each target program basic block \
+depending on the required type of trace. The available tracing options are: \textit{raw traces}, \textit{tainted index traces}, \
+\textit{Z3 traces}. \\
+\textbf{Raw traces} show an ordered list of basic blocks executed at runtime during target program tracing. Data corresponding \
+to each basic block shows the library/module container of current basic block, the offset inside the module where the basic block \
+resides, the cost for executing it. Traces show jump type information (immediate value, memory or register) and jump instruction information \
+(return, jump, conditional jump, call or syscall). The stack pointer value is logged for each basic block. Also, the number of instructions \
+per basic block and data defining the next options in execution. Next options could be no location, one location or two different locations. \
+If the jump type depends on a value in memory or register, then the successor(s) cannot be known. Otherwise, if the current jump is not \
+dependent on any condition, one single successor is available. If the jump depends on any boolean condition, there are two potential \
+successors of current basic block. \\
+An example of how raw traces look is found in \autoref{raw-trace}.
+\begin{table}
+	\caption{Raw traces example - text format}
+	\label{raw-trace}
+	\centering
+	\scalebox{0.5}{
+		\begin{tabular}{| l| l| l| l| l| l| l| l| l| l| l |}
+			\hline
+			\textbf{Module name} & \textbf{Offset} & \textbf{Cost} & \textbf{Jump type} & \textbf{Jump instruction} & \textbf{Esp} & \textbf{NoInstructions} & \textbf{Branch taken} & \textbf{Offset} & \textbf{Branch not taken} & \textbf{Offset} \\
+			libsimple-address.so & 0x000005DF        &       5       &          0         &         3					&  0xF5BBF25C    &           5             &  libsimple-address.so	 & 0x000005DB       &              ???			   & 0x00000000 \\
+			libsimple-address.so & 0x000005DB		   & 2			   & 0					&						0   &  0xF5BBF260    &		   2			 &            ???			 & 0x00000000		   &			  ???		   & 0x00000000 \\
+			libsimple-address.so & 0x000005EB		   & 6			   & 0					& 3							&  0xF5BBF24C    & 6						 & libsimple-address.so  & 0x00000450		   & ???					   & 0x00000000 \\
+			libsimple-address.so & 0x00000450		   & 1			   & 1					& 1							&  0xF5BBF24C	   & 1						 & ???					 & 0x00000000		   & ???					   & 0x00000000 \\
+			libsimple-address.so & 0x00000456		   & 2			   & 0					& 1							&  0xF5BBF248	   & 2						 & libsimple-address.so  & 0x00000430		   & ???					   & 0x00000000 \\
+			libsimple-address.so & 0x00000430		   & 2			   & 1					& 1							&  0xF5BBF244     & 2						 & ???					 & 0x00000000		   & ???					   & 0x00000000 \\
+			ld-2.26.so		     & 0x000154C0		   & 6			   & 0					& 3							&  0xF5BBF234	   & 6						 & ld-2.26.so			 & 0x0000F130		   & ???					   & 0x00000000 \\
+			ld-2.26.so		     & 0x0000F130		   & 6			   & 0					& 3							&  0xF5BBF220	   & 6						 & ld-2.26.so			 & 0x0001B57D		   & ???					   & 0x00000000 \\
+			ld-2.26.so		     & 0x0001B57D		   & 2			   & 0					& 0							&  0xF5BBF224	   & 2						 & ???					 & 0x00000000		   & ???					   & 0x00000000 \\
+			ld-2.26.so		     & 0x0000F13B		   & 22			   & 0					& 2							&  0xF5BBF1F8	   & 22						 & ld-2.26.so			 & 0x0000F2BF		   & ld-2.26.so				   & 0x0000F181 \\
+			ld-2.26.so		     & 0x0000F181		   & 3			   & 0					& 2							&  0xF5BBF1F8	   & 3						 & ld-2.26.so			 & 0x0000F260		   & ld-2.26.so				   & 0x0000F18D \\ \hline
+		\end{tabular}
+	}
+\end{table}
+
+\textbf{Tainted index traces} are represented by raw traces enhanced with tainted index information. Tainted index is a mechanism that implements \
+data flow analysis. Input data is marked with a positive number starting with \textit{1}. During target program execution, taint is transferred \
+when a certain type of operation occurs. \tool distinguishes between four types of operations that propagate taint: \textit{extraction}, \
+\textit{concatenation}, \textit{constant generation} and \textit{generic execution}. \\
+\textbf{Extract propagation} formula is shown in \autoref{extract-formula}. It defines the operation of cutting a part from tainted data. \
+Data flow propagation constructs the new cut as tainted, thus a new index is created for this type of operation. \\
+\textbf{Concat propagation} formula is shown in \autoref{concat-formula}.
+
+\begin{figure}
+	\caption{Tainted index extract}
+	\label{extract-formula}
+	\centering
+	\[ I[k] <= I[index][offset:size] \]
+	\scalebox{0.5}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			I[k] & tainted index\\
+			I[index] & source tainted index \\
+			offset & cut offset inside I[index] \\
+			size & cut size in bits \\
+		\end{tabular}
+	  }
+\end{figure}
+
+\begin{figure}
+	\caption{Tainted index concat}
+	\label{concat-formula}
+	\centering
+	\[ I[k] <= I[p] ++ I[q] \]
+	\scalebox{0.5}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			I[k] & tainted index\\
+			I[p] & left concatenation operator \\
+			I[1] & right concatenation operator \\
+		\end{tabular}
+	  }
+\end{figure}
+
+
+
+
+%===========================================================================
+
+% Acknowledgements hidden in the anonymized version
+%
+%\section{Acknowledgements}\label{acknowledgements}
+%
+%Thanks to LibFuzzer developers and the people on llvm-dev.
+%\newpage
+
+\bibliographystyle{IEEEtran}
+\citestyle{acmnumeric}
+\bibliography{header-standard,biblio}
+
+\end{document}
+
+% vim: set number wrap linebreak textwidth=0 sw=2:
