@@ -108,10 +108,16 @@
 \maketitle
 \renewcommand{\shortauthors}{T. Stoenescu, A. Sandulescu}
 
+\section{Motivation}
+\subsection{Symbolic operations}\label{subsec:symbolic-operations}
+
+\section{Why runtime instrumentation works .. slow}
+
 \section{\river Offline Traces}
 \river obtains runtime traces from executing target programs. It instruments each target program basic block \
 depending on the required type of trace. The available tracing options are: \textit{raw traces}, \textit{tainted index traces}, \
 \textit{Z3 traces}. \\
+
 \textbf{Raw traces} show an ordered list of basic blocks executed at runtime during target program tracing. Data corresponding \
 to each basic block shows the library/module container of current basic block, the offset inside the module where the basic block \
 resides, the cost for executing it. Traces show jump type information (immediate value, memory or register) and jump instruction information \
@@ -120,7 +126,8 @@ per basic block and data defining the next options in execution. Next options co
 If the jump type depends on a value in memory or register, then the successor(s) cannot be known. Otherwise, if the current jump is not \
 dependent on any condition, one single successor is available. If the jump depends on any boolean condition, there are two potential \
 successors of current basic block. \\
-An example of how raw traces look is found in \autoref{raw-trace}.
+An example of how raw traces look is found in \autoref{raw-trace}. \\
+
 \begin{table}
 	\caption{Raw traces example - text format}
 	\label{raw-trace}
@@ -148,16 +155,15 @@ An example of how raw traces look is found in \autoref{raw-trace}.
 data flow analysis. Input data is marked with a positive number starting with \textit{1}. During target program execution, taint is transferred \
 when a certain type of operation occurs. \tool distinguishes between four types of operations that propagate taint: \textit{extraction}, \
 \textit{concatenation}, \textit{constant generation} and \textit{generic execution}. \\
+
 \textbf{Extract propagation} formula is shown in \autoref{extract-formula}. It defines the operation of cutting a part from tainted data. \
 Data flow propagation constructs the new cut as tainted, thus a new index is created for this type of operation. \\
-\textbf{Concat propagation} formula is shown in \autoref{concat-formula}.
 
 \begin{figure}
 	\caption{Tainted index extract}
 	\label{extract-formula}
-	\centering
 	\[ I[k] <= I[index][offset:size] \]
-	\scalebox{0.5}{
+	\scalebox{0.7}{
 		\begin{tabular}{@{}>{$}l<{$}l@{}}
 			I[k] & tainted index\\
 			I[index] & source tainted index \\
@@ -167,12 +173,14 @@ Data flow propagation constructs the new cut as tainted, thus a new index is cre
 	  }
 \end{figure}
 
+\textbf{Concat propagation} formula is shown in \autoref{concat-formula}. It refers to concatenating tainted data to untracked data. The \
+result is considered tainted and thus a new index is generated. \\
+
 \begin{figure}
 	\caption{Tainted index concat}
 	\label{concat-formula}
-	\centering
 	\[ I[k] <= I[p] ++ I[q] \]
-	\scalebox{0.5}{
+	\scalebox{0.7}{
 		\begin{tabular}{@{}>{$}l<{$}l@{}}
 			I[k] & tainted index\\
 			I[p] & left concatenation operator \\
@@ -181,8 +189,85 @@ Data flow propagation constructs the new cut as tainted, thus a new index is cre
 	  }
 \end{figure}
 
+\textbf{Constant generation} representation in \autoref{const-gen-formula} shows how a new tainted index is generated for tracking a \
+bare constant that is needed in the data flow analysis. \\
 
+\begin{figure}
+	\caption{Tainted index constant}
+	\label{const-gen-formula}
+	\[ I[k] <= const <const value> \]
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			I[k] & tainted index\\
+			const value & constant value that becomes tracked\\
+		\end{tabular}
+	  }
+\end{figure}
 
+\textbf{Z3 traces} represent raw traces augmented with Z3 information. Symbolic execution is performed during target execution, thus allowing \
+the collection of z3 representation of symbolic data. Two types of operations that involve symbolic data are of interest for the offline \
+sanitizers. First operation refers to \textit{symbolic addresses} that are used for input or output of data (read or write to symbolic address). The second \
+operation is associated to \textit{symbolic jump condition} where a certain jump operation (of any kind) depends on a symbolic condition. \
+The motivation behind these two scenarios is elaborated in \autoref{subsec:symbolic-operations}. \\
+
+\begin{figure}
+	\caption{Symbolic address representation in Z3 traces}
+	\label{symbolic-address}
+	[composed address] <= [base address] + scale x [index address] + displacement
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			<composed address> & address of symbolic object corresponding to targeted symbolic address\\
+		  <base address> & address of symbolic object corresponding to targeted address base\\
+			scale & constant representing the scaling factor from address construction\\
+			<index address> & address of symbolic object corresponding to targeted address index\\
+			displacement & constant representing the displacement from address construction\\
+		\end{tabular}
+	  }
+\end{figure}
+
+\begin{figure}
+	\caption{X86 Addressing}
+	\label{x86addressing}
+	effective address = base + scale factor x index + displacement
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+		  effective address & virtual address \\ 
+		  base & the start address usually stored in a general-purpose register \\
+		  scale factor & value of 2, 4 or 8 that is multiplied by the index operand \\
+		  index & the offset usually stored in a general-purpose register \\
+		  displacement & 8-, 16- or 32-bit value \\
+		\end{tabular}
+	  }
+\end{figure}
+
+\textbf{Symbolic address} representation is shown in \autoref{symbolic-address}. Construction of addresses in x86 architecture is explained in \autoref{x86addressing}. \
+If the target program runs an instruction that adresses memory using a symbolic address, it means that the pointer value can be controlled using input data \
+manipulation. Along with the aforementioned information about the address composition, Z3 traces also store the Z3 AST (abstract syntax tree) representing \
+the symbolic object that defines the \textit{composed address}. \\
+
+\begin{figure}
+	\caption{Jump condition representation in Z3 traces}
+	\label{jump-condition}
+	jcc <address> <= <flagname>[<symbolic address>]
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+		  <address> & jump destination \\
+		  <flagname> & ZF CF DF OF PF SF AF eflags\\
+		  <symbolic address> & address of symbolic object associated with <flagname>\\
+		\end{tabular}
+	  }
+\end{figure}
+
+\textbf{Symbolic jump condition} is exposed in \autoref{jump-condition}. If the condition has a symbolic object associated, then the jump direction can be \
+controlled by user input, thus leading to a major vulnerability that allows an attacker to control program flow. Z3 AST object associated with the symbolic flag \
+is also stored inside Z3 traces. \\
+
+The authors mark an important note about symbolic flags. \textit{Symbolic flags} represent the result of comparing concrete data with symbolic data. This mechanism \
+is introduced for simplifying Z3 representation and usability of resources. All Z3 objects are represented by pure Z3 structures, eradicating the need for custom \
+\river specifications. All registers and memory locations are involved in Z3 tracing if the need arises. \\
+
+\section{Offline sanitization}
+%%TODO enhanced taint analysis %%
 
 %===========================================================================
 
