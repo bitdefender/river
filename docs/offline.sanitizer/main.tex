@@ -165,7 +165,7 @@ An example of how raw traces look is found in \autoref{raw-trace}. \\
 
 \textbf{Tainted index traces} are represented by raw traces enhanced with tainted index information. Tainted index is a mechanism that implements \
 data flow analysis. Input data is marked with a positive number starting with \textit{1}. During target program execution, taint is transferred \
-when a certain type of operation occurs. \tool distinguishes between four types of operations that propagate taint: \textit{extraction}, \
+when a certain type of operation occurs. {\tool} distinguishes between four types of operations that propagate taint: \textit{extraction}, \
 \textit{concatenation}, \textit{constant generation} and \textit{generic execution}. \\
 
 \textbf{Extract propagation} formula is shown in \autoref{extract-formula}. It defines the operation of cutting a part from tainted data. \
@@ -370,6 +370,45 @@ using source operands depending on user input. These addresses are called symbol
 pointer value corresponding to the execution of last instruction. Further discussion relates to how {\tool} uses stack pointer values to detect whether user input \
 can be manipulated in such way that it rewrites the return address corresponding to current stack frame. \\
 
+\begin{figure}
+  \caption{Stack layout}
+  \label{stack-frame}
+  \begin{tabular}{| l |}
+  \hline
+  return address \\ \hline
+  old ebp \\ \hline
+  local variables \\
+  ... \\ \hline
+  return address \\ \hline
+  old ebp \\ \hline
+  local variables \\
+  ... \\ \hline
+  \end{tabular}
+\end{figure}
+
+Each entry from raw trace represents data about static and runtime context of last traslated and executed basic block. Following the basic blocks that \
+end in \textit{call} and \textit{return} instructions, each stack frame can be restored. \autoref{stack-frame} shows the layout of a stack. \\
+
+Using a stack data stucture, {\tool} records the stack pointer value corresponding to each basic block ended in a call instruction. After executing the call, \
+the stack pointer represents the stack address of last element pushed on the stack, in this particular case being the old value of instruction pointer or \
+address of the instruction following the call. \\
+
+\begin{figure}
+  \caption{Offline Address Sanitizer}
+  \label{offline-asan}
+  \[ ( assert \quad (not \quad (eq \quad [symbolic\-address] \quad [stack\-pointer]))) \]
+  \begin{tabular}{@{}>{$}l<{$}l@{}}
+    symbolic\-address & symbolic expression corresponding to virtual address\\
+    stack\-pointer & stack address where return address is stored\\
+  \end{tabular}
+\end{figure}
+
+{\tool} can assert that the symbolic address value cannot evaluate to illegal values. One illegal value that should not be written using user input is the \
+address of return address obtained using the mechanism discussed above. The assertion performend by {\tool} custom offline address sanitizer is represented in \
+\autoref{offline-asan}. \\
+
+The argument extends to an example of how {\tool} works on the particular case where addresses are not allowed to point to return address location on \
+execution stack. \\
 
 %%TODO enhanced taint analysis %%
 %===========================================================================
