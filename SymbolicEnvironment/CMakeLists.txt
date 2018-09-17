@@ -15,4 +15,11 @@ add_library(${LIBRARY_NAME} SHARED
 	../revtracer/AddressContainer.cpp
 	)
 
-install(TARGETS ${LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+set_target_properties(${LIBRARY_NAME} PROPERTIES
+  PUBLIC_HEADER "Environment.h;LargeStack.h;SymbolicEnvironment.h"
+  )
+
+install(TARGETS ${LIBRARY_NAME}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/SymbolicEnvironment
+  )

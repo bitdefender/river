@@ -64,6 +64,9 @@ set_target_properties(revtracer
 	NO_SONAME ON
 	PREFIX ""
 	SUFFIX ".dll"
+  PUBLIC_HEADER "DebugPrintFlags.h;RiverAddress.h;common.h;environment.h;revtracer.h;river.h"
 	)
 
-install(TARGETS revtracer DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS revtracer
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/revtracer)

@@ -16,6 +16,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS}")
 
 # build targets
+add_subdirectory(CommonCrossPlatform)
 add_subdirectory(BinLoader)
 add_subdirectory(VirtualMemory)
 add_subdirectory(wrapper.setup)
