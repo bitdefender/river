@@ -1,4 +1,4 @@
-#if __linux__
+#ifdef __linux__
 
 #include "../libproc/os-linux.h"
 
