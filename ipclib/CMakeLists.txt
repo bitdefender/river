@@ -7,4 +7,6 @@ add_library(${LIBRARY_NAME} SHARED
 	ipclib.cpp
 	)
 
+target_compile_definitions(${LIBRARY_NAME} PRIVATE _BUILDING_IPC_DLL)
+
 install(TARGETS ${LIBRARY_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
