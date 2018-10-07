@@ -3,8 +3,14 @@
 set(CMAKE_VERBOSE_MAKEFILE true)
 set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
 
+if(WIN32)
+set(FLAGS_CROSS "-D_cdecl=\"__cdecl\" \
+	-D_stdcall=\"__stdcall\"")
+else(WIN32)
 set(FLAGS_CROSS "-D_cdecl=\"__attribute__((cdecl))\" \
 	-D_stdcall=\"__attribute__((stdcall))\"")
+endif()
+
 set(CMAKE_CXX_FLAGS "-g -m32 -march=i386 -fno-exceptions \
 	-fno-stack-protector -fcheck-new -std=c++11 ${FLAGS_CROSS} \
 	-D_BUILDING_REVTRACER_DLL")
@@ -68,5 +74,6 @@ set_target_properties(revtracer
 	)
 
 install(TARGETS revtracer
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/revtracer)

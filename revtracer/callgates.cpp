@@ -30,11 +30,23 @@ void SetEsp(struct ExecutionEnvironment *pEnv, nodep::DWORD esp) {
 
 #ifdef _MSC_VER
 #define GET_RETURN_ADDR _ReturnAddress
+#define GET_ESP() ( int _esp; __asm mov _esp, esp; esp; )
 #define CALLING_CONV(conv) __##conv
+
+nodep::DWORD __declspec(naked) EspAddr() {
+	__asm mov eax, esp
+	__asm ret
+}
 #else
 #define GET_RETURN_ADDR() ({ int addr; asm volatile("mov 4(%%ebp), %0" : "=r" (addr)); addr; })
 #define GET_ESP() ({ int esp; asm volatile("mov %%esp, %0" : "=r" (esp)); esp; })
 #define CALLING_CONV(conv) __attribute__((conv))
+#define ATTRIBUTE(conv) __attribute__((conv))
+
+nodep::DWORD __attribute__((naked)) EspAddr() {
+	return (nodep::DWORD)GET_ESP();
+}
+
 #endif
 
 #define _RET_ADDR_FUNC_2(conv, paramCount, ...) \
@@ -43,10 +55,6 @@ void SetEsp(struct ExecutionEnvironment *pEnv, nodep::DWORD esp) {
 	}
 
 #define _RET_ADDR_FUNC_(conv, paramCount, ...) _RET_ADDR_FUNC_2(conv, paramCount, __VA_ARGS__)
-
-nodep::DWORD CALLING_CONV(naked) EspAddr () {
-	return (nodep::DWORD)GET_ESP();
-}
 
 
 _RET_ADDR_FUNC_(cdecl, 0);
