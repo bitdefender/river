@@ -1,4 +1,5 @@
 #ifndef _MEMORY_LAYOUT_H_
+#define _MEMORY_LAYOUT_H_
 
 #include "VirtualMem.h"
 
@@ -13,7 +14,7 @@ namespace vmem {
 #define MEMORY_REGION_WRITE			0x2
 #define MEMORY_REGION_EXECUTE		0x1
 
-	struct MemoryRegionInfo {
+	struct MemoryRegionInformation {
 		void *baseAddress;
 		void *allocationBase;
 
@@ -31,7 +32,7 @@ namespace vmem {
 	class MemoryLayout {
 	public:
 		virtual bool Snapshot() = 0;
-		virtual bool Query(void *addr, MemoryRegionInfo &out) = 0;
+		virtual bool Query(void *addr, vmem::MemoryRegionInformation &out) = 0;
 		virtual bool Release() = 0;
 
 		virtual bool Debug() = 0;

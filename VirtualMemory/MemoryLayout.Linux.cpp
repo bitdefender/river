@@ -12,14 +12,14 @@ namespace vmem {
 	class LinMemoryLayout : public MemoryLayout {
 	private:
 		process_t pid;
-		std::vector<MemoryRegionInfo> regions;
+		std::vector<MemoryRegionInformation> regions;
 	public :
 		LinMemoryLayout(process_t p) {
 			pid = p;
 		}
 
 		virtual bool Snapshot() {
-			MemoryRegionInfo mTmp;
+			MemoryRegionInformation mTmp;
 			struct map_iterator mi;
 			if (maps_init(&mi, pid) < 0) {
 				//dbg_log("[DualAllocator] Cannot retrieve /proc/%d/maps\n", pid);
@@ -72,7 +72,7 @@ namespace vmem {
 			maps_close(&mi);
 		}
 
-		virtual bool Query(void *addr, MemoryRegionInfo &out) {
+		virtual bool Query(void *addr, MemoryRegionInformation &out) {
 			for (auto it = regions.begin(); it != regions.end(); ++it) {
 				if (addr < it->allocationBase)
 					continue;
