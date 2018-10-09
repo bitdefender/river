@@ -15,8 +15,11 @@ include_directories(../BinLoader)
 add_library(${LIBRARY_NAME} SHARED
 	Debugger.cpp
 	ExternExecutionController.Linux.cpp
+	ExternExecutionController.Windows.cpp
 	DualAllocator.Linux.cpp
+	DualAllocator.Windows.cpp
 	TokenRingInit.Linux.cpp
+	TokenRingInit.Windows.cpp
 	LargeStack.cpp
 	CommonExecutionController2.cpp
 	InprocessExecutionController.cpp
@@ -28,12 +31,18 @@ add_library(${LIBRARY_NAME} SHARED
 	../libproc/libproc.cpp
 	)
 
+if (UNIX AND NOT APPLE)
+set (OS_LIBS rt dl)
+else ()
+set (OS_LIBS ntdll)
+endif ()
+
 target_link_libraries(${LIBRARY_NAME}
 	binloader
 	wrappersetup
+	loadersetup
 	virtualmemory
-	rt
-	dl)
+	${OS_LIBS})
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES PUBLIC_HEADER "Execution.h")
 install(TARGETS ${LIBRARY_NAME}
