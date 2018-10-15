@@ -1,0 +1,4 @@
+1. git clone <river_repository> <your_directory>
+2. cd <your_directory>
+3. cmake .. DESTDIR=<where your binaries end up> // please override this as it defaults to c:\Program Files
+4. cmake --build .

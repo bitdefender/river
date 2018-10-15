@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
-set(CMAKE_SYSTEM_NAME Linux)
+##set(CMAKE_SYSTEM_NAME Linux)
 project(RIVER C CXX ASM)
 
 set(CMAKE_ASM_CREATE_SHARED_LIBRARY ${CMAKE_C_CREATE_SHARED_LIBRARY})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE false)
 
@@ -24,6 +26,7 @@ add_subdirectory(revtracer-wrapper)
 add_subdirectory(revtracer)
 add_subdirectory(ipclib)
 add_subdirectory(Execution)
+add_subdirectory(loader.setup)
 add_subdirectory(loader)
 add_subdirectory(SymbolicEnvironment)
 add_subdirectory(benchmarking-payload)

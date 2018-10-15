@@ -10,7 +10,9 @@ add_library(${LIBRARY_NAME} STATIC
 	Unified.Loader.cpp
 	LoaderAPI.cpp
 	Inproc.Mapper.cpp
+	Extern.Mapper.cpp
 	Shm.Mapper.cpp
+	Mem.Mapper.cpp
 	Inproc.Native.Importer.cpp
 	)
 

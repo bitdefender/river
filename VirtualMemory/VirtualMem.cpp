@@ -15,7 +15,7 @@ namespace vmem {
 		}
 
 		while (dwOffset < 0x2FFF0000) {
-			MemoryRegionInfo mri;
+			MemoryRegionInformation mri;
 			nodep::DWORD regionSize = 0xFFFFFFFF;
 			bool regionFree = true;
 
@@ -77,7 +77,7 @@ namespace vmem {
 		}
 
 		while (dwOffset < 0x2FFF0000) {
-			MemoryRegionInfo mri;
+			MemoryRegionInformation mri;
 			nodep::DWORD regionSize = 0xFFFFFFFF;
 			bool regionFree = true;
 

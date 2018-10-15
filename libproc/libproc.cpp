@@ -24,6 +24,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifdef __linux__
+
 #include "os-linux.h"
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -298,3 +300,5 @@ long get_rss() {
 	fclose( fp );
 	return (size_t)resident * (size_t)sysconf( _SC_PAGESIZE);
 }
+
+#endif

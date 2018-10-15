@@ -2,10 +2,6 @@
 #include "ExternExecutionController.h"
 #endif
 
-#ifndef DISABLE_EXTERN_EXECUTION
-#include "ExternExecutionController.h"
-#endif
-
 #ifndef DISABLE_INPROCESS_EXECUTION
 #include "InprocessExecutionController.h"
 #endif

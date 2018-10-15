@@ -53,7 +53,7 @@ namespace vmem {
 			return true;
 		}
 
-		virtual bool Query(void *addr, MemoryRegionInfo &out) {
+		virtual bool Query(void *addr, MemoryRegionInformation &out) {
 			MEMORY_BASIC_INFORMATION32 mbi;
 
 			if (0 == VirtualQueryEx(process, addr, (PMEMORY_BASIC_INFORMATION)&mbi, sizeof(mbi))) {
