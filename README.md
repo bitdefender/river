@@ -42,7 +42,6 @@ export Z3_ROOT=/home/YOURUSERNAME/testtools/river/z3
 export LD_LIBRARY_PATH=/usr/local/lib/
 
 
-====
 Note: In case that there is no libpthread.so.0 or libc.so.6 in lib32 do the following steps:
 sudo dpkg --add-architecture i386
 sudo apt-get update
@@ -50,7 +49,6 @@ sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386
 
 sudo ln --symbolic -T `find /lib -name libpthread.so.0 -path *i386*` libpthread.so.0
 Then, the same command but for libc.so.6
-====
 
 
 7. Create symbolic link for river.format inside simpletracer.
