@@ -1,4 +1,5 @@
-The instalation process is for Ubuntu 16.04.5 LTS xenial version
+- The instalation process is for Ubuntu 16.04.5 LTS xenial version
+- Also, note that the process is described for all of our tools not just RIVER.
 
 1. Install prerequisits:
 
