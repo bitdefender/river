@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC  -O0 -m32 -std=c++11  -O0 -m32 -std=c++11  -shared -Wl,-soname,libloader.so -o libloader.so CMakeFiles/loader.dir/Loader.Linux.cpp.o CMakeFiles/loader.dir/Loader.Linux.Stub.S.o -lrt -ldl 

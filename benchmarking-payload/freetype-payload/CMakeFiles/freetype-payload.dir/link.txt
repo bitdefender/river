@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -m32 -g -std=c++11 -D_PAYLOAD_EXPORTS  -shared -Wl,-soname,libfreetype-payload.so -o libfreetype-payload.so CMakeFiles/freetype-payload.dir/Payload.o  -L/home/ciprian/testtools/river/benchmarking-payload/freetype-payload/freetype-src/objs/.libs freetype-src/objs/.libs/libfreetype.a -larchive -lpng16 

@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -m32 -g -D_PAYLOAD_EXPORTS  -O0  -shared -Wl,-soname,libsimple-accumulator.so -o libsimple-accumulator.so CMakeFiles/simple-accumulator.dir/simple-accumulator.c.o CMakeFiles/simple-accumulator.dir/Payload.cpp.o 

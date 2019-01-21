@@ -27,3 +27,6 @@ add_subdirectory(Execution)
 add_subdirectory(loader)
 add_subdirectory(SymbolicEnvironment)
 add_subdirectory(benchmarking-payload)
+
+add_subdirectory(river.format/logger)
+add_subdirectory(river.format/format.handler)

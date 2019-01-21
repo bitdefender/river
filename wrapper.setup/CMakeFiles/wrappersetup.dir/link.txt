@@ -1,0 +1,2 @@
+/usr/bin/ar qc libwrappersetup.a  CMakeFiles/wrappersetup.dir/Setup.Linux.cpp.o CMakeFiles/wrappersetup.dir/Setup.Windows.cpp.o
+/usr/bin/ranlib libwrappersetup.a

@@ -11,7 +11,7 @@ NO_SSE="-mno-mmx -mno-sse -march=i386"
 
 init_target() {
 	if ! [ -d libxml2-src ]; then
-		git clone git://git.gnome.org/libxml2 libxml2-src
+		git clone https://github.com/GNOME/libxml2 libxml2-src
 		(
 		cd libxml2-src
 		autoreconf -fiv

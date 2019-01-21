@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC  -O0 -m32 -std=c++11  -O0  -shared -Wl,-soname,libipc.so -o libipc.so CMakeFiles/ipc.dir/ipclib.cpp.o 

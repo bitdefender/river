@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -m32 -g -std=c++11 -D_PAYLOAD_EXPORTS  -O0  -shared -Wl,-soname,libjpeg-turbo-payload.so -o libjpeg-turbo-payload.so CMakeFiles/jpeg-turbo-payload.dir/Payload.cpp.o libjpeg-turbo-src/.libs/libturbojpeg.a 

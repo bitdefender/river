@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -m32 -g -std=c++11 -D_PAYLOAD_EXPORTS  -O0  -shared -Wl,-soname,libjsmn-parser.so -o CMakeFiles/CMakeRelink.dir/libjsmn-parser.so CMakeFiles/jsmn-parser.dir/Payload.cpp.o libjsmn-src/libjsmn.a 

@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -m32 -g -O2 -nostdlib -std=c++11 -D_PAYLOAD_EXPORTS  -O0  	-Wl,--version-script=/home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/http-parser.version -shared -Wl,-soname,libhttp-parser.so -o libhttp-parser.so CMakeFiles/http-parser.dir/http_parser.c.o CMakeFiles/http-parser.dir/Payload.cpp.o 

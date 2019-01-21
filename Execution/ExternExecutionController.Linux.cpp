@@ -17,7 +17,7 @@
 
 // TODO seach for this lib in LD_LIBRARY_PATH
 //#define LOADER_PATH "/home/alex/river/tracer.simple/inst/lib/libloader.so"
-#define LOADER_PATH "/home/teodor/wrk/tools/river.sdk/lin/lib/libloader.so"
+#define LOADER_PATH "/usr/local/lib"
 
 static int ChildRunning = 1;
 //static void *hMapMemoryAddress = nullptr;

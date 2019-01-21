@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ciprian/testtools/river/benchmarking-payload/freetype-payload/Payload.cpp
+CommonCrossPlatform/Common.h
+/home/ciprian/testtools/river/benchmarking-payload/freetype-payload/CommonCrossPlatform/Common.h
+CommonCrossPlatform/CommonSpecifiers.h
+/home/ciprian/testtools/river/benchmarking-payload/freetype-payload/CommonCrossPlatform/CommonSpecifiers.h
+assert.h
+-
+stdint.h
+-
+ft2build.h
+-
+Windows.h
+-
+
+freetype-src/include/freetype/config/ftheader.h
+
+freetype-src/include/ft2build.h
+freetype/config/ftheader.h
+-
+

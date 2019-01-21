@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC  -O0 -g -m32 -std=c++11  -O0  -shared -Wl,-soname,librevtracerwrapper.so -o librevtracerwrapper.so CMakeFiles/revtracerwrapper.dir/RevtracerWrapper.cpp.o CMakeFiles/revtracerwrapper.dir/Wrapper.Linux.cpp.o CMakeFiles/revtracerwrapper.dir/Wrapper.Windows.cpp.o ../BinLoader/libbinloader.a -ldl 
