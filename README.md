@@ -1,4 +1,4 @@
-- Ubuntu 16.04.5 LTS xenial
+The instalation process is for Ubuntu 16.04.5 LTS xenial version
 
 1. Install prerequisits:
 
@@ -7,10 +7,15 @@ sudo apt-get install -y git cmake build-essential gcc-multilib g++-multilib ming
 2. Clone river, simple.tracer and river.format from https://github.com/AGAPIA
 
 create a folder like /home/YOURUSERNAME/testtools
+
 cd there
+
 then clone the repositories
+
 git clone https://github.com/AGAPIA/river.format
+
 git clone https://github.com/AGAPIA/river
+
 git clone https://github.com/AGAPIA/simpletracer
 
 
@@ -33,34 +38,47 @@ ln -s /home/YOURUSERNAME/testtools/river/z3/bin/libz3.* ./
 6. Set variables and create links for simpletracer installation.
 
 RIVER_NATIVE_LIBS=/usr/local/lib
+
 LIBC_PATH=/lib32/libc.so.6
+
 LIBPTHREAD_PATH=/lib32/libpthread.so.0
+
 sudo ln -s -T $LIBC_PATH $RIVER_NATIVE_LIBS/libc.so
+
 sudo ln -s -T $LIBPTHREAD_PATH $RIVER_NATIVE_LIBS/libpthread.so
+
 export Z3_ROOT_PATH=/home/YOURUSERNAME/testtools/river/z3
+
 export Z3_ROOT=/home/YOURUSERNAME/testtools/river/z3
+
 export LD_LIBRARY_PATH=/usr/local/lib/
 
 
 Note: In case that there is no libpthread.so.0 or libc.so.6 in lib32 do the following steps:
 sudo dpkg --add-architecture i386
+
 sudo apt-get update
+
 sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386
 
 sudo ln --symbolic -T `find /lib -name libpthread.so.0 -path *i386*` libpthread.so.0
+
 Then, the same command but for libc.so.6
 
 
 7. Create symbolic link for river.format inside simpletracer.
 
 cd simpletracer/
+
 ln -s ../river.format/ ./
 
 
 8. Install simpletracer.
 
 cmake CMakeLists.txt
+
 make
+
 sudo make install
 
 9. Test simpletracer.
