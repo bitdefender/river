@@ -27,8 +27,9 @@ Release/
 node_modules/
 
 #source/libs dependencies
-z3/
-simpletracer/
-river.sdk/
-smtlib2parser/
-yices2/
+#z3/
+#simpletracer/
+#river.sdk/
+#smtlib2parser/
+#yices2/
+
