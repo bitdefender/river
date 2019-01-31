@@ -1,0 +1,34 @@
+# Windows binaries
+*.dll
+*.exe
+*.lib
+*.pdb
+*.ilk
+
+# Linux binaries
+*.a
+*.o
+*.so
+
+# Visual Studio Metainformation
+Debug/
+Release/
+*.sdf
+*.suo
+*.user
+*.filters
+
+# Visual Studio Intellisense database
+*.opensdf
+*.VC.db
+*.VC.opendb
+
+# node.js deps
+node_modules/
+
+#source/libs dependencies
+z3/
+simpletracer/
+river.sdk/
+smtlib2parser/
+yi
