@@ -6,9 +6,9 @@
 *.ilk
 
 # Linux binaries
-*.a
-*.o
-*.so
+#*.a
+#*.o
+#*.so
 
 # Visual Studio Metainformation
 Debug/
@@ -27,7 +27,7 @@ Release/
 node_modules/
 
 #source/libs dependencies
-#z3/
+z3/
 #simpletracer/
 #river.sdk/
 #smtlib2parser/
