@@ -5,5 +5,3 @@ benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/Payload.cpp.o
  /home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/Payload.cpp
  CommonCrossPlatform/Common.h
  CommonCrossPlatform/CommonSpecifiers.h
- benchmarking-payload/gumbo-payload/gumbo-src/src/gumbo.h
- benchmarking-payload/gumbo-payload/gumbo-src/src/tag_enum.h

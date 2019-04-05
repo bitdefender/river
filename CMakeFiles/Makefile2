@@ -102,7 +102,7 @@ BinLoader/preinstall:
 BinLoader/CMakeFiles/binloader.dir/all:
 	$(MAKE) -f BinLoader/CMakeFiles/binloader.dir/build.make BinLoader/CMakeFiles/binloader.dir/depend
 	$(MAKE) -f BinLoader/CMakeFiles/binloader.dir/build.make BinLoader/CMakeFiles/binloader.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target binloader"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=1,2,3,4,5,6,7,8 "Built target binloader"
 .PHONY : BinLoader/CMakeFiles/binloader.dir/all
 
 # Include target in all.
@@ -112,7 +112,7 @@ all: BinLoader/CMakeFiles/binloader.dir/all
 
 # Build rule for subdir invocation for target.
 BinLoader/CMakeFiles/binloader.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 8
 	$(MAKE) -f CMakeFiles/Makefile2 BinLoader/CMakeFiles/binloader.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : BinLoader/CMakeFiles/binloader.dir/rule
@@ -157,7 +157,7 @@ VirtualMemory/preinstall:
 VirtualMemory/CMakeFiles/virtualmemory.dir/all:
 	$(MAKE) -f VirtualMemory/CMakeFiles/virtualmemory.dir/build.make VirtualMemory/CMakeFiles/virtualmemory.dir/depend
 	$(MAKE) -f VirtualMemory/CMakeFiles/virtualmemory.dir/build.make VirtualMemory/CMakeFiles/virtualmemory.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=92,93,94 "Built target virtualmemory"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=94,95,96,97 "Built target virtualmemory"
 .PHONY : VirtualMemory/CMakeFiles/virtualmemory.dir/all
 
 # Include target in all.
@@ -167,7 +167,7 @@ all: VirtualMemory/CMakeFiles/virtualmemory.dir/all
 
 # Build rule for subdir invocation for target.
 VirtualMemory/CMakeFiles/virtualmemory.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 4
 	$(MAKE) -f CMakeFiles/Makefile2 VirtualMemory/CMakeFiles/virtualmemory.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : VirtualMemory/CMakeFiles/virtualmemory.dir/rule
@@ -212,7 +212,7 @@ wrapper.setup/preinstall:
 wrapper.setup/CMakeFiles/wrappersetup.dir/all:
 	$(MAKE) -f wrapper.setup/CMakeFiles/wrappersetup.dir/build.make wrapper.setup/CMakeFiles/wrappersetup.dir/depend
 	$(MAKE) -f wrapper.setup/CMakeFiles/wrappersetup.dir/build.make wrapper.setup/CMakeFiles/wrappersetup.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=95,96,97 "Built target wrappersetup"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=98,99,100 "Built target wrappersetup"
 .PHONY : wrapper.setup/CMakeFiles/wrappersetup.dir/all
 
 # Include target in all.
@@ -267,7 +267,7 @@ revtracer-wrapper/preinstall: revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/
 revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/all: BinLoader/CMakeFiles/binloader.dir/all
 	$(MAKE) -f revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/build.make revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/depend
 	$(MAKE) -f revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/build.make revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=75,76,77,78,79 "Built target revtracerwrapper"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=77,78,79,80,81 "Built target revtracerwrapper"
 .PHONY : revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/all
 
 # Include target in all.
@@ -277,7 +277,7 @@ all: revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/all
 
 # Build rule for subdir invocation for target.
 revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 12
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 13
 	$(MAKE) -f CMakeFiles/Makefile2 revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/rule
@@ -332,7 +332,7 @@ revtracer/preinstall:
 revtracer/CMakeFiles/revtracer.dir/all:
 	$(MAKE) -f revtracer/CMakeFiles/revtracer.dir/build.make revtracer/CMakeFiles/revtracer.dir/depend
 	$(MAKE) -f revtracer/CMakeFiles/revtracer.dir/build.make revtracer/CMakeFiles/revtracer.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74 "Built target revtracer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76 "Built target revtracer"
 .PHONY : revtracer/CMakeFiles/revtracer.dir/all
 
 # Include target in all.
@@ -342,7 +342,7 @@ all: revtracer/CMakeFiles/revtracer.dir/all
 
 # Build rule for subdir invocation for target.
 revtracer/CMakeFiles/revtracer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 32
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 33
 	$(MAKE) -f CMakeFiles/Makefile2 revtracer/CMakeFiles/revtracer.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : revtracer/CMakeFiles/revtracer.dir/rule
@@ -387,7 +387,7 @@ ipclib/preinstall:
 ipclib/CMakeFiles/ipc.dir/all:
 	$(MAKE) -f ipclib/CMakeFiles/ipc.dir/build.make ipclib/CMakeFiles/ipc.dir/depend
 	$(MAKE) -f ipclib/CMakeFiles/ipc.dir/build.make ipclib/CMakeFiles/ipc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=29,30 "Built target ipc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=30,31 "Built target ipc"
 .PHONY : ipclib/CMakeFiles/ipc.dir/all
 
 # Include target in all.
@@ -444,7 +444,7 @@ Execution/CMakeFiles/execution.dir/all: VirtualMemory/CMakeFiles/virtualmemory.d
 Execution/CMakeFiles/execution.dir/all: wrapper.setup/CMakeFiles/wrappersetup.dir/all
 	$(MAKE) -f Execution/CMakeFiles/execution.dir/build.make Execution/CMakeFiles/execution.dir/depend
 	$(MAKE) -f Execution/CMakeFiles/execution.dir/build.make Execution/CMakeFiles/execution.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=8,9,10,11,12,13,14,15,16,17,18,19,20 "Built target execution"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=9,10,11,12,13,14,15,16,17,18,19,20,21 "Built target execution"
 .PHONY : Execution/CMakeFiles/execution.dir/all
 
 # Include target in all.
@@ -454,7 +454,7 @@ all: Execution/CMakeFiles/execution.dir/all
 
 # Build rule for subdir invocation for target.
 Execution/CMakeFiles/execution.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 26
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 28
 	$(MAKE) -f CMakeFiles/Makefile2 Execution/CMakeFiles/execution.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : Execution/CMakeFiles/execution.dir/rule
@@ -509,7 +509,7 @@ loader/preinstall: loader/CMakeFiles/loader.dir/preinstall
 loader/CMakeFiles/loader.dir/all:
 	$(MAKE) -f loader/CMakeFiles/loader.dir/build.make loader/CMakeFiles/loader.dir/depend
 	$(MAKE) -f loader/CMakeFiles/loader.dir/build.make loader/CMakeFiles/loader.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=36,37,38,39 "Built target loader"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=37,38,39,40 "Built target loader"
 .PHONY : loader/CMakeFiles/loader.dir/all
 
 # Include target in all.
@@ -574,7 +574,7 @@ SymbolicEnvironment/preinstall:
 SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/all:
 	$(MAKE) -f SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/build.make SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/depend
 	$(MAKE) -f SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/build.make SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=85,86,87,88,89,90,91 "Built target symbolicenvironment"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=87,88,89,90,91,92,93 "Built target symbolicenvironment"
 .PHONY : SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/all
 
 # Include target in all.
@@ -610,7 +610,6 @@ clean: SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/clean
 # Convenience name for "all" pass in the directory.
 benchmarking-payload/all: benchmarking-payload/jsmn-payload/all
 benchmarking-payload/all: benchmarking-payload/gumbo-payload/all
-benchmarking-payload/all: benchmarking-payload/libxml2-payload/all
 benchmarking-payload/all: benchmarking-payload/http-parser-payload/all
 benchmarking-payload/all: benchmarking-payload/libjpeg-turbo-payload/all
 benchmarking-payload/all: benchmarking-payload/simple-address-payload/all
@@ -621,7 +620,6 @@ benchmarking-payload/all: benchmarking-payload/simple-accumulator-payload/all
 # Convenience name for "clean" pass in the directory.
 benchmarking-payload/clean: benchmarking-payload/jsmn-payload/clean
 benchmarking-payload/clean: benchmarking-payload/gumbo-payload/clean
-benchmarking-payload/clean: benchmarking-payload/libxml2-payload/clean
 benchmarking-payload/clean: benchmarking-payload/http-parser-payload/clean
 benchmarking-payload/clean: benchmarking-payload/libjpeg-turbo-payload/clean
 benchmarking-payload/clean: benchmarking-payload/simple-address-payload/clean
@@ -632,7 +630,6 @@ benchmarking-payload/clean: benchmarking-payload/simple-accumulator-payload/clea
 # Convenience name for "preinstall" pass in the directory.
 benchmarking-payload/preinstall: benchmarking-payload/jsmn-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/gumbo-payload/preinstall
-benchmarking-payload/preinstall: benchmarking-payload/libxml2-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/http-parser-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/libjpeg-turbo-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/simple-address-payload/preinstall
@@ -665,7 +662,7 @@ benchmarking-payload/jsmn-payload/preinstall: benchmarking-payload/jsmn-payload/
 benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all:
 	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/depend
 	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=34,35 "Built target jsmn-parser"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=34,35,36 "Built target jsmn-parser"
 .PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all
 
 # Include target in all.
@@ -675,7 +672,7 @@ all: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all
 
 # Build rule for subdir invocation for target.
 benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
@@ -730,7 +727,7 @@ benchmarking-payload/gumbo-payload/preinstall: benchmarking-payload/gumbo-payloa
 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/all:
 	$(MAKE) -f benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build.make benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/depend
 	$(MAKE) -f benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build.make benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=24,25,26 "Built target gumbo-payload"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=25,26 "Built target gumbo-payload"
 .PHONY : benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/all
 
 # Include target in all.
@@ -740,7 +737,7 @@ all: benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/all
 
 # Build rule for subdir invocation for target.
 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/rule
@@ -771,71 +768,6 @@ clean: benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Directory level rules for directory benchmarking-payload/libxml2-payload
-
-# Convenience name for "all" pass in the directory.
-benchmarking-payload/libxml2-payload/all: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/all
-
-.PHONY : benchmarking-payload/libxml2-payload/all
-
-# Convenience name for "clean" pass in the directory.
-benchmarking-payload/libxml2-payload/clean: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/clean
-
-.PHONY : benchmarking-payload/libxml2-payload/clean
-
-# Convenience name for "preinstall" pass in the directory.
-benchmarking-payload/libxml2-payload/preinstall: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall
-
-.PHONY : benchmarking-payload/libxml2-payload/preinstall
-
-#=============================================================================
-# Target rules for target benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir
-
-# All Build rule for target.
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/all:
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/depend
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=98,99,100 "Built target xml2-payload"
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/all
-
-# Include target in all.
-all: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/all
-
-.PHONY : all
-
-# Build rule for subdir invocation for target.
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
-	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/rule
-
-# Convenience name for target.
-xml2-payload: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/rule
-
-.PHONY : xml2-payload
-
-# Pre-install relink rule for target.
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall:
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall
-
-# Prepare target for install.
-preinstall: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall
-
-.PHONY : preinstall
-
-# clean rule for target.
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/clean:
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/clean
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/clean
-
-# clean rule for target.
-clean: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/clean
-
-.PHONY : clean
-
-#=============================================================================
 # Directory level rules for directory benchmarking-payload/http-parser-payload
 
 # Convenience name for "all" pass in the directory.
@@ -860,7 +792,7 @@ benchmarking-payload/http-parser-payload/preinstall:
 benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/all:
 	$(MAKE) -f benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/build.make benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/depend
 	$(MAKE) -f benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/build.make benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=27,28 "Built target http-parser"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=27,28,29 "Built target http-parser"
 .PHONY : benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/all
 
 # Include target in all.
@@ -870,7 +802,7 @@ all: benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/all
 
 # Build rule for subdir invocation for target.
 benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/rule
@@ -915,7 +847,7 @@ benchmarking-payload/libjpeg-turbo-payload/preinstall: benchmarking-payload/libj
 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/all:
 	$(MAKE) -f benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build.make benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/depend
 	$(MAKE) -f benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build.make benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=31,32,33 "Built target jpeg-turbo-payload"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=32,33 "Built target jpeg-turbo-payload"
 .PHONY : benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/all
 
 # Include target in all.
@@ -925,7 +857,7 @@ all: benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.di
 
 # Build rule for subdir invocation for target.
 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/rule
@@ -980,7 +912,7 @@ benchmarking-payload/simple-address-payload/preinstall:
 benchmarking-payload/simple-address-payload/CMakeFiles/simple-address.dir/all:
 	$(MAKE) -f benchmarking-payload/simple-address-payload/CMakeFiles/simple-address.dir/build.make benchmarking-payload/simple-address-payload/CMakeFiles/simple-address.dir/depend
 	$(MAKE) -f benchmarking-payload/simple-address-payload/CMakeFiles/simple-address.dir/build.make benchmarking-payload/simple-address-payload/CMakeFiles/simple-address.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=82,83,84 "Built target simple-address"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=84,85,86 "Built target simple-address"
 .PHONY : benchmarking-payload/simple-address-payload/CMakeFiles/simple-address.dir/all
 
 # Include target in all.
@@ -1035,7 +967,7 @@ benchmarking-payload/simple-accumulator-payload/preinstall:
 benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumulator.dir/all:
 	$(MAKE) -f benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumulator.dir/build.make benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumulator.dir/depend
 	$(MAKE) -f benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumulator.dir/build.make benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumulator.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=80,81 "Built target simple-accumulator"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=82,83 "Built target simple-accumulator"
 .PHONY : benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumulator.dir/all
 
 # Include target in all.
@@ -1090,7 +1022,7 @@ river.format/logger/preinstall:
 river.format/logger/CMakeFiles/logger.dir/all:
 	$(MAKE) -f river.format/logger/CMakeFiles/logger.dir/build.make river.format/logger/CMakeFiles/logger.dir/depend
 	$(MAKE) -f river.format/logger/CMakeFiles/logger.dir/build.make river.format/logger/CMakeFiles/logger.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=40,41,42 "Built target logger"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=41,42,43 "Built target logger"
 .PHONY : river.format/logger/CMakeFiles/logger.dir/all
 
 # Include target in all.
@@ -1145,7 +1077,7 @@ river.format/format.handler/preinstall:
 river.format/format.handler/CMakeFiles/format.handler.dir/all:
 	$(MAKE) -f river.format/format.handler/CMakeFiles/format.handler.dir/build.make river.format/format.handler/CMakeFiles/format.handler.dir/depend
 	$(MAKE) -f river.format/format.handler/CMakeFiles/format.handler.dir/build.make river.format/format.handler/CMakeFiles/format.handler.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=21,22,23 "Built target format.handler"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=22,23,24 "Built target format.handler"
 .PHONY : river.format/format.handler/CMakeFiles/format.handler.dir/all
 
 # Include target in all.

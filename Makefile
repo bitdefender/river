@@ -312,24 +312,6 @@ gumbo-payload/preinstall:
 .PHONY : gumbo-payload/preinstall
 
 #=============================================================================
-# Target rules for targets named xml2-payload
-
-# Build rule for target.
-xml2-payload: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 xml2-payload
-.PHONY : xml2-payload
-
-# fast build rule for target.
-xml2-payload/fast:
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build
-.PHONY : xml2-payload/fast
-
-# Manual pre-install relink rule for target.
-xml2-payload/preinstall:
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall
-.PHONY : xml2-payload/preinstall
-
-#=============================================================================
 # Target rules for targets named http-parser
 
 # Build rule for target.
@@ -434,7 +416,6 @@ help:
 	@echo "... symbolicenvironment"
 	@echo "... jsmn-parser"
 	@echo "... gumbo-payload"
-	@echo "... xml2-payload"
 	@echo "... http-parser"
 	@echo "... jpeg-turbo-payload"
 	@echo "... simple-address"
