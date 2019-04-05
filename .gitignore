@@ -6,9 +6,9 @@
 *.ilk
 
 # Linux binaries
-#*.a
-#*.o
-#*.so
+*.a
+*.o
+*.so
 
 # Visual Studio Metainformation
 Debug/
