@@ -83,7 +83,7 @@ sudo make install
 
 9. Test simpletracer on the basic fmi experiments lib:
 ```
-python -c 'print "B" * 100' | river.tracer -p libfmi-parser.so
+python -c 'print "B" * 100' | river.tracer -p libfmi.so
 ``` 
 
 This command should create two files:
