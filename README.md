@@ -81,9 +81,9 @@ make
 sudo make install
 ```
 
-9. Test simpletracer.
+9. Test simpletracer on the basic fmi experiments lib:
 ```
-python -c 'print "B" * 100' | river.tracer -p libjsmn-parser.so
+python -c 'print "B" * 100' | river.tracer -p libfmi-parser.so
 ``` 
 
 This command should create two files:
@@ -92,14 +92,8 @@ This command should create two files:
 
 If you add --annotated or --z3 you'll get tainted index logs or z3 conditions desc too
 
-Note: 
-If you don't already have `libjsmn-parser.so`: 
-```
-cd river/benchmarking-payload/jsmn-payload/
 
-cmake CMakeLists.txt 
-make 
-sudo make install 
-```
-Then the `libjsmn-parser.so` can be found in `/usr/local/lib`.
+
+## Experiments 
+If you want to see live how logs react to your changes, go to /home/YOURUSERNAME/testtools/river/benchmark-payloads/fmi and change the code inside fmi.c .  Run: ./test_build.sh to build and install the lib, then ./test_inference.sh to test on a given payload input (edit the input inside the script if you want)
 
