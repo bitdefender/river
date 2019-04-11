@@ -16,29 +16,7 @@ jsmn.h
 Windows.h
 -
 
-CommonCrossPlatform/Common.h
-fcntl.h
+jsmn-payload/libjsmn-src/jsmn.h
+stddef.h
 -
-unistd.h
--
-stdint.h
--
-sys/stat.h
--
-sys/mman.h
--
-sys/types.h
--
-pthread.h
--
-unistd.h
--
-dlfcn.h
--
-link.h
--
-Windows.h
--
-
-CommonCrossPlatform/CommonSpecifiers.h
 

@@ -181,6 +181,9 @@ Project_BINARY_DIR:STATIC=/home/ciprian/testtools/river/benchmarking-payload
 //Value Computed by CMake
 Project_SOURCE_DIR:STATIC=/home/ciprian/testtools/river/benchmarking-payload
 
+//Dependencies for target
+fmi_LIB_DEPENDS:STATIC=
+
 //Dependencies for the target
 gumbo-payload_LIB_DEPENDS:STATIC=general;/home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/gumbo-src/.libs/libgumbo.a;
 

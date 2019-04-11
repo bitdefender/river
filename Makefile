@@ -276,24 +276,6 @@ symbolicenvironment/fast:
 .PHONY : symbolicenvironment/fast
 
 #=============================================================================
-# Target rules for targets named jsmn-parser
-
-# Build rule for target.
-jsmn-parser: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 jsmn-parser
-.PHONY : jsmn-parser
-
-# fast build rule for target.
-jsmn-parser/fast:
-	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build
-.PHONY : jsmn-parser/fast
-
-# Manual pre-install relink rule for target.
-jsmn-parser/preinstall:
-	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
-.PHONY : jsmn-parser/preinstall
-
-#=============================================================================
 # Target rules for targets named gumbo-payload
 
 # Build rule for target.
@@ -369,6 +351,19 @@ simple-accumulator/fast:
 .PHONY : simple-accumulator/fast
 
 #=============================================================================
+# Target rules for targets named fmi
+
+# Build rule for target.
+fmi: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 fmi
+.PHONY : fmi
+
+# fast build rule for target.
+fmi/fast:
+	$(MAKE) -f benchmarking-payload/fmi/CMakeFiles/fmi.dir/build.make benchmarking-payload/fmi/CMakeFiles/fmi.dir/build
+.PHONY : fmi/fast
+
+#=============================================================================
 # Target rules for targets named logger
 
 # Build rule for target.
@@ -414,12 +409,12 @@ help:
 	@echo "... execution"
 	@echo "... loader"
 	@echo "... symbolicenvironment"
-	@echo "... jsmn-parser"
 	@echo "... gumbo-payload"
 	@echo "... http-parser"
 	@echo "... jpeg-turbo-payload"
 	@echo "... simple-address"
 	@echo "... simple-accumulator"
+	@echo "... fmi"
 	@echo "... logger"
 	@echo "... format.handler"
 .PHONY : help

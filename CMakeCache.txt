@@ -166,6 +166,9 @@ binloader_LIB_DEPENDS:STATIC=
 execution_LIB_DEPENDS:STATIC=general;binloader;general;wrappersetup;general;virtualmemory;general;rt;general;dl;
 
 //Dependencies for target
+fmi_LIB_DEPENDS:STATIC=
+
+//Dependencies for target
 format.handler_LIB_DEPENDS:STATIC=
 
 //Dependencies for the target

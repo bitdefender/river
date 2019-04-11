@@ -1,0 +1,186 @@
+## stdin
+moduleName                     + offset   cost   jmp    instr  esp        ninstr taken                          - offset   nottaken                       - offset  
+edi: 00000000 esi: 00000000 ebp: 00000000 esp: F6884228 ebx: 00000000 edx: 00000000 ecx: 00000000 eax: 00000000 eflags: 00000000 
+libfmi.so                      + 000006DF (   6) (   0) (   3) (F688421C) (   6) libfmi.so                      + 00000620 ???                            + 00000000
+jcc 0xEC915BC4 <= ZF[EC915BC4]
+'''
+; test-0
+(set-info :status sat)
+(set-logic QF_IDL)
+(declare-fun jump_symbol () (_ BitVec 1))
+(declare-fun |s[0]| () (_ BitVec 8))
+(declare-fun |s[1]| () (_ BitVec 8))
+(declare-fun |s[2]| () (_ BitVec 8))
+(declare-fun |s[3]| () (_ BitVec 8))
+(assert
+ (let ((?x64 (concat ((_ extract 31 16) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|)) (concat |s[1]| ((_ extract 7 0) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|))))))
+ (let ((?x88 (concat |s[3]| ((_ extract 23 0) (concat ((_ extract 31 24) ?x64) (concat |s[2]| ((_ extract 15 0) ?x64)))))))
+ (let ((?x1235 (ite (= (bvsub ((_ extract 7 0) ?x88) (_ bv65 8)) (_ bv0 8)) (_ bv1 1) (_ bv0 1))))
+ (= ?x1235 jump_symbol)))))
+(check-sat)
+
+'''
+libfmi.so                      + 00000620 (   4) (   0) (   2) (F6884210) (   4) libfmi.so                      + 00000680 libfmi.so                      + 0000062C
+jcc 0xEC915C14 <= ZF[EC915C14]
+'''
+; test-1
+(set-info :status sat)
+(set-logic QF_IDL)
+(declare-fun jump_symbol () (_ BitVec 1))
+(declare-fun |s[0]| () (_ BitVec 8))
+(declare-fun |s[1]| () (_ BitVec 8))
+(declare-fun |s[2]| () (_ BitVec 8))
+(declare-fun |s[3]| () (_ BitVec 8))
+(assert
+ (let ((?x64 (concat ((_ extract 31 16) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|)) (concat |s[1]| ((_ extract 7 0) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|))))))
+ (let ((?x88 (concat |s[3]| ((_ extract 23 0) (concat ((_ extract 31 24) ?x64) (concat |s[2]| ((_ extract 15 0) ?x64)))))))
+ (let ((?x1245 (ite (= (bvsub ((_ extract 15 8) ?x88) (_ bv66 8)) (_ bv0 8)) (_ bv1 1) (_ bv0 1))))
+ (= ?x1245 jump_symbol)))))
+(check-sat)
+
+'''
+libfmi.so                      + 0000062C (   3) (   0) (   2) (F6884210) (   3) libfmi.so                      + 00000650 libfmi.so                      + 00000638
+jcc 0xEC77B52C <= ZF[EC915C3C]
+'''
+; test-2
+(set-info :status sat)
+(set-logic QF_IDL)
+(declare-fun jump_symbol () (_ BitVec 1))
+(declare-fun |s[0]| () (_ BitVec 8))
+(declare-fun |s[1]| () (_ BitVec 8))
+(declare-fun |s[2]| () (_ BitVec 8))
+(declare-fun |s[3]| () (_ BitVec 8))
+(assert
+ (let ((?x64 (concat ((_ extract 31 16) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|)) (concat |s[1]| ((_ extract 7 0) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|))))))
+ (let ((?x88 (concat |s[3]| ((_ extract 23 0) (concat ((_ extract 31 24) ?x64) (concat |s[2]| ((_ extract 15 0) ?x64)))))))
+ (let ((?x1255 (bvneg (ite (= (bvsub ((_ extract 23 16) ?x88) (_ bv52 8)) (_ bv0 8)) (_ bv1 1) (_ bv0 1)))))
+ (= ?x1255 jump_symbol)))))
+(check-sat)
+
+'''
+libfmi.so                      + 00000650 (   4) (   0) (   2) (F6884210) (   4) libfmi.so                      + 00000638 libfmi.so                      + 00000665
+libfmi.so                      + 00000638 (   5) (   0) (   3) (F68841FC) (   5) libc-2.23.so                   + 000F3410 ???                            + 00000000
+libc-2.23.so                   + 000F3410 (   6) (   0) (   3) (F68841E8) (   6) libc-2.23.so                   + 0011D285 ???                            + 00000000
+libc-2.23.so                   + 0011D285 (   2) (   0) (   0) (F68841EC) (   2) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 000F341B (   7) (   0) (   2) (F68841D0) (   7) libc-2.23.so                   + 000F3470 libc-2.23.so                   + 000F3435
+libc-2.23.so                   + 000F3435 (   5) (   0) (   2) (F68841D0) (   5) libc-2.23.so                   + 000F346C libc-2.23.so                   + 000F3447
+libc-2.23.so                   + 000F3447 (   3) (   0) (   2) (F68841D0) (   3) libc-2.23.so                   + 000F3457 libc-2.23.so                   + 000F3456
+libc-2.23.so                   + 000F3456 (   2) (   0) (   2) (F68841D0) (   2) libc-2.23.so                   + 000F3463 libc-2.23.so                   + 000F345C
+libc-2.23.so                   + 000F3463 (   7) (   0) (   2) (F68841D0) (   7) libc-2.23.so                   + 000F347D libc-2.23.so                   + 000F3477
+libc-2.23.so                   + 000F3477 (   8) (   0) (   3) (F68841BC) (   8) libc-2.23.so                   + 00041BC0 ???                            + 00000000
+libc-2.23.so                   + 00041BC0 (   6) (   0) (   3) (F68841A8) (   6) libc-2.23.so                   + 0011D285 ???                            + 00000000
+libc-2.23.so                   + 0011D285 (   2) (   0) (   0) (F68841AC) (   2) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00041BCB (  11) (   0) (   2) (F6883CE0) (  11) libc-2.23.so                   + 00041C23 libc-2.23.so                   + 00041BFD
+libc-2.23.so                   + 00041BFD (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041DD0 libc-2.23.so                   + 00041C0B
+libc-2.23.so                   + 00041C0B (   4) (   0) (   2) (F6883CE0) (   4) libc-2.23.so                   + 00041DE8 libc-2.23.so                   + 00041C1C
+libc-2.23.so                   + 00041DE8 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00041C23 libc-2.23.so                   + 00041DF1
+libc-2.23.so                   + 00041C23 (   4) (   0) (   2) (F6883CE0) (   4) libc-2.23.so                   + 00041F40 libc-2.23.so                   + 00041C37
+libc-2.23.so                   + 00041C37 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00042150 libc-2.23.so                   + 00041C42
+libc-2.23.so                   + 00041C42 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041C6E libc-2.23.so                   + 00041C4E
+libc-2.23.so                   + 00041C4E (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041E00 libc-2.23.so                   + 00041C5C
+libc-2.23.so                   + 00041C5C (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041E18 libc-2.23.so                   + 00041C67
+libc-2.23.so                   + 00041E18 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00041DF1 libc-2.23.so                   + 00041E1D
+libc-2.23.so                   + 00041E1D (   3) (   0) (   1) (F6883CE0) (   3) libc-2.23.so                   + 00041C6E ???                            + 00000000
+libc-2.23.so                   + 00041C6E (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00041DB0 libc-2.23.so                   + 00041C7A
+libc-2.23.so                   + 00041C7A (   6) (   0) (   3) (F6883CCC) (   6) libc-2.23.so                   + 000784C0 ???                            + 00000000
+libc-2.23.so                   + 000784C0 (   9) (   0) (   2) (F6883CC8) (   9) libc-2.23.so                   + 00078523 libc-2.23.so                   + 000784D7
+libc-2.23.so                   + 00078523 (   5) (   0) (   2) (F6883CC8) (   5) libc-2.23.so                   + 000785FF libc-2.23.so                   + 00078534
+libc-2.23.so                   + 00078534 (   4) (   0) (   2) (F6883CC8) (   4) libc-2.23.so                   + 000785FF libc-2.23.so                   + 00078543
+libc-2.23.so                   + 000785FF (   2) (   0) (   2) (F6883CC8) (   2) libc-2.23.so                   + 0007861D libc-2.23.so                   + 00078603
+libc-2.23.so                   + 0007861D (   2) (   0) (   0) (F6883CD0) (   2) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00041C90 (   6) (   0) (   2) (F6883CE0) (   6) libc-2.23.so                   + 00041D1A libc-2.23.so                   + 00041CB1
+libc-2.23.so                   + 00041CB1 (   4) (   0) (   2) (F6883CE0) (   4) libc-2.23.so                   + 00041F00 libc-2.23.so                   + 00041CC5
+libc-2.23.so                   + 00041F00 (  10) (   1) (   3) (F6883CCC) (  10) ???                            + 00000000 ???                            + 00000000
+libpthread-2.23.so             + 0000E6F0 (  12) (   0) (   2) (F6883CC8) (  12) libpthread-2.23.so             + 0000E738 libpthread-2.23.so             + 0000E719
+libpthread-2.23.so             + 0000E719 (   7) (   0) (   0) (F6883CD0) (   7) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00041F29 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041CDD libc-2.23.so                   + 00041F38
+libc-2.23.so                   + 00041CDD (   5) (   0) (   2) (F6883CE0) (   5) libc-2.23.so                   + 00041D16 libc-2.23.so                   + 00041CF2
+libc-2.23.so                   + 00041D16 (  13) (   1) (   3) (F6883CCC) (  13) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 000689F0 (  10) (   0) (   2) (F6883CB0) (  10) libc-2.23.so                   + 00068A60 libc-2.23.so                   + 00068A05
+libc-2.23.so                   + 00068A60 (   6) (   0) (   0) (F6883CD0) (   6) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00041D47 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041E60 libc-2.23.so                   + 00041D52
+libc-2.23.so                   + 00041E60 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041D5C libc-2.23.so                   + 00041E6F
+libc-2.23.so                   + 00041E6F (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041F68 libc-2.23.so                   + 00041E7D
+libc-2.23.so                   + 00041F68 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041E7D libc-2.23.so                   + 00041F76
+libc-2.23.so                   + 00041F76 (   7) (   0) (   2) (F6883CE0) (   7) libc-2.23.so                   + 00041EA5 libc-2.23.so                   + 00041FAC
+libc-2.23.so                   + 00041FAC (  14) (   0) (   2) (F6883CE0) (  14) libc-2.23.so                   + 00041FFD libc-2.23.so                   + 00041FE9
+libc-2.23.so                   + 00041FE9 (  24) (   1) (   1) (F6883CE0) (  24) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00042D8C (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00043D32 libc-2.23.so                   + 00042D9C
+libc-2.23.so                   + 00043D32 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00043DA5 libc-2.23.so                   + 00043D3B
+libc-2.23.so                   + 00043DA5 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00043E0B libc-2.23.so                   + 00043DAE
+libc-2.23.so                   + 00043DAE (   5) (   0) (   1) (F6883CE0) (   5) libc-2.23.so                   + 00043D47 ???                            + 00000000
+libc-2.23.so                   + 00043D47 (   9) (   0) (   1) (F6883CE0) (   9) libc-2.23.so                   + 000429CE ???                            + 00000000
+libc-2.23.so                   + 000429CE (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00042D44 libc-2.23.so                   + 000429DB
+libc-2.23.so                   + 00042D44 (   2) (   0) (   1) (F6883CE0) (   2) libc-2.23.so                   + 00042CD3 ???                            + 00000000
+libc-2.23.so                   + 00042CD3 (   9) (   0) (   3) (F6883CCC) (   9) libc-2.23.so                   + 0003ED00 ???                            + 00000000
+libc-2.23.so                   + 0003ED00 (   1) (   0) (   3) (F6883CC8) (   1) libc-2.23.so                   + 0011D289 ???                            + 00000000
+libc-2.23.so                   + 0011D289 (   2) (   0) (   0) (F6883CCC) (   2) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 0003ED05 (  14) (   0) (   2) (F6883CC0) (  14) libc-2.23.so                   + 0003EDA0 libc-2.23.so                   + 0003ED33
+libc-2.23.so                   + 0003EDA0 (  14) (   0) (   2) (F6883CC0) (  14) libc-2.23.so                   + 0003EDA8 libc-2.23.so                   + 0003EDC5
+libc-2.23.so                   + 0003EDC5 (   5) (   0) (   0) (F6883CD0) (   5) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00042CF8 (   4) (   0) (   2) (F6883CE0) (   4) libc-2.23.so                   + 00042D14 libc-2.23.so                   + 00042D06
+libc-2.23.so                   + 00042D14 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 0004225E libc-2.23.so                   + 00042D21
+libc-2.23.so                   + 00042D21 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 0004225E libc-2.23.so                   + 00042D2E
+libc-2.23.so                   + 0004225E (   5) (   0) (   2) (F6883CE0) (   5) libc-2.23.so                   + 0004256F libc-2.23.so                   + 00042278
+libc-2.23.so                   + 00042278 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 0004285B libc-2.23.so                   + 00042286
+libc-2.23.so                   + 00042286 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 0004229F libc-2.23.so                   + 0004228F
+libc-2.23.so                   + 0004229F (  10) (   0) (   2) (F6883CE0) (  10) libc-2.23.so                   + 00042828 libc-2.23.so                   + 000422D0
+libc-2.23.so                   + 00042828 (   6) (   0) (   2) (F6883CE0) (   6) libc-2.23.so                   + 000425B4 libc-2.23.so                   + 00042849
+libc-2.23.so                   + 000425B4 (   7) (   0) (   2) (F6883CE0) (   7) libc-2.23.so                   + 00042797 libc-2.23.so                   + 000425D9
+libc-2.23.so                   + 00042797 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00043EFA libc-2.23.so                   + 0004279F
+libc-2.23.so                   + 00043EFA (   2) (   0) (   1) (F6883CE0) (   2) libc-2.23.so                   + 000425D9 ???                            + 00000000
+libc-2.23.so                   + 000425D9 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00042764 libc-2.23.so                   + 000425E6
+libc-2.23.so                   + 00042764 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00042873 libc-2.23.so                   + 00042771
+libc-2.23.so                   + 00042873 (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00042621 libc-2.23.so                   + 00042880
+libc-2.23.so                   + 00042621 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 000426B3 libc-2.23.so                   + 0004262F
+libc-2.23.so                   + 0004262F (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 000426B3 libc-2.23.so                   + 00042638
+libc-2.23.so                   + 000426B3 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 0004270A libc-2.23.so                   + 000426BD
+libc-2.23.so                   + 0004270A (   2) (   0) (   2) (F6883CE0) (   2) libc-2.23.so                   + 00043F60 libc-2.23.so                   + 00042717
+libc-2.23.so                   + 00042717 (   9) (   1) (   3) (F6883CCC) (   9) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 000689F0 (  10) (   0) (   2) (F6883CB0) (  10) libc-2.23.so                   + 00068A60 libc-2.23.so                   + 00068A05
+libc-2.23.so                   + 00068A05 (   4) (   0) (   2) (F6883CB0) (   4) libc-2.23.so                   + 00068AD0 libc-2.23.so                   + 00068A17
+libc-2.23.so                   + 00068AD0 (   5) (   0) (   2) (F6883CB0) (   5) libc-2.23.so                   + 00068A25 libc-2.23.so                   + 00068AE0
+libc-2.23.so                   + 00068AE0 (   4) (   0) (   2) (F6883CB0) (   4) libc-2.23.so                   + 00068A2D libc-2.23.so                   + 00068AF0
+libc-2.23.so                   + 00068AF0 (   3) (   0) (   2) (F6883CB0) (   3) libc-2.23.so                   + 00068B48 libc-2.23.so                   + 00068AF9
+libc-2.23.so                   + 00068AF9 (   2) (   0) (   1) (F6883CB0) (   2) libc-2.23.so                   + 00068B08 ???                            + 00000000
+libc-2.23.so                   + 00068B08 (   2) (   0) (   2) (F6883CB0) (   2) libc-2.23.so                   + 00068B00 libc-2.23.so                   + 00068B0C
+libc-2.23.so                   + 00068B0C (   1) (   0) (   1) (F6883CB0) (   1) libc-2.23.so                   + 00068A2D ???                            + 00000000
+libc-2.23.so                   + 00068A2D (   9) (   0) (   3) (F6883C9C) (   9) libc-2.23.so                   + 00076320 ???                            + 00000000
+libc-2.23.so                   + 00076320 (   8) (   0) (   2) (F6883C9C) (   8) libc-2.23.so                   + 00076336 libc-2.23.so                   + 00076335
+libc-2.23.so                   + 00076335 (   3) (   0) (   2) (F6883C9C) (   3) libc-2.23.so                   + 0007633C libc-2.23.so                   + 0007633A
+libc-2.23.so                   + 0007633C (   4) (   0) (   0) (F6883CA0) (   4) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00068A44 (   8) (   0) (   2) (F6883CB0) (   8) libc-2.23.so                   + 00068B8B libc-2.23.so                   + 00068A5C
+libc-2.23.so                   + 00068A5C (   8) (   0) (   0) (F6883CD0) (   8) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00042735 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 0004217C libc-2.23.so                   + 00042740
+libc-2.23.so                   + 00042740 (   4) (   0) (   2) (F6883CE0) (   4) libc-2.23.so                   + 00042B52 libc-2.23.so                   + 00042753
+libc-2.23.so                   + 00042753 (   3) (   0) (   1) (F6883CE0) (   3) libc-2.23.so                   + 000424C9 ???                            + 00000000
+libc-2.23.so                   + 000424C9 (   4) (   0) (   2) (F6883CE0) (   4) libc-2.23.so                   + 000424E6 libc-2.23.so                   + 000424DA
+libc-2.23.so                   + 000424E6 (   7) (   0) (   3) (F6883CCC) (   7) libc-2.23.so                   + 000784C0 ???                            + 00000000
+libc-2.23.so                   + 000784C0 (   9) (   0) (   2) (F6883CC8) (   9) libc-2.23.so                   + 00078523 libc-2.23.so                   + 000784D7
+libc-2.23.so                   + 000784D7 (   3) (   0) (   2) (F6883CC8) (   3) libc-2.23.so                   + 0007861D libc-2.23.so                   + 000784E1
+libc-2.23.so                   + 000784E1 (   2) (   0) (   2) (F6883CC8) (   2) libc-2.23.so                   + 0007861D libc-2.23.so                   + 000784E9
+libc-2.23.so                   + 0007861D (   2) (   0) (   0) (F6883CD0) (   2) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00042500 (   5) (   0) (   2) (F6883CE0) (   5) libc-2.23.so                   + 0004402D libc-2.23.so                   + 00042517
+libc-2.23.so                   + 00042517 (   9) (   1) (   3) (F6883CCC) (   9) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 000689F0 (  10) (   0) (   2) (F6883CB0) (  10) libc-2.23.so                   + 00068A60 libc-2.23.so                   + 00068A05
+libc-2.23.so                   + 00068A60 (   6) (   0) (   0) (F6883CD0) (   6) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00042533 (   6) (   0) (   2) (F6883CE0) (   6) libc-2.23.so                   + 00041D52 libc-2.23.so                   + 00042548
+libc-2.23.so                   + 00042548 (   4) (   0) (   2) (F6883CE0) (   4) libc-2.23.so                   + 0004401B libc-2.23.so                   + 0004255B
+libc-2.23.so                   + 0004255B (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041FCA libc-2.23.so                   + 0004256A
+libc-2.23.so                   + 0004256A (   1) (   0) (   1) (F6883CE0) (   1) libc-2.23.so                   + 00041D5C ???                            + 00000000
+libc-2.23.so                   + 00041D5C (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041D91 libc-2.23.so                   + 00041D6A
+libc-2.23.so                   + 00041D6A (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041D91 libc-2.23.so                   + 00041D73
+libc-2.23.so                   + 00041D91 (   3) (   0) (   2) (F6883CE0) (   3) libc-2.23.so                   + 00041E30 libc-2.23.so                   + 00041D9F
+libc-2.23.so                   + 00041E30 (   8) (   1) (   3) (F6883CCC) (   8) ???                            + 00000000 ???                            + 00000000
+libpthread-2.23.so             + 0000E760 (   8) (   0) (   2) (F6883CC0) (   8) libpthread-2.23.so             + 0000E790 libpthread-2.23.so             + 0000E778
+libpthread-2.23.so             + 0000E778 (   3) (   0) (   2) (F6883CC0) (   3) libpthread-2.23.so             + 0000E78B libpthread-2.23.so             + 0000E780
+libpthread-2.23.so             + 0000E78B (   3) (   0) (   0) (F6883CD0) (   3) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 00041E4E (   2) (   0) (   1) (F6883CE0) (   2) libc-2.23.so                   + 00041D9F ???                            + 00000000
+libc-2.23.so                   + 00041D9F (   7) (   0) (   0) (F68841C0) (   7) ???                            + 00000000 ???                            + 00000000
+libc-2.23.so                   + 000F348E (   5) (   0) (   2) (F68841D0) (   5) libc-2.23.so                   + 000F34A0 libc-2.23.so                   + 000F349A
+libc-2.23.so                   + 000F349A (   5) (   0) (   2) (F68841D0) (   5) libc-2.23.so                   + 000F34C0 libc-2.23.so                   + 000F34AC
+libc-2.23.so                   + 000F34C0 (   3) (   0) (   2) (F68841D0) (   3) libc-2.23.so                   + 000F34AC libc-2.23.so                   + 000F34C9
+libc-2.23.so                   + 000F34C9 (   3) (   0) (   2) (F68841D0) (   3) libc-2.23.so                   + 000F34DB libc-2.23.so                   + 000F34DA
+libc-2.23.so                   + 000F34DA (   2) (   0) (   2) (F68841D0) (   2) libc-2.23.so                   + 000F34E7 libc-2.23.so                   + 000F34E0
+libc-2.23.so                   + 000F34E7 (   7) (   0) (   0) (F6884200) (   7) ???                            + 00000000 ???                            + 00000000
+libfmi.so                      + 00000648 (   2) (   0) (   0) (F6884220) (   2) ???                            + 00000000 ???                            + 00000000

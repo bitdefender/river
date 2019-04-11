@@ -387,7 +387,7 @@ ipclib/preinstall:
 ipclib/CMakeFiles/ipc.dir/all:
 	$(MAKE) -f ipclib/CMakeFiles/ipc.dir/build.make ipclib/CMakeFiles/ipc.dir/depend
 	$(MAKE) -f ipclib/CMakeFiles/ipc.dir/build.make ipclib/CMakeFiles/ipc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=30,31 "Built target ipc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=33 "Built target ipc"
 .PHONY : ipclib/CMakeFiles/ipc.dir/all
 
 # Include target in all.
@@ -397,7 +397,7 @@ all: ipclib/CMakeFiles/ipc.dir/all
 
 # Build rule for subdir invocation for target.
 ipclib/CMakeFiles/ipc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 ipclib/CMakeFiles/ipc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : ipclib/CMakeFiles/ipc.dir/rule
@@ -608,99 +608,34 @@ clean: SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/clean
 # Directory level rules for directory benchmarking-payload
 
 # Convenience name for "all" pass in the directory.
-benchmarking-payload/all: benchmarking-payload/jsmn-payload/all
 benchmarking-payload/all: benchmarking-payload/gumbo-payload/all
 benchmarking-payload/all: benchmarking-payload/http-parser-payload/all
 benchmarking-payload/all: benchmarking-payload/libjpeg-turbo-payload/all
 benchmarking-payload/all: benchmarking-payload/simple-address-payload/all
 benchmarking-payload/all: benchmarking-payload/simple-accumulator-payload/all
+benchmarking-payload/all: benchmarking-payload/fmi/all
 
 .PHONY : benchmarking-payload/all
 
 # Convenience name for "clean" pass in the directory.
-benchmarking-payload/clean: benchmarking-payload/jsmn-payload/clean
 benchmarking-payload/clean: benchmarking-payload/gumbo-payload/clean
 benchmarking-payload/clean: benchmarking-payload/http-parser-payload/clean
 benchmarking-payload/clean: benchmarking-payload/libjpeg-turbo-payload/clean
 benchmarking-payload/clean: benchmarking-payload/simple-address-payload/clean
 benchmarking-payload/clean: benchmarking-payload/simple-accumulator-payload/clean
+benchmarking-payload/clean: benchmarking-payload/fmi/clean
 
 .PHONY : benchmarking-payload/clean
 
 # Convenience name for "preinstall" pass in the directory.
-benchmarking-payload/preinstall: benchmarking-payload/jsmn-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/gumbo-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/http-parser-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/libjpeg-turbo-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/simple-address-payload/preinstall
 benchmarking-payload/preinstall: benchmarking-payload/simple-accumulator-payload/preinstall
+benchmarking-payload/preinstall: benchmarking-payload/fmi/preinstall
 
 .PHONY : benchmarking-payload/preinstall
-
-#=============================================================================
-# Directory level rules for directory benchmarking-payload/jsmn-payload
-
-# Convenience name for "all" pass in the directory.
-benchmarking-payload/jsmn-payload/all: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all
-
-.PHONY : benchmarking-payload/jsmn-payload/all
-
-# Convenience name for "clean" pass in the directory.
-benchmarking-payload/jsmn-payload/clean: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/clean
-
-.PHONY : benchmarking-payload/jsmn-payload/clean
-
-# Convenience name for "preinstall" pass in the directory.
-benchmarking-payload/jsmn-payload/preinstall: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
-
-.PHONY : benchmarking-payload/jsmn-payload/preinstall
-
-#=============================================================================
-# Target rules for target benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir
-
-# All Build rule for target.
-benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all:
-	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/depend
-	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=34,35,36 "Built target jsmn-parser"
-.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all
-
-# Include target in all.
-all: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all
-
-.PHONY : all
-
-# Build rule for subdir invocation for target.
-benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
-	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
-.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
-
-# Convenience name for target.
-jsmn-parser: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
-
-.PHONY : jsmn-parser
-
-# Pre-install relink rule for target.
-benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall:
-	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
-.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
-
-# Prepare target for install.
-preinstall: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
-
-.PHONY : preinstall
-
-# clean rule for target.
-benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/clean:
-	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/clean
-.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/clean
-
-# clean rule for target.
-clean: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/clean
-
-.PHONY : clean
 
 #=============================================================================
 # Directory level rules for directory benchmarking-payload/gumbo-payload
@@ -727,7 +662,7 @@ benchmarking-payload/gumbo-payload/preinstall: benchmarking-payload/gumbo-payloa
 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/all:
 	$(MAKE) -f benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build.make benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/depend
 	$(MAKE) -f benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build.make benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=25,26 "Built target gumbo-payload"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=27,28,29 "Built target gumbo-payload"
 .PHONY : benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/all
 
 # Include target in all.
@@ -737,7 +672,7 @@ all: benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/all
 
 # Build rule for subdir invocation for target.
 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/rule
@@ -792,7 +727,7 @@ benchmarking-payload/http-parser-payload/preinstall:
 benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/all:
 	$(MAKE) -f benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/build.make benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/depend
 	$(MAKE) -f benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/build.make benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=27,28,29 "Built target http-parser"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=30,31,32 "Built target http-parser"
 .PHONY : benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/all
 
 # Include target in all.
@@ -847,7 +782,7 @@ benchmarking-payload/libjpeg-turbo-payload/preinstall: benchmarking-payload/libj
 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/all:
 	$(MAKE) -f benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build.make benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/depend
 	$(MAKE) -f benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build.make benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=32,33 "Built target jpeg-turbo-payload"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=34,35,36 "Built target jpeg-turbo-payload"
 .PHONY : benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/all
 
 # Include target in all.
@@ -857,7 +792,7 @@ all: benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.di
 
 # Build rule for subdir invocation for target.
 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/rule
@@ -998,6 +933,61 @@ clean: benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumul
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory benchmarking-payload/fmi
+
+# Convenience name for "all" pass in the directory.
+benchmarking-payload/fmi/all: benchmarking-payload/fmi/CMakeFiles/fmi.dir/all
+
+.PHONY : benchmarking-payload/fmi/all
+
+# Convenience name for "clean" pass in the directory.
+benchmarking-payload/fmi/clean: benchmarking-payload/fmi/CMakeFiles/fmi.dir/clean
+
+.PHONY : benchmarking-payload/fmi/clean
+
+# Convenience name for "preinstall" pass in the directory.
+benchmarking-payload/fmi/preinstall:
+
+.PHONY : benchmarking-payload/fmi/preinstall
+
+#=============================================================================
+# Target rules for target benchmarking-payload/fmi/CMakeFiles/fmi.dir
+
+# All Build rule for target.
+benchmarking-payload/fmi/CMakeFiles/fmi.dir/all:
+	$(MAKE) -f benchmarking-payload/fmi/CMakeFiles/fmi.dir/build.make benchmarking-payload/fmi/CMakeFiles/fmi.dir/depend
+	$(MAKE) -f benchmarking-payload/fmi/CMakeFiles/fmi.dir/build.make benchmarking-payload/fmi/CMakeFiles/fmi.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=22,23,24 "Built target fmi"
+.PHONY : benchmarking-payload/fmi/CMakeFiles/fmi.dir/all
+
+# Include target in all.
+all: benchmarking-payload/fmi/CMakeFiles/fmi.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+benchmarking-payload/fmi/CMakeFiles/fmi.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
+	$(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/fmi/CMakeFiles/fmi.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
+.PHONY : benchmarking-payload/fmi/CMakeFiles/fmi.dir/rule
+
+# Convenience name for target.
+fmi: benchmarking-payload/fmi/CMakeFiles/fmi.dir/rule
+
+.PHONY : fmi
+
+# clean rule for target.
+benchmarking-payload/fmi/CMakeFiles/fmi.dir/clean:
+	$(MAKE) -f benchmarking-payload/fmi/CMakeFiles/fmi.dir/build.make benchmarking-payload/fmi/CMakeFiles/fmi.dir/clean
+.PHONY : benchmarking-payload/fmi/CMakeFiles/fmi.dir/clean
+
+# clean rule for target.
+clean: benchmarking-payload/fmi/CMakeFiles/fmi.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
 # Directory level rules for directory river.format/logger
 
 # Convenience name for "all" pass in the directory.
@@ -1077,7 +1067,7 @@ river.format/format.handler/preinstall:
 river.format/format.handler/CMakeFiles/format.handler.dir/all:
 	$(MAKE) -f river.format/format.handler/CMakeFiles/format.handler.dir/build.make river.format/format.handler/CMakeFiles/format.handler.dir/depend
 	$(MAKE) -f river.format/format.handler/CMakeFiles/format.handler.dir/build.make river.format/format.handler/CMakeFiles/format.handler.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=22,23,24 "Built target format.handler"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=25,26 "Built target format.handler"
 .PHONY : river.format/format.handler/CMakeFiles/format.handler.dir/all
 
 # Include target in all.
@@ -1087,7 +1077,7 @@ all: river.format/format.handler/CMakeFiles/format.handler.dir/all
 
 # Build rule for subdir invocation for target.
 river.format/format.handler/CMakeFiles/format.handler.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 river.format/format.handler/CMakeFiles/format.handler.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : river.format/format.handler/CMakeFiles/format.handler.dir/rule

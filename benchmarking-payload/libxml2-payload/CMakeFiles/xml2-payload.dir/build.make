@@ -43,91 +43,72 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ciprian/testtools/river
+CMAKE_SOURCE_DIR = /home/ciprian/testtools/river/benchmarking-payload
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ciprian/testtools/river
+CMAKE_BINARY_DIR = /home/ciprian/testtools/river/benchmarking-payload
 
 # Include any dependencies generated for this target.
-include benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/depend.make
+include libxml2-payload/CMakeFiles/xml2-payload.dir/depend.make
 
 # Include the progress variables for this target.
-include benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/progress.make
+include libxml2-payload/CMakeFiles/xml2-payload.dir/progress.make
 
 # Include the compile flags for this target's objects.
-include benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/flags.make
+include libxml2-payload/CMakeFiles/xml2-payload.dir/flags.make
 
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/flags.make
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o: benchmarking-payload/libxml2-payload/Payload.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o"
-	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/xml2-payload.dir/Payload.cpp.o -c /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/Payload.cpp
+libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o: libxml2-payload/CMakeFiles/xml2-payload.dir/flags.make
+libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o: libxml2-payload/Payload.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ciprian/testtools/river/benchmarking-payload/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o"
+	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/xml2-payload.dir/Payload.o -c /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/Payload.cpp
 
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/xml2-payload.dir/Payload.cpp.i"
-	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/Payload.cpp > CMakeFiles/xml2-payload.dir/Payload.cpp.i
+libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/xml2-payload.dir/Payload.i"
+	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/Payload.cpp > CMakeFiles/xml2-payload.dir/Payload.i
 
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/xml2-payload.dir/Payload.cpp.s"
-	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/Payload.cpp -o CMakeFiles/xml2-payload.dir/Payload.cpp.s
+libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/xml2-payload.dir/Payload.s"
+	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/Payload.cpp -o CMakeFiles/xml2-payload.dir/Payload.s
 
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o.requires:
+libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o.requires:
 
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o.requires
+.PHONY : libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o.requires
 
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o.provides: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o.requires
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o.provides.build
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o.provides
+libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o.provides: libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o.requires
+	$(MAKE) -f libxml2-payload/CMakeFiles/xml2-payload.dir/build.make libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o.provides.build
+.PHONY : libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o.provides
 
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o.provides.build: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o
+libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o.provides.build: libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o
 
 
 # Object files for target xml2-payload
 xml2__payload_OBJECTS = \
-"CMakeFiles/xml2-payload.dir/Payload.cpp.o"
+"CMakeFiles/xml2-payload.dir/Payload.o"
 
 # External object files for target xml2-payload
 xml2__payload_EXTERNAL_OBJECTS =
 
-benchmarking-payload/libxml2-payload/libxml2-payload.so: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o
-benchmarking-payload/libxml2-payload/libxml2-payload.so: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make
-benchmarking-payload/libxml2-payload/libxml2-payload.so: benchmarking-payload/libxml2-payload/build/.libs/libxml2.a
-benchmarking-payload/libxml2-payload/libxml2-payload.so: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libxml2-payload.so"
+libxml2-payload/libxml2-payload.so: libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o
+libxml2-payload/libxml2-payload.so: libxml2-payload/CMakeFiles/xml2-payload.dir/build.make
+libxml2-payload/libxml2-payload.so: libxml2-payload/build/.libs/libxml2.a
+libxml2-payload/libxml2-payload.so: libxml2-payload/CMakeFiles/xml2-payload.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/benchmarking-payload/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libxml2-payload.so"
 	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/xml2-payload.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build: benchmarking-payload/libxml2-payload/libxml2-payload.so
+libxml2-payload/CMakeFiles/xml2-payload.dir/build: libxml2-payload/libxml2-payload.so
 
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build
+.PHONY : libxml2-payload/CMakeFiles/xml2-payload.dir/build
 
-# Object files for target xml2-payload
-xml2__payload_OBJECTS = \
-"CMakeFiles/xml2-payload.dir/Payload.cpp.o"
+libxml2-payload/CMakeFiles/xml2-payload.dir/requires: libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.o.requires
 
-# External object files for target xml2-payload
-xml2__payload_EXTERNAL_OBJECTS =
+.PHONY : libxml2-payload/CMakeFiles/xml2-payload.dir/requires
 
-benchmarking-payload/libxml2-payload/CMakeFiles/CMakeRelink.dir/libxml2-payload.so: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o
-benchmarking-payload/libxml2-payload/CMakeFiles/CMakeRelink.dir/libxml2-payload.so: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make
-benchmarking-payload/libxml2-payload/CMakeFiles/CMakeRelink.dir/libxml2-payload.so: benchmarking-payload/libxml2-payload/build/.libs/libxml2.a
-benchmarking-payload/libxml2-payload/CMakeFiles/CMakeRelink.dir/libxml2-payload.so: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/relink.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX shared library CMakeFiles/CMakeRelink.dir/libxml2-payload.so"
-	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/xml2-payload.dir/relink.txt --verbose=$(VERBOSE)
-
-# Rule to relink during preinstall.
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall: benchmarking-payload/libxml2-payload/CMakeFiles/CMakeRelink.dir/libxml2-payload.so
-
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall
-
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/requires: benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o.requires
-
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/requires
-
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/clean:
+libxml2-payload/CMakeFiles/xml2-payload.dir/clean:
 	cd /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload && $(CMAKE_COMMAND) -P CMakeFiles/xml2-payload.dir/cmake_clean.cmake
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/clean
+.PHONY : libxml2-payload/CMakeFiles/xml2-payload.dir/clean
 
-benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/depend:
-	cd /home/ciprian/testtools/river && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ciprian/testtools/river /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload /home/ciprian/testtools/river /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/DependInfo.cmake --color=$(COLOR)
-.PHONY : benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/depend
+libxml2-payload/CMakeFiles/xml2-payload.dir/depend:
+	cd /home/ciprian/testtools/river/benchmarking-payload && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ciprian/testtools/river/benchmarking-payload /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload /home/ciprian/testtools/river/benchmarking-payload /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/DependInfo.cmake --color=$(COLOR)
+.PHONY : libxml2-payload/CMakeFiles/xml2-payload.dir/depend
 

@@ -1,1 +1,1 @@
-/usr/bin/c++  -fPIC -m32 -g -std=c++11 -D_PAYLOAD_EXPORTS  -O0  -shared -Wl,-soname,libxml2-payload.so -o libxml2-payload.so CMakeFiles/xml2-payload.dir/Payload.cpp.o build/.libs/libxml2.a 
+/usr/bin/c++  -fPIC -m32 -g -std=c++11 -D_PAYLOAD_EXPORTS  -shared -Wl,-soname,libxml2-payload.so -o libxml2-payload.so CMakeFiles/xml2-payload.dir/Payload.o build/.libs/libxml2.a 

@@ -44,3 +44,13 @@ Windows.h
 
 CommonCrossPlatform/CommonSpecifiers.h
 
+benchmarking-payload/gumbo-payload/gumbo-src/src/gumbo.h
+stdbool.h
+-
+stddef.h
+-
+tag_enum.h
+benchmarking-payload/gumbo-payload/gumbo-src/src/tag_enum.h
+
+benchmarking-payload/gumbo-payload/gumbo-src/src/tag_enum.h
+

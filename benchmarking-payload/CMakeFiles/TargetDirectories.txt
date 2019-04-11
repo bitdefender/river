@@ -18,13 +18,6 @@
 /home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/CMakeFiles/edit_cache.dir
 /home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/CMakeFiles/install/strip.dir
 /home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/CMakeFiles/install/local.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/install.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/list_install_components.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/rebuild_cache.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/install/strip.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/install/local.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/edit_cache.dir
 /home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/CMakeFiles/install.dir
 /home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/CMakeFiles/list_install_components.dir
 /home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/CMakeFiles/rebuild_cache.dir
@@ -53,3 +46,10 @@
 /home/ciprian/testtools/river/benchmarking-payload/simple-accumulator-payload/CMakeFiles/edit_cache.dir
 /home/ciprian/testtools/river/benchmarking-payload/simple-accumulator-payload/CMakeFiles/install/strip.dir
 /home/ciprian/testtools/river/benchmarking-payload/simple-accumulator-payload/CMakeFiles/install/local.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/install.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/list_install_components.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/rebuild_cache.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/install/local.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/install/strip.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/fmi.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/edit_cache.dir

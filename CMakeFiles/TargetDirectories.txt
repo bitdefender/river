@@ -67,12 +67,6 @@
 /home/ciprian/testtools/river/benchmarking-payload/CMakeFiles/edit_cache.dir
 /home/ciprian/testtools/river/benchmarking-payload/CMakeFiles/install.dir
 /home/ciprian/testtools/river/benchmarking-payload/CMakeFiles/list_install_components.dir
-/home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/install.dir
-/home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/list_install_components.dir
-/home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir
-/home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/install/local.dir
-/home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/rebuild_cache.dir
-/home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/edit_cache.dir
 /home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/CMakeFiles/install.dir
 /home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/CMakeFiles/list_install_components.dir
 /home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir
@@ -103,6 +97,12 @@
 /home/ciprian/testtools/river/benchmarking-payload/simple-accumulator-payload/CMakeFiles/edit_cache.dir
 /home/ciprian/testtools/river/benchmarking-payload/simple-accumulator-payload/CMakeFiles/install/local.dir
 /home/ciprian/testtools/river/benchmarking-payload/simple-accumulator-payload/CMakeFiles/rebuild_cache.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/install.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/list_install_components.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/install/local.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/rebuild_cache.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/fmi.dir
+/home/ciprian/testtools/river/benchmarking-payload/fmi/CMakeFiles/edit_cache.dir
 /home/ciprian/testtools/river/river.format/logger/CMakeFiles/install.dir
 /home/ciprian/testtools/river/river.format/logger/CMakeFiles/list_install_components.dir
 /home/ciprian/testtools/river/river.format/logger/CMakeFiles/logger.dir

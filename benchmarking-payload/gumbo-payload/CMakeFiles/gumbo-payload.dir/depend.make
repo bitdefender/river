@@ -4,4 +4,6 @@
 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/Payload.cpp.o: benchmarking-payload/gumbo-payload/Payload.cpp
 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/Payload.cpp.o: CommonCrossPlatform/Common.h
 benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/Payload.cpp.o: CommonCrossPlatform/CommonSpecifiers.h
+benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/Payload.cpp.o: benchmarking-payload/gumbo-payload/gumbo-src/src/gumbo.h
+benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/Payload.cpp.o: benchmarking-payload/gumbo-payload/gumbo-src/src/tag_enum.h
 

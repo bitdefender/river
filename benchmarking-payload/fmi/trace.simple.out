@@ -1,0 +1,62 @@
+## stdin
+moduleName                     + offset   cost   jmp    instr  esp        ninstr taken                          - offset   nottaken                       - offset  
+edi: 00000000 esi: 00000000 ebp: 00000000 esp: F6912228 ebx: 00000000 edx: 00000000 ecx: 00000000 eax: 00000000 eflags: 00000000 
+libfmi.so                      + 0000069F (   6) (   0) (   3) (F691221C) (   6) libfmi.so                      + 00000610 ???                            + 00000000
+jcc 0xECA15BC4 <= ZF[ECA15BC4]
+'''
+; test-0
+(set-info :status sat)
+(set-logic QF_IDL)
+(declare-fun jump_symbol () (_ BitVec 1))
+(declare-fun |s[0]| () (_ BitVec 8))
+(declare-fun |s[1]| () (_ BitVec 8))
+(declare-fun |s[2]| () (_ BitVec 8))
+(declare-fun |s[3]| () (_ BitVec 8))
+(assert
+ (let ((?x64 (concat ((_ extract 31 16) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|)) (concat |s[1]| ((_ extract 7 0) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|))))))
+ (let ((?x88 (concat |s[3]| ((_ extract 23 0) (concat ((_ extract 31 24) ?x64) (concat |s[2]| ((_ extract 15 0) ?x64)))))))
+ (let ((?x1235 (ite (= (bvsub ((_ extract 7 0) ?x88) (_ bv65 8)) (_ bv0 8)) (_ bv1 1) (_ bv0 1))))
+ (= ?x1235 jump_symbol)))))
+(check-sat)
+
+'''
+libfmi.so                      + 00000610 (   3) (   0) (   2) (F691221C) (   3) libfmi.so                      + 00000648 libfmi.so                      + 00000619
+jcc 0xECA15C14 <= ZF[ECA15C14]
+'''
+; test-1
+(set-info :status sat)
+(set-logic QF_IDL)
+(declare-fun jump_symbol () (_ BitVec 1))
+(declare-fun |s[0]| () (_ BitVec 8))
+(declare-fun |s[1]| () (_ BitVec 8))
+(declare-fun |s[2]| () (_ BitVec 8))
+(declare-fun |s[3]| () (_ BitVec 8))
+(assert
+ (let ((?x64 (concat ((_ extract 31 16) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|)) (concat |s[1]| ((_ extract 7 0) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|))))))
+ (let ((?x88 (concat |s[3]| ((_ extract 23 0) (concat ((_ extract 31 24) ?x64) (concat |s[2]| ((_ extract 15 0) ?x64)))))))
+ (let ((?x1245 (ite (= (bvsub ((_ extract 15 8) ?x88) (_ bv66 8)) (_ bv0 8)) (_ bv1 1) (_ bv0 1))))
+ (= ?x1245 jump_symbol)))))
+(check-sat)
+
+'''
+libfmi.so                      + 00000619 (   2) (   0) (   2) (F691221C) (   2) libfmi.so                      + 00000628 libfmi.so                      + 0000061F
+jcc 0xEC87B52C <= ZF[ECA15C3C]
+'''
+; test-2
+(set-info :status sat)
+(set-logic QF_IDL)
+(declare-fun jump_symbol () (_ BitVec 1))
+(declare-fun |s[0]| () (_ BitVec 8))
+(declare-fun |s[1]| () (_ BitVec 8))
+(declare-fun |s[2]| () (_ BitVec 8))
+(declare-fun |s[3]| () (_ BitVec 8))
+(assert
+ (let ((?x64 (concat ((_ extract 31 16) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|)) (concat |s[1]| ((_ extract 7 0) (concat ((_ extract 31 8) (_ bv1111638594 32)) |s[0]|))))))
+ (let ((?x88 (concat |s[3]| ((_ extract 23 0) (concat ((_ extract 31 24) ?x64) (concat |s[2]| ((_ extract 15 0) ?x64)))))))
+ (let ((?x1255 (bvneg (ite (= (bvsub ((_ extract 23 16) ?x88) (_ bv52 8)) (_ bv0 8)) (_ bv1 1) (_ bv0 1)))))
+ (= ?x1255 jump_symbol)))))
+(check-sat)
+
+'''
+libfmi.so                      + 00000628 (   3) (   0) (   2) (F691221C) (   3) libfmi.so                      + 0000061F libfmi.so                      + 00000638
+libfmi.so                      + 0000061F (   1) (   0) (   0) (F6912220) (   1) ???                            + 00000000 ???                            + 00000000

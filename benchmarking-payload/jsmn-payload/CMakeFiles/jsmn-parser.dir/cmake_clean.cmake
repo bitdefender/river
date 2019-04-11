@@ -1,9 +1,7 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/jsmn-parser.dir/Payload.cpp.o"
+  "CMakeFiles/jsmn-parser.dir/Payload.o"
   "libjsmn-parser.pdb"
   "libjsmn-parser.so"
-  "libjsmn-parser.pdb"
-  "CMakeFiles/CMakeRelink.dir/libjsmn-parser.so"
 )
 
 # Per-language clean rules from dependency scanning.

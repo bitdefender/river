@@ -48,3 +48,5 @@ Windows.h
 
 CommonCrossPlatform/CommonSpecifiers.h
 
+benchmarking-payload/libjpeg-turbo-payload/libjpeg-turbo-src/turbojpeg.h
+

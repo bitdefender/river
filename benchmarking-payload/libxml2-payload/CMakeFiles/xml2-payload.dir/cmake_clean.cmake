@@ -1,9 +1,7 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/xml2-payload.dir/Payload.cpp.o"
+  "CMakeFiles/xml2-payload.dir/Payload.o"
   "libxml2-payload.pdb"
   "libxml2-payload.so"
-  "libxml2-payload.pdb"
-  "CMakeFiles/CMakeRelink.dir/libxml2-payload.so"
 )
 
 # Per-language clean rules from dependency scanning.

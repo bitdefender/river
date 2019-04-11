@@ -4,4 +4,5 @@
 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/Payload.cpp.o: benchmarking-payload/libjpeg-turbo-payload/Payload.cpp
 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/Payload.cpp.o: CommonCrossPlatform/Common.h
 benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/Payload.cpp.o: CommonCrossPlatform/CommonSpecifiers.h
+benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/Payload.cpp.o: benchmarking-payload/libjpeg-turbo-payload/libjpeg-turbo-src/turbojpeg.h
 
