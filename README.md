@@ -53,7 +53,7 @@ $ ./bin/river.tracer --payload <target-library> [--annotated] [--z3] < <input_te
   b. Install C/C++ extentions (there are 2) C/C++ 0.21.0 and C++ Intellisense 0.2.2
   c. File->Open folder simpletracer
   d. set breakPoint in river.tracer/rivertracer.cpp
-  e. set the arguments in launch.json
+  e. set the arguments in launch.json (start debugger to create new launch.json file)
 	  "program": "${workspaceRoot}/river.tracer/river.tracer",
             "args": ["-p", "libfmi.so", "--annotated", "--z3"]
   f. Open libtracer/utils.cpp, and edit method ReadFromFile(...), comment the while loop inside and add the following lines:
