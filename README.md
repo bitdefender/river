@@ -36,7 +36,36 @@ $ ./bin/river.tracer --payload <target-library> [--annotated] [--z3] < <input_te
 
 **\<input_test_case\>** is corpus file that represents a test case.
 
+## Install Visual Studio Code
+```
+  a. sudo apt-get install curl
+	b. curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+	c. sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+	d. sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+	e. sudo apt update
+	f. sudo apt install code
+  if you want to remove vscode : sudo apt remove code && sudo apt autoremove
+```
+## Debug using Visual Studio Code
+``` 
+  a. Open vs-code as administrator: sudo code --user-data-dir="~/.vscode-root"
+  b. Install C/C++ extentions (there are 2) C/C++ 0.21.0 and C++ Intellisense 0.2.2
+  c. File->Open folder simpletracer
+  d. set breakPoint in river.tracer/rivertracer.cpp
+  e. set the arguments in launch.json
+	  "program": "${workspaceRoot}/river.tracer/river.tracer",
+            "args": ["-p", "libfmi.so", "--annotated", "--z3"]
+  f. Open libtracer/utils.cpp, and edit method ReadFromFile(...), comment the while loop inside and add the following lines:
+     strcpy((char*) buf, "BBBBBB");
+	    read = 8;
+  g. Compile your changes, go to ~/testtools/river then ~/testtools/simpletracer and type the following:
+   g.1 cmake CMakeLists
+   g.2 make
+   g.3 sudo make install
 
+  h. close vscode, and open it normally
+  i. start debugging
+``` 
 
 ## Experiments 
 If you want to see live how logs react to your changes:
