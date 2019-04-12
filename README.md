@@ -57,7 +57,7 @@ $ ./bin/river.tracer --payload <target-library> [--annotated] [--z3] < <input_te
             "args": ["-p", "libfmi.so", "--annotated", "--z3"]
   f. Open libtracer/utils.cpp, and edit method ReadFromFile(...), comment the while loop inside and add the following lines:
      strcpy((char*) buf, "BBBBBB");
-	    read = 8;
+	    read = 6;
   g. Compile your changes, go to ~/testtools/river then ~/testtools/simpletracer and type the following:
    g.1 cmake CMakeLists
    g.2 make
