@@ -16,7 +16,7 @@ void test_simple(const unsigned char *buf) {
 		magic = magic | ('A' + i);
 	}
 
-	//if (magic == buf[0]) {
+	if (magic == buf[0]) {
 		print_payload(buf);
-	//}
+	}
 }

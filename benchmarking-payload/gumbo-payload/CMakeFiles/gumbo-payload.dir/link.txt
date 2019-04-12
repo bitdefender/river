@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -m32 -g -std=c++11 -D_PAYLOAD_EXPORTS  -O0  -shared -Wl,-soname,libgumbo-payload.so -o libgumbo-payload.so CMakeFiles/gumbo-payload.dir/Payload.cpp.o gumbo-src/.libs/libgumbo.a 

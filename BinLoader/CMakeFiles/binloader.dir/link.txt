@@ -1,2 +1,0 @@
-/usr/bin/ar qc libbinloader.a  CMakeFiles/binloader.dir/Common.cpp.o CMakeFiles/binloader.dir/ELF.Loader.cpp.o CMakeFiles/binloader.dir/PE.Loader.cpp.o CMakeFiles/binloader.dir/Unified.Loader.cpp.o CMakeFiles/binloader.dir/LoaderAPI.cpp.o CMakeFiles/binloader.dir/Inproc.Mapper.cpp.o CMakeFiles/binloader.dir/Shm.Mapper.cpp.o CMakeFiles/binloader.dir/Inproc.Native.Importer.cpp.o
-/usr/bin/ranlib libbinloader.a

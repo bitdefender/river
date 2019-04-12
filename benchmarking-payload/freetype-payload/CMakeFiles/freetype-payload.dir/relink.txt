@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -m32 -g -std=c++11 -D_PAYLOAD_EXPORTS  -O0  -shared -Wl,-soname,libfreetype-payload.so -o CMakeFiles/CMakeRelink.dir/libfreetype-payload.so CMakeFiles/freetype-payload.dir/Payload.cpp.o freetype-src/objs/.libs/libfreetype.a -larchive -lpng16 

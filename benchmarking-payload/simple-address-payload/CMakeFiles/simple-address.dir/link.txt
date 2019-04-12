@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -m32 -g -D_PAYLOAD_EXPORTS  -O0  -shared -Wl,-soname,libsimple-address.so -o libsimple-address.so CMakeFiles/simple-address.dir/simple-address.c.o CMakeFiles/simple-address.dir/Payload.cpp.o 

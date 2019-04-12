@@ -1,7 +1,0 @@
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/install.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/list_install_components.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/rebuild_cache.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/install/strip.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/install/local.dir
-/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/CMakeFiles/edit_cache.dir

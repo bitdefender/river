@@ -1,2 +1,0 @@
-/usr/bin/ar qc libvirtualmemory.a  CMakeFiles/virtualmemory.dir/VirtualMem.cpp.o CMakeFiles/virtualmemory.dir/MemoryLayout.Linux.cpp.o CMakeFiles/virtualmemory.dir/__/libproc/libproc.cpp.o
-/usr/bin/ranlib libvirtualmemory.a
