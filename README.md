@@ -10,10 +10,18 @@
 
 ## Test tracer functionality
 
+Test simpletracer on the basic fmi experiments lib:
+```
+python -c 'print "B" * 100' | river.tracer -p libfmi.so
+``` 
 
 More details about the parameters:
+```
 $ ./bin/river.tracer --payload <target-library> [--annotated] [--z3] < <input_test_case>
 ```
+**--annotated** adds tainted index data in traces
+
+
 **--payload \<target-library\>** specifies the shared object that you want to trace. This must export the payload that is the tested sw entry point.
 
 **--annotated** adds tainted index data in traces
