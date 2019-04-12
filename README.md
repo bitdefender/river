@@ -4,12 +4,13 @@
 - Also, note that the process is described for all of our tools not just RIVER.
 
 ## Steps setup 
-1. Save the installRiverTools.sh file to home directory ("~/")
-2. Make sure you don't have anything important in folder "~/testtools"
+1. Save the installRiverTools.sh file to your home directory ("~/")
+2. Make sure you don't have anything important in folder "~/testtools" because that folder, if exists, will be removed.
 3. From command line run:  
 ```
 ~/installRiverTools.sh clean bashrc
 ```
+("clean" is for a clean build while bashrc is used to write the env variables in ~/.bashrc)
 
 ## Test tracer functionality
 
@@ -38,6 +39,8 @@ $ ./bin/river.tracer --payload <target-library> [--annotated] [--z3] < <input_te
 ## Experiments 
 If you want to see live how logs react to your changes:
 1. Go to /home/YOURUSERNAME/testtools/river/benchmark-payloads/fmi and change the code inside fmi.c 
-2. Run: ./test_build.sh to build and install the lib, then ./test_inference.sh to test on a given payload input 
-(edit the input payload inside the script if you want)
+2. Run: ./test_build.sh to build and install the lib
+3. Run ./test_inference.sh to test on a given payload input (edit the input payload inside the script if you want)
+  Notice the file libfmi_dissassembly.txt created for you to understand the ASM code used by River. You must follow only the one in test_simple function ("search for the string in that file).
+
 
