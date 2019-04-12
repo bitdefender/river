@@ -12,6 +12,8 @@
 ```
 ("clean" is for a clean build while bashrc is used to write the env variables in ~/.bashrc)
 
+Now you have to close the terminal and open it again (to activate the env variables) to see if it works !
+
 ## Test tracer functionality
 
 Test simpletracer on the basic fmi experiments lib:
