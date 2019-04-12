@@ -27,7 +27,7 @@ Release/
 node_modules/
 
 #source/libs dependencies
-#z3/
+z3/
 #simpletracer/
 #river.sdk/
 #smtlib2parser/
