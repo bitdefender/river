@@ -28,6 +28,7 @@ node_modules/
 
 #source/libs dependencies
 z3/
+river.format
 #simpletracer/
 #river.sdk/
 #smtlib2parser/
