@@ -51,7 +51,7 @@ $ ./bin/river.tracer --payload <target-library> [--annotated] [--z3] < <input_te
 ``` 
   a. Open vs-code as administrator: sudo code --user-data-dir="~/.vscode-root"
   b. Install C/C++ extentions (there are 2) C/C++ 0.21.0 and C++ Intellisense 0.2.2
-  c. File->Open folder ~/testtools
+  c. File->Open folder ~/testtools/simpletracer
   d. set breakPoint in river.tracer/rivertracer.cpp
   e. set the arguments in launch.json (start debugger to create new launch.json file)
     "version": "0.2.0",
@@ -60,7 +60,7 @@ $ ./bin/river.tracer --payload <target-library> [--annotated] [--z3] < <input_te
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/simpletracer/river.tracer/river.tracer",
+            "program": "${workspaceRoot}/river.tracer/river.tracer",
             "args": ["-p", "libfmi.so", "--annotated", "--z3"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
