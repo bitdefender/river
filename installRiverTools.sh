@@ -33,6 +33,8 @@ make
 sudo make install
 
 printf "${BLUE}Step 3: Setting Z3: ${NC}"
+cd ~/$TOOLSDIR/river/
+unzip z3.zip -d ./
 cd /usr/local/lib/
 sudo rm -f ./libz3.*
 sudo ln -s ~/$TOOLSDIR/river/z3/bin/libz3.* ./
@@ -67,6 +69,7 @@ echo 'export Z3_ROOT_PATH=~/'$TOOLSDIR'/river/z3' >> ~/.bashrc
 echo 'export Z3_ROOT=~/'$TOOLSDIR'/river/z3' >> ~/.bashrc 
 echo 'export LD_LIBRARY_PATH=/usr/local/lib/' >> ~/.bashrc 
 fi
+
 
 
 
