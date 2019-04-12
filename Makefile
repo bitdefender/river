@@ -276,117 +276,6 @@ symbolicenvironment/fast:
 .PHONY : symbolicenvironment/fast
 
 #=============================================================================
-# Target rules for targets named jsmn-parser
-
-# Build rule for target.
-jsmn-parser: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 jsmn-parser
-.PHONY : jsmn-parser
-
-# fast build rule for target.
-jsmn-parser/fast:
-	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build
-.PHONY : jsmn-parser/fast
-
-# Manual pre-install relink rule for target.
-jsmn-parser/preinstall:
-	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
-.PHONY : jsmn-parser/preinstall
-
-#=============================================================================
-# Target rules for targets named gumbo-payload
-
-# Build rule for target.
-gumbo-payload: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gumbo-payload
-.PHONY : gumbo-payload
-
-# fast build rule for target.
-gumbo-payload/fast:
-	$(MAKE) -f benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build.make benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build
-.PHONY : gumbo-payload/fast
-
-# Manual pre-install relink rule for target.
-gumbo-payload/preinstall:
-	$(MAKE) -f benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build.make benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/preinstall
-.PHONY : gumbo-payload/preinstall
-
-#=============================================================================
-# Target rules for targets named xml2-payload
-
-# Build rule for target.
-xml2-payload: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 xml2-payload
-.PHONY : xml2-payload
-
-# fast build rule for target.
-xml2-payload/fast:
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build
-.PHONY : xml2-payload/fast
-
-# Manual pre-install relink rule for target.
-xml2-payload/preinstall:
-	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall
-.PHONY : xml2-payload/preinstall
-
-#=============================================================================
-# Target rules for targets named http-parser
-
-# Build rule for target.
-http-parser: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 http-parser
-.PHONY : http-parser
-
-# fast build rule for target.
-http-parser/fast:
-	$(MAKE) -f benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/build.make benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/build
-.PHONY : http-parser/fast
-
-#=============================================================================
-# Target rules for targets named jpeg-turbo-payload
-
-# Build rule for target.
-jpeg-turbo-payload: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 jpeg-turbo-payload
-.PHONY : jpeg-turbo-payload
-
-# fast build rule for target.
-jpeg-turbo-payload/fast:
-	$(MAKE) -f benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build.make benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build
-.PHONY : jpeg-turbo-payload/fast
-
-# Manual pre-install relink rule for target.
-jpeg-turbo-payload/preinstall:
-	$(MAKE) -f benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/build.make benchmarking-payload/libjpeg-turbo-payload/CMakeFiles/jpeg-turbo-payload.dir/preinstall
-.PHONY : jpeg-turbo-payload/preinstall
-
-#=============================================================================
-# Target rules for targets named simple-address
-
-# Build rule for target.
-simple-address: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 simple-address
-.PHONY : simple-address
-
-# fast build rule for target.
-simple-address/fast:
-	$(MAKE) -f benchmarking-payload/simple-address-payload/CMakeFiles/simple-address.dir/build.make benchmarking-payload/simple-address-payload/CMakeFiles/simple-address.dir/build
-.PHONY : simple-address/fast
-
-#=============================================================================
-# Target rules for targets named simple-accumulator
-
-# Build rule for target.
-simple-accumulator: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 simple-accumulator
-.PHONY : simple-accumulator
-
-# fast build rule for target.
-simple-accumulator/fast:
-	$(MAKE) -f benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumulator.dir/build.make benchmarking-payload/simple-accumulator-payload/CMakeFiles/simple-accumulator.dir/build
-.PHONY : simple-accumulator/fast
-
-#=============================================================================
 # Target rules for targets named fmi
 
 # Build rule for target.
@@ -445,13 +334,6 @@ help:
 	@echo "... execution"
 	@echo "... loader"
 	@echo "... symbolicenvironment"
-	@echo "... jsmn-parser"
-	@echo "... gumbo-payload"
-	@echo "... xml2-payload"
-	@echo "... http-parser"
-	@echo "... jpeg-turbo-payload"
-	@echo "... simple-address"
-	@echo "... simple-accumulator"
 	@echo "... fmi"
 	@echo "... logger"
 	@echo "... format.handler"

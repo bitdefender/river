@@ -34,13 +34,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/cmake_install.cmake")
-  include("/home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/cmake_install.cmake")
-  include("/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/cmake_install.cmake")
-  include("/home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/cmake_install.cmake")
-  include("/home/ciprian/testtools/river/benchmarking-payload/libjpeg-turbo-payload/cmake_install.cmake")
-  include("/home/ciprian/testtools/river/benchmarking-payload/simple-address-payload/cmake_install.cmake")
-  include("/home/ciprian/testtools/river/benchmarking-payload/simple-accumulator-payload/cmake_install.cmake")
   include("/home/ciprian/testtools/river/benchmarking-payload/fmi/cmake_install.cmake")
 
 endif()
