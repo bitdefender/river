@@ -38,7 +38,7 @@ $ ./bin/river.tracer --payload <target-library> [--annotated] [--z3] < <input_te
 
 ## Experiments 
 If you want to see live how logs react to your changes:
-1. Go to /home/YOURUSERNAME/testtools/river/benchmark-payloads/fmi and change the code inside fmi.c 
+1. Go to ~/testtools/river/benchmark-payloads/fmi and change the code inside fmi.c 
 2. Run: ./test_build.sh to build and install the lib
 3. Run ./test_inference.sh to test on a given payload input (edit the input payload inside the script if you want)
   Notice the file libfmi_dissassembly.txt created for you to understand the ASM code used by River. You must follow only the one in test_simple function ("search for the string in that file).
