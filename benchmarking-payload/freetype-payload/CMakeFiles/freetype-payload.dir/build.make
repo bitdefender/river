@@ -43,72 +43,91 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ciprian/testtools/river/benchmarking-payload/freetype-payload
+CMAKE_SOURCE_DIR = /home/ciprian/testtools/river
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ciprian/testtools/river/benchmarking-payload/freetype-payload
+CMAKE_BINARY_DIR = /home/ciprian/testtools/river
 
 # Include any dependencies generated for this target.
-include CMakeFiles/freetype-payload.dir/depend.make
+include benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/depend.make
 
 # Include the progress variables for this target.
-include CMakeFiles/freetype-payload.dir/progress.make
+include benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/progress.make
 
 # Include the compile flags for this target's objects.
-include CMakeFiles/freetype-payload.dir/flags.make
+include benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/flags.make
 
-CMakeFiles/freetype-payload.dir/Payload.o: CMakeFiles/freetype-payload.dir/flags.make
-CMakeFiles/freetype-payload.dir/Payload.o: Payload.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ciprian/testtools/river/benchmarking-payload/freetype-payload/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/freetype-payload.dir/Payload.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/freetype-payload.dir/Payload.o -c /home/ciprian/testtools/river/benchmarking-payload/freetype-payload/Payload.cpp
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/flags.make
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o: benchmarking-payload/freetype-payload/Payload.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o"
+	cd /home/ciprian/testtools/river/benchmarking-payload/freetype-payload && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/freetype-payload.dir/Payload.cpp.o -c /home/ciprian/testtools/river/benchmarking-payload/freetype-payload/Payload.cpp
 
-CMakeFiles/freetype-payload.dir/Payload.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/freetype-payload.dir/Payload.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ciprian/testtools/river/benchmarking-payload/freetype-payload/Payload.cpp > CMakeFiles/freetype-payload.dir/Payload.i
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/freetype-payload.dir/Payload.cpp.i"
+	cd /home/ciprian/testtools/river/benchmarking-payload/freetype-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ciprian/testtools/river/benchmarking-payload/freetype-payload/Payload.cpp > CMakeFiles/freetype-payload.dir/Payload.cpp.i
 
-CMakeFiles/freetype-payload.dir/Payload.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/freetype-payload.dir/Payload.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ciprian/testtools/river/benchmarking-payload/freetype-payload/Payload.cpp -o CMakeFiles/freetype-payload.dir/Payload.s
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/freetype-payload.dir/Payload.cpp.s"
+	cd /home/ciprian/testtools/river/benchmarking-payload/freetype-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ciprian/testtools/river/benchmarking-payload/freetype-payload/Payload.cpp -o CMakeFiles/freetype-payload.dir/Payload.cpp.s
 
-CMakeFiles/freetype-payload.dir/Payload.o.requires:
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o.requires:
 
-.PHONY : CMakeFiles/freetype-payload.dir/Payload.o.requires
+.PHONY : benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o.requires
 
-CMakeFiles/freetype-payload.dir/Payload.o.provides: CMakeFiles/freetype-payload.dir/Payload.o.requires
-	$(MAKE) -f CMakeFiles/freetype-payload.dir/build.make CMakeFiles/freetype-payload.dir/Payload.o.provides.build
-.PHONY : CMakeFiles/freetype-payload.dir/Payload.o.provides
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o.provides: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o.requires
+	$(MAKE) -f benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/build.make benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o.provides.build
+.PHONY : benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o.provides
 
-CMakeFiles/freetype-payload.dir/Payload.o.provides.build: CMakeFiles/freetype-payload.dir/Payload.o
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o.provides.build: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o
 
 
 # Object files for target freetype-payload
 freetype__payload_OBJECTS = \
-"CMakeFiles/freetype-payload.dir/Payload.o"
+"CMakeFiles/freetype-payload.dir/Payload.cpp.o"
 
 # External object files for target freetype-payload
 freetype__payload_EXTERNAL_OBJECTS =
 
-libfreetype-payload.so: CMakeFiles/freetype-payload.dir/Payload.o
-libfreetype-payload.so: CMakeFiles/freetype-payload.dir/build.make
-libfreetype-payload.so: freetype-src/objs/.libs/libfreetype.a
-libfreetype-payload.so: CMakeFiles/freetype-payload.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/benchmarking-payload/freetype-payload/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libfreetype-payload.so"
-	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/freetype-payload.dir/link.txt --verbose=$(VERBOSE)
+benchmarking-payload/freetype-payload/libfreetype-payload.so: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o
+benchmarking-payload/freetype-payload/libfreetype-payload.so: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/build.make
+benchmarking-payload/freetype-payload/libfreetype-payload.so: benchmarking-payload/freetype-payload/freetype-src/objs/.libs/libfreetype.a
+benchmarking-payload/freetype-payload/libfreetype-payload.so: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libfreetype-payload.so"
+	cd /home/ciprian/testtools/river/benchmarking-payload/freetype-payload && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/freetype-payload.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-CMakeFiles/freetype-payload.dir/build: libfreetype-payload.so
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/build: benchmarking-payload/freetype-payload/libfreetype-payload.so
 
-.PHONY : CMakeFiles/freetype-payload.dir/build
+.PHONY : benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/build
 
-CMakeFiles/freetype-payload.dir/requires: CMakeFiles/freetype-payload.dir/Payload.o.requires
+# Object files for target freetype-payload
+freetype__payload_OBJECTS = \
+"CMakeFiles/freetype-payload.dir/Payload.cpp.o"
 
-.PHONY : CMakeFiles/freetype-payload.dir/requires
+# External object files for target freetype-payload
+freetype__payload_EXTERNAL_OBJECTS =
 
-CMakeFiles/freetype-payload.dir/clean:
-	$(CMAKE_COMMAND) -P CMakeFiles/freetype-payload.dir/cmake_clean.cmake
-.PHONY : CMakeFiles/freetype-payload.dir/clean
+benchmarking-payload/freetype-payload/CMakeFiles/CMakeRelink.dir/libfreetype-payload.so: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o
+benchmarking-payload/freetype-payload/CMakeFiles/CMakeRelink.dir/libfreetype-payload.so: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/build.make
+benchmarking-payload/freetype-payload/CMakeFiles/CMakeRelink.dir/libfreetype-payload.so: benchmarking-payload/freetype-payload/freetype-src/objs/.libs/libfreetype.a
+benchmarking-payload/freetype-payload/CMakeFiles/CMakeRelink.dir/libfreetype-payload.so: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/relink.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX shared library CMakeFiles/CMakeRelink.dir/libfreetype-payload.so"
+	cd /home/ciprian/testtools/river/benchmarking-payload/freetype-payload && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/freetype-payload.dir/relink.txt --verbose=$(VERBOSE)
 
-CMakeFiles/freetype-payload.dir/depend:
-	cd /home/ciprian/testtools/river/benchmarking-payload/freetype-payload && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ciprian/testtools/river/benchmarking-payload/freetype-payload /home/ciprian/testtools/river/benchmarking-payload/freetype-payload /home/ciprian/testtools/river/benchmarking-payload/freetype-payload /home/ciprian/testtools/river/benchmarking-payload/freetype-payload /home/ciprian/testtools/river/benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/DependInfo.cmake --color=$(COLOR)
-.PHONY : CMakeFiles/freetype-payload.dir/depend
+# Rule to relink during preinstall.
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/preinstall: benchmarking-payload/freetype-payload/CMakeFiles/CMakeRelink.dir/libfreetype-payload.so
+
+.PHONY : benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/preinstall
+
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/requires: benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/Payload.cpp.o.requires
+
+.PHONY : benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/requires
+
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/clean:
+	cd /home/ciprian/testtools/river/benchmarking-payload/freetype-payload && $(CMAKE_COMMAND) -P CMakeFiles/freetype-payload.dir/cmake_clean.cmake
+.PHONY : benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/clean
+
+benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/depend:
+	cd /home/ciprian/testtools/river && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ciprian/testtools/river /home/ciprian/testtools/river/benchmarking-payload/freetype-payload /home/ciprian/testtools/river /home/ciprian/testtools/river/benchmarking-payload/freetype-payload /home/ciprian/testtools/river/benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/DependInfo.cmake --color=$(COLOR)
+.PHONY : benchmarking-payload/freetype-payload/CMakeFiles/freetype-payload.dir/depend
 

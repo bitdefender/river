@@ -51,10 +51,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ciprian/testtools/river/benchmarking-payload
+CMAKE_SOURCE_DIR = /home/ciprian/testtools/river
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ciprian/testtools/river/benchmarking-payload
+CMAKE_BINARY_DIR = /home/ciprian/testtools/river
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -81,17 +81,6 @@ list_install_components/fast: list_install_components
 
 .PHONY : list_install_components/fast
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
@@ -103,16 +92,16 @@ install/local/fast: install/local
 
 .PHONY : install/local/fast
 
-# Special rule for the target install/strip
-install/strip: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
 
-# Special rule for the target install/strip
-install/strip/fast: install/strip
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
 
-.PHONY : install/strip/fast
+.PHONY : rebuild_cache/fast
 
 # Special rule for the target edit_cache
 edit_cache:
@@ -127,14 +116,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/benchmarking-payload/CMakeFiles /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/progress.marks
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f CMakeFiles/Makefile2 jsmn-payload/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/benchmarking-payload/CMakeFiles 0
+	cd /home/ciprian/testtools/river && $(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/progress.marks
+	cd /home/ciprian/testtools/river && $(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/jsmn-payload/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ciprian/testtools/river/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f CMakeFiles/Makefile2 jsmn-payload/clean
+	cd /home/ciprian/testtools/river && $(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/jsmn-payload/clean
 .PHONY : clean
 
 # The main clean target
@@ -144,48 +133,65 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f CMakeFiles/Makefile2 jsmn-payload/preinstall
+	cd /home/ciprian/testtools/river && $(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/jsmn-payload/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f CMakeFiles/Makefile2 jsmn-payload/preinstall
+	cd /home/ciprian/testtools/river && $(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/jsmn-payload/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/ciprian/testtools/river && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
-jsmn-payload/CMakeFiles/jsmn-parser.dir/rule:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f CMakeFiles/Makefile2 jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
-.PHONY : jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule:
+	cd /home/ciprian/testtools/river && $(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
+.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
 
 # Convenience name for target.
-jsmn-parser: jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
+jsmn-parser: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/rule
 
 .PHONY : jsmn-parser
 
 # fast build rule for target.
 jsmn-parser/fast:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make jsmn-payload/CMakeFiles/jsmn-parser.dir/build
+	cd /home/ciprian/testtools/river && $(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build
 .PHONY : jsmn-parser/fast
 
-# target to build an object file
-Payload.o:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o
+# Manual pre-install relink rule for target.
+jsmn-parser/preinstall:
+	cd /home/ciprian/testtools/river && $(MAKE) -f CMakeFiles/Makefile2 benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
+.PHONY : jsmn-parser/preinstall
+
+Payload.o: Payload.cpp.o
+
 .PHONY : Payload.o
 
-# target to preprocess a source file
-Payload.i:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.i
+# target to build an object file
+Payload.cpp.o:
+	cd /home/ciprian/testtools/river && $(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o
+.PHONY : Payload.cpp.o
+
+Payload.i: Payload.cpp.i
+
 .PHONY : Payload.i
 
-# target to generate assembly for a file
-Payload.s:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(MAKE) -f jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.s
+# target to preprocess a source file
+Payload.cpp.i:
+	cd /home/ciprian/testtools/river && $(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.i
+.PHONY : Payload.cpp.i
+
+Payload.s: Payload.cpp.s
+
 .PHONY : Payload.s
+
+# target to generate assembly for a file
+Payload.cpp.s:
+	cd /home/ciprian/testtools/river && $(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.s
+.PHONY : Payload.cpp.s
 
 # Help Target
 help:
@@ -195,10 +201,9 @@ help:
 	@echo "... depend"
 	@echo "... install"
 	@echo "... list_install_components"
-	@echo "... rebuild_cache"
 	@echo "... jsmn-parser"
 	@echo "... install/local"
-	@echo "... install/strip"
+	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... Payload.o"
 	@echo "... Payload.i"
@@ -214,6 +219,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/ciprian/testtools/river && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

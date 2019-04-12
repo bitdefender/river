@@ -276,6 +276,24 @@ symbolicenvironment/fast:
 .PHONY : symbolicenvironment/fast
 
 #=============================================================================
+# Target rules for targets named jsmn-parser
+
+# Build rule for target.
+jsmn-parser: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 jsmn-parser
+.PHONY : jsmn-parser
+
+# fast build rule for target.
+jsmn-parser/fast:
+	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build
+.PHONY : jsmn-parser/fast
+
+# Manual pre-install relink rule for target.
+jsmn-parser/preinstall:
+	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
+.PHONY : jsmn-parser/preinstall
+
+#=============================================================================
 # Target rules for targets named gumbo-payload
 
 # Build rule for target.
@@ -292,6 +310,24 @@ gumbo-payload/fast:
 gumbo-payload/preinstall:
 	$(MAKE) -f benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/build.make benchmarking-payload/gumbo-payload/CMakeFiles/gumbo-payload.dir/preinstall
 .PHONY : gumbo-payload/preinstall
+
+#=============================================================================
+# Target rules for targets named xml2-payload
+
+# Build rule for target.
+xml2-payload: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 xml2-payload
+.PHONY : xml2-payload
+
+# fast build rule for target.
+xml2-payload/fast:
+	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build
+.PHONY : xml2-payload/fast
+
+# Manual pre-install relink rule for target.
+xml2-payload/preinstall:
+	$(MAKE) -f benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/build.make benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/preinstall
+.PHONY : xml2-payload/preinstall
 
 #=============================================================================
 # Target rules for targets named http-parser
@@ -409,7 +445,9 @@ help:
 	@echo "... execution"
 	@echo "... loader"
 	@echo "... symbolicenvironment"
+	@echo "... jsmn-parser"
 	@echo "... gumbo-payload"
+	@echo "... xml2-payload"
 	@echo "... http-parser"
 	@echo "... jpeg-turbo-payload"
 	@echo "... simple-address"

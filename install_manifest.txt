@@ -20,11 +20,6 @@
 /usr/local/include/SymbolicEnvironment/Environment.h
 /usr/local/include/SymbolicEnvironment/LargeStack.h
 /usr/local/include/SymbolicEnvironment/SymbolicEnvironment.h
-/usr/local/lib/libgumbo-payload.so
-/usr/local/lib/libhttp-parser.so
-/usr/local/lib/libjpeg-turbo-payload.so
-/usr/local/lib/libsimple-address.so
-/usr/local/lib/libsimple-accumulator.so
 /usr/local/lib/libfmi.so
 /usr/local/lib/liblogger.a
 /usr/local/lib/libformat.handler.a

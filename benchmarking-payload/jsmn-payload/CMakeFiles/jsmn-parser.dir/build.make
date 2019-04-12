@@ -46,72 +46,91 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ciprian/testtools/river/benchmarking-payload
+CMAKE_SOURCE_DIR = /home/ciprian/testtools/river
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ciprian/testtools/river/benchmarking-payload
+CMAKE_BINARY_DIR = /home/ciprian/testtools/river
 
 # Include any dependencies generated for this target.
-include jsmn-payload/CMakeFiles/jsmn-parser.dir/depend.make
+include benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/depend.make
 
 # Include the progress variables for this target.
-include jsmn-payload/CMakeFiles/jsmn-parser.dir/progress.make
+include benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/progress.make
 
 # Include the compile flags for this target's objects.
-include jsmn-payload/CMakeFiles/jsmn-parser.dir/flags.make
+include benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/flags.make
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o: jsmn-payload/CMakeFiles/jsmn-parser.dir/flags.make
-jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o: jsmn-payload/Payload.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ciprian/testtools/river/benchmarking-payload/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o"
-	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/jsmn-parser.dir/Payload.o -c /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/Payload.cpp
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/flags.make
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o: benchmarking-payload/jsmn-payload/Payload.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o"
+	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/jsmn-parser.dir/Payload.cpp.o -c /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/Payload.cpp
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/jsmn-parser.dir/Payload.i"
-	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/Payload.cpp > CMakeFiles/jsmn-parser.dir/Payload.i
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/jsmn-parser.dir/Payload.cpp.i"
+	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/Payload.cpp > CMakeFiles/jsmn-parser.dir/Payload.cpp.i
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/jsmn-parser.dir/Payload.s"
-	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/Payload.cpp -o CMakeFiles/jsmn-parser.dir/Payload.s
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/jsmn-parser.dir/Payload.cpp.s"
+	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/Payload.cpp -o CMakeFiles/jsmn-parser.dir/Payload.cpp.s
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o.requires:
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o.requires:
 
-.PHONY : jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o.requires
+.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o.requires
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o.provides: jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o.requires
-	$(MAKE) -f jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o.provides.build
-.PHONY : jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o.provides
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o.provides: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o.requires
+	$(MAKE) -f benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o.provides.build
+.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o.provides
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o.provides.build: jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o.provides.build: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o
 
 
 # Object files for target jsmn-parser
 jsmn__parser_OBJECTS = \
-"CMakeFiles/jsmn-parser.dir/Payload.o"
+"CMakeFiles/jsmn-parser.dir/Payload.cpp.o"
 
 # External object files for target jsmn-parser
 jsmn__parser_EXTERNAL_OBJECTS =
 
-jsmn-payload/libjsmn-parser.so: jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o
-jsmn-payload/libjsmn-parser.so: jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make
-jsmn-payload/libjsmn-parser.so: jsmn-payload/libjsmn-src/libjsmn.a
-jsmn-payload/libjsmn-parser.so: jsmn-payload/CMakeFiles/jsmn-parser.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/benchmarking-payload/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libjsmn-parser.so"
+benchmarking-payload/jsmn-payload/libjsmn-parser.so: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o
+benchmarking-payload/jsmn-payload/libjsmn-parser.so: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make
+benchmarking-payload/jsmn-payload/libjsmn-parser.so: benchmarking-payload/jsmn-payload/libjsmn-src/libjsmn.a
+benchmarking-payload/jsmn-payload/libjsmn-parser.so: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libjsmn-parser.so"
 	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/jsmn-parser.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-jsmn-payload/CMakeFiles/jsmn-parser.dir/build: jsmn-payload/libjsmn-parser.so
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build: benchmarking-payload/jsmn-payload/libjsmn-parser.so
 
-.PHONY : jsmn-payload/CMakeFiles/jsmn-parser.dir/build
+.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/requires: jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.o.requires
+# Object files for target jsmn-parser
+jsmn__parser_OBJECTS = \
+"CMakeFiles/jsmn-parser.dir/Payload.cpp.o"
 
-.PHONY : jsmn-payload/CMakeFiles/jsmn-parser.dir/requires
+# External object files for target jsmn-parser
+jsmn__parser_EXTERNAL_OBJECTS =
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/clean:
+benchmarking-payload/jsmn-payload/CMakeFiles/CMakeRelink.dir/libjsmn-parser.so: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o
+benchmarking-payload/jsmn-payload/CMakeFiles/CMakeRelink.dir/libjsmn-parser.so: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/build.make
+benchmarking-payload/jsmn-payload/CMakeFiles/CMakeRelink.dir/libjsmn-parser.so: benchmarking-payload/jsmn-payload/libjsmn-src/libjsmn.a
+benchmarking-payload/jsmn-payload/CMakeFiles/CMakeRelink.dir/libjsmn-parser.so: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/relink.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ciprian/testtools/river/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX shared library CMakeFiles/CMakeRelink.dir/libjsmn-parser.so"
+	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/jsmn-parser.dir/relink.txt --verbose=$(VERBOSE)
+
+# Rule to relink during preinstall.
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall: benchmarking-payload/jsmn-payload/CMakeFiles/CMakeRelink.dir/libjsmn-parser.so
+
+.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/preinstall
+
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/requires: benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/Payload.cpp.o.requires
+
+.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/requires
+
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/clean:
 	cd /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload && $(CMAKE_COMMAND) -P CMakeFiles/jsmn-parser.dir/cmake_clean.cmake
-.PHONY : jsmn-payload/CMakeFiles/jsmn-parser.dir/clean
+.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/clean
 
-jsmn-payload/CMakeFiles/jsmn-parser.dir/depend:
-	cd /home/ciprian/testtools/river/benchmarking-payload && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ciprian/testtools/river/benchmarking-payload /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload /home/ciprian/testtools/river/benchmarking-payload /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/DependInfo.cmake --color=$(COLOR)
-.PHONY : jsmn-payload/CMakeFiles/jsmn-parser.dir/depend
+benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/depend:
+	cd /home/ciprian/testtools/river && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ciprian/testtools/river /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload /home/ciprian/testtools/river /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload /home/ciprian/testtools/river/benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/DependInfo.cmake --color=$(COLOR)
+.PHONY : benchmarking-payload/jsmn-payload/CMakeFiles/jsmn-parser.dir/depend
 

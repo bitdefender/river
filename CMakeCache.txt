@@ -172,6 +172,9 @@ fmi_LIB_DEPENDS:STATIC=
 format.handler_LIB_DEPENDS:STATIC=
 
 //Dependencies for the target
+freetype-payload_LIB_DEPENDS:STATIC=general;/home/ciprian/testtools/river/benchmarking-payload/freetype-payload/freetype-src/objs/.libs/libfreetype.a;general;archive;general;png16;
+
+//Dependencies for the target
 gumbo-payload_LIB_DEPENDS:STATIC=general;/home/ciprian/testtools/river/benchmarking-payload/gumbo-payload/gumbo-src/.libs/libgumbo.a;
 
 //Dependencies for target
