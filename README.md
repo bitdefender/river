@@ -2,6 +2,7 @@
 
 - The instalation process is for Ubuntu 16.04.5 LTS xenial version
 - Also, note that the process is described for all of our tools not just RIVER.
+- You can download Ubuntu 16.04.5 LTS from here (take 64-bit) : http://releases.ubuntu.com/16.04/
 
 ## Steps setup 
 1. Save the installRiverTools.sh file to your home directory ("~/")
