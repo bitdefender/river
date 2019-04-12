@@ -6,7 +6,10 @@
 ## Steps setup 
 1. Save the installRiverTools.sh file to home directory ("~/")
 2. Make sure you don't have anything important in folder "~/testtools"
-3. run ~/installRiverTools.sh from command line
+3. From command line run:  
+```
+~/installRiverTools.sh clean bashrc
+```
 
 ## Test tracer functionality
 
