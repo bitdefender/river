@@ -1,0 +1,5 @@
+cd ~/testtools/simpletracer
+make
+
+
+
