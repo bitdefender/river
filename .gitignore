@@ -34,3 +34,23 @@ river.sdk/
 smtlib2parser/
 yices2/
 
+#Cmake
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+cmake_install.cmake
+Makefile
+BinLoader/Makefile
+Execution/Makefile
+SymbolicEnvironment/Makefile
+VirtualMemory/Makefile
+benchmarking-payload/fmi/Makefile
+ipclib/Makefile
+loader/Makefile
+revtracer-wrapper/Makefile
+revtracer/Makefile
+wrapper.setup/Makefile
+
+
+
