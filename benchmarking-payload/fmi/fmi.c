@@ -24,8 +24,17 @@ void test_simple(const unsigned char *buf)
         }
     }
 
+    if (buf[0]=='A' && buf[1] == 'B' && buf[2] < 'D')
+    {
+	    for (int i = 0; i < buf[0]; i++)
+	    {
+	      r += i;
+	    }
+    }
+
     //printf("%d", r);
 }
+
 
 void test_simple_2(const unsigned char *buf) 
 {

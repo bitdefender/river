@@ -4,18 +4,18 @@
 
 Disassembly of section .init:
 
-00000490 <_init>:
- 490:	53                   	push   %ebx
- 491:	83 ec 08             	sub    $0x8,%esp
- 494:	e8 47 00 00 00       	call   4e0 <__x86.get_pc_thunk.bx>
- 499:	81 c3 67 1b 00 00    	add    $0x1b67,%ebx
- 49f:	8b 83 f4 ff ff ff    	mov    -0xc(%ebx),%eax
- 4a5:	85 c0                	test   %eax,%eax
- 4a7:	74 05                	je     4ae <_init+0x1e>
- 4a9:	e8 2a 00 00 00       	call   4d8 <_init+0x48>
- 4ae:	83 c4 08             	add    $0x8,%esp
- 4b1:	5b                   	pop    %ebx
- 4b2:	c3                   	ret    
+00000498 <_init>:
+ 498:	53                   	push   %ebx
+ 499:	83 ec 08             	sub    $0x8,%esp
+ 49c:	e8 3f 00 00 00       	call   4e0 <__x86.get_pc_thunk.bx>
+ 4a1:	81 c3 5f 1b 00 00    	add    $0x1b5f,%ebx
+ 4a7:	8b 83 f4 ff ff ff    	mov    -0xc(%ebx),%eax
+ 4ad:	85 c0                	test   %eax,%eax
+ 4af:	74 05                	je     4b6 <_init+0x1e>
+ 4b1:	e8 22 00 00 00       	call   4d8 <_init+0x40>
+ 4b6:	83 c4 08             	add    $0x8,%esp
+ 4b9:	5b                   	pop    %ebx
+ 4ba:	c3                   	ret    
 
 Disassembly of section .plt:
 
@@ -111,7 +111,7 @@ Disassembly of section .text:
  5a3:	74 11                	je     5b6 <__do_global_dtors_aux+0x36>
  5a5:	83 ec 0c             	sub    $0xc,%esp
  5a8:	ff b3 0c 00 00 00    	pushl  0xc(%ebx)
- 5ae:	e8 1d ff ff ff       	call   4d0 <_init+0x40>
+ 5ae:	e8 1d ff ff ff       	call   4d0 <_init+0x38>
  5b3:	83 c4 10             	add    $0x10,%esp
  5b6:	e8 35 ff ff ff       	call   4f0 <deregister_tm_clones>
  5bb:	c6 83 20 00 00 00 01 	movb   $0x1,0x20(%ebx)
@@ -147,76 +147,109 @@ Disassembly of section .text:
  60f:	c3                   	ret    
 
 00000610 <test_simple>:
- 610:	8b 44 24 04          	mov    0x4(%esp),%eax
- 614:	80 38 41             	cmpb   $0x41,(%eax)
- 617:	74 2f                	je     648 <test_simple+0x38>
- 619:	80 78 01 42          	cmpb   $0x42,0x1(%eax)
- 61d:	74 09                	je     628 <test_simple+0x18>
- 61f:	f3 c3                	repz ret 
- 621:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
+ 610:	53                   	push   %ebx
+ 611:	8b 44 24 08          	mov    0x8(%esp),%eax
+ 615:	80 38 41             	cmpb   $0x41,(%eax)
+ 618:	74 4e                	je     668 <test_simple+0x58>
+ 61a:	80 78 01 42          	cmpb   $0x42,0x1(%eax)
+ 61e:	74 08                	je     628 <test_simple+0x18>
+ 620:	5b                   	pop    %ebx
+ 621:	c3                   	ret    
+ 622:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
  628:	c7 05 00 00 00 00 02 	movl   $0x2,0x0
  62f:	00 00 00 
  632:	80 78 02 34          	cmpb   $0x34,0x2(%eax)
- 636:	75 e7                	jne    61f <test_simple+0xf>
- 638:	c7 05 00 00 00 00 04 	movl   $0x4,0x0
- 63f:	00 00 00 
- 642:	c3                   	ret    
- 643:	90                   	nop
- 644:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
- 648:	c7 05 00 00 00 00 01 	movl   $0x1,0x0
- 64f:	00 00 00 
- 652:	80 78 03 43          	cmpb   $0x43,0x3(%eax)
- 656:	75 c7                	jne    61f <test_simple+0xf>
- 658:	c7 05 00 00 00 00 03 	movl   $0x3,0x0
- 65f:	00 00 00 
- 662:	c3                   	ret    
- 663:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
- 669:	8d bc 27 00 00 00 00 	lea    0x0(%edi,%eiz,1),%edi
+ 636:	b9 02 00 00 00       	mov    $0x2,%ecx
+ 63b:	74 53                	je     690 <test_simple+0x80>
+ 63d:	80 38 41             	cmpb   $0x41,(%eax)
+ 640:	75 de                	jne    620 <test_simple+0x10>
+ 642:	80 78 01 42          	cmpb   $0x42,0x1(%eax)
+ 646:	75 d8                	jne    620 <test_simple+0x10>
+ 648:	80 78 02 43          	cmpb   $0x43,0x2(%eax)
+ 64c:	77 d2                	ja     620 <test_simple+0x10>
+ 64e:	31 d2                	xor    %edx,%edx
+ 650:	01 d1                	add    %edx,%ecx
+ 652:	83 c2 01             	add    $0x1,%edx
+ 655:	89 0d 00 00 00 00    	mov    %ecx,0x0
+ 65b:	0f b6 18             	movzbl (%eax),%ebx
+ 65e:	39 d3                	cmp    %edx,%ebx
+ 660:	7f ee                	jg     650 <test_simple+0x40>
+ 662:	5b                   	pop    %ebx
+ 663:	c3                   	ret    
+ 664:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
+ 668:	c7 05 00 00 00 00 01 	movl   $0x1,0x0
+ 66f:	00 00 00 
+ 672:	80 78 03 43          	cmpb   $0x43,0x3(%eax)
+ 676:	b9 01 00 00 00       	mov    $0x1,%ecx
+ 67b:	75 c0                	jne    63d <test_simple+0x2d>
+ 67d:	c7 05 00 00 00 00 03 	movl   $0x3,0x0
+ 684:	00 00 00 
+ 687:	b9 03 00 00 00       	mov    $0x3,%ecx
+ 68c:	eb af                	jmp    63d <test_simple+0x2d>
+ 68e:	66 90                	xchg   %ax,%ax
+ 690:	c7 05 00 00 00 00 04 	movl   $0x4,0x0
+ 697:	00 00 00 
+ 69a:	b9 04 00 00 00       	mov    $0x4,%ecx
+ 69f:	eb 9c                	jmp    63d <test_simple+0x2d>
+ 6a1:	eb 0d                	jmp    6b0 <test_simple_2>
+ 6a3:	90                   	nop
+ 6a4:	90                   	nop
+ 6a5:	90                   	nop
+ 6a6:	90                   	nop
+ 6a7:	90                   	nop
+ 6a8:	90                   	nop
+ 6a9:	90                   	nop
+ 6aa:	90                   	nop
+ 6ab:	90                   	nop
+ 6ac:	90                   	nop
+ 6ad:	90                   	nop
+ 6ae:	90                   	nop
+ 6af:	90                   	nop
 
-00000670 <test_simple_2>:
- 670:	53                   	push   %ebx
- 671:	83 ec 10             	sub    $0x10,%esp
- 674:	8b 5c 24 18          	mov    0x18(%esp),%ebx
- 678:	68 d8 06 00 00       	push   $0x6d8
- 67d:	6a 01                	push   $0x1
- 67f:	e8 fc ff ff ff       	call   680 <test_simple_2+0x10>
- 684:	0f b6 43 01          	movzbl 0x1(%ebx),%eax
- 688:	02 03                	add    (%ebx),%al
- 68a:	3c 0a                	cmp    $0xa,%al
- 68c:	0f 95 c0             	setne  %al
- 68f:	0f b6 c0             	movzbl %al,%eax
- 692:	83 c0 01             	add    $0x1,%eax
- 695:	a3 00 00 00 00       	mov    %eax,0x0
- 69a:	83 c4 18             	add    $0x18,%esp
- 69d:	5b                   	pop    %ebx
- 69e:	c3                   	ret    
+000006b0 <test_simple_2>:
+ 6b0:	53                   	push   %ebx
+ 6b1:	83 ec 10             	sub    $0x10,%esp
+ 6b4:	8b 5c 24 18          	mov    0x18(%esp),%ebx
+ 6b8:	68 18 07 00 00       	push   $0x718
+ 6bd:	6a 01                	push   $0x1
+ 6bf:	e8 fc ff ff ff       	call   6c0 <test_simple_2+0x10>
+ 6c4:	0f b6 43 01          	movzbl 0x1(%ebx),%eax
+ 6c8:	02 03                	add    (%ebx),%al
+ 6ca:	3c 0a                	cmp    $0xa,%al
+ 6cc:	0f 95 c0             	setne  %al
+ 6cf:	0f b6 c0             	movzbl %al,%eax
+ 6d2:	83 c0 01             	add    $0x1,%eax
+ 6d5:	a3 00 00 00 00       	mov    %eax,0x0
+ 6da:	83 c4 18             	add    $0x18,%esp
+ 6dd:	5b                   	pop    %ebx
+ 6de:	c3                   	ret    
 
-0000069f <Payload>:
- 69f:	55                   	push   %ebp
- 6a0:	89 e5                	mov    %esp,%ebp
- 6a2:	83 ec 08             	sub    $0x8,%esp
- 6a5:	83 ec 0c             	sub    $0xc,%esp
- 6a8:	68 00 00 00 00       	push   $0x0
- 6ad:	e8 fc ff ff ff       	call   6ae <Payload+0xf>
- 6b2:	83 c4 10             	add    $0x10,%esp
- 6b5:	b8 00 00 00 00       	mov    $0x0,%eax
- 6ba:	c9                   	leave  
- 6bb:	c3                   	ret    
+000006df <Payload>:
+ 6df:	55                   	push   %ebp
+ 6e0:	89 e5                	mov    %esp,%ebp
+ 6e2:	83 ec 08             	sub    $0x8,%esp
+ 6e5:	83 ec 0c             	sub    $0xc,%esp
+ 6e8:	68 00 00 00 00       	push   $0x0
+ 6ed:	e8 fc ff ff ff       	call   6ee <Payload+0xf>
+ 6f2:	83 c4 10             	add    $0x10,%esp
+ 6f5:	b8 00 00 00 00       	mov    $0x0,%eax
+ 6fa:	c9                   	leave  
+ 6fb:	c3                   	ret    
 
-000006bc <_Z6somainv>:
- 6bc:	55                   	push   %ebp
- 6bd:	89 e5                	mov    %esp,%ebp
- 6bf:	90                   	nop
- 6c0:	5d                   	pop    %ebp
- 6c1:	c3                   	ret    
+000006fc <_Z6somainv>:
+ 6fc:	55                   	push   %ebp
+ 6fd:	89 e5                	mov    %esp,%ebp
+ 6ff:	90                   	nop
+ 700:	5d                   	pop    %ebp
+ 701:	c3                   	ret    
 
 Disassembly of section .fini:
 
-000006c4 <_fini>:
- 6c4:	53                   	push   %ebx
- 6c5:	83 ec 08             	sub    $0x8,%esp
- 6c8:	e8 13 fe ff ff       	call   4e0 <__x86.get_pc_thunk.bx>
- 6cd:	81 c3 33 19 00 00    	add    $0x1933,%ebx
- 6d3:	83 c4 08             	add    $0x8,%esp
- 6d6:	5b                   	pop    %ebx
- 6d7:	c3                   	ret    
+00000704 <_fini>:
+ 704:	53                   	push   %ebx
+ 705:	83 ec 08             	sub    $0x8,%esp
+ 708:	e8 d3 fd ff ff       	call   4e0 <__x86.get_pc_thunk.bx>
+ 70d:	81 c3 f3 18 00 00    	add    $0x18f3,%ebx
+ 713:	83 c4 08             	add    $0x8,%esp
+ 716:	5b                   	pop    %ebx
+ 717:	c3                   	ret    
