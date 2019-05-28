@@ -3,6 +3,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+// Crashes
+#include <sys/mman.h>
+#include <signal.h>
+
+
 // TODO: move this somewhere else
 	char* myitoa(int value, char* result, int base) {
 		// check that the base if valid
@@ -30,6 +35,36 @@
 	
 
 int r = 0;
+
+void crash(int x) {
+    // Segmentation fault
+    x = x / 3;
+
+    if (x >= 0 && x <= 10) {
+        int a[10];
+        for (int i = 0; i < 1000; ++i)
+            a[i] = i;
+    }        
+
+    // Bus error
+    if (x >= 11 && x <= 20) {   
+        FILE *f = tmpfile();
+        int *m = mmap(0, 4, PROT_WRITE, MAP_PRIVATE, fileno(f), 0);
+        *m = 0;
+    }
+
+    if (x >= 21 && x <= 30) {
+        raise(SIGTERM);
+    }
+
+    if (x >= 31 && x <= 40) {
+        raise(SIGABRT);
+    }
+
+    if (x >= 41 && x <= 50) {   
+        raise(SIGFPE);
+    }
+}
 
 // First target
 void test_simple(const unsigned char *buf) 
@@ -79,6 +114,8 @@ void test_simple(const unsigned char *buf)
 	    }
     }
 
+    crash(buf[0]);
+    
     //printf("%d", r);
 }
 
