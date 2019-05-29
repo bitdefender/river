@@ -6,10 +6,13 @@
 
 ## Steps setup 
 1. Save the installRiverTools.sh file to your home directory ("~/")
+```
+wget https://raw.githubusercontent.com/AGAPIA/river/master/installRiverTools.sh
+```
 2. Make sure you don't have anything important in folder "~/testtools" because that folder, if exists, will be removed.
 3. From command line run:  
 ```
-~/installRiverTools.sh clean bashrc
+sh ~/installRiverTools.sh clean bashrc
 ```
 ("clean" is for a clean build while bashrc is used to write the env variables in ~/.bashrc)
 
@@ -19,7 +22,7 @@ Now you have to close the terminal and open it again (to activate the env variab
 
 Test simpletracer on the basic fmi experiments lib:
 ```
-python -c 'print "B" * 100' | river.tracer -p libfmi.so
+python -c 'print ("B" * 100)' | river.tracer -p libfmi.so
 ``` 
 
 More details about the parameters:

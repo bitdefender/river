@@ -37,9 +37,10 @@
 int r = 0;
 
 void crash(int x) {
-    // Segmentation fault
-    x = x / 3;
+    // Make it more probable to crash (unsigned char <= 256)
+    // x = x / 3;
 
+    // Segmentation fault
     if (x >= 0 && x <= 10) {
         int a[10];
         for (int i = 0; i < 1000; ++i)
