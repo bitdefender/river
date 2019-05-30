@@ -7,7 +7,6 @@
 #include <sys/mman.h>
 #include <signal.h>
 
-
 // TODO: move this somewhere else
 	char* myitoa(int value, char* result, int base) {
 		// check that the base if valid
@@ -37,6 +36,9 @@
 int r = 0;
 
 void crash(int x) {
+    // No crash
+    // return;
+
     // Make it more probable to crash (unsigned char <= 256)
     // x = x / 3;
 
@@ -64,6 +66,10 @@ void crash(int x) {
 
     if (x >= 41 && x <= 50) {   
         raise(SIGFPE);
+    }
+
+    if (x >= 51 && x <= 60) {
+        sleep(5);
     }
 }
 
