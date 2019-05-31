@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdlib.h>
 
 // Crashes
 #include <sys/mman.h>
@@ -40,7 +41,7 @@ void crash(int x) {
     // return;
 
     // Make it more probable to crash (unsigned char <= 256)
-    // x = x / 3;
+    x = x / 3;
 
     // Segmentation fault
     if (x >= 0 && x <= 10) {
@@ -73,6 +74,39 @@ void crash(int x) {
     }
 }
 
+int is_uppercase(char c) {
+    /*
+    char tst[2];
+    tst[0] = c;
+    tst[1] = '\0';
+    write(1, tst, 2);
+    fflush(stdout);
+
+    write(1, "\n", 2);
+    fflush(stdout);
+    */
+    return c >= 'A' && c <= 'Z';
+}
+
+int is_lowercase(char c) {
+    return c >= 'a' && c <= 'z';
+}
+
+int is_number(char c) {
+    return c >= '0' && c <= '9';
+}
+
+int is_operator(char c) {
+    return c == '=' || c == '<' || c == '>';
+}
+
+int is_voyel(char c) {
+    if ((char) c == 'A' || (char) c == 'E' || (char) c == 'I' || (char) c == 'O' || (char) c == 'U' || 
+        (char) c == 'a' || (char) c == 'e' || (char) c == 'i' || (char) c == 'o' || (char) c == 'u')
+        return 1;
+    return 0;
+}
+
 // First target
 void test_simple(const unsigned char *buf) 
 {
@@ -93,8 +127,9 @@ void test_simple(const unsigned char *buf)
     	const ssize_t res = write(1, localTextBuffer, len);
     	fflush(stdout);
     }
-	*/
+    */
 
+    /*
     if (buf[0] == 'A')
     {
         r = 1;
@@ -119,10 +154,71 @@ void test_simple(const unsigned char *buf)
 	    {
 	      r += i;
 	    }
+    }*/
+
+    // If first character is 'a' then write the buffer
+    if (buf[0] == 'a') {
+        write(1, buf, 10); 
+        write(1, "\n", 2); 
+        fflush(stdout);
     }
 
-    crash(buf[0]);
-    
+    if (is_uppercase(buf[0])){ 
+        write(1, "Uppercase ", 11);
+        write(1, buf, 1); 
+        fflush(stdout);
+
+        crash(29);
+    }
+    else {
+        write(1, "Lowercase ", 11);
+        write(1, buf, 1); 
+        fflush(stdout);
+
+        crash(60);
+    }
+
+    char fst = (int)buf[0];
+    char snd = (int)buf[1];
+    char thd = (int)buf[2];
+    char fth = (int)buf[3];
+
+    if (is_lowercase(fst)) { 
+        if (is_voyel(fst)) {
+            if (is_operator(snd)) {
+                if (is_number(thd)) {
+                    r++;
+                    crash(5);
+                } else if (is_uppercase(thd)){
+                    r++;
+                    crash(15);
+                }
+            } else if (is_uppercase(thd) && is_uppercase(fth)){
+                r++;
+                crash(25);
+            }
+        } else {
+            if (is_number(snd) && is_number(thd)) {
+                if (is_number(fth)) {
+                    r++;
+                    crash(35);
+                }
+                r++;
+                crash(45);
+            }
+        }
+        r++;
+        crash(30);
+    } else if (is_uppercase(fst)) {
+        if (is_uppercase(thd) || is_uppercase(fth)) {
+            r++;
+            crash(55);
+        }
+        else {
+            r++;
+            crash(30);
+        }
+    }
     //printf("%d", r);
 }
 
