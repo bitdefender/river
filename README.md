@@ -18,6 +18,11 @@ sh ~/installRiverTools.sh clean bashrc
 
 Now you have to close the terminal and open it again (to activate the env variables) to see if it works !
 
+## Add debug capabilities for RIVER
+```
+cd ~/testtools/river && cmake CMakeLists.txt -DCMAKE_BUILD_TYPE=Debug && make && sudo make install
+```
+
 ## Test tracer functionality
 
 Test simpletracer on the basic fmi experiments lib:

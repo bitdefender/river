@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdlib.h>
 
 // Crashes
 #include <sys/mman.h>
@@ -33,6 +34,42 @@
 	}
 	
 
+
+
+int is_uppercase(char c) {
+    /*
+    char tst[2];
+    tst[0] = c;
+    tst[1] = '\0';
+    write(1, tst, 2);
+    fflush(stdout);
+
+    write(1, "\n", 2);
+    fflush(stdout);
+    */
+    return c >= 'A' && c <= 'Z';
+}
+
+int is_lowercase(char c) {
+    return c >= 'a' && c <= 'z';
+}
+
+int is_number(char c) {
+    return c >= '0' && c <= '9';
+}
+
+int is_operator(char c) {
+    return c == '=' || c == '<' || c == '>';
+}
+
+int is_voyel(char c) {
+    if ((char) c == 'A' || (char) c == 'E' || (char) c == 'I' || (char) c == 'O' || (char) c == 'U' || 
+        (char) c == 'a' || (char) c == 'e' || (char) c == 'i' || (char) c == 'o' || (char) c == 'u')
+        return 1;
+    return 0;
+}
+
+// Use a global variable to have side-effects
 int r = 0;
 
 void crash(int x) {
@@ -53,100 +90,32 @@ void crash(int x) {
         *m = 0;
     }
 
-    if (x >= 21 && x <= 30) {
-        raise(SIGTERM);
-    }
+    // Simulate some signals
+    if (x >= 21 && x <= 30) { raise(SIGTERM); }
 
-    if (x >= 31 && x <= 40) {
-        raise(SIGABRT);
-    }
+    if (x >= 31 && x <= 40) { raise(SIGABRT); }
 
-    if (x >= 41 && x <= 50) {   
-        raise(SIGFPE);
-    }
+    if (x >= 41 && x <= 50) { raise(SIGFPE);  }
 
-    if (x >= 51 && x <= 60) {
-        sleep(5);
-    }
+    // Simulate a hang
+    if (x >= 51 && x <= 60) { sleep(5); }
 }
 
-int is_uppercase(int c) {
-    /*
-    char tst[2];
-    tst[0] = c;
-    tst[1] = '\0';
-    write(1, tst, 2);
-    fflush(stdout);
-
-    write(1, "\n", 2);
-    fflush(stdout);
-    */
-    return c >= 'A' && c <= 'Z';
-}
-
-int is_lowercase(int c) {
-    return c >= 'a' && c <= 'z';
-}
-
-int is_number(char c) {
-    return c >= '0' && c <= '9';
-}
-
-int is_operator(char c) {
-    return c == '=' || c == '<' || c == '>';
-}
-
-int is_voyel(char c) {
-    if ((char) c == 'A' || (char) c == 'E' || (char) c == 'I' || (char) c == 'O' || (char) c == 'U' || 
-        (char) c == 'a' || (char) c == 'e' || (char) c == 'i' || (char) c == 'o' || (char) c == 'u')
-        return 1;
-    return 0;
-}
-
-// First target
+// Function that gets called by Simpletracer
 void test_simple(const unsigned char *buf) 
 {
+    // Extract information from the buffer
     int fst = (int)buf[0];
     int snd = (int)buf[1];
     int thd = (int)buf[2];
-    int fth = (int)buf[3];
-    int fifth = (int)buf[4];
 
-    fst = 'A';
-    snd = '=';
-    thd = '1';
-    fth = 175;
+    // Execute instructions
 
-    if (snd == '=')
-        puts("snd este =\n");
-    if (is_operator(snd) == 1)
-        puts("snd e operator\n");
+    // Simulate a crash
+    if (fst >= 'A' && fst <= 'Z')       // If first char from buffer is uppercase
+        if (snd >= 'a' && snd <= 'z')   // If second char is lowercase
+            crash(thd);                 // Crash using the third char as index.
 
-    if (is_uppercase(fst) || is_lowercase(fst)) {
-        if (is_operator(snd)) {
-            if (is_number(thd)) 
-            {
-                crash(fth);
-            }            
-        }
-
-    }
+    // Use an instruction that causes a side effect.
+    r = 1;
 }
-
-
-void test_simple_2(const unsigned char *buf) 
-{
-	printf("cip");
-	char a = buf[0];
-	char b = buf[1];
-	char c = a + b;
-	if (c == 10)
-	{
-		r = 1;
-	}
-	else
-	{
-		r = 2;
-	}
-}
-
