@@ -5,6 +5,7 @@
 - You can download Ubuntu 16.04.5 LTS from here (take 64-bit) : http://releases.ubuntu.com/16.04/
 
 ## Steps setup 
+0. Be sure you install the latest cmake version first. The version tested was 3.14.
 1. Save the installRiverTools.sh file to your home directory ("~/")
 ```
 wget https://raw.githubusercontent.com/AGAPIA/river/master/installRiverTools.sh
@@ -54,6 +55,16 @@ If you want to see live how logs react to your changes:
 
 
 ## Debug using Visual Studio Code
+
+The modern way to debug and build projects from VS code:
+```
+  a. Install VS code using ~/installVsCode.sh script. 
+  b. Open vs-code as administrator: sudo code --user-data-dir="~/.vscode-root"
+  c. Install C++ , native debugging and cmake extensions
+  d. Open the folder of any solution you want to debug and use Cmake status bar to build/debug.
+```
+  
+Below is the old version of how to debug from VS code
 ``` 
   a. Install VS code using ~/installVsCode.sh script.
   b. Open vs-code as administrator: sudo code --user-data-dir="~/.vscode-root"
