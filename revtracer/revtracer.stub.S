@@ -1,18 +1,18 @@
 .intel_syntax noprefix
-.global _RevtracerPerform
-.global _shadowStack
-.global _TracerInitialization
-.global _revtracerConfig
+.global RevtracerPerform
+.global shadowStack
+.global TracerInitialization
+.global revtracerConfig
 
 .text
-_RevtracerPerform:
-	xchg esp, _shadowStack
+RevtracerPerform:
+	xchg esp, shadowStack
 	pusha
 	pushf
 	
-	call _TracerInitialization
+	call TracerInitialization
 	
 	popf
 	popa
-	xchg esp, _shadowStack
-	jmp [_revtracerConfig + 0]
+	xchg esp, shadowStack
+	jmp [revtracerConfig + 0]

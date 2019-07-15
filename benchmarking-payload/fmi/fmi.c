@@ -7,31 +7,63 @@
 #include <sys/mman.h>
 #include <signal.h>
 
+void print_int(char *s, int a) {
+    puts(s);
+    if (a < 0) {
+        puts("-");
+        a = -a;
+    }
+
+    int v[10] = {0};
+    int k = 0;    
+
+    while (a) {
+        v[k++] = a % 10;
+        a /= 10;
+    }
+
+    for (int i = k - 1; i >= 0; --i) {
+        switch (v[i]) {
+            case 0: puts("0"); break;
+            case 1: puts("1"); break;
+            case 2: puts("2"); break;
+            case 3: puts("3"); break;
+            case 4: puts("4"); break;
+            case 5: puts("5"); break;
+            case 6: puts("6"); break;
+            case 7: puts("7"); break;
+            case 8: puts("8"); break;
+            case 9: puts("9"); break;
+        }
+    }
+
+}
+
 // TODO: move this somewhere else
-	char* myitoa(int value, char* result, int base) {
-		// check that the base if valid
-		if (base < 2 || base > 36) { *result = '\0'; return result; }
+char* myitoa(int value, char* result, int base) {
+    // check that the base if valid
+    if (base < 2 || base > 36) { *result = '\0'; return result; }
 
-		char* ptr = result, *ptr1 = result, tmp_char;
-		int tmp_value;
+    char* ptr = result, *ptr1 = result, tmp_char;
+    int tmp_value;
 
-		do {
-			tmp_value = value;
-			value /= base;
-			*ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
-		} while ( value );
+    do {
+        tmp_value = value;
+        value /= base;
+        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
+    } while ( value );
 
-		// Apply negative sign
-		if (tmp_value < 0) *ptr++ = '-';
-		*ptr-- = '\0';
-		while(ptr1 < ptr) {
-			tmp_char = *ptr;
-			*ptr--= *ptr1;
-			*ptr1++ = tmp_char;
-		}
-		return result;
-	}
-	
+    // Apply negative sign
+    if (tmp_value < 0) *ptr++ = '-';
+    *ptr-- = '\0';
+    while(ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr--= *ptr1;
+        *ptr1++ = tmp_char;
+    }
+    return result;
+}
+
 
 int r = 0;
 
@@ -106,6 +138,16 @@ int is_voyel(char c) {
 // First target
 void test_simple(const unsigned char *buf) 
 {
+    printf("ceva");
+
+    // int pos = (int)&printf;
+    // print_int("pos: ", pos);
+
+    int a = 12;
+    printf("\na = %d\n", a);
+    printf("\na = %d\n", a);
+    return;
+
     int fst = (int)buf[0];
     int snd = (int)buf[1];
     int thd = (int)buf[2];

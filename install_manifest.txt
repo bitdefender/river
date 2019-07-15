@@ -5,7 +5,7 @@
 /usr/local/lib/libvirtualmemory.a
 /usr/local/lib/libwrappersetup.a
 /usr/local/lib/librevtracerwrapper.so
-/usr/local/lib/revtracer.dll
+/usr/local/lib/librevtracer.so
 /usr/local/include/revtracer/DebugPrintFlags.h
 /usr/local/include/revtracer/RiverAddress.h
 /usr/local/include/revtracer/common.h

@@ -4,8 +4,6 @@
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 #include "../BinLoader/LoaderAPI.h"
 #include "../wrapper.setup/Wrapper.Setup.h"
-#include "../revtracer/revtracer.h"
-#include "../revtracer-wrapper/Wrapper.Linux.cpp"
 
 #ifdef __linux__
 #include <string.h>
@@ -154,24 +152,6 @@ InitializeFunc revtracerInitialize = nullptr;
 ExecuteFunc revtraceExecute = nullptr;
 
 bool InprocessExecutionController::Execute() {
-
-    /*
-    revwrapper::WrapperImports wrapperImports;
-    revwrapper::WrapperExports wrapperExports;
-
-    revtracer.pConfig = &rev::revtracerConfig;
-    revtracer.pImports = &rev::revtracerImports;
-    revtracer.pExports = &rev::revtracerExports;
-
-    wrapper.pImports = &wrapperImports;
-    wrapper.pExports = &wrapperExports;
-
-    //revwrapper::InitRevtracerWrapper(nullptr);
-
-    revtracerInitialize = &rev::Initialize;
-    revtraceExecute = &rev::Execute;
-    */
-    
 #ifdef _WIN32
 	wchar_t revWrapperPath[] = L"revtracer-wrapper.dll";
 #else
@@ -187,8 +167,7 @@ bool InprocessExecutionController::Execute() {
 		return false;
 	}
 
-    // Compentarii aici
-    revtracer.pConfig = (rev::RevtracerConfig *)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "revtracerConfig");
+	revtracer.pConfig = (rev::RevtracerConfig *)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "revtracerConfig");
 	revtracer.pImports = (rev::RevtracerImports *)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "revtracerImports");
 	revtracer.pExports = (rev::RevtracerExports *)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "revtracerExports");
 	
@@ -215,7 +194,6 @@ bool InprocessExecutionController::Execute() {
 		revtracer.pImports->symbolicHandler = symbCb;
 	}
 
-    // Comentarii aici
 	wrapper.pImports = (revwrapper::WrapperImports *)GET_PROC_ADDRESS(wrapper.module, wrapper.base, "wrapperImports");
 	wrapper.pExports = (revwrapper::WrapperExports *)GET_PROC_ADDRESS(wrapper.module, wrapper.base, "wrapperExports");
 
@@ -225,7 +203,6 @@ bool InprocessExecutionController::Execute() {
 		return false;
 	}
 
-    /* revwrapper::InitRevtracerWrapper(nullptr);*/
 	if (!wrapper.pExports->initRevtracerWrapper(nullptr)) {
 		DEBUG_BREAK;
 		return false;
@@ -250,8 +227,7 @@ bool InprocessExecutionController::Execute() {
 	revtracer.pConfig->featureFlags = featureFlags;
 	revtracer.pConfig->context = this;
 	revtracer.pConfig->hookCount = 0;
-
-    // Comentarii aici    
+	
 	revtracerInitialize = (InitializeFunc)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "Initialize");
 	revtraceExecute = (ExecuteFunc)GET_PROC_ADDRESS(revtracer.module, revtracer.base, "Execute");
 
