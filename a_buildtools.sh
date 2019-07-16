@@ -5,13 +5,12 @@ TOOLSDIR=$2
 CLEAN=$3
 
 
-#export Z3_ROOT=~/$TOOLSDIR/river/z3
 #sudo source ~/.bashrc
 #sudo ./a_exportvariables.sh $TOOLSDIR
 export RIVER_NATIVE_LIBS=/usr/local/lib
 export LIBC_PATH=/lib32/libc.so.6
 export LIBPTHREAD_PATH=/lib32/libpthread.so.0
-export Z3_ROOT=~/$TOOLSDIR/river/z3
+export Z3_ROOT=~/z3
 export LD_LIBRARY_PATH=/usr/local/lib/
 
 printf "Variable Z3_ROOT is "

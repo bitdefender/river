@@ -40,7 +40,7 @@ cd $FULL_TOOLSDIR/river
 export RIVER_NATIVE_LIBS=/usr/local/lib  # Somehow the above command doesn't store correctly so we duplicate them..they are already duplicated in buildtools.sh
 export LIBC_PATH=/lib32/libc.so.6
 export LIBPTHREAD_PATH=/lib32/libpthread.so.0
-export Z3_ROOT=~/$TOOLS_DIR/river/z3
+export Z3_ROOT=~/z3
 export LD_LIBRARY_PATH=/usr/local/lib/
 
 
@@ -48,8 +48,8 @@ export LD_LIBRARY_PATH=/usr/local/lib/
 echo 'RIVER_NATIVE_LIBS=/usr/local/lib' >> ~/.bashrc 
 echo 'LIBC_PATH=/lib32/libc.so.6' >> ~/.bashrc 
 echo 'LIBPTHREAD_PATH=/lib32/libpthread.so.0' >> ~/.bashrc 
-echo 'export Z3_ROOT_PATH=~/'$TOOLSDIR'/river/z3' >> ~/.bashrc 
-echo 'export Z3_ROOT=~/'$TOOLSDIR'/river/z3' >> ~/.bashrc 
+echo 'export Z3_ROOT_PATH=~/z3' >> ~/.bashrc 
+echo 'export Z3_ROOT=~/z3' >> ~/.bashrc 
 echo 'export LD_LIBRARY_PATH=/usr/local/lib/' >> ~/.bashrc 
 
 

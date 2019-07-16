@@ -15,9 +15,9 @@ sudo rm -f ./libz3.so
 
 if [ "$BUILD_TYPE" = "Debug"  ]
 then
-	sudo ln -s ~/$TOOLSDIR/river/z3/Debug/lib/libz3.so ./
+	sudo ln -s ~/z3/Debug/lib/libz3.so ./
 else
-	sudo ln -s ~/$TOOLSDIR/river/z3/Release/lib/libz3.so ./
+	sudo ln -s ~/z3/Release/lib/libz3.so ./
 fi
 
 cd -
