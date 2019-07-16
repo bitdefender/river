@@ -2,7 +2,6 @@
 #define __MM_H
 
 #include "revtracer.h"
-
 #define HEAP_SIZE 0x100000
 
 extern "C" void rev_memcpy(void *dest, const void *src, unsigned int size);

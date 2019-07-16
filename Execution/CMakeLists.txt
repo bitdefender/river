@@ -1,8 +1,13 @@
 ## Execution CMakeLists.txt
 
 set(LIBRARY_NAME execution)
-set(FLAGS_CROSS "-D__cdecl=\"\" -D__stdcall=\"\"")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -D_EXECUTION_EXPORTS \
+set(FLAGS_CROSS "-D_cdecl=\"__attribute__((cdecl))\" \
+	-D_stdcall=\"__attribute__((stdcall))\" \
+    -D'__declspec(noinline)=__attribute__ ((noinline))' \
+    -D'CALLING_CONV(naked)=__attribute__((naked))' \
+    -D__cdecl=\"\" \
+    -D__stdcall=\"\"")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -m32 -std=c++11 \
 	-DBLOCK_CACHE_READ_ONLY ${FLAGS_CROSS}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
@@ -20,18 +25,21 @@ add_library(${LIBRARY_NAME} SHARED
 	InprocessExecutionController.cpp
 	CommonExecutionController.cpp
 	Main.cpp
-	../revtracer/sync.cpp
-	../revtracer/crc32.cpp
-	../revtracer/cb.cpp
+    ../revtracer/sync.cpp
+    ../revtracer/crc32.cpp
+    ../revtracer/cb.cpp
 	../libproc/libproc.cpp
 	)
 
 target_link_libraries(${LIBRARY_NAME}
 	binloader
 	wrappersetup
-	virtualmemory
+    virtualmemory
 	rt
-	dl)
+	dl
+    revtracer
+    revtracerwrapper
+    )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES PUBLIC_HEADER "Execution.h")
 install(TARGETS ${LIBRARY_NAME}

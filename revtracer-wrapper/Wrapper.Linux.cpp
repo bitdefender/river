@@ -20,7 +20,7 @@
 /*typedef void* lib_t;
 
 DLL_WRAPPER_LOCAL MODULE_PTR lpthreadModule;
-DLL_WRAPPER_LOCAL lib_t lcModule, lrtModule;*/
+DLL_WRAPPER_LOCAL lib_t lcModule, lrtModule; */
 
 typedef int (*PrintfHandler)(const char *format, ...);
 PrintfHandler _print;
@@ -206,7 +206,7 @@ namespace revwrapper {
 
 namespace revwrapper {
 	extern "C" bool InitRevtracerWrapper(void *configPage) {
-		/*lcModule = dlopen("libc.so", RTLD_LAZY);
+        /*lcModule = dlopen("libc.so", RTLD_LAZY);
 		lrtModule = dlopen("librt.so", RTLD_LAZY);
 		CreateModule("libpthread.so", lpthreadModule);
 		//TODO find base addresses
@@ -224,10 +224,10 @@ namespace revwrapper {
 
 		_writeFile = (WriteFileHandler)LOAD_PROC(lcModule, "write");
 
-		_formatPrint = (FormatPrintHandler)LOAD_PROC(lcModule, "vsnprintf");
+		//_formatPrint = (FormatPrintHandler)LOAD_PROC(lcModule, "vsnprintf");
 		_print = (PrintfHandler)LOAD_PROC(lcModule, "printf");
 
-		LoadExportedName(lpthreadModule, lpthreadBase, "pthread_yield", _yieldExecution);*/
+		LoadExportedName(lpthreadModule, lpthreadBase, "pthread_yield", _yieldExecution); */
 
 		// set global functionality
 		allocateVirtual = LinAllocateVirtual;
