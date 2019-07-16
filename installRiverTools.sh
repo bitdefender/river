@@ -1,5 +1,6 @@
 set -e
 
+
 # This script will download, build and install River
 
 # Tools dir is the name where the download will go (inside ~/ folder)
@@ -9,10 +10,11 @@ BUILD_TYPE=$2 # can be Debug or Release
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-
 FULL_TOOLSDIR=~/$TOOLSDIR
+
+#if false; then
 if [ -d "$FULL_TOOLSDIR" ]; then
-  print "ERROR: Folder ${FULL_TOOLSDIR} already exists ! Please delete it yourself or backup everything"
+  printf "ERROR: Folder ${FULL_TOOLSDIR} already exists ! Please delete it yourself or backup everything"
   exit 1
 fi
 
@@ -30,8 +32,17 @@ git clone https://github.com/AGAPIA/river.format
 git clone https://github.com/AGAPIA/river
 git clone https://github.com/AGAPIA/simpletracer
 
+#fi # If false
+
 printf "${BLUE}Step 2: Setting env variables and make sys libs point to River's ${NC}"
-sudo ./a_exporvariables.sh $FULL_TOOLSDIR
+cd $FULL_TOOLSDIR/river
+#sudo ./a_exportvariables.sh $TOOLSDIR
+export RIVER_NATIVE_LIBS=/usr/local/lib  # Somehow the above command doesn't store correctly so we duplicate them..they are already duplicated in buildtools.sh
+export LIBC_PATH=/lib32/libc.so.6
+export LIBPTHREAD_PATH=/lib32/libpthread.so.0
+export Z3_ROOT=~/$TOOLS_DIR/river/z3
+export LD_LIBRARY_PATH=/usr/local/lib/
+
 
 # Write variables in bashrc
 echo 'RIVER_NATIVE_LIBS=/usr/local/lib' >> ~/.bashrc 
@@ -40,13 +51,12 @@ echo 'LIBPTHREAD_PATH=/lib32/libpthread.so.0' >> ~/.bashrc
 echo 'export Z3_ROOT_PATH=~/'$TOOLSDIR'/river/z3' >> ~/.bashrc 
 echo 'export Z3_ROOT=~/'$TOOLSDIR'/river/z3' >> ~/.bashrc 
 echo 'export LD_LIBRARY_PATH=/usr/local/lib/' >> ~/.bashrc 
-fi
 
+
+printf "Variable is $RIVER_NATIVE_LIBS"
 sudo ln -s -f -T $LIBC_PATH $RIVER_NATIVE_LIBS/libc.so
 sudo ln -s -f -T $LIBPTHREAD_PATH $RIVER_NATIVE_LIBS/libpthread.so
 
-
-fi
 
 if [ "$BUILD_TYPE" = "Debug"  ]
 then
@@ -56,7 +66,7 @@ else
 	BUILD_TYPE = "Release"
 fi
 
-sudo ./a_buildtools.sh $TOOLSDIR $BUILD_TYPE clean
+sudo ./a_buildtools.sh $BUILD_TYPE $TOOLSDIR  clean
 
 
 
