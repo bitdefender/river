@@ -5,24 +5,24 @@
 - You can download Ubuntu 16.04.5 LTS from here (take 64-bit) : http://releases.ubuntu.com/16.04/
 
 ## Steps setup 
+
+# End-user Workflow:
 0. Be sure you install the latest cmake version first. The version tested was 3.14.
 1. Save the installRiverTools.sh file to your home directory ("~/")
 ```
 wget https://raw.githubusercontent.com/AGAPIA/river/master/installRiverTools.sh
 ```
-2. Make sure you don't have anything important in folder "~/testtools" because that folder, if exists, will be removed.
-3. From command line run:  
+2. Download an unzip The prebuilt-Z3 libraries https://fmiunibuc-my.sharepoint.com/:u:/g/personal/ciprian_paduraru_fmi_unibuc_ro/EUBDz3URzcBAjzEslzE8LfYBEoR0uwKubUoIweqTSuJeRg?e=3jmRPT to ~/z3 folder (such that path ~/z3/Debug/lib/libz3.so exists).
+3. Make sure you don't have anything important in folder "~/testtools" because that folder, if exists, will be removed.
+4. From command line run for example:  
 ```
-sh ~/installRiverTools.sh clean bashrc
+sh ~/installRiverTools.sh testtools Debug
 ```
-("clean" is for a clean build while bashrc is used to write the env variables in ~/.bashrc)
+First parameter is the folder to install all River tool. This command will install all in ~/testtools/ . You can of course change the folder name as you wish
+Second parameter is for build type and it can be either Debug or Release
 
 Now you have to close the terminal and open it again (to activate the env variables) to see if it works !
 
-## Add debug capabilities for RIVER
-```
-cd ~/testtools/river && cmake CMakeLists.txt -DCMAKE_BUILD_TYPE=Debug && make && sudo make install
-```
 
 ## Test tracer functionality
 
@@ -53,8 +53,14 @@ If you want to see live how logs react to your changes:
 3. Run ./test_inference.sh to test on a given payload input (edit the input payload inside the script if you want)
   Notice the file libfmi_dissassembly.txt created for you to understand the ASM code used by River. You must follow only the one in test_simple function ("search for the string in that file).
 
+# Programmers workflow:
+Asside from the things defined above, you can incrementally test your build by running:
+```
+~/testtools/river/a_buildtools.sh testtools (Debug or Release) [clean].
+```
+The last parameter , clean, is optional, only if you want to rebuild everything.
 
-## Debug using Visual Studio Code
+# Debug using Visual Studio Code
 
 The modern way to debug and build projects from VS code:
 ```
@@ -73,4 +79,5 @@ Below is the old version of how to debug from VS code
   
   To build the code: just press CTRl+SHIFT+B  and you'll see the log in Terminal window inside vscode.
   To install the libs and perform a full rebuild: press CTRL+SHIFT+P, write Run Task then choose "build_full".
+```
 ``` 
