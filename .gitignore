@@ -11,8 +11,8 @@
 *.so
 
 # Visual Studio Metainformation
-Debug/
-Release/
+#Debug/
+#Release/
 *.sdf
 *.suo
 *.user
@@ -27,7 +27,6 @@ Release/
 node_modules/
 
 #source/libs dependencies
-z3/
 river.format
 simpletracer/
 river.sdk/
@@ -55,3 +54,4 @@ wrapper.setup/Makefile
 #Vim
 Session.vim
 
+!z3/**
