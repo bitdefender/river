@@ -4,9 +4,9 @@
 - Also, note that the process is described for all of our tools not just RIVER.
 - You can download Ubuntu 16.04.5 LTS from here (take 64-bit) : http://releases.ubuntu.com/16.04/
 
-## Steps setup 
+# Steps setup 
 
-# End-user Workflow:
+## End-user Workflow:
 0. Be sure you install the latest cmake version first. The version tested was 3.14.
 1. Save the installRiverTools.sh file to your home directory ("~/")
 ```
@@ -53,14 +53,14 @@ If you want to see live how logs react to your changes:
 3. Run ./test_inference.sh to test on a given payload input (edit the input payload inside the script if you want)
   Notice the file libfmi_dissassembly.txt created for you to understand the ASM code used by River. You must follow only the one in test_simple function ("search for the string in that file).
 
-# Programmers workflow:
+## Programmers workflow:
 Asside from the things defined above, you can incrementally test your build by running:
 ```
 ~/testtools/river/a_buildtools.sh testtools (Debug or Release) [clean].
 ```
 The last parameter , clean, is optional, only if you want to rebuild everything.
 
-# Debug using Visual Studio Code
+## Debug using Visual Studio Code
 
 The modern way to debug and build projects from VS code:
 ```
