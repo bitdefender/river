@@ -5,6 +5,10 @@ set(FLAGS_CROSS "-D__cdecl=\"\" -D__stdcall=\"\"")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -D_EXECUTION_EXPORTS \
 	-DBLOCK_CACHE_READ_ONLY ${FLAGS_CROSS}")
 
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
+
+
 include_directories(../BinLoader)
 add_library(${LIBRARY_NAME} SHARED
 	Debugger.cpp

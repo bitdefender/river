@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/ciprian/testtools/riverexp/build",
+  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/riverexp/build -I/Debug/include   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/riverexp.cpp.o -c /home/ciprian/testtools/riverexp/riverexp.cpp",
+  "file": "/home/ciprian/testtools/riverexp/riverexp.cpp"
+}
+]

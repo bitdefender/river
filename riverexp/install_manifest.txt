@@ -1,0 +1,4 @@
+/usr/local/bin/RiverExp
+/usr/local/include/RiverexpConfig.h
+/usr/local/bin/libMathFunctions.a
+/usr/local/include/MathFunctions.h

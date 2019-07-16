@@ -8,11 +8,13 @@
 
 
 void DbgPrint(const char *fmt, ...) {
+#ifdef IS_DEBUG_BUILD // don't worry about function call overhead, it will be optimized by compiler
 	va_list va;
 
 	va_start(va, fmt);
 	vprintf(fmt, va);
 	va_end(va);
+#endif
 }
 
 void *EnvMemoryAlloc(unsigned long dwSize) {

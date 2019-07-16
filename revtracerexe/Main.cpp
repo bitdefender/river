@@ -23,6 +23,7 @@ struct UserContext {
 };
 
 void DebugPrint(DWORD printMask, const char *fmt, ...) {
+#ifdef IS_DEBUG_BUILD // don't worry about function call overhead, it will be optimized by compiler
 	va_list va;
 	char tmpBuff[512];
 
@@ -80,6 +81,7 @@ void DebugPrint(DWORD printMask, const char *fmt, ...) {
 	}
 	WriteFile(fDbg, tmpBuff, sz * sizeof(tmpBuff[0]), &wr, NULL);
 	lastChar = tmpBuff[sz - 1];
+#endif
 }
 
 /*__declspec(dllimport) int vsnprintf_s(

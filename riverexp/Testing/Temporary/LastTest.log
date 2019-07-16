@@ -1,0 +1,41 @@
+Start testing: Jul 13 11:02 EEST
+----------------------------------------------------------
+1/2 Testing: TutorialComp25
+1/2 Test: TutorialComp25
+Command: "/home/ciprian/testtools/riverexp/Riverexp" "25"
+Directory: /home/ciprian/testtools/riverexp
+"TutorialComp25" start time: Jul 13 11:02 EEST
+Output:
+----------------------------------------------------------
+using my math
+The square root of 25 is 5
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Pass Reason:
+Required regular expression found.Regex=[25 is 5
+]
+"TutorialComp25" end time: Jul 13 11:02 EEST
+"TutorialComp25" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/2 Testing: TutorialComp-25
+2/2 Test: TutorialComp-25
+Command: "/home/ciprian/testtools/riverexp/Riverexp" "-25"
+Directory: /home/ciprian/testtools/riverexp
+"TutorialComp-25" start time: Jul 13 11:02 EEST
+Output:
+----------------------------------------------------------
+using my math
+The square root of -25 is -nan
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Fail Reason:
+Required regular expression not found.Regex=[-25 is 0
+]
+"TutorialComp-25" end time: Jul 13 11:02 EEST
+"TutorialComp-25" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Jul 13 11:02 EEST

@@ -484,17 +484,21 @@ void vDebugPrintf(const DWORD printMask, const char *fmt, va_list args) {
 }
 
 void DebugPrintf(const unsigned int printMask, const char *fmt, ...) {
+#ifdef IS_DEBUG_BUILD // don't worry about function call overhead, it will be optimized by compiler
 	va_list va;
 	va_start(va, fmt);
 	vDebugPrintf(printMask, fmt, va);
 	va_end(va);
+#endif
 }
 
 void CommonExecutionController::DebugPrintf(const unsigned long printMask, const char * fmt, ...) {
+#ifdef IS_DEBUG_BUILD // don't worry about function call overhead, it will be optimized by compiler
 	va_list va;
 	va_start(va, fmt);
 	vDebugPrintf(printMask, fmt, va);
 	va_end(va);
+#endif
 }
 
 

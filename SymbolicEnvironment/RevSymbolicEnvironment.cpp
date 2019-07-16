@@ -16,12 +16,16 @@ void NoDecRef(void *) {}
 
 nodep::DWORD TrackAddrWrapper(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD segSel) {
 	nodep::DWORD ret = TrackAddr(pEnv, dwAddr, segSel);
+#ifdef IS_DEBUG_BUILD
 	fprintf(stderr, "<info> TrackAddr 0x%08lx => 0x%08lx\n", dwAddr, ret);
+#endif
 	return ret;
 }
 
 nodep::DWORD MarkAddrWrapper(void *pEnv, nodep::DWORD dwAddr, nodep::DWORD value, nodep::DWORD segSel) {
+#ifdef IS_DEBUG_BUILD
 	fprintf(stderr, "<info> MarkAddr 0x%08lx <= %lu\n", dwAddr, value);
+#endif
 	return MarkAddr(pEnv, dwAddr, value, segSel);
 }
 
