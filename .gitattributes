@@ -1,2 +1,0 @@
-z3/Debug/lib/libz3.so filter=lfs diff=lfs merge=lfs -text
-z3/Release/lib/libz3.so filter=lfs diff=lfs merge=lfs -text
