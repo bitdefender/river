@@ -69,6 +69,7 @@ The modern way to debug and build projects from VS code:
   c. Install C++ , native debugging and cmake extensions
   d. Open the folder of any solution you want to debug and use Cmake status bar to build/debug.
     NOTE: For simpletracer use a GCC compiler in the Cmake interface toolbar
+    NOTE: For debugging it is better to use DEbug->StartDebugging or the green arrow below Debug menu. The launch.json is already configured for you.
 ```
   
 Below is the old version of how to debug from VS code
