@@ -68,6 +68,6 @@ fi
 
 sudo ./a_buildtools.sh $BUILD_TYPE $TOOLSDIR  clean
 
-
+sudo chmod -R a+rwX $FULL_TOOLSDIR
 
 
