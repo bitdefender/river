@@ -20,6 +20,7 @@
 #include <Winternl.h>
 #endif
 
+
 #ifdef _WIN32
 void InitSegment(HANDLE hThread, DWORD dwSeg, DWORD &offset) {
 	LDT_ENTRY entry;
@@ -520,4 +521,11 @@ bool CommonExecutionController::GetLastBasicBlockInfo(void *ctx, rev::BasicBlock
 
 void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value) {
 	mmv(ctx, addr, value);
+}
+
+void CommonExecutionController::onBeforeTrackingInstructionCheck(void *address, void *cbCtx)
+{
+	rev::BasicBlockInfo bbInfo;
+	GetLastBasicBlockInfo(cbCtx, &bbInfo);
+	observer->setCurrentExecutedBasicBlockDesc(&bbInfo);
 }

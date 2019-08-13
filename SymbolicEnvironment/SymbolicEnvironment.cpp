@@ -48,7 +48,8 @@ namespace sym {
 		subEnv->SetReferenceCounting(addRef, decRef);
 	}
 
-	bool ScopedSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer) {
+	bool ScopedSymbolicEnvironment::SetCurrentInstruction(RiverInstruction *instruction, void *opBuffer) 
+	{
 		if (!subEnv->SetCurrentInstruction(instruction, opBuffer)) {
 			return false;
 		}

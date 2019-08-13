@@ -93,6 +93,9 @@ public :
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);
 	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value);
+
+	// This is before calling a handler of a symbolic instruction
+	virtual void onBeforeTrackingInstructionCheck(void *address, void *cbCtx);
 };
 
 #endif // !_COMMON_EXECUTION_CONTROLLER_H
