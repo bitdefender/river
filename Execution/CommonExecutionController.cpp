@@ -418,6 +418,7 @@ int GeneratePrefix(char *buff, int size, ...) {
 	return sz;
 }
 
+#ifdef ENABLE_RIVER_SIDE_DEBUGGING
 FILE_T hDbg = OPEN_FILE_W("execution.log");
 
 void vDebugPrintf(const DWORD printMask, const char *fmt, va_list args) {
@@ -501,6 +502,10 @@ void CommonExecutionController::DebugPrintf(const unsigned long printMask, const
 	va_end(va);
 #endif
 }
+
+#else
+void DebugPrintf(const unsigned int printMask, const char *fmt, ...) { }
+#endif
 
 
 void CommonExecutionController::GetFirstEsp(void *ctx, nodep::DWORD &esp) {
