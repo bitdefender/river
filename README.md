@@ -56,7 +56,7 @@ If you want to see live how logs react to your changes:
 ## Programmers workflow:
 Asside from the things defined above, you can incrementally test your build by running:
 ```
-~/testtools/river/a_buildtools.sh testtools (Debug or Release) [clean].
+~/testtools/river/a_buildtools.sh (Debug or Release) testtools [clean].
 ```
 The last parameter , clean, is optional, only if you want to rebuild everything.
 
