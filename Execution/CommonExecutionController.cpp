@@ -20,6 +20,7 @@
 #include <Winternl.h>
 #endif
 
+
 #ifdef _WIN32
 void InitSegment(HANDLE hThread, DWORD dwSeg, DWORD &offset) {
 	LDT_ENTRY entry;
@@ -417,6 +418,7 @@ int GeneratePrefix(char *buff, int size, ...) {
 	return sz;
 }
 
+#ifdef ENABLE_RIVER_SIDE_DEBUGGING
 FILE_T hDbg = OPEN_FILE_W("execution.log");
 
 void vDebugPrintf(const DWORD printMask, const char *fmt, va_list args) {
@@ -501,6 +503,10 @@ void CommonExecutionController::DebugPrintf(const unsigned long printMask, const
 #endif
 }
 
+#else
+void DebugPrintf(const unsigned int printMask, const char *fmt, ...) { }
+#endif
+
 
 void CommonExecutionController::GetFirstEsp(void *ctx, nodep::DWORD &esp) {
 	gfe(ctx, esp);
@@ -520,4 +526,11 @@ bool CommonExecutionController::GetLastBasicBlockInfo(void *ctx, rev::BasicBlock
 
 void CommonExecutionController::MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value) {
 	mmv(ctx, addr, value);
+}
+
+void CommonExecutionController::onBeforeTrackingInstructionCheck(void *address, void *cbCtx)
+{
+	rev::BasicBlockInfo bbInfo;
+	GetLastBasicBlockInfo(cbCtx, &bbInfo);
+	observer->setCurrentExecutedBasicBlockDesc(&bbInfo);
 }

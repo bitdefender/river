@@ -28,6 +28,7 @@ nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE 
 	exec->DebugPrintf(PRINT_BRANCHING_INFO, "[BranchHandler] next instr %p\n", nextInstruction);
 
 	if (pEnv->generationFlags & TRACER_FEATURE_TRACKING) {
+		exec->onBeforeTrackingInstructionCheck(nextInstruction, context);
 		if (pEnv->bForward) {
 			nodep::DWORD dwLastBlock = pEnv->lastFwBlock; //TopFromExecutionBuffer(pEnv);
 			RiverBasicBlock *pLast = pEnv->blockCache.FindBlock(dwLastBlock);

@@ -7,7 +7,12 @@
 
 using namespace std;
 
+#ifdef ENABLE_RIVER_SIDE_DEBUGGING
 void DebugPrintf(const unsigned int printMask, const char *fmt, ...);
+#else 
+void DebugPrintf(const unsigned int printMask, const char *fmt, ...);	// TODO: Change this to a define to supress parameter passing
+#endif
+
 nodep::DWORD BranchHandlerFunc(void *context, void *userContext, rev::ADDR_TYPE nextInstruction);
 nodep::DWORD ErrorHandlerFunc(void *context, void *userContext, rev::RevtracerError *rerror);
 void InitSegments(void *hThread, nodep::DWORD *segments);
@@ -88,11 +93,18 @@ public :
 	virtual void *GetMemoryInfo(void *ctx, void *ptr);
 	virtual bool GetLastBasicBlockInfo(void *ctx, rev::BasicBlockInfo *bbInfo);
 
+#ifdef ENABLE_RIVER_SIDE_DEBUGGING
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...);
+#else
+	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) {}
+#endif
 
 	virtual bool GetProcessVirtualMemory(VirtualMemorySection *&sections, int &sectionCount);
 	virtual bool GetModules(ModuleInfo *&modules, int &moduleCount);
 	virtual void MarkMemoryValue(void *ctx, rev::ADDR_TYPE addr, nodep::DWORD value);
+
+	// This is before calling a handler of a symbolic instruction
+	virtual void onBeforeTrackingInstructionCheck(void *address, void *cbCtx);
 };
 
 #endif // !_COMMON_EXECUTION_CONTROLLER_H

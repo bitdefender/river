@@ -136,7 +136,7 @@ int is_voyel(char c) {
 }
 
 // First target
-void test_simple(const unsigned char *buf) 
+void test_simple_2(const unsigned char *buf) 
 {
     printf("ceva");
 
@@ -176,19 +176,18 @@ void test_simple(const unsigned char *buf)
 }
 
 
-void test_simple_2(const unsigned char *buf) 
+void test_simple(const unsigned char *buf) 
 {
-	printf("cip");
-	char a = buf[0];
-	char b = buf[1];
-	char c = a + b;
-	if (c == 10)
-	{
-		r = 1;
-	}
-	else
-	{
-		r = 2;
+	int a = 3;
+	if (buf[0] < 'Z')
+        {
+		a=4;
+		int b = (buf[0] + buf[1]) / 2;
+		if (b < 'Z')
+		{
+			a=5;
+		}
+
 	}
 }
 

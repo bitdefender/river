@@ -118,6 +118,9 @@ public :
 	virtual unsigned int ExecutionEnd(void *ctx) = 0;
 	virtual unsigned int TranslationError(void *ctx, void *address) = 0;
 
+	// Sets the description of the currently executed basic block
+	virtual void setCurrentExecutedBasicBlockDesc(const void* basicBlockInfo) {};
+
 	virtual void TerminationNotification(void *ctx) = 0;
 };
 
@@ -153,6 +156,8 @@ public:
 	virtual unsigned int TranslationError(void *address, void *cbCtx) = 0;
 
 	virtual void DebugPrintf(const unsigned long printMask, const char *fmt, ...) = 0;
+
+	virtual void onBeforeTrackingInstructionCheck(void *address, void *cbCtx) = 0;
 
 	// in-execution api
 	virtual void GetFirstEsp(void *ctx, nodep::DWORD &esp) = 0;

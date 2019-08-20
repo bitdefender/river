@@ -56,7 +56,7 @@ If you want to see live how logs react to your changes:
 ## Programmers workflow:
 Asside from the things defined above, you can incrementally test your build by running:
 ```
-~/testtools/river/a_buildtools.sh testtools (Debug or Release) [clean].
+~/testtools/river/a_buildtools.sh (Debug or Release) testtools [clean].
 ```
 The last parameter , clean, is optional, only if you want to rebuild everything.
 
@@ -68,6 +68,8 @@ The modern way to debug and build projects from VS code:
   b. Open vs-code as administrator: sudo code --user-data-dir="~/.vscode-root"
   c. Install C++ , native debugging and cmake extensions
   d. Open the folder of any solution you want to debug and use Cmake status bar to build/debug.
+    NOTE: For simpletracer use a GCC compiler in the Cmake interface toolbar
+    NOTE: For debugging it is better to use DEbug->StartDebugging or the green arrow below Debug menu. The launch.json is already configured for you.
 ```
   
 Below is the old version of how to debug from VS code

@@ -193,6 +193,8 @@ namespace sym {
 		int mCount;
 		ModuleInfo *mInfo;
 		SymbolicEnvironment *env;
+		rev::BasicBlockInfo currentBasicBlockExecuted;	// This is the basic block currently executed
+
 	public:
 
 		SymbolicExecutor(SymbolicEnvironment *e)

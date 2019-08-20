@@ -1,6 +1,12 @@
 #ifndef _DEBUG_PRINT_FLAGS_H_
 #define _DEBUG_PRINT_FLAGS_H_
 
+
+// Enable this to understand what is happening on river side. Disabled now for performance reasons
+#ifdef IS_DEBUG_BUILD
+//#define ENABLE_RIVER_SIDE_DEBUGGING
+#endif
+
 // message type
 #define PRINT_ERROR					0x01000000
 #define PRINT_INFO					0x02000000
