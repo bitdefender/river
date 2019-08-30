@@ -2,7 +2,7 @@
 #define Riverexp_VERSION_MAJOR 1
 #define Riverexp_VERSION_MINOR 0
 
-#define USE_MYMATH
+/* #undef USE_MYMATH */
 
 // does the platform provide exp and log functions?
 /* #undef HAVE_LOG */

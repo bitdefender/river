@@ -118,8 +118,12 @@ void string_values()
     std::cout << s1 << "\n";
 }
 
+#include <vector>
+#include "BinFormatConcolic.h"
+
 int main (int argc, char *argv[])
 {
+# if 0  // Z3 experiments
     unsigned major, minor, build, revision;
     Z3_get_version(&major, &minor, &build, &revision);
     printf("Z3 %d.%d.%d.%d\n", major, minor, build, revision);
@@ -133,6 +137,11 @@ int main (int argc, char *argv[])
 
     parse_string();
     string_values();
+
+#else  // Parsing experiments
+
+
+#endif
 
   return 0;
 }

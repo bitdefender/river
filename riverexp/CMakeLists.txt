@@ -37,8 +37,23 @@ if (USE_MYMATH)
 endif (USE_MYMATH)
 
 # --------- Establish where z3 library should be -------------
+if (NOT DEFINED ENV{Z3_ROOT})
+      set(ENV{Z3_ROOT} "~/z3")
+	    # message(FATAL_ERROR "Specify Z3_ROOT variable")
+      message("Z3_ROOT seems to be not defined but maybe you are not using bash so it can't read from bashrc file. However i will default to ~/z3 and maybe you're lucky and we find it there")
+else()
+    	set(Z3_ROOT ENV{Z3_ROOT})
+endif()
+
+
 message("z3 root is $ENV{Z3_ROOT}")
 message("build type ${CMAKE_BUILD_TYPE}")
+
+
+if(NOT CMAKE_BUILD_TYPE) 
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
   message("build is debug")
   set(CMAKE_BINARY_DIR build_debug)
@@ -46,16 +61,21 @@ else ()
   set(CMAKE_BINARY_DIR build_release)
 endif()
 
-include_directories(${Z3_ROOT}/${CMAKE_BUILD_TYPE}/include)
+set(Z3_ROOT_INCLUDE "$ENV{Z3_ROOT}/${CMAKE_BUILD_TYPE}/include")
+set(Z3_ROOT_LIBS "$ENV{Z3_ROOT}/${CMAKE_BUILD_TYPE}/lib")
+
+include_directories(${Z3_ROOT_INCLUDE})
 find_library (z3 
               NAMES libz3.so 
-              HINTS $ENV{Z3_ROOT}/${CMAKE_BUILD_TYPE}/lib
+              HINTS ${Z3_ROOT_LIBS}
               NO_DEFAULT_PATH)
 
 message("z3 lib path ${z3}")
 set(EXTRA_LIBS ${EXTRA_LIBS} ${z3})
 #--------------------------------------------------------------
 
+add_subdirectory (river.format/format.handler)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/river.format/include)
 
 # add the executable
 add_executable(Riverexp riverexp.cpp)

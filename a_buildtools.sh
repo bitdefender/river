@@ -67,3 +67,10 @@ cmake ${CMAKE_OPTIONAL_FLAGS} CMakeLists.txt
 make
 sudo make install
 
+
+# Configure the test project
+cd ~/$TOOLSDIR/river/riverexp
+rm -f river.format # remove simbolic link
+ln -s ~/testtools/river.format ./
+
+

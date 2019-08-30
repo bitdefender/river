@@ -1,7 +1,22 @@
 [
 {
-  "directory": "/home/ciprian/testtools/riverexp/build",
-  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/riverexp/build -I/Debug/include   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/riverexp.cpp.o -c /home/ciprian/testtools/riverexp/riverexp.cpp",
-  "file": "/home/ciprian/testtools/riverexp/riverexp.cpp"
+  "directory": "/home/ciprian/testtools/river/riverexp/build",
+  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/home/ciprian/testtools/river/riverexp/river.format/include   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/riverexp.cpp.o -c /home/ciprian/testtools/river/riverexp/riverexp.cpp",
+  "file": "/home/ciprian/testtools/river/riverexp/riverexp.cpp"
+},
+{
+  "directory": "/home/ciprian/testtools/river/riverexp/build/river.format/format.handler",
+  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/include -I/home/ciprian/testtools/river/riverexp/river.format/format.handler/../include -I/home/ciprian/testtools/river/riverexp/river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/format.handler.dir/BinFormat.cpp.o -c /home/ciprian/testtools/river/riverexp/river.format/format.handler/BinFormat.cpp",
+  "file": "/home/ciprian/testtools/river/riverexp/river.format/format.handler/BinFormat.cpp"
+},
+{
+  "directory": "/home/ciprian/testtools/river/riverexp/build/river.format/format.handler",
+  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/include -I/home/ciprian/testtools/river/riverexp/river.format/format.handler/../include -I/home/ciprian/testtools/river/riverexp/river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/format.handler.dir/TextFormat.cpp.o -c /home/ciprian/testtools/river/riverexp/river.format/format.handler/TextFormat.cpp",
+  "file": "/home/ciprian/testtools/river/riverexp/river.format/format.handler/TextFormat.cpp"
+},
+{
+  "directory": "/home/ciprian/testtools/river/riverexp/build/river.format/format.handler",
+  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/include -I/home/ciprian/testtools/river/riverexp/river.format/format.handler/../include -I/home/ciprian/testtools/river/riverexp/river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/format.handler.dir/BinFormatConcolic.cpp.o -c /home/ciprian/testtools/river/riverexp/river.format/format.handler/BinFormatConcolic.cpp",
+  "file": "/home/ciprian/testtools/river/riverexp/river.format/format.handler/BinFormatConcolic.cpp"
 }
 ]

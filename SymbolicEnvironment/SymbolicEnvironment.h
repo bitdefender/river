@@ -5,7 +5,7 @@
 #include "../Execution/Execution.h"
 #include "LargeStack.h"
 
-#define OP_HAS_SYMBOLIC				1
+#define OP_HAS_SYMBOLIC			1
 #define OP_HAS_CONCRETE_BEFORE		2
 #define OP_HAS_CONCRETE_AFTER		4
 
@@ -45,6 +45,7 @@ namespace sym {
 		typedef void(*DecRefFunc)(void *);
 
 		virtual void SetReferenceCounting(AddRefFunc addRef, DecRefFunc decRef) = 0;
+
 
 		/**
 		*	The set current instruction gets called by the symbolic handler.
@@ -200,6 +201,10 @@ namespace sym {
 		SymbolicExecutor(SymbolicEnvironment *e)
 			: mCount(0), mInfo(nullptr), env(e)
 		{}
+
+		
+		// This is called when the execution meets another basic block and its telling the symbolic executor about this, maybe he cares
+		virtual void OnExecutionControl(const rev::BasicBlockInfo& bblock){};
 
 		// Create a new symbolic variable
 		// size - variable size in bytes
