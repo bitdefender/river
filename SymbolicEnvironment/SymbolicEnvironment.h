@@ -3,6 +3,7 @@
 
 #include "../revtracer/river.h"
 #include "../Execution/Execution.h"
+#include "../river.format/include/AbstractLog.h"
 #include "LargeStack.h"
 
 #define OP_HAS_SYMBOLIC			1

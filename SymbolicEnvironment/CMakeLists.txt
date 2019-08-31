@@ -19,6 +19,8 @@ add_library(${LIBRARY_NAME} SHARED
 	../revtracer/AddressContainer.cpp
 	)
 
+#include_directories(../river.format/include)
+
 set_target_properties(${LIBRARY_NAME} PROPERTIES
   PUBLIC_HEADER "Environment.h;LargeStack.h;SymbolicEnvironment.h"
   )
