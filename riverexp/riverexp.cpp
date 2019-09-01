@@ -121,8 +121,152 @@ void string_values()
 #include <vector>
 #include "BinFormatConcolic.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+
+#define PIPE_READ 0
+#define PIPE_WRITE 1
+
+int createChild(const char* szCommand, char* const aArguments[], char* const aEnvironment[], const char* szMessage) 
+{
+  int aStdinPipe[2];
+  int aStdoutPipe[2];
+  int nChild;
+  char nChar;
+  int nResult;
+
+  if (pipe(aStdinPipe) < 0) {
+    perror("allocating pipe for child input redirect");
+    return -1;
+  }
+  if (pipe(aStdoutPipe) < 0) {
+    close(aStdinPipe[PIPE_READ]);
+    close(aStdinPipe[PIPE_WRITE]);
+    perror("allocating pipe for child output redirect");
+    return -1;
+  }
+
+  nChild = fork();
+  if (0 == nChild) {
+    // child continues here
+
+    // redirect stdin
+    if (dup2(aStdinPipe[PIPE_READ], STDIN_FILENO) == -1) {
+      exit(errno);
+    }
+
+    // redirect stdout
+    if (dup2(aStdoutPipe[PIPE_WRITE], STDOUT_FILENO) == -1) {
+      exit(errno);
+    }
+
+    // redirect stderr
+    if (dup2(aStdoutPipe[PIPE_WRITE], STDERR_FILENO) == -1) {
+      exit(errno);
+    }
+
+    // all these are for use by parent only
+    if (close(aStdinPipe[PIPE_READ]) < 0 ||
+        close(aStdinPipe[PIPE_WRITE]) < 0 ||
+        close(aStdoutPipe[PIPE_READ]) < 0 ||
+        close(aStdoutPipe[PIPE_WRITE]) < 0)
+    {
+      exit(errno);
+    }
+
+
+    // run child process image
+    // replace this with any exec* function find easier to use ("man exec")
+    nResult = execve(szCommand, aArguments, aEnvironment);
+    if (nResult < 0)
+    {
+      printf("1 Oh dear, something went wrong with execve! %s. command %s \n", strerror(errno), szCommand );
+    }
+    else
+    {
+      printf("Successfully started child process\n");
+    }
+    
+
+    // if we get here at all, an error occurred, but we are in the child
+    // process, so just exit
+    exit(nResult);
+  } else if (nChild > 0) {
+    // parent continues here
+
+    // close unused file descriptors, these are for child only
+    close(aStdinPipe[PIPE_READ]);
+    close(aStdoutPipe[PIPE_WRITE]); 
+
+    //sleep(10);
+
+    
+    // Include error check here
+    if (NULL != szMessage) {
+      int sizeWritten = write(aStdinPipe[PIPE_WRITE], szMessage, strlen(szMessage));
+      if (sizeWritten < 0)
+      {
+         printf("2 Oh dear, something went wrong with read()! %s\n", strerror(errno));
+      }
+      int err = close(aStdinPipe[PIPE_WRITE]);
+      if (err < 0)
+      {
+         printf("3 Oh dear, something went wrong with read()! %s\n", strerror(errno));
+      }
+    }
+      
+
+    // Just a char by char read here, you can change it accordingly
+    printf("starting to write output ..\n");
+    while (true)
+    {
+      int sz = read(aStdoutPipe[PIPE_READ], &nChar, 1);
+      if (sz <= 0)
+      {
+        if (sz < 0)
+        {
+          printf("4 Oh dear, something went wrong with read()! %s\n", strerror(errno));
+        }
+        break;
+      }
+      write(STDOUT_FILENO, &nChar, 1);
+    }
+    printf("ending to write output ..\n");
+
+
+    // done with these in this example program, you would normally keep these
+    // open of course as long as you want to talk to the child
+    close(aStdinPipe[PIPE_WRITE]);
+    close(aStdoutPipe[PIPE_READ]);
+  } else {
+    // failed to create child
+    close(aStdinPipe[PIPE_READ]);
+    close(aStdinPipe[PIPE_WRITE]);
+    close(aStdoutPipe[PIPE_READ]);
+    close(aStdoutPipe[PIPE_WRITE]);
+  }
+  return nChild;
+}
+
 int main (int argc, char *argv[])
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+   char* const tracerProgramPath = "/usr/local/bin/river.tracer";
+   char * const tracerArgv[] = { tracerProgramPath, "-p", "libfmi.so", "--annotated", "--logfile", "log.txt" "--z3", "--outfile", "stdout", nullptr};// "--annotated", "--z3", "--outfile", "stdout", nullptr}; //, "--annotated", "--z3", /*"--logfile", "stdout",*/ "--binlog", "--binbuffered", "--exprsimplify",  "<", "~/testtools/river/benchmarking-payload/fmi/sampleinput.txt", nullptr };
+   char * const tracerEnviron[] = { nullptr };
+#pragma GCC diagnostic pop
+    /*
+
+    int nResult = execve("/bin/ls", newargv, newenviron);
+    if (nResult < 0)
+    {
+      printf("Oh dear, something went wrong with read()! %s\n", strerror(errno));
+    }
+    */
+
 # if 0  // Z3 experiments
     unsigned major, minor, build, revision;
     Z3_get_version(&major, &minor, &build, &revision);
@@ -140,6 +284,21 @@ int main (int argc, char *argv[])
 
 #else  // Parsing experiments
 
+/// DEBUG SHIT
+/*
+    int nResult = execve(tracerProgramPath, tracerArgv, tracerEnviron);
+    if (nResult < 0)
+    {
+      printf("1 Oh dear, something went wrong with execve! %s. command %s \n", strerror(errno), tracerProgramPath );
+    }
+    else
+    {
+      printf("Successfully started child process\n");
+    }*/
+///---------
+
+
+   createChild(tracerProgramPath, tracerArgv, tracerEnviron, "message");
 
 #endif
 
