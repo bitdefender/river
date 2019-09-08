@@ -125,149 +125,164 @@ void string_values()
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/stat.h> 
+#include <sys/types.h>   
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/wait.h>
+#include <assert.h>
 
-#define PIPE_READ 0
-#define PIPE_WRITE 1
-
-int createChild(const char* szCommand, char* const aArguments[], char* const aEnvironment[], const char* szMessage) 
+#define SOCKET_ADDRESS_COMM "/home/ciprian/socketriver"
+#define NUM_MAX_CONNECTIONS 10
+void simulateTracerChild() 
 {
-  int aStdinPipe[2];
-  int aStdoutPipe[2];
-  int nChild;
-  char nChar;
-  int nResult;
+    const bool tracerIsSpawnedExternally = true; // True if you want to launch the tracer process externally
 
-  if (pipe(aStdinPipe) < 0) {
-    perror("allocating pipe for child input redirect");
-    return -1;
-  }
-  if (pipe(aStdoutPipe) < 0) {
-    close(aStdinPipe[PIPE_READ]);
-    close(aStdinPipe[PIPE_WRITE]);
-    perror("allocating pipe for child output redirect");
-    return -1;
-  }
-
-  nChild = fork();
-  if (0 == nChild) {
-    // child continues here
-
-    // redirect stdin
-    if (dup2(aStdinPipe[PIPE_READ], STDIN_FILENO) == -1) {
-      exit(errno);
-    }
-
-    // redirect stdout
-    if (dup2(aStdoutPipe[PIPE_WRITE], STDOUT_FILENO) == -1) {
-      exit(errno);
-    }
-
-    // redirect stderr
-    if (dup2(aStdoutPipe[PIPE_WRITE], STDERR_FILENO) == -1) {
-      exit(errno);
-    }
-
-    // all these are for use by parent only
-    if (close(aStdinPipe[PIPE_READ]) < 0 ||
-        close(aStdinPipe[PIPE_WRITE]) < 0 ||
-        close(aStdoutPipe[PIPE_READ]) < 0 ||
-        close(aStdoutPipe[PIPE_WRITE]) < 0)
-    {
-      exit(errno);
-    }
-
-
-    // run child process image
-    // replace this with any exec* function find easier to use ("man exec")
-    nResult = execve(szCommand, aArguments, aEnvironment);
-    if (nResult < 0)
-    {
-      printf("1 Oh dear, something went wrong with execve! %s. command %s \n", strerror(errno), szCommand );
-    }
-    else
-    {
-      printf("Successfully started child process\n");
-    }
-    
-
-    // if we get here at all, an error occurred, but we are in the child
-    // process, so just exit
-    exit(nResult);
-  } else if (nChild > 0) {
-    // parent continues here
-
-    // close unused file descriptors, these are for child only
-    close(aStdinPipe[PIPE_READ]);
-    close(aStdoutPipe[PIPE_WRITE]); 
-
-    //sleep(10);
-
-    
-    // Include error check here
-    if (NULL != szMessage) {
-      int sizeWritten = write(aStdinPipe[PIPE_WRITE], szMessage, strlen(szMessage));
-      if (sizeWritten < 0)
-      {
-         printf("2 Oh dear, something went wrong with read()! %s\n", strerror(errno));
-      }
-      int err = close(aStdinPipe[PIPE_WRITE]);
-      if (err < 0)
-      {
-         printf("3 Oh dear, something went wrong with read()! %s\n", strerror(errno));
-      }
-    }
-      
-
-    // Just a char by char read here, you can change it accordingly
-    printf("starting to write output ..\n");
-    while (true)
-    {
-      int sz = read(aStdoutPipe[PIPE_READ], &nChar, 1);
-      if (sz <= 0)
-      {
-        if (sz < 0)
-        {
-          printf("4 Oh dear, something went wrong with read()! %s\n", strerror(errno));
-        }
-        break;
-      }
-      write(STDOUT_FILENO, &nChar, 1);
-    }
-    printf("ending to write output ..\n");
-
-
-    // done with these in this example program, you would normally keep these
-    // open of course as long as you want to talk to the child
-    close(aStdinPipe[PIPE_WRITE]);
-    close(aStdoutPipe[PIPE_READ]);
-  } else {
-    // failed to create child
-    close(aStdinPipe[PIPE_READ]);
-    close(aStdinPipe[PIPE_WRITE]);
-    close(aStdoutPipe[PIPE_READ]);
-    close(aStdoutPipe[PIPE_WRITE]);
-  }
-  return nChild;
-}
-
-int main (int argc, char *argv[])
-{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wwrite-strings"
-   char* const tracerProgramPath = "/usr/local/bin/river.tracer";
-   char * const tracerArgv[] = { tracerProgramPath, "-p", "libfmi.so", "--annotated", "--logfile", "log.txt" "--z3", "--outfile", "stdout", nullptr};// "--annotated", "--z3", "--outfile", "stdout", nullptr}; //, "--annotated", "--z3", /*"--logfile", "stdout",*/ "--binlog", "--binbuffered", "--exprsimplify",  "<", "~/testtools/river/benchmarking-payload/fmi/sampleinput.txt", nullptr };
-   char * const tracerEnviron[] = { nullptr };
+    char* const tracerProgramPath = "/usr/local/bin/river.tracer";
+    char * const tracerArgv[] = { tracerProgramPath, "-p", "libfmi.so", "--annotated", "--z3", "--flow", "--addrName", SOCKET_ADDRESS_COMM, "--exprsimplify", nullptr};
+    char * const tracerEnviron[] = { nullptr };
 #pragma GCC diagnostic pop
-    /*
 
-    int nResult = execve("/bin/ls", newargv, newenviron);
-    if (nResult < 0)
+    bool doServerJob = true;
+    int nTracerProcessId = -1;
+    if (!tracerIsSpawnedExternally)
     {
-      printf("Oh dear, something went wrong with read()! %s\n", strerror(errno));
+        nTracerProcessId = fork();
+        if (0 == nTracerProcessId) 
+        {
+          doServerJob = false;
+          // run child process image
+          int nResult = execve(tracerProgramPath, tracerArgv, tracerEnviron);
+          if (nResult < 0)
+          {
+            printf("1 Oh dear, something went wrong with execve! %s. command %s \n", strerror(errno), tracerProgramPath );
+          }
+          else
+          {
+            printf("Successfully started child process\n");
+          }
+          
+          // if we get here at all, an error occurred, but we are in the child
+          // process, so just exit
+          exit(nResult);
+        }
+        else
+        {
+          doServerJob = true;
+        }
     }
-    */
 
-# if 0  // Z3 experiments
+    if (doServerJob)
+    {
+        // Communicate with the tracer process just spawned through sockets
+
+        // Step 1: create a socket, bind it to a common address then listen.
+        int serverSocket = -1;
+        if ((serverSocket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) 
+        {
+            perror("server: socket");
+            exit(1);
+        }
+
+        struct sockaddr_un saun, fsaun;
+        saun.sun_family = AF_UNIX;
+        strcpy(saun.sun_path, SOCKET_ADDRESS_COMM);
+        unlink(SOCKET_ADDRESS_COMM);
+        const int len = sizeof(saun.sun_family) + strlen(saun.sun_path);
+
+        if (bind(serverSocket, (struct sockaddr *)&saun, len) < 0) 
+        {
+            perror("server: bind");
+            exit(1);
+        }
+
+        if (listen(serverSocket, NUM_MAX_CONNECTIONS) < 0) 
+        {
+              perror("server: listen");
+              exit(1);
+        }
+
+        // Step 2: accept a new client. 
+        // TODO: for multiple clients, create a thread to handle each individual client
+        int clientSocket = -1;
+        int fromLen = -1;
+        if ((clientSocket = accept(serverSocket, (struct sockaddr *)&fsaun, (socklen_t*)&fromLen)) < 0) 
+        {
+              perror("server: accept");
+              exit(1);
+        }
+
+
+        FILE* fp = fdopen(clientSocket, "rb");
+        if (fp == 0) {
+             perror("can't open");
+              exit(1);
+          }
+
+
+        // Simulate some tasks sending/receiving with the tracer process
+        const int MAX_SEND_BUFFER_SIZE = 1024;
+        const int MAX_RECV_BUFFER_SIZE = 1024;
+        char SEND_BUFFER[MAX_SEND_BUFFER_SIZE]={0};
+        char RESPONSE_BUFFER[MAX_RECV_BUFFER_SIZE]={0};
+
+        // Create some task samples and their sizes. The last one is the termination marker
+        const int numTasks = 3;
+        const char* taskContent[numTasks] = {"ABCD", "DEFGH", ""};
+        const int taskSizes[numTasks] = {5,6,-1};
+
+        for (int i = 0; i < numTasks; i++)
+        {
+            // Serialize the task [task_size | content]
+            *(int*)(&SEND_BUFFER[0]) = taskSizes[i];
+            const bool isTerminationTask = taskSizes[i] == -1;
+
+            if (!isTerminationTask)
+            {
+                memcpy(&SEND_BUFFER[sizeof(int)], taskContent[i], sizeof(char)*taskSizes[i]);
+          
+                // Send it over the network
+                printf("Send task %d: size %d. content %s\n", i, taskSizes[i], &SEND_BUFFER[sizeof(int)]);
+                send(clientSocket, SEND_BUFFER, taskSizes[i] + sizeof(int), 0);
+            }
+            else
+            {
+                printf("Sending termination task\n");
+                send(clientSocket, SEND_BUFFER, sizeof(int), 0);
+            }
+        
+            if (!isTerminationTask)
+            {
+                // Get the result back for this task
+                int responseSize = -1;
+                fread(&responseSize, sizeof(int), 1, fp);
+                fread(RESPONSE_BUFFER, sizeof(char), responseSize, fp);
+
+                printf("Response task %d: size %d. content %s\n", i, responseSize, RESPONSE_BUFFER);
+            }
+        }
+
+        // Wait the process if spawned from here
+        if (!tracerIsSpawnedExternally)
+        {
+            int status = -1;
+            int w = waitpid(nTracerProcessId, &status, WUNTRACED | WCONTINUED);
+            if (w == -1) {
+                perror("waitpid");
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+    }
+
+}
+
+
+void doZ3Experiments()
+{
     unsigned major, minor, build, revision;
     Z3_get_version(&major, &minor, &build, &revision);
     printf("Z3 %d.%d.%d.%d\n", major, minor, build, revision);
@@ -281,25 +296,16 @@ int main (int argc, char *argv[])
 
     parse_string();
     string_values();
+}
 
-#else  // Parsing experiments
+int main (int argc, char *argv[])
+{
+#if 0
+    doZ3Experiments();
+#endif
 
-/// DEBUG SHIT
-/*
-    int nResult = execve(tracerProgramPath, tracerArgv, tracerEnviron);
-    if (nResult < 0)
-    {
-      printf("1 Oh dear, something went wrong with execve! %s. command %s \n", strerror(errno), tracerProgramPath );
-    }
-    else
-    {
-      printf("Successfully started child process\n");
-    }*/
-///---------
-
-
-   createChild(tracerProgramPath, tracerArgv, tracerEnviron, "message");
-
+#if 1
+    simulateTracerChild();
 #endif
 
   return 0;

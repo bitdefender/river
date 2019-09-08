@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "g++-5 build and debug active file",
+            "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "program":"${command:cmake.launchTargetPath}",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -22,8 +22,8 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "g++-5 build active file",
-            "miDebuggerPath": "/usr/bin/gdb"
+            //"preLaunchTask": "g++-5 build active file",
+            //"miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }
