@@ -1,0 +1,20 @@
+Test: f629ee97 - Taken f629eeb2, NotTaken f629eeae. Was taken ? No
+1 0 
+2 f629ee97 f629eef2 
+(= (bvnot (ite (= @0 #x62) #b1 #b0)) $f629ee97)
+
+Test: f629eeae - Taken f629eec3, NotTaken f629eebf. Was taken ? No
+1 1 
+1 f629eeae 
+(= (bvnot (ite (= @1 #x61) #b1 #b0)) $f629eeae)
+
+Test: f629eebf - Taken f629eed4, NotTaken f629eed0. Was taken ? No
+1 2 
+1 f629eebf 
+(= (bvnot (ite (= @2 #x64) #b1 #b0)) $f629eebf)
+
+Test: f629eed0 - Taken f629eee5, NotTaken f629eee1. Was taken ? Yes
+1 3 
+1 f629eed0 
+(= (bvnot (ite (= @3 #x21) #b1 #b0)) $f629eed0)
+

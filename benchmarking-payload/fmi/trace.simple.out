@@ -1,19 +1,20 @@
-Test: f6298e26 - Taken f6298e74, NotTaken f6298e3d. Was taken ? No
-1 0 (let ((a!1 (bvor ((_ extract 7 7) |s[0]|)
-                 (bvnot ((_ extract 7 7) (bvadd #xa7 |s[0]|))))))
-(let ((a!2 (bvnot (bvor (ite (= |s[0]| #x59) #b1 #b0) (bvnot a!1)))))
-  (= a!2 |0xf6298e26|)))
+Test: f61cfea7 - Taken f61cfec2, NotTaken f61cfebe. Was taken ? Yes
+1 0 
+2 f61cfea7 f61cff0e 
+(= (bvnot (ite (= @0 #x62) #b1 #b0)) $f61cfea7)
 
-Test: f6298e3d - Taken f6298e74, NotTaken f6298e6d. Was taken ? No
-2 0 1 (let ((a!1 (= (bvmul #x00000002 (concat #x000000 |s[1]|))
-              (bvadd #x00000059 (bvmul #xfffffffe (concat #x000000 |s[0]|)))))
-      (a!2 ((_ extract 31 31)
-             (bvadd #xffffffa7
-                    (bvmul #x00000002 (concat #x000000 |s[1]|))
-                    (bvmul #x00000002 (concat #x000000 |s[0]|)))))
-      (a!3 ((_ extract 31 31)
-             (bvadd (bvmul #x00000002 (concat #x000000 |s[1]|))
-                    (bvmul #x00000002 (concat #x000000 |s[0]|))))))
-(let ((a!4 (bvnot (bvor (bvnot (bvxor a!3 a!2)) a!2))))
-  (= (bvnot (bvor (ite a!1 #b1 #b0) (bvxor a!2 a!4))) |0xf6298e3d|)))
+Test: f61cfec2 - Taken f61cfed3, NotTaken f61cfecf. Was taken ? Yes
+1 1 
+1 f61cfec2 
+(= (bvnot (ite (= @1 #x61) #b1 #b0)) $f61cfec2)
+
+Test: f61cfed3 - Taken f61cfee4, NotTaken f61cfee0. Was taken ? Yes
+1 2 
+1 f61cfed3 
+(= (bvnot (ite (= @2 #x64) #b1 #b0)) $f61cfed3)
+
+Test: f61cfee4 - Taken f61cfef5, NotTaken f61cfef1. Was taken ? Yes
+1 3 
+1 f61cfee4 
+(= (bvnot (ite (= @3 #x21) #b1 #b0)) $f61cfee4)
 

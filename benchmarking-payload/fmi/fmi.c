@@ -176,7 +176,7 @@ void test_simple_2(const unsigned char *buf)
 }
 
 
-void test_simple(const unsigned char *buf) 
+void test_simple_ab(const unsigned char *buf) 
 {
 	int a = 3;
 	if (buf[0] < 'Z')
@@ -190,4 +190,21 @@ void test_simple(const unsigned char *buf)
 
 	}
 }
+
+#include <assert.h>
+
+void test_simple(const unsigned char *input) 
+{
+
+	int cnt=0;
+	if (input[0] == 'b') cnt++;
+	if (input[1] == 'a') cnt++;
+	if (input[2] == 'd') cnt++;
+	if (input[3] == '!') cnt++;
+	if (cnt >= 4) cnt++; // TODO: assert
+
+}
+
+
+
 

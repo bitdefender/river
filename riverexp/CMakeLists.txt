@@ -78,7 +78,7 @@ add_subdirectory (river.format/format.handler)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/river.format/include)
 
 # add the executable
-add_executable(Riverexp riverexp.cpp)
+add_executable(Riverexp riverexp.cpp src/constraintsSolver.cpp src/concolicExecutor.cpp)
 target_link_libraries(Riverexp ${EXTRA_LIBS})
 
 
