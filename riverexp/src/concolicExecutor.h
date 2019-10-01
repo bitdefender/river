@@ -6,20 +6,48 @@
 #include <unordered_set>
 #include <vector>
 #include <queue>
+#include <semaphore.h>
 
 //////////
 // Usefull code starts here
 
 using ArrayOfUnsignedChars = std::vector<unsigned char>;
 
+struct ExecutionOptions
+{
+public:
+	bool m_useIPC = false;			// If true, we use inter process communication between this and tracer. Highly recommended for release versions
+	int m_numProcessesToUse = -1;	// The number of processes to use for tracer execution
+	bool spawnTracersManually; 		// If true, tracers are spawned by hand
+};
+
+struct WorkerInfo
+{
+	int socket = -1;
+	FILE* socketReadStream = 0;
+};
+
+struct ExecutionState
+{
+	sem_t* m_syncSemaphore;			// Used to synchronize comm between executor and tracer
+	std::vector<int> m_tracersPID;	// the ids of the processes executing the tracer
+	std::vector<WorkerInfo> m_workers;
+	int m_serverSocket = -1;
+};
+
 // This is the object that instruments the concolic execution
 // TODO: add serialized IPC communication between this and tracer
 class ConcolicExecutor
 {
 public:
-	ConcolicExecutor(const int MAX_TRACER_OUTPUT_SIZE, const char* testedLibrary);
+	ConcolicExecutor(const int MAX_TRACER_INPUT_SIZE, const int MAX_TRACER_OUTPUT_SIZE,
+	const char* testedLibrary, 
+	const ExecutionOptions& execOptions = ExecutionOptions());
 	virtual ~ConcolicExecutor();
 
+
+	// External textual execution of tracer - must be used only for debug purposes
+	// --------------------------------------------------------------------------------------
 	// Executes the tracer with a given input and fill out the path constraint
 	// This is the "debug" version, with the tracer being invoked in an external process and reading the output generated file
 	// TERRIBLE PERFORMANCE - use only for debugging
@@ -29,10 +57,15 @@ public:
 	// fills the score inside 
 	// reports any errors, crashes etc.
 	void executeTracerTracking_external(InputPayload& input);
+	// --------------------------------------------------------------------------------------
 
-	// Run the input symbolically, negate the constraints one by one and get new inputs by solving them with the SMT
-	// Returns in the out variable the input childs of the base input parameter
-	void ExpandExecution(const InputPayload& input, std::vector<InputPayload>& outGeneratedInputChildren);
+
+	// IPC - socket communication between this and tracer - should be preferred to test performance and real life deployment
+	// --------------------------------------------------------------------------------------
+	// These serve the same purpose as the above two functions. Normally it should be a strategy pattern here but we only have two strategies...
+	void executeTracerSymbolically_ipc(const InputPayload& input, PathConstraint &outPathConstraint);
+	void executeTracerTracking_ipc(InputPayload& input);
+	// --------------------------------------------------------------------------------------
 
     // Search the solutions for a problem
     // TODO: This is subject to API change for sure. What do we do with the output ?
@@ -40,6 +73,16 @@ public:
 
 private:
 	const int m_MAX_TRACER_OUTPUT_SIZE;
+	const int m_MAX_TRACER_INPUT_SIZE;
+
+	static constexpr char* SOCKET_ADDRESS_COMM = (char*)"/home/ciprian/socketriver";
+
+	// This solves the connection between this and tracer (tracers)
+	void handshakeWithSymbolicTracer();
+
+	// Run the input symbolically, negate the constraints one by one and get new inputs by solving them with the SMT
+	// Returns in the out variable the input childs of the base input parameter
+	void ExpandExecution(const InputPayload& input, std::vector<InputPayload>& outGeneratedInputChildren);
 
 	// The name (or full path) of the library under test.
 	std::string m_testedLibrary; 
@@ -52,10 +95,17 @@ private:
 	// Worklist scored by the items scores
 	std::priority_queue<InputPayload> m_workList;
 
-	// Buffers to store the last output from execution of the tracer
+	// Buffer to store the last output from execution of the tracer
 	char* m_lastTracerOutputBuffer = nullptr;
 	int m_lastTracerOutputSize = 0;
 
+	// Buffer to store input for a tracer 
+	char *m_lastTracerInputBuffer = nullptr;
+	int m_lastTracerInputSize = 0;
+
+	// IPC / distributed execution details. Should put them in a separate structure if more members are added
+	ExecutionOptions 	m_execOptions;
+	ExecutionState 	 	m_execState;
 };
 
 #endif

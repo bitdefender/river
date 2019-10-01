@@ -1,17 +1,17 @@
 [
 {
   "directory": "/home/ciprian/testtools/river/riverexp/build",
-  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/home/ciprian/testtools/river/riverexp/river.format/include   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/riverexp.cpp.o -c /home/ciprian/testtools/river/riverexp/riverexp.cpp",
+  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/home/ciprian/testtools/river/riverexp/river.format/include   -m32 -pthread -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -pthread -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/riverexp.cpp.o -c /home/ciprian/testtools/river/riverexp/riverexp.cpp",
   "file": "/home/ciprian/testtools/river/riverexp/riverexp.cpp"
 },
 {
   "directory": "/home/ciprian/testtools/river/riverexp/build",
-  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/home/ciprian/testtools/river/riverexp/river.format/include   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/src/constraintsSolver.cpp.o -c /home/ciprian/testtools/river/riverexp/src/constraintsSolver.cpp",
+  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/home/ciprian/testtools/river/riverexp/river.format/include   -m32 -pthread -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -pthread -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/src/constraintsSolver.cpp.o -c /home/ciprian/testtools/river/riverexp/src/constraintsSolver.cpp",
   "file": "/home/ciprian/testtools/river/riverexp/src/constraintsSolver.cpp"
 },
 {
   "directory": "/home/ciprian/testtools/river/riverexp/build",
-  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/home/ciprian/testtools/river/riverexp/river.format/include   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/src/concolicExecutor.cpp.o -c /home/ciprian/testtools/river/riverexp/src/concolicExecutor.cpp",
+  "command": "/usr/bin/g++-5   -I/home/ciprian/testtools/river/riverexp/build -I/home/ciprian/z3/Debug/include -I/home/ciprian/testtools/river/riverexp/river.format/include   -m32 -pthread -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -pthread -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\" -g   -o CMakeFiles/Riverexp.dir/src/concolicExecutor.cpp.o -c /home/ciprian/testtools/river/riverexp/src/concolicExecutor.cpp",
   "file": "/home/ciprian/testtools/river/riverexp/src/concolicExecutor.cpp"
 },
 {

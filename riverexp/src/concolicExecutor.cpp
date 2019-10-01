@@ -4,6 +4,16 @@
 #include <set>
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
+#include <sys/types.h> 
+#include <unistd.h> 
+#include <sys/socket.h> 
+#include <netinet/in.h> 
+#include <sys/un.h>
+#include <semaphore.h>  /* Semaphore */
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <sys/wait.h>
 
 ////////
 // Some global definitions & configs
@@ -18,18 +28,154 @@
 // Enable this to append (assert X)  before any let instruction read from output file
 #define MANUALLY_ADD_ASSERT_PREFIX
 
-
-ConcolicExecutor::ConcolicExecutor(const int MAX_TRACER_OUTPUT_SIZE, const char* testedLibrary)
+ConcolicExecutor::ConcolicExecutor(const int MAX_TRACER_INPUT_SIZE, const int MAX_TRACER_OUTPUT_SIZE, const char* testedLibrary, const ExecutionOptions& execOptions)
 : m_MAX_TRACER_OUTPUT_SIZE(MAX_TRACER_OUTPUT_SIZE)
+, m_MAX_TRACER_INPUT_SIZE(MAX_TRACER_INPUT_SIZE)
 {
+	m_lastTracerInputBuffer = new char[m_MAX_TRACER_INPUT_SIZE];
 	m_lastTracerOutputBuffer = new char[m_MAX_TRACER_OUTPUT_SIZE];
 	m_lastTracerOutputSize   = 0;
 	m_testedLibrary = testedLibrary;
+
+	m_execOptions = execOptions;
+	m_execState.m_syncSemaphore = sem_open("/concolicSem", O_CREAT, S_IRUSR | S_IWUSR, 0);
+	m_execState.m_tracersPID.clear();
+	assert (m_execState.m_syncSemaphore > 0 && "Couldn't create the semaphpre");
+
+	if (m_execOptions.m_useIPC)
+	{
+		assert(m_execOptions.m_numProcessesToUse == 1 && "In the current version we support a single tracer process");
+		handshakeWithSymbolicTracer();
+	}
+}
+
+void ConcolicExecutor::handshakeWithSymbolicTracer()
+{
+	assert(m_execOptions.m_useIPC == true && " if you call this be sure you want IPC !");
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+    char* const tracerProgramPath = "/usr/local/bin/river.tracer";
+    char * const tracerArgv[] = { tracerProgramPath, "-p", "libfmi.so", "--annotated", "--z3", "--flow", "--addrName", SOCKET_ADDRESS_COMM, "--exprsimplify", (char*)0};
+    char * const tracerEnviron[] = { "LD_LIBRARY_PATH=/usr/local/lib/", (char*)0 };
+#pragma GCC diagnostic pop
+
+    bool doServerJob = true;
+    //m_execState.m_tracersPID.push_back()
+    if (!m_execOptions.spawnTracersManually)
+    {
+		// Spawn the requested number of tracers by hand
+		for (int i = 0 ; i < m_execOptions.m_numProcessesToUse; i++)
+		{
+			const int nTracerProcessId = fork();
+			if (0 == nTracerProcessId) 
+			{
+				doServerJob = false;
+				// run child process image
+			
+				// Wait for server to be ready with socket created and listening
+				sem_wait(m_execState.m_syncSemaphore);
+				int nResult = execve(tracerProgramPath, tracerArgv, tracerEnviron);
+				if (nResult < 0)
+				{
+					printf("1 Oh dear, something went wrong with execve! %s. command %s \n", strerror(errno), tracerProgramPath );
+				}
+				else
+				{
+					printf("Successfully started child process\n");
+				}
+			
+				// if we get here at all, an error occurred, but we are in the child
+				// process, so just exit
+				exit(nResult);
+			}
+			else
+			{
+				m_execState.m_tracersPID.push_back(nTracerProcessId);
+				doServerJob = true;
+			}
+		}
+    }
+
+    if (doServerJob)
+    {
+        unlink(SOCKET_ADDRESS_COMM);
+
+        // Communicate with the tracer process just spawned through sockets
+
+        // Step 1: create a socket, bind it to a common address then listen.
+        if ((m_execState.m_serverSocket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) 
+        {
+            perror("server: socket");
+            exit(1);
+        }
+
+        struct sockaddr_un saun, fsaun;
+        saun.sun_family = AF_UNIX;
+        strcpy(saun.sun_path, SOCKET_ADDRESS_COMM);
+        unlink(SOCKET_ADDRESS_COMM);
+        const int len = sizeof(saun.sun_family) + strlen(saun.sun_path);
+
+        if (bind(m_execState.m_serverSocket, (struct sockaddr *)&saun, len) < 0) 
+        {
+            perror("server: bind");
+            exit(1);
+        }
+
+        if (listen(m_execState.m_serverSocket, m_execOptions.m_numProcessesToUse) < 0) 
+        {
+              perror("server: listen");
+              exit(1);
+        }
+
+		// Inform all tracers that we can start and wait for each
+		for (int i = 0; i < m_execOptions.m_numProcessesToUse; i++)
+		{
+			sem_post(m_execState.m_syncSemaphore);
+
+			// Accept a new client. 
+			// TODO: for multiple clients, create a thread to handle each individual client
+			int fromLen = 0;
+			int clientSocket = -1;
+			if ((clientSocket = accept(m_execState.m_serverSocket, (struct sockaddr *)&fsaun, (socklen_t*)&fromLen)) < 0) 
+			{
+				perror("server: accept");
+				exit(1);
+			}
+
+			FILE* socketReadStream = fdopen(clientSocket, "rb");
+			if (socketReadStream == 0) 
+			{
+				perror("can't open socker as read stream");
+				exit(1);
+			}
+			WorkerInfo newWorker;
+			newWorker.socket = clientSocket;
+			newWorker.socketReadStream = socketReadStream;
+			m_execState.m_workers.push_back(newWorker);
+		}
+    }
 }
 
 ConcolicExecutor::~ConcolicExecutor()
 {
+	// Wait all spawned processes here
+    if (!m_execOptions.spawnTracersManually)
+    {
+		for (const int pid : m_execState.m_tracersPID)
+		{
+			int status = -1;
+			int w = waitpid(pid, &status, WUNTRACED | WCONTINUED);
+			if (w == -1) 
+			{
+				perror("waitpid");
+				exit(EXIT_FAILURE);
+			}
+		}
+    }
+
 	delete m_lastTracerOutputBuffer;
+	delete m_lastTracerInputBuffer;
 }
 
 // Executes the tracer with a given input and fill out the path constraint
@@ -244,12 +390,60 @@ void ConcolicExecutor::executeTracerSymbolically_external(const InputPayload& pa
 	        free(line);
 	}
 }
+
+
+void ConcolicExecutor::executeTracerSymbolically_ipc(const InputPayload& input, PathConstraint &outPathConstraint)
+{
+#if 0
+        // Create some task samples and their sizes. The last one is the termination marker
+        const int numTasks = 3;
+        const char* taskContent[numTasks] = {"ABCD", "DEFGH", ""};
+        const int taskSizes[numTasks] = {5,6,-1};
+
+
+        for (int i = 0; i < numTasks; i++)
+        {
+            // Serialize the task [task_size | content]
+            *(int*)(&m_lastTracerInputBuffer[0]) = taskSizes[i];
+            const bool isTerminationTask = taskSizes[i] == -1;
+
+            if (!isTerminationTask)
+            {
+                memcpy(&m_lastTracerInputBuffer[sizeof(int)], taskContent[i], sizeof(char)*taskSizes[i]);
+          
+                // Send it over the network
+                printf("Send task %d: size %d. content %s\n", i, taskSizes[i], &m_lastTracerInputBuffer[sizeof(int)]);
+                send(clientSocket, m_lastTracerInputBuffer, taskSizes[i] + sizeof(int), 0);
+            }
+            else
+            {
+                printf("Sending termination task\n");
+                send(clientSocket, m_lastTracerInputBuffer, sizeof(int), 0);
+            }
+
+			printf("Now waiting for response..\n");
+      
+            if (!isTerminationTask)
+            {
+                // Get the result back for this task
+                int responseSize = -1;
+                fread(&responseSize, sizeof(int), 1, fp);
+
+				printf("Response task size %d\n", responseSize);
+                fread(m_lastTracerOutputBuffer, sizeof(char), responseSize, fp);
+
+                printf("Response task %d: size %d. content %s\n", i, responseSize, m_lastTracerOutputBuffer);
+            }
+        }
+#endif
+}
+
 // This function executes the library under test against input and:
 // fills the score inside 
 // reports any errors, crashes etc.
 void ConcolicExecutor::executeTracerTracking_external(InputPayload& input)
 {
-	// TODO: run m_testedLibrary with basic block tracking
+	// TODO: run m_testedLibrary with basic block tracking and take the output text generated
 	// 1. Get errors
 	// 2. Fill the different addresses of blocks touched by executing the given input payload to score with the code below
 	std::set<int> blocksTouchedByInput;
@@ -264,8 +458,15 @@ void ConcolicExecutor::executeTracerTracking_external(InputPayload& input)
 			score++;
 		}
 	}
+	
 	input.score = score;
 }
+
+void ConcolicExecutor::executeTracerTracking_ipc(InputPayload& input)
+{
+	// TODO: same as above code for _external, but execute simpletracer with IPC communication not textual !
+}
+
 
 // Run the input symbolically, negate the constraints one by one and get new inputs by solving them with the SMT
 // Returns in the out variable the input childs of the base input parameter

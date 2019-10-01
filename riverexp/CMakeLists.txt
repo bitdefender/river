@@ -95,8 +95,8 @@ macro (do_test arg result)
 endmacro (do_test)
 
 # ---------------
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -pthread -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -pthread -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g" )
@@ -107,3 +107,6 @@ set(CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS})
 #target_include_directories(c_example PRIVATE ${Z3_C_INCLUDE_DIRS})
 #target_link_libraries(c_example PRIVATE ${Z3_LIBRARIES})
 
+#set(THREADS_PREFER_PTHREAD_FLAG ON)
+#set(CMAKE_THREAD_PREFER_PTHREADS TRUE)
+#find_package(Threads REQUIRED)
