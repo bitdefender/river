@@ -20,6 +20,7 @@ add_library(${LIBRARY_NAME} SHARED
 	)
 
 #include_directories(../river.format/include)
+include_directories(../)
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES
   PUBLIC_HEADER "Environment.h;LargeStack.h;SymbolicEnvironment.h"
