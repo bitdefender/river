@@ -23,17 +23,20 @@ public:
 
 struct WorkerInfo
 {
-	int socket = -1;
-	FILE* socketReadStream = 0;
+	int socket = -1;				// The client socket associated with this symbolic worker
+	FILE* socketReadStream = 0;		// The socket above opened as a read stream (to mimic a file reading from it)
 };
 
 struct ExecutionState
 {
 	sem_t* m_syncSemaphore;			// Used to synchronize comm between executor and tracer
-	std::vector<int> m_tracersPID;	// the ids of the processes executing the tracer
 	std::vector<WorkerInfo> m_workers;
 	int m_serverSocket = -1;
+
+	std::vector<int> m_tracersPID;	// Pids of all child workers spawned
 };
+
+#define TERMINATION_TAG  -1
 
 // This is the object that instruments the concolic execution
 // TODO: add serialized IPC communication between this and tracer
@@ -77,9 +80,6 @@ private:
 
 	static constexpr char* SOCKET_ADDRESS_COMM = (char*)"/home/ciprian/socketriver";
 
-	// This solves the connection between this and tracer (tracers)
-	void handshakeWithSymbolicTracer();
-
 	// Run the input symbolically, negate the constraints one by one and get new inputs by solving them with the SMT
 	// Returns in the out variable the input childs of the base input parameter
 	void ExpandExecution(const InputPayload& input, std::vector<InputPayload>& outGeneratedInputChildren);
@@ -103,9 +103,21 @@ private:
 	char *m_lastTracerInputBuffer = nullptr;
 	int m_lastTracerInputSize = 0;
 
-	// IPC / distributed execution details. Should put them in a separate structure if more members are added
+	// IPC / distributed execution details and functionality. Should put them in a separate structure if more members are added
+	//---------------------------------------------------
 	ExecutionOptions 	m_execOptions;
 	ExecutionState 	 	m_execState;
+
+
+	// This solves the connection between this and tracer (tracers)
+	void handshakeWithSymbolicTracer();
+
+	// Close connections with workers
+	void closeConnections();
+
+	// Sends a message to worker. If size = TERMINATION_TAG (-1) => termination message (ugly but fast)
+	void sendTaskMessageToWorker(WorkerInfo& worker, const int size, const unsigned char* content);
+	//---------------------------------------------------
 };
 
 #endif

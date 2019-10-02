@@ -61,7 +61,7 @@ void ConcolicExecutor::handshakeWithSymbolicTracer()
 #pragma GCC diagnostic pop
 
     bool doServerJob = true;
-    //m_execState.m_tracersPID.push_back()
+    //m_execState..push_back()
     if (!m_execOptions.spawnTracersManually)
     {
 		// Spawn the requested number of tracers by hand
@@ -157,9 +157,16 @@ void ConcolicExecutor::handshakeWithSymbolicTracer()
     }
 }
 
-ConcolicExecutor::~ConcolicExecutor()
+// TODO:
+void ConcolicExecutor::closeConnections()
 {
-	// Wait all spawned processes here
+	// Send termination messages
+	for (WorkerInfo& worker : m_execState.m_workers)
+	{
+		sendTaskMessageToWorker(worker, -1, nullptr);
+	}
+
+	// Wait all spawned processes first
     if (!m_execOptions.spawnTracersManually)
     {
 		for (const int pid : m_execState.m_tracersPID)
@@ -173,6 +180,22 @@ ConcolicExecutor::~ConcolicExecutor()
 			}
 		}
     }
+
+	// Close their socket and server socket
+	for (WorkerInfo& worker : m_execState.m_workers)
+	{
+		for (WorkerInfo& worker : m_execState.m_workers)
+		{
+			close(worker.socket);
+			//close(worker.socketReadStream);
+		}
+		close(m_execState.m_serverSocket);
+	}
+}
+
+ConcolicExecutor::~ConcolicExecutor()
+{
+	closeConnections();
 
 	delete m_lastTracerOutputBuffer;
 	delete m_lastTracerInputBuffer;
@@ -391,51 +414,42 @@ void ConcolicExecutor::executeTracerSymbolically_external(const InputPayload& pa
 	}
 }
 
-
-void ConcolicExecutor::executeTracerSymbolically_ipc(const InputPayload& input, PathConstraint &outPathConstraint)
+void ConcolicExecutor::sendTaskMessageToWorker(WorkerInfo& worker, const int size, const unsigned char* content)
 {
-#if 0
-        // Create some task samples and their sizes. The last one is the termination marker
-        const int numTasks = 3;
-        const char* taskContent[numTasks] = {"ABCD", "DEFGH", ""};
-        const int taskSizes[numTasks] = {5,6,-1};
-
-
-        for (int i = 0; i < numTasks; i++)
-        {
-            // Serialize the task [task_size | content]
-            *(int*)(&m_lastTracerInputBuffer[0]) = taskSizes[i];
-            const bool isTerminationTask = taskSizes[i] == -1;
-
-            if (!isTerminationTask)
-            {
-                memcpy(&m_lastTracerInputBuffer[sizeof(int)], taskContent[i], sizeof(char)*taskSizes[i]);
+	int totalSize = 0;
+    *(int*)(&m_lastTracerInputBuffer[0]) = size;
+	if (size != TERMINATION_TAG)
+	{
+    	memcpy(&m_lastTracerInputBuffer[sizeof(int)], content, sizeof(content[0])*size);
+		totalSize = sizeof(int) + sizeof(content[0])*size;
+	}
+	else
+	{
+		totalSize = sizeof(int);
+	}	
           
-                // Send it over the network
-                printf("Send task %d: size %d. content %s\n", i, taskSizes[i], &m_lastTracerInputBuffer[sizeof(int)]);
-                send(clientSocket, m_lastTracerInputBuffer, taskSizes[i] + sizeof(int), 0);
-            }
-            else
-            {
-                printf("Sending termination task\n");
-                send(clientSocket, m_lastTracerInputBuffer, sizeof(int), 0);
-            }
+    // Send it over the network
+    printf("Send task to worker 0 size %d. content %s\n", totalSize, &m_lastTracerInputBuffer[sizeof(int)]);
+    send(worker.socket, m_lastTracerInputBuffer, totalSize, 0);
+}
 
-			printf("Now waiting for response..\n");
-      
-            if (!isTerminationTask)
-            {
-                // Get the result back for this task
-                int responseSize = -1;
-                fread(&responseSize, sizeof(int), 1, fp);
+void ConcolicExecutor::executeTracerSymbolically_ipc(const InputPayload& payload, PathConstraint &outPathConstraint)
+{
+	// TODO: multi job here !
+	const int workerToSendThisTaskTo = 0;
+	WorkerInfo& worker = m_execState.m_workers[workerToSendThisTaskTo];
 
-				printf("Response task size %d\n", responseSize);
-                fread(m_lastTracerOutputBuffer, sizeof(char), responseSize, fp);
+    // Serialize the task [task_size | content]
+	sendTaskMessageToWorker(worker, payload.input.size(), payload.input.data());
 
-                printf("Response task %d: size %d. content %s\n", i, responseSize, m_lastTracerOutputBuffer);
-            }
-        }
-#endif
+    // Get the result back for this task
+    int responseSize = -1;
+    fread(&responseSize, sizeof(int), 1, worker.socketReadStream);
+
+	printf("Response task size %d\n", responseSize);
+    fread(m_lastTracerOutputBuffer, sizeof(char), responseSize, worker.socketReadStream);
+
+    printf("Response: size %d. content %s\n", responseSize, m_lastTracerOutputBuffer);
 }
 
 // This function executes the library under test against input and:
@@ -474,7 +488,16 @@ void ConcolicExecutor::ExpandExecution(const InputPayload& input, std::vector<In
 {
 	//execute and fill the path constraints for this input
 	PathConstraint pathConstraint;
-	executeTracerSymbolically_external(input, pathConstraint);
+	if (!m_execOptions.m_useIPC)
+	{
+		executeTracerSymbolically_external(input, pathConstraint);
+	}
+	else
+	{
+		executeTracerSymbolically_ipc(input, pathConstraint);
+	}
+	
+
 	const int numConstraints = pathConstraint.constraints.size();
 	outGeneratedInputChildren.clear();
 	outGeneratedInputChildren.reserve(numConstraints);
@@ -537,7 +560,16 @@ void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput, c
 		for (InputPayload& payloadChildren : m_outGeneratedInputChildren)
 		{
 			// TODO: get results and report potential problems somewhere
-			executeTracerTracking_external(payloadChildren); 
+			if (!m_execOptions.m_useIPC)
+			{
+				executeTracerTracking_external(payloadChildren); 
+			}
+			else
+			{
+				executeTracerTracking_ipc(payloadChildren);
+			}
+			
+
 			m_workList.push(payloadChildren);
 		}
 	}
