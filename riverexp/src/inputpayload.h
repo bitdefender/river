@@ -2,6 +2,7 @@
 #define INPUT_PAYLOAD_H
 
 #include <string>
+#include <vector>
 
 class InputPayload
 {

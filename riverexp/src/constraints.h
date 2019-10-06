@@ -17,7 +17,7 @@ public:
 
 
 	bool was_taken = false;			// True if the jump condition associated to this test was taken or not during execution
-	std::string Z3_code;			// This conteints the Z3 code asserts associated with this test (no jump conditions or variable declarations here !)
+	std::string Z3_code;			// This contains the Z3 code asserts associated with this test (no jump conditions or variable declarations here !)
 	std::vector<int> variables; 	// The different sets of variables used by this test
 
 	bool isInverted = false;		// True if we need to get the inverted condition out of this test

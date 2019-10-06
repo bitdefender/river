@@ -6,17 +6,21 @@
 int main()
 {
 	ExecutionOptions execOp;
-	execOp.m_useIPC = true;
 	execOp.m_numProcessesToUse = 1;
 	execOp.spawnTracersManually = false;
+	execOp.testedLibrary = "libfmi.so";
+	execOp.MAX_TRACER_INPUT_SIZE = 1024;
+	execOp.MAX_TRACER_OUTPUT_SIZE = 1024*1024*10;
 
 #ifdef USE_IPC
-	ConcolicExecutor cexec(1024, 1024*1024*10, "libfmi.so", execOp);
+	execOp.m_execType = ExecutionOptions::EXEC_DISTRIBUTED_IPC;
+	ConcolicExecutor cexec(execOp);
 #else
-	ConcolicExecutor cexec(1024, 1024*1024*10, "libfmi.so");
+	execOp.m_execType = ExecutionOptions::EXEC_SERIAL;
+	ConcolicExecutor cexec("libfmi.so");
 #endif
 	ArrayOfUnsignedChars payloadInputExample = {'Y', '[', 'A', 'B'};
-	cexec.searchSolutions(payloadInputExample, true);
+	cexec.searchSolutions(payloadInputExample, false);
 
 	return 0;
 }

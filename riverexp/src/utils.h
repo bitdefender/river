@@ -8,6 +8,9 @@
  * take a hex string and convert it to a 32bit number (max 8 hex digits)
  */
 
+class ConcolicExecutionResult;
+class PathConstraint;
+
 class Utils
 {
 public:
@@ -117,5 +120,11 @@ public:
 
         return true;
     }
+
+    // Merges all individual unique variables from all tests in a single data structure
+    static void mergeAllVariables(PathConstraint& outPathConstraint);
+
+    // Converts between the two data structures
+    static void convertExecResultToPathConstraint(const ConcolicExecutionResult& inExecResults, PathConstraint& outPathConstraint);
 
 };

@@ -70,15 +70,19 @@ find_library (z3
               HINTS ${Z3_ROOT_LIBS}
               NO_DEFAULT_PATH)
 
+add_subdirectory (river.format/format.handler)
+add_subdirectory (river.format/logger)
+include_directories(river.format/include)
+
 message("z3 lib path ${z3}")
-set(EXTRA_LIBS ${EXTRA_LIBS} ${z3})
+set(EXTRA_LIBS ${EXTRA_LIBS} ${z3} format.handler)
 #--------------------------------------------------------------
 
-add_subdirectory (river.format/format.handler)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/river.format/include)
-
 # add the executable
-add_executable(Riverexp riverexp.cpp src/constraintsSolver.cpp src/concolicExecutor.cpp)
+add_executable(Riverexp riverexp.cpp src/constraintsSolver.cpp 
+              src/concolicExecutor.cpp 
+              src/utils.cpp
+              src/tracerExecutionStrategyExternal.cpp src/tracerExecutionStrategyMPI.cpp src/tracerExecutionStrategyIPC.cpp)
 target_link_libraries(Riverexp ${EXTRA_LIBS})
 
 
