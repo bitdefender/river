@@ -158,9 +158,10 @@ void TracerExecutionStrategyExternal::executeTracerSymbolically(const InputPaylo
 								if (read > 4 && memcmp(line, "Test:", 4) == 0)
 								{
 
-#ifdef MANUALLY_ADD_ASSERT_PREFIX
-									currentTest->Z3_code.append(")"); // For the assert end
-#endif
+									if (Utils::MANUALLY_ADD_ASSERT_PREFIX)
+									{
+										currentTest->Z3_code.append(")"); // For the assert end
+									}
 
 									// Then prepare for the next test
 									skipNextLineRead = true;
@@ -175,10 +176,11 @@ void TracerExecutionStrategyExternal::executeTracerSymbolically(const InputPaylo
 
 									if (currentTest->Z3_code.empty())
 									{
-#ifdef MANUALLY_ADD_ASSERT_PREFIX
-										// Add the (assert ) in front of the z3 code condition
-										currentTest->Z3_code.append("(assert ");
-#endif
+										if (Utils::MANUALLY_ADD_ASSERT_PREFIX)
+										{
+											// Add the (assert ) in front of the z3 code condition
+											currentTest->Z3_code.append("(assert ");
+										}
 									}
 
 									currentTest->Z3_code.append(line);
@@ -196,12 +198,13 @@ void TracerExecutionStrategyExternal::executeTracerSymbolically(const InputPaylo
 		else
 		{
 			// Add last ')' if manually adding the assert in front of code
-#ifdef MANUALLY_ADD_ASSERT_PREFIX
-			if (currentTest && !currentTest->Z3_code.empty())
+			if (Utils::MANUALLY_ADD_ASSERT_PREFIX)
 			{
-				currentTest->Z3_code.append(")"); // For the assert end
+				if (currentTest && !currentTest->Z3_code.empty())
+				{
+					currentTest->Z3_code.append(")"); // For the assert end
+				}
 			}
-#endif
 		}
 		
 	    // Post process the path constraint

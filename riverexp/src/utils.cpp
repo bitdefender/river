@@ -24,11 +24,24 @@ void Utils::convertExecResultToPathConstraint(const ConcolicExecutionResult& inE
         Test& outTest                       = outPathConstraint.constraints[i];
 
         // Ugly copy but we'll get soon to binary Z3 and avoid working with strings..
-        outTest.Z3_code = testResult.ast.address;
+        if (Utils::MANUALLY_ADD_ASSERT_PREFIX)
+        {
+            outTest.Z3_code.assign("(assert ");
+        }
+        outTest.Z3_code.append(testResult.ast.address, testResult.ast.size);
+        if (Utils::MANUALLY_ADD_ASSERT_PREFIX)
+        {
+            outTest.Z3_code.append(")");
+        }
+
 
         std::stringstream hexConvStream;
         outTest.isInverted = false;
         outTest.was_taken = testResult.taken;
+        outTest.variables.clear();
+        std::copy(testResult.indicesOfInputBytesUsed.begin(), 
+                  testResult.indicesOfInputBytesUsed.end(), 
+                  std::back_inserter(outTest.variables));
 
 
         outTest.pathBlockAddresses.resize(testResult.pathBBlocks.size());

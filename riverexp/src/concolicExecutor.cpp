@@ -12,18 +12,10 @@
 #include "tracerExecutionStrategyIPC.h"
 #include "tracerExecutionStrategyMPI.h"
 
-////////
-// Some global definitions & configs
-
-// If this is not commented, it will output all possible solutions in the given file
-#define OUTPUT_ALL_GENERATED_TESTS 
-
 // If below is enabled, we just take the textual output saved in the local folder and run over it.
 // Usefull to debug things
 //#define SIMULATE_TRACER_EXECUTION
 
-// Enable this to append (assert X)  before any let instruction read from output file
-#define MANUALLY_ADD_ASSERT_PREFIX
 
 ConcolicExecutor::ConcolicExecutor(const ExecutionOptions& execOptions)
 {

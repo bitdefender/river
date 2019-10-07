@@ -15,6 +15,13 @@ class Utils
 {
 public:
 
+    //////////////
+    // Some global definitions & configs
+
+    // Enable this to append (assert X)  before any let instruction read from output file
+    static const bool MANUALLY_ADD_ASSERT_PREFIX = true;
+    /////////////
+
     static int hex2int(char *hex) 
     {
         int val = 0;

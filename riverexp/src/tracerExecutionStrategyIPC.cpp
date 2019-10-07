@@ -159,8 +159,6 @@ void TracerExecutionStrategyIPC::executeTracerSymbolically(const InputPayload& p
 	ConcolicExecutionResult execResult;
 	execResult.deserializeFromStream(m_lastTracerOutputBuffer, m_lastTracerOutputSize - sizeof(int));
 	Utils::convertExecResultToPathConstraint(execResult, outPathConstraint);
-	// TODO: convert from execResult to outPathConstraint
-
 }
 
 void TracerExecutionStrategyIPC::sendTaskMessageToWorker(IPCWorkerInfo& worker, const int size, const unsigned char* content)

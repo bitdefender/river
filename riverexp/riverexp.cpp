@@ -7,7 +7,7 @@ int main()
 {
 	ExecutionOptions execOp;
 	execOp.m_numProcessesToUse = 1;
-	execOp.spawnTracersManually = false;
+	execOp.spawnTracersManually = true;
 	execOp.testedLibrary = "libfmi.so";
 	execOp.MAX_TRACER_INPUT_SIZE = 1024;
 	execOp.MAX_TRACER_OUTPUT_SIZE = 1024*1024*10;
