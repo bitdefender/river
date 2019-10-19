@@ -22,7 +22,7 @@ public:
     // This function executes the library under test against input and:
 	// fills the score inside 
 	// reports any errors, crashes etc.
-	virtual void executeTracerTracking(InputPayload& input) override;
+	virtual bool executeTracerTracking(InputPayload& input) override;
 
     virtual ExecutionState* getExecutionState() { return &m_execState;}
 

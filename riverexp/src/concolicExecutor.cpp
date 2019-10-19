@@ -6,6 +6,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <sys/types.h> 
+#include <sys/stat.h>
 #include <unistd.h> 
 #include "tracerExecutionStrategy.h"
 #include "tracerExecutionStrategyExternal.h"
@@ -70,6 +71,7 @@ void ConcolicExecutor::ExpandExecution(const InputPayload& input, std::vector<In
 		pathConstraint.constraints[j].setInverted(true);
 		// add to the interval solver the inverted j'th constraint
 		pcsolver.addConstraint(j);
+
 		// Get new input if conditions can be satisfied
 		InputPayload newInputPayload;
 		newInputPayload.input = input.input;  // Copy the original input and modify only the affected bytes
@@ -87,15 +89,37 @@ void ConcolicExecutor::ExpandExecution(const InputPayload& input, std::vector<In
 	}
 }
 
-void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput, const bool outputAllCoverageInputs, const char* fileToOutputCoverageInputs) 
+void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput) 
 {
 	// Set the first input received and add it to the worklist
 	InputPayload initialInput;
 	initialInput.input = startInput;
 	initialInput.bound = -1;
 	m_workList.push(std::move(initialInput));
+	int generatedInputsCounted = 0;
 
-	std::vector<std::vector<unsigned char>> coverageInputs; 
+	const bool showOutputAsText = m_execOptions.IsOutputOptionEnabled(ExecutionOptions::OPTION_TEXT);
+	const bool showOUtputAsBinary = m_execOptions.IsOutputOptionEnabled(ExecutionOptions::OPTION_BINARY);
+	const bool shouldFilterOutOkInputs = m_execOptions.IsOutputOptionEnabled(ExecutionOptions::OPTION_FILTER_NON_INTERESTING);
+
+
+	// If either text or binary output requested, delete and make the outputs folder again
+	if (showOutputAsText || showOUtputAsBinary)
+	{
+		//int err = rmdir("outputs");
+		const int dir_err = mkdir("outputs", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		/*if (-1 == dir_err)
+		{
+			printf("Error creating directory!n");
+			exit(1);
+		}*/
+	}
+
+	std::ofstream outTextCoverage;
+	if (showOutputAsText)
+	{
+		outTextCoverage.open("outputs/allinputs.txt");
+	}
 
 	// Perform a search inside the existing tree of tasks
 	while(!m_workList.empty())  
@@ -103,11 +127,7 @@ void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput, c
 		// Take the top scored path in the worklist - note that this is not executed yet and its constraints are not valid 
 		const InputPayload inputPicked(std::move(m_workList.top()));
 		m_workList.pop();
-
-        if (outputAllCoverageInputs)
-        {
-		    coverageInputs.push_back(inputPicked.input);
-        }
+		generatedInputsCounted++;
 
 		// Execute tracer and library using this input and produce the children input
 		// Expand the input by negating branch test along the path
@@ -117,20 +137,33 @@ void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput, c
 		for (InputPayload& payloadChildren : m_outGeneratedInputChildren)
 		{
 			// TODO: get results and report potential problems somewhere
-			m_tracerExecutionStrategy->executeTracerTracking(payloadChildren);
-			
+			const bool executedOk = m_tracerExecutionStrategy->executeTracerTracking(payloadChildren);
+
+			// Either the input is not OK or the filtering option is disabled..
+			if (executedOk == false || shouldFilterOutOkInputs == false)
+			{
+				if (showOutputAsText)
+				{
+					for (unsigned char chr : inputPicked.input)
+						outTextCoverage << (int)chr <<" ";
+					outTextCoverage << std::endl;
+				}
+				else if (showOUtputAsBinary)
+				{
+					static char buff[1024];
+					snprintf(buff, 1023, "outputs/input%d.bin", generatedInputsCounted);
+					std::ofstream outTextCoverage(buff, std::ofstream::binary);
+					outTextCoverage.write((const char*)inputPicked.input.data(), inputPicked.input.size());
+					outTextCoverage.close();
+				}
+			}
+
 			m_workList.push(payloadChildren);
 		}
 	}
-    
-    if (outputAllCoverageInputs)
-    {
-        std::ofstream newfile(fileToOutputCoverageInputs);
-        for (const std::vector<unsigned char> &s : coverageInputs) 
-        {
-			for (unsigned char chr : s)
-            	newfile << (int)chr <<" ";
-			newfile << std::endl;
-        }
-    }
+
+    if (showOutputAsText)
+	{
+		outTextCoverage.close();
+	}
 }

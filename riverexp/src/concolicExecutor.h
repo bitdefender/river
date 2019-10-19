@@ -27,7 +27,7 @@ public:
 
     // Search the solutions for a problem
     // TODO: This is subject to API change for sure. What do we do with the output ?
-	void searchSolutions(const ArrayOfUnsignedChars&, const bool outputAllCoverageInputs = false, const char* fileToOutputCoverageInputs ="covinputsresults.txt");
+	void searchSolutions(const ArrayOfUnsignedChars&);
 
 protected:
 	// Run the input symbolically, negate the constraints one by one and get new inputs by solving them with the SMT

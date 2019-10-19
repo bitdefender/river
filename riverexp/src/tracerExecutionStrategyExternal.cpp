@@ -216,7 +216,7 @@ void TracerExecutionStrategyExternal::executeTracerSymbolically(const InputPaylo
 	}
 }
 
-void TracerExecutionStrategyExternal::executeTracerTracking(InputPayload& input)
+bool TracerExecutionStrategyExternal::executeTracerTracking(InputPayload& input)
 {
 	// TODO: run m_testedLibrary with basic block tracking and take the output text generated
 	// 1. Get errors

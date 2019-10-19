@@ -15,7 +15,7 @@ public:
     TracerExecutionStrategyMPI(const ExecutionOptions& execOptions) : TracerExecutionStrategy(execOptions) 
 	{ assert(false && " not implemented");}
 	virtual void executeTracerSymbolically(const InputPayload& payload, PathConstraint &outPathConstraint) override {}
-	virtual void executeTracerTracking(InputPayload& input) override {}
+	virtual bool executeTracerTracking(InputPayload& input) override {}
 
 	virtual ExecutionState* getExecutionState() {return nullptr;}
 };

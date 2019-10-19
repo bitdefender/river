@@ -151,10 +151,14 @@ void TracerExecutionStrategyIPC::executeTracerSymbolically(const InputPayload& p
     int responseSize = -1;
     fread(&responseSize, sizeof(int), 1, worker.socketReadStream);
 
+#ifdef SHOW_LOGS
 	printf("Response task size %d\n", responseSize);
+#endif
     fread(m_lastTracerOutputBuffer, sizeof(char), responseSize, worker.socketReadStream);
 	m_lastTracerOutputSize = responseSize;
+#ifdef SHOW_LOGS
     printf("Response: size %d. content %s\n", responseSize, m_lastTracerOutputBuffer);
+#endif
 
 	ConcolicExecutionResult execResult;
 	execResult.deserializeFromStream(m_lastTracerOutputBuffer, m_lastTracerOutputSize - sizeof(int));
@@ -176,7 +180,10 @@ void TracerExecutionStrategyIPC::sendTaskMessageToWorker(IPCWorkerInfo& worker, 
 	}	
           
     // Send it over the network
+
+#ifdef SHOW_LOGS
     printf("Send task to worker 0 size %d. content %s\n", totalSize, &m_lastTracerInputBuffer[sizeof(int)]);
+#endif
     send(worker.socket, m_lastTracerInputBuffer, totalSize, 0);
 }
 
@@ -227,7 +234,8 @@ void TracerExecutionStrategyIPC::closeConnections()
 }
 
 
-void TracerExecutionStrategyIPC::executeTracerTracking(InputPayload& input)
+bool TracerExecutionStrategyIPC::executeTracerTracking(InputPayload& input)
 {
     // TODO: same as above code for _external, but execute simpletracer with IPC communication not textual !
+	return true;
 }

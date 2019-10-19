@@ -16,7 +16,8 @@ public:
     // This function executes the library under test against input and:
     // fills the score inside 
     // reports any errors, crashes etc.
-	virtual void executeTracerTracking(InputPayload& input) = 0;
+    // Returns true if the input is ok, false otherwise
+	virtual bool executeTracerTracking(InputPayload& input) = 0;
 
     // Maybe strategies want to lazy initialize resources..
     virtual void init() {}

@@ -71,12 +71,11 @@ void PathConstraintZ3Solver::popState()
 {
 	Z3_solver_pop(m_context, m_solver, 1);
 }
+
 void PathConstraintZ3Solver::addConstraint(const int constraintIndex)
 {
 	assert(m_pathConstraint->constraints.size() > constraintIndex);
 	const Test& constraint = m_pathConstraint->constraints[constraintIndex];
-
-
 
 	// Add the needed assert for the variable 
 	bool needJump = constraint.was_taken;

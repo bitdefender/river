@@ -1,1 +1,1 @@
-python -c 'print "ABCD"' | river.tracer -p libfmi.so --annotated --z3 --exprsimplify
+python -c 'print "Y[AB"' | river.tracer -p libfmi.so --annotated --z3 --exprsimplify

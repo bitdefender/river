@@ -33,7 +33,7 @@ public:
     TracerExecutionStrategyIPC(const ExecutionOptions& execOptions) : TracerExecutionStrategy(execOptions) { }
 	virtual ~TracerExecutionStrategyIPC();
 	void executeTracerSymbolically(const InputPayload& payload, PathConstraint &outPathConstraint) override;
-	void executeTracerTracking(InputPayload& input) override;
+	bool executeTracerTracking(InputPayload& input) override;
 
 	virtual ExecutionState* getExecutionState() { return &m_execState;}
 
