@@ -71,15 +71,21 @@ The modern way to debug and build projects from VS code:
     NOTE: For simpletracer use a GCC compiler in the Cmake interface toolbar
     NOTE: For debugging it is better to use DEbug->StartDebugging or the green arrow below Debug menu. The launch.json is already configured for you.
 ```
-  
-Below is the old version of how to debug from VS code
-``` 
-  a. Install VS code using ~/installVsCode.sh script.
-  b. Open vs-code as administrator: sudo code --user-data-dir="~/.vscode-root"
-  b. Install C/C++ extentions (there are 2) C/C++ 0.21.0 and C++ Intellisense 0.2.2
-  c. File->Open folder ~/testtools/simpletracer
-  
-  To build the code: just press CTRl+SHIFT+B  and you'll see the log in Terminal window inside vscode.
-  To install the libs and perform a full rebuild: press CTRL+SHIFT+P, write Run Task then choose "build_full".
-```
-``` 
+
+# Concolic executor
+The source code are in river/riverexp folder. You can build it using Visual Studio code, as specified above. TODO: make an installer !
+The options for executing the executable are the following:
+
+riverexp -p libfmi.so --numProcs 1 --outformat [binary OR text] [--outfilter] [--manualtracers] [--maxInputSize 1024] [--maxOutputSize 10000000] 
+
+**-p** specifies the library name to be executed
+**--numProcs** how many procs to use ( TODO: using more than 1 process is work in progress)
+**--outformat** can be either binary or text. If binary is used, it will write a binary file for each input produced. If text, then it will output all tests in a single file (open subfolder "outputs" to see all files inside).
+**--manualtracers** if used, you can manually spawn tracers, such that you can debug in a proper debugging mode if there is a problem with simpletracer process or communication.
+**--maxInputSize** maximum size of input generated
+**--maxOutputSize** maximum size of output expected
+
+
+How to debug ?
+Split with strategy ?
+
