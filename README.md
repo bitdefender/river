@@ -1,4 +1,4 @@
-# River 
+# *Part 1: River and tracer tools*
 
 - The instalation process is for Ubuntu 16.04.5 LTS xenial version
 - Also, note that the process is described for all of our tools not just RIVER.
@@ -72,7 +72,8 @@ The modern way to debug and build projects from VS code:
     NOTE: For debugging it is better to use DEbug->StartDebugging or the green arrow below Debug menu. The launch.json is already configured for you.
 ```
 
-# Concolic executor
+
+# *Part 2: Concolic executor*
 The source code are in river/riverexp folder. You can build it using Visual Studio code, as specified above. TODO: make an installer !
 The options for executing the executable are the following:
 
