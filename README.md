@@ -76,13 +76,20 @@ The modern way to debug and build projects from VS code:
 The source code are in river/riverexp folder. You can build it using Visual Studio code, as specified above. TODO: make an installer !
 The options for executing the executable are the following:
 
+```
 riverexp -p libfmi.so --numProcs 1 --outformat [binary OR text] [--outfilter] [--manualtracers] [--maxInputSize 1024] [--maxOutputSize 10000000] 
+```
 
 **-p** specifies the library name to be executed
+
 **--numProcs** how many procs to use ( TODO: using more than 1 process is work in progress)
+
 **--outformat** can be either binary or text. If binary is used, it will write a binary file for each input produced. If text, then it will output all tests in a single file (open subfolder "outputs" to see all files inside).
+
 **--manualtracers** if used, you can manually spawn tracers, such that you can debug in a proper debugging mode if there is a problem with simpletracer process or communication.
+
 **--maxInputSize** maximum size of input generated
+
 **--maxOutputSize** maximum size of output expected
 
 
