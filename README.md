@@ -74,7 +74,11 @@ The modern way to debug and build projects from VS code:
 
 
 # *Part 2: Concolic executor*
-The source code are in river/riverexp folder. You can build it using Visual Studio code, as specified above. TODO: make an installer !
+
+## Installing and usage 
+The source code are in river/riverexp folder. You can build it using Visual Studio code. Just open de folder and build, as specified above in the River tools section 
+TODO: we need to make an installer and separate it from RIVER with a different repository since its code is totally independent.
+
 The options for executing the executable are the following:
 
 ```
@@ -93,7 +97,13 @@ riverexp -p libfmi.so --numProcs 1 --outformat [binary OR text] [--outfilter] [-
 
 **--maxOutputSize** maximum size of output expected
 
+## Debugging 
 
-How to debug ?
-Split with strategy ?
+Usually we debug this using Visual Studio code (see the above section for River tools debugging). To debug both simpletracer and riverexp at the same time, just use **manualtracers** option, then start riverexp and simpletracer using:
+simple tracer -p libfmi.so --annotated --z3 --flow --addrName /home/ciprian/socketriver --exprsimplify
 
+***Note that if you use Visual Studio Code and open launch.json file, you can find several pre-made parameter configurations for both riverexp and simpletracer***.
+
+## Architecture
+
+T
