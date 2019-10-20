@@ -109,8 +109,11 @@ Also, use **TracerExecutionExtern** strategy (see the section below).
 
 The Concolic executor is actually totally decoupled from River and simpletracer, built on strategy pattern.
 Check the ConcolicExecutor class and how it aggregates inside a TracerExecutionStrategy. TracerExecutionStrategy can be currently:
+
 **TracerExecutionStrategyExternal** - for executing in textual format. Basically the communication between riverexp and simpletracer is done with text file generated, such that you can easily debug things not working.
+
 **TracerExecutionStrategyIPC** - communication through sockets. Currently uses only 1 process.
+
 **TracerExecutionStrategyMPI** - communication using MPI. No code. TODO task
 
 A list of working progress task can be found at https://trello.com/b/WmfPJGo6/tech-tasks . If you like something don't hesitate to contribute to our project !
