@@ -10,7 +10,8 @@
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64",
-            "compileCommands": "${workspaceFolder}/riverexp/build/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/riverexp/build/compile_commands.json",
+            "configurationProvider": "go2sh.cmake-integration"
         }
     ],
     "version": 4

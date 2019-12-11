@@ -35,6 +35,8 @@ public:
 		
 	bool IsOutputOptionEnabled(OutputOptionFlags flag) { return (outputOptions & ((int)flag)) != 0;}
 	int outputOptions = (int)OPTION_TEXT;
+
+	std::string m_outputFolderPath;				// Path containing the new inputs dataset generated
 };
 
 class ExecutionState

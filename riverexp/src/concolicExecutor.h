@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <vector>
 #include <queue>
+#include <fstream>
 #include <semaphore.h>
 #include "concolicDefs.h"
 
@@ -38,6 +39,10 @@ protected:
 
 	// Worklist scored by the items scores
 	std::priority_queue<InputPayload> m_workList;
+
+	int 						m_generatedInputsCount = 0;
+	std::ofstream 				m_outTextCoverage; // Text file used for debugging purposes to output the generated newly inputs
+
 
 	ExecutionOptions 			m_execOptions;
 	ExecutionState*				m_execState;	// You have global access to the execution state

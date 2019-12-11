@@ -1,20 +1,21 @@
-Test: f629ee97 - Taken f629eeb2, NotTaken f629eeae. Was taken ? No
+Test: f5d26e27 - Taken f5d29fec, NotTaken f5d26e31. Was taken ? No
 1 0 
-2 f629ee97 f629eef2 
-(= (bvnot (ite (= @0 #x62) #b1 #b0)) $f629ee97)
+123 f5d26561 f5d26528 f5d26519 f5d264f0 f5d264d0 f5d2b723 f5d2b769 f5d264f5 f5d2aece f5d29ff0 f5d264dc f5d2aeb5 f5d2a6b8 f6040b55 f6046b70 f5d2a65a f5d2aea1 f5bdfd90 f5bdfd2f f5c51179 f5bdc27b f5c51185 f5bdc2d3 f5bdfb48 f5d2a678 f5bde48c f5d2b7a3 f5d26e27 f6046b90 f7fd7fd0 f5c51146 f5bdc235 f5c51060 f5bdfb2e f5bdc20b f5be0200 f5c51153 f5be0207 f5d26339 f5bdfe95 f5be025f f5c8d285 f5bdfed2 f5bde877 f5bdc6b0 f5bde869 f5be027b f5be0342 f5d2650d f5c51083 f5bdfe7a f5bdfe0e f5c5109b f5bdfb10 f5bdc5e8 f5bdc287 f5bde6a8 f5d2b759 f5c51130 f5bdfe65 f5bdc229 f5bdc292 f5bdfda6 f5be0293 f5be023c f5d264e8 f5bdc2db f5bde50f f5bdc2ed f5d263a2 f5bdfb1b f5bdfe23 f5be0222 f5bdfe3f f5bdfcc0 f5c51094 f5d2656b f5be0255 f5d2ae84 f5bdfd3e f6046b75 f5be0330 f5bdfd7f f5be026c f6046b50 f5bdfd9a f5be0274 f5bdbe4a f5bdc30a f5bdbe60 f5bdc2b9 f5bde8d0 f5c51160 f5be6271 f5bdbe6d f5be02df f5bdbe77 f5bde8e7 f5bdfdd6 f5be0237 f5bdfe54 f5bdc5e0 f5bdfe9f f5bdbe40 f5bdfec5 f5bdfcaf f5c8d291 f5be0339 f5bde3d0 f5c8d295 f5be6289 f5bde3d9 f5d2ae68 f5bde3ef f5bdfeb4 f5bde5d4 f5bde416 f5bde481 f5bde8df f5bded20 f5bdc200 f5be0285 f5c931c0 
+(= (ite (= @0 #x0d) #b1 #b0) $f5d26e27)
 
-Test: f629eeae - Taken f629eec3, NotTaken f629eebf. Was taken ? No
-1 1 
-1 f629eeae 
-(= (bvnot (ite (= @1 #x61) #b1 #b0)) $f629eeae)
+Test: f5d26e31 - Taken f5d29fec, NotTaken f5d26e3b. Was taken ? No
+1 0 
+1 f5d26e31 
+(= (ite (= @0 #x0a) #b1 #b0) $f5d26e31)
 
-Test: f629eebf - Taken f629eed4, NotTaken f629eed0. Was taken ? No
-1 2 
-1 f629eebf 
-(= (bvnot (ite (= @2 #x64) #b1 #b0)) $f629eebf)
-
-Test: f629eed0 - Taken f629eee5, NotTaken f629eee1. Was taken ? Yes
-1 3 
-1 f629eed0 
-(= (bvnot (ite (= @3 #x21) #b1 #b0)) $f629eed0)
+Test: f5d26e3b - Taken f5d26e80, NotTaken f5d26e6d. Was taken ? Yes
+1 0 
+1 f5d26e3b 
+(let ((a!1 ((_ extract 7 7)
+             (bvadd #xa0 (concat ((_ extract 7 6) @0) #b1 ((_ extract 4 0) @0))))))
+(let ((a!2 (not (or (= ((_ extract 7 7) @0) #b1) (= a!1 #b0)))))
+(let ((a!3 (or (and (= ((_ extract 4 0) @0) #b00000)
+                    (= ((_ extract 7 6) @0) #b01))
+               a!2)))
+  (= (bvnot (ite a!3 #b0 #b1)) $f5d26e3b))))
 

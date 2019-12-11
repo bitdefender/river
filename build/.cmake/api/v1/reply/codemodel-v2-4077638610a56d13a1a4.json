@@ -1,0 +1,430 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						15,
+						16
+					],
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "CommonCrossPlatform",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "CommonCrossPlatform"
+				},
+				{
+					"build" : "BinLoader",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "BinLoader",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "VirtualMemory",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "VirtualMemory",
+					"targetIndexes" : 
+					[
+						11
+					]
+				},
+				{
+					"build" : "wrapper.setup",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "wrapper.setup",
+					"targetIndexes" : 
+					[
+						12
+					]
+				},
+				{
+					"build" : "revtracer-wrapper",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "revtracer-wrapper",
+					"targetIndexes" : 
+					[
+						9
+					]
+				},
+				{
+					"build" : "revtracer",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "revtracer",
+					"targetIndexes" : 
+					[
+						8
+					]
+				},
+				{
+					"build" : "ipclib",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ipclib",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "Execution",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Execution",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "loader",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "loader",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "SymbolicEnvironment",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "SymbolicEnvironment",
+					"targetIndexes" : 
+					[
+						10
+					]
+				},
+				{
+					"build" : "benchmarking-payload",
+					"childIndexes" : 
+					[
+						12,
+						13,
+						14
+					],
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "benchmarking-payload"
+				},
+				{
+					"build" : "benchmarking-payload/libxml2-payload",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 0,
+					"source" : "benchmarking-payload/libxml2-payload",
+					"targetIndexes" : 
+					[
+						13
+					]
+				},
+				{
+					"build" : "benchmarking-payload/http-parser-payload",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 0,
+					"source" : "benchmarking-payload/http-parser-payload",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "benchmarking-payload/fmi",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 0,
+					"source" : "benchmarking-payload/fmi",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "river.format/logger",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "river.format/logger",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "river.format/format.handler",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "river.format/format.handler",
+					"targetIndexes" : 
+					[
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16
+					],
+					"name" : "RIVER",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 2,
+					"id" : "binloader::@3164b1e408a00561e57b",
+					"jsonFile" : "target-binloader-Debug-6c2bdbad4360a48f8c78.json",
+					"name" : "binloader",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "execution::@6afe2b6d4d857933ccc8",
+					"jsonFile" : "target-execution-Debug-1a6707315d70b3036181.json",
+					"name" : "execution",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 14,
+					"id" : "fmi::@eabc462cd81bc6ea7945",
+					"jsonFile" : "target-fmi-Debug-5478f9f873cdfd71e223.json",
+					"name" : "fmi",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 16,
+					"id" : "format.handler::@eea3135fc2a2f3ccfa48",
+					"jsonFile" : "target-format.handler-Debug-14ef172c26c4cd61203d.json",
+					"name" : "format.handler",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 13,
+					"id" : "http-parser::@5a837b4968b2dc14c3fd",
+					"jsonFile" : "target-http-parser-Debug-ec6603eeb13762df3993.json",
+					"name" : "http-parser",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "ipc::@e969e0ac28cd0682d02d",
+					"jsonFile" : "target-ipc-Debug-4764a4f6fa6c752eb62d.json",
+					"name" : "ipc",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "loader::@b692507f4f02cc5d3d46",
+					"jsonFile" : "target-loader-Debug-047b34bef1611d40505c.json",
+					"name" : "loader",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 15,
+					"id" : "logger::@d6afe7c89985037678a0",
+					"jsonFile" : "target-logger-Debug-6623aa50aadfe7b32f3f.json",
+					"name" : "logger",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "revtracer::@1959fb09c76e8606cdce",
+					"jsonFile" : "target-revtracer-Debug-d1cc2d25613b0b4b3d96.json",
+					"name" : "revtracer",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "revtracerwrapper::@937dc62c7f98e03d7caa",
+					"jsonFile" : "target-revtracerwrapper-Debug-7c70da9d5b73e8b044e6.json",
+					"name" : "revtracerwrapper",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 10,
+					"id" : "symbolicenvironment::@edf6fa0b267b7980019f",
+					"jsonFile" : "target-symbolicenvironment-Debug-d66b8d8c682ba2087d2e.json",
+					"name" : "symbolicenvironment",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "virtualmemory::@92c1390b9cf8da590614",
+					"jsonFile" : "target-virtualmemory-Debug-c01d456bcd1942b92bf9.json",
+					"name" : "virtualmemory",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "wrappersetup::@141cb483ce87b8abb458",
+					"jsonFile" : "target-wrappersetup-Debug-556ea6010784c999f9ca.json",
+					"name" : "wrappersetup",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 12,
+					"id" : "xml2-payload::@b2a9a88a286ea7b0b4f0",
+					"jsonFile" : "target-xml2-payload-Debug-2e1524a91fb0e9954a1b.json",
+					"name" : "xml2-payload",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/ciprian/testtools/river/build",
+		"source" : "/home/ciprian/testtools/river"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}

@@ -41,6 +41,33 @@ ConcolicExecutor::ConcolicExecutor(const ExecutionOptions& execOptions)
 
 	// Get the state created by the strategy
 	m_execState = m_tracerExecutionStrategy->getExecutionState();
+
+	// Output setup
+	const bool showOutputAsText = m_execOptions.IsOutputOptionEnabled(ExecutionOptions::OPTION_TEXT);
+	const bool showOUtputAsBinary = m_execOptions.IsOutputOptionEnabled(ExecutionOptions::OPTION_BINARY);
+	const char* outputFolderPath = m_execOptions.m_outputFolderPath.c_str();
+
+	m_generatedInputsCount = 0;
+	// If either text or binary output requested, delete and make the outputs folder again
+	if (showOutputAsText || showOUtputAsBinary)
+	{
+		//int err = rmdir("outputs");
+		const int dir_err = mkdir(outputFolderPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		if (-1 == dir_err && errno != EEXIST)
+		{
+			std::cerr << "Error :  " << strerror(errno) << std::endl;
+			printf("Error creating directory!n");
+			exit(1);
+		}
+	}
+
+	if (showOutputAsText)
+	{
+		char textCoverageInputPath[4096];
+		snprintf(textCoverageInputPath, sizeof(textCoverageInputPath), "%s/allinputs.txt", outputFolderPath);
+		m_outTextCoverage.open(textCoverageInputPath);
+	}
+
 }
 
 ConcolicExecutor::~ConcolicExecutor()
@@ -96,30 +123,13 @@ void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput)
 	initialInput.input = startInput;
 	initialInput.bound = -1;
 	m_workList.push(std::move(initialInput));
-	int generatedInputsCounted = 0;
+	
 
 	const bool showOutputAsText = m_execOptions.IsOutputOptionEnabled(ExecutionOptions::OPTION_TEXT);
 	const bool showOUtputAsBinary = m_execOptions.IsOutputOptionEnabled(ExecutionOptions::OPTION_BINARY);
 	const bool shouldFilterOutOkInputs = m_execOptions.IsOutputOptionEnabled(ExecutionOptions::OPTION_FILTER_NON_INTERESTING);
+	const char* outputsPath = m_execOptions.m_outputFolderPath.c_str();
 
-
-	// If either text or binary output requested, delete and make the outputs folder again
-	if (showOutputAsText || showOUtputAsBinary)
-	{
-		//int err = rmdir("outputs");
-		const int dir_err = mkdir("outputs", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-		/*if (-1 == dir_err)
-		{
-			printf("Error creating directory!n");
-			exit(1);
-		}*/
-	}
-
-	std::ofstream outTextCoverage;
-	if (showOutputAsText)
-	{
-		outTextCoverage.open("outputs/allinputs.txt");
-	}
 
 	// Perform a search inside the existing tree of tasks
 	while(!m_workList.empty())  
@@ -127,8 +137,7 @@ void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput)
 		// Take the top scored path in the worklist - note that this is not executed yet and its constraints are not valid 
 		const InputPayload inputPicked(std::move(m_workList.top()));
 		m_workList.pop();
-		generatedInputsCounted++;
-
+		
 		// Execute tracer and library using this input and produce the children input
 		// Expand the input by negating branch test along the path
 		m_outGeneratedInputChildren.clear();
@@ -142,17 +151,19 @@ void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput)
 			// Either the input is not OK or the filtering option is disabled..
 			if (executedOk == false || shouldFilterOutOkInputs == false)
 			{
+				m_generatedInputsCount++;
 				if (showOutputAsText)
 				{
 					for (unsigned char chr : inputPicked.input)
-						outTextCoverage << (int)chr <<" ";
-					outTextCoverage << std::endl;
+						m_outTextCoverage << (int)chr <<" ";
+					m_outTextCoverage << std::endl;
 				}
 				else if (showOUtputAsBinary)
 				{
 					static char buff[1024];
-					snprintf(buff, 1023, "outputs/input%d.bin", generatedInputsCounted);
+					snprintf(buff, 1023, "%s/input%d.bin", outputsPath, m_generatedInputsCount);
 					std::ofstream outTextCoverage(buff, std::ofstream::binary);
+					assert(outTextCoverage.is_open() && "can't write the output file!");
 					outTextCoverage.write((const char*)inputPicked.input.data(), inputPicked.input.size());
 					outTextCoverage.close();
 				}
@@ -164,6 +175,6 @@ void ConcolicExecutor::searchSolutions(const ArrayOfUnsignedChars& startInput)
 
     if (showOutputAsText)
 	{
-		outTextCoverage.close();
+		m_outTextCoverage.close();
 	}
 }
