@@ -2,7 +2,7 @@
 #include <string>
 #include "../src/ezOptionParser.h"
 
-//#define USE_IPC
+#define USE_IPC
 
 void setupOptions(ez::ezOptionParser& opt, int argc, const char *argv[])
 {
@@ -206,7 +206,7 @@ int main(int argc, const char *argv[])
 					}	
 					else
 					{
-						printf("%s\n", fullpath);
+						//printf("%s\n", fullpath);
 
 						// Read the file's content
 						FILE* finput = fopen(fullpath, "rb");
@@ -215,7 +215,8 @@ int main(int argc, const char *argv[])
 						fseek(finput, 0L, SEEK_SET);
 						ArrayOfUnsignedChars payloadInputExample(sz);					
 						fread(payloadInputExample.data(), sizeof(*payloadInputExample.data()), sz, finput);				
-
+						fclose(finput);
+						
 						// Then send it as search input seed	
 						cexec.searchSolutions(payloadInputExample);
 					}								

@@ -9,10 +9,15 @@
             "type": "cppdbg",
             "request": "launch",
             "program":"${command:cmake.launchTargetPath}",
+
             // "args": ["-p", "libfmi.so", "--numProcs 1", "--outformat", "text"],
-            "args": ["-p", "libhttp-parser.so", "--numProcs 1", "--outformat", "binary", 
-                "--inputSeedsFolder", "/home/ciprian/testtools/river/riverexp/benchmarks/httpparser", 
-                "--outputFolder", "/home/ciprian/testtools/river/riverexp/benchmarks/outputs/httpparser"],
+            //"args": ["-p", "libhttp-parser.so", "--numProcs 1", "--outformat", "binary", 
+            //    "--inputSeedsFolder", "/home/ciprian/testtools/river/riverexp/benchmarks/httpparser", 
+            //    "--outputFolder", "/home/ciprian/testtools/river/riverexp/benchmarks/outputs/httpparser"],
+            "args": ["-p", "libxml2-payload.so", "--numProcs 1", "--outformat", "binary", 
+                "--inputSeedsFolder", "/home/ciprian/testtools/river/riverexp/benchmarks/xml2", 
+                "--outputFolder", "/home/ciprian/testtools/river/riverexp/benchmarks/outputs/xml2"],
+
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
