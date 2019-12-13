@@ -1,14 +1,10 @@
 ## revtracer CMakeLists.txt
 
 set(CMAKE_VERBOSE_MAKEFILE true)
-set(CMAKE_CXX_COMPILER g++) # i686-w64-mingw32-g++)
+set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
 
 set(FLAGS_CROSS "-D_cdecl=\"__attribute__((cdecl))\" \
-	-D_stdcall=\"__attribute__((stdcall))\" \
-    -D'__declspec(noinline)=__attribute__ ((noinline))' \
-    -D'CALLING_CONV(naked)=__attribute__((naked))' \
-    -D__cdecl=\"\" \
-    -D__stdcall=\"\"")
+	-D_stdcall=\"__attribute__((stdcall))\"")
 
 set(CMAKE_CXX_FLAGS "-m32 -march=i386 -fno-exceptions \
 	-fno-stack-protector -fcheck-new -std=c++11 ${FLAGS_CROSS} \
@@ -19,7 +15,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -D_REVTRA
 
 set(CMAKE_SHARED_LINKER_FLAGS "--disable-stdcall-fixup -static-libstdc++")
 
-set(CMAKE_ASM_COMPILER as) # i686-w64-mingw32-as)
+set(CMAKE_ASM_COMPILER i686-w64-mingw32-as)
 set(CMAKE_ASM_FLAGS "--32")
 set(CMAKE_ASM_FLAGS_RELEASE "${CMAKE_ASM_FLAGS}")
 set(CMAKE_ASM_FLAGS_DEBUG "${CMAKE_ASM_FLAGS} -g")
@@ -67,9 +63,9 @@ add_library(revtracer SHARED
 set_target_properties(revtracer
     PROPERTIES
     DEFINE_SYMBOL ""
-    NO_SONAME OFF
-    PREFIX "lib"
-    SUFFIX ".so" 
+    NO_SONAME ON
+    PREFIX ""
+    SUFFIX ".dll" 
     PUBLIC_HEADER "DebugPrintFlags.h;RiverAddress.h;common.h;environment.h;revtracer.h;river.h"
     )
 

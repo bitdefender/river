@@ -4,8 +4,6 @@
 #include "../revtracer-wrapper/RevtracerWrapper.h"
 #include "../BinLoader/LoaderAPI.h"
 #include "../wrapper.setup/Wrapper.Setup.h"
-#include "../revtracer/revtracer.h"
-#include "../revtracer-wrapper/Wrapper.Linux.cpp"
 
 #ifdef __linux__
 #include <string.h>

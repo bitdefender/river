@@ -1,13 +1,8 @@
 ## Execution CMakeLists.txt
 
 set(LIBRARY_NAME execution)
-set(FLAGS_CROSS "-D_cdecl=\"__attribute__((cdecl))\" \
-	-D_stdcall=\"__attribute__((stdcall))\" \
-    -D'__declspec(noinline)=__attribute__ ((noinline))' \
-    -D'CALLING_CONV(naked)=__attribute__((naked))' \
-    -D__cdecl=\"\" \
-    -D__stdcall=\"\"")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -m32 -std=c++11 \
+set(FLAGS_CROSS "-D__cdecl=\"\" -D__stdcall=\"\"")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -D_EXECUTION_EXPORTS \
 	-DBLOCK_CACHE_READ_ONLY ${FLAGS_CROSS}")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
@@ -32,13 +27,11 @@ add_library(${LIBRARY_NAME} SHARED
 	)
 
 target_link_libraries(${LIBRARY_NAME}
-	binloader
-	wrappersetup
-    virtualmemory
-	rt
-	dl
-    revtracer
-    revtracerwrapper
+		binloader
+		wrappersetup
+		virtualmemory
+		rt
+		dl
     )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES PUBLIC_HEADER "Execution.h")

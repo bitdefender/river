@@ -3,7 +3,7 @@
 #include "execenv.h"
 #include "callgates.h"
 
-#include <x86intrin.h>
+#include <intrin.h>
 
 
 //void InitSymbolicHandler(ExecutionEnvironment *pEnv);

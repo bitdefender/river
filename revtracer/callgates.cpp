@@ -1,5 +1,4 @@
-#include <x86intrin.h>
-#define __declspec(noinline) __attribute__ ((noinline))
+#include <intrin.h>
 
 #include "common.h"
 #include "callgates.h"

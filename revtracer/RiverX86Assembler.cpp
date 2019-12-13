@@ -1,4 +1,4 @@
-#include <x86intrin.h>
+#include <intrin.h>
 
 #include "RiverX86Assembler.h"
 #include "X86AssemblerFuncs.h"
