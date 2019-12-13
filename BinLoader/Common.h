@@ -1,12 +1,16 @@
 #ifndef _COMMON_EXECUTION_LOADER_H
 #define _COMMON_EXECUTION_LOADER_H
 
+
+#include "../revtracer/common.h"
+/*
 #ifdef _MSC_VER
 #define DEBUG_BREAK __asm \
 { __asm int 3 }
 #else
 #define DEBUG_BREAK asm volatile("int $0x3")
 #endif
+*/
 
 #ifdef __linux__
 #include <stdio.h>

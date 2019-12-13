@@ -464,45 +464,6 @@
 		{
 			"isCMake" : true,
 			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeDetermineASMCompiler.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeDetermineCompiler.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeDetermineCompilerId.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeCompilerIdDetection.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeFindBinUtils.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/Compiler/GNU-FindBinUtils.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeASMCompiler.cmake.in"
-		},
-		{
-			"isGenerated" : true,
-			"path" : "build/CMakeFiles/3.15.3/CMakeASMCompiler.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
 			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeSystemSpecificInformation.cmake"
 		},
 		{
@@ -721,77 +682,38 @@
 		{
 			"isCMake" : true,
 			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeASMInformation.cmake"
+			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CheckFunctionExists.cmake"
 		},
 		{
 			"isCMake" : true,
 			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/Compiler/GNU-ASM.cmake"
+			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CheckFunctionExists.c"
 		},
 		{
 			"isCMake" : true,
 			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/Compiler/GNU.cmake"
+			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CheckFunctionExists.c"
 		},
 		{
 			"isCMake" : true,
 			"isExternal" : true,
-			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CMakeTestASMCompiler.cmake"
+			"path" : "/opt/cmake-3.15.3-Linux-x86_64/share/cmake-3.15/Modules/CheckFunctionExists.c"
 		},
 		{
-			"path" : "CommonCrossPlatform/CMakeLists.txt"
-		},
-		{
-			"path" : "BinLoader/CMakeLists.txt"
-		},
-		{
-			"path" : "VirtualMemory/CMakeLists.txt"
-		},
-		{
-			"path" : "wrapper.setup/CMakeLists.txt"
-		},
-		{
-			"path" : "revtracer-wrapper/CMakeLists.txt"
-		},
-		{
-			"path" : "revtracer/CMakeLists.txt"
-		},
-		{
-			"path" : "ipclib/CMakeLists.txt"
-		},
-		{
-			"path" : "Execution/CMakeLists.txt"
-		},
-		{
-			"path" : "loader/CMakeLists.txt"
-		},
-		{
-			"path" : "SymbolicEnvironment/CMakeLists.txt"
-		},
-		{
-			"path" : "benchmarking-payload/CMakeLists.txt"
-		},
-		{
-			"path" : "benchmarking-payload/libxml2-payload/CMakeLists.txt"
-		},
-		{
-			"path" : "benchmarking-payload/http-parser-payload/CMakeLists.txt"
-		},
-		{
-			"path" : "benchmarking-payload/fmi/CMakeLists.txt"
-		},
-		{
-			"path" : "river.format/logger/CMakeLists.txt"
+			"path" : "RiverexpConfig.h.in"
 		},
 		{
 			"path" : "river.format/format.handler/CMakeLists.txt"
+		},
+		{
+			"path" : "river.format/logger/CMakeLists.txt"
 		}
 	],
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "/home/ciprian/testtools/river/build",
-		"source" : "/home/ciprian/testtools/river"
+		"build" : "/home/ciprian/testtools/river/riverexp/build",
+		"source" : "/home/ciprian/testtools/river/riverexp"
 	},
 	"version" : 
 	{

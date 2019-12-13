@@ -102,19 +102,19 @@
 		},
 		{
 			"backtrace" : 3,
-			"id" : "virtualmemory::@92c1390b9cf8da590614"
-		},
-		{
-			"backtrace" : 3,
-			"id" : "wrappersetup::@141cb483ce87b8abb458"
-		},
-		{
-			"backtrace" : 3,
 			"id" : "revtracerwrapper::@937dc62c7f98e03d7caa"
 		},
 		{
 			"backtrace" : 3,
 			"id" : "revtracer::@1959fb09c76e8606cdce"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "virtualmemory::@92c1390b9cf8da590614"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "wrappersetup::@141cb483ce87b8abb458"
 		}
 	],
 	"id" : "execution::@6afe2b6d4d857933ccc8",

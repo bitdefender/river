@@ -1,6 +1,8 @@
 #include <sys/mman.h>
 
-#define DEBUG_BREAK asm volatile("int $0x3")
+#include "../revtracer/common.h"
+
+//#define DEBUG_BREAK asm volatile("int $0x3")
 #define bit_arch_Slow_BSF (1 << 2)
 
 extern unsigned int get_rtld_global_ro_addr(void);

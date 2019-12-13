@@ -14,7 +14,7 @@
 #include <vector>
 #include <string>
 
-#define DEBUG_BREAK asm volatile("int $0x3")
+#include "../revtracer/common.h"
 
 namespace ldr {
 

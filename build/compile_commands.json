@@ -1,407 +1,517 @@
 [
 {
-  "directory": "/home/ciprian/testtools/river/build/BinLoader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/binloader.dir/Common.cpp.o -c /home/ciprian/testtools/river/BinLoader/Common.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o BinLoader/CMakeFiles/binloader.dir/Common.cpp.o -c /home/ciprian/testtools/river/BinLoader/Common.cpp",
   "file": "/home/ciprian/testtools/river/BinLoader/Common.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/BinLoader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/binloader.dir/ELF.Loader.cpp.o -c /home/ciprian/testtools/river/BinLoader/ELF.Loader.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o BinLoader/CMakeFiles/binloader.dir/ELF.Loader.cpp.o -c /home/ciprian/testtools/river/BinLoader/ELF.Loader.cpp",
   "file": "/home/ciprian/testtools/river/BinLoader/ELF.Loader.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/BinLoader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/binloader.dir/PE.Loader.cpp.o -c /home/ciprian/testtools/river/BinLoader/PE.Loader.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o BinLoader/CMakeFiles/binloader.dir/PE.Loader.cpp.o -c /home/ciprian/testtools/river/BinLoader/PE.Loader.cpp",
   "file": "/home/ciprian/testtools/river/BinLoader/PE.Loader.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/BinLoader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/binloader.dir/Unified.Loader.cpp.o -c /home/ciprian/testtools/river/BinLoader/Unified.Loader.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o BinLoader/CMakeFiles/binloader.dir/Unified.Loader.cpp.o -c /home/ciprian/testtools/river/BinLoader/Unified.Loader.cpp",
   "file": "/home/ciprian/testtools/river/BinLoader/Unified.Loader.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/BinLoader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/binloader.dir/LoaderAPI.cpp.o -c /home/ciprian/testtools/river/BinLoader/LoaderAPI.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o BinLoader/CMakeFiles/binloader.dir/LoaderAPI.cpp.o -c /home/ciprian/testtools/river/BinLoader/LoaderAPI.cpp",
   "file": "/home/ciprian/testtools/river/BinLoader/LoaderAPI.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/BinLoader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/binloader.dir/Inproc.Mapper.cpp.o -c /home/ciprian/testtools/river/BinLoader/Inproc.Mapper.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o BinLoader/CMakeFiles/binloader.dir/Inproc.Mapper.cpp.o -c /home/ciprian/testtools/river/BinLoader/Inproc.Mapper.cpp",
   "file": "/home/ciprian/testtools/river/BinLoader/Inproc.Mapper.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/BinLoader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/binloader.dir/Shm.Mapper.cpp.o -c /home/ciprian/testtools/river/BinLoader/Shm.Mapper.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o BinLoader/CMakeFiles/binloader.dir/Shm.Mapper.cpp.o -c /home/ciprian/testtools/river/BinLoader/Shm.Mapper.cpp",
   "file": "/home/ciprian/testtools/river/BinLoader/Shm.Mapper.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/BinLoader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/binloader.dir/Inproc.Native.Importer.cpp.o -c /home/ciprian/testtools/river/BinLoader/Inproc.Native.Importer.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o BinLoader/CMakeFiles/binloader.dir/Inproc.Native.Importer.cpp.o -c /home/ciprian/testtools/river/BinLoader/Inproc.Native.Importer.cpp",
   "file": "/home/ciprian/testtools/river/BinLoader/Inproc.Native.Importer.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/VirtualMemory",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/virtualmemory.dir/VirtualMem.cpp.o -c /home/ciprian/testtools/river/VirtualMemory/VirtualMem.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o VirtualMemory/CMakeFiles/virtualmemory.dir/VirtualMem.cpp.o -c /home/ciprian/testtools/river/VirtualMemory/VirtualMem.cpp",
   "file": "/home/ciprian/testtools/river/VirtualMemory/VirtualMem.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/VirtualMemory",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/virtualmemory.dir/MemoryLayout.Linux.cpp.o -c /home/ciprian/testtools/river/VirtualMemory/MemoryLayout.Linux.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o VirtualMemory/CMakeFiles/virtualmemory.dir/MemoryLayout.Linux.cpp.o -c /home/ciprian/testtools/river/VirtualMemory/MemoryLayout.Linux.cpp",
   "file": "/home/ciprian/testtools/river/VirtualMemory/MemoryLayout.Linux.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/VirtualMemory",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/virtualmemory.dir/__/libproc/libproc.cpp.o -c /home/ciprian/testtools/river/libproc/libproc.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o VirtualMemory/CMakeFiles/virtualmemory.dir/__/libproc/libproc.cpp.o -c /home/ciprian/testtools/river/libproc/libproc.cpp",
   "file": "/home/ciprian/testtools/river/libproc/libproc.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/wrapper.setup",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/wrappersetup.dir/Setup.Linux.cpp.o -c /home/ciprian/testtools/river/wrapper.setup/Setup.Linux.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o wrapper.setup/CMakeFiles/wrappersetup.dir/Setup.Linux.cpp.o -c /home/ciprian/testtools/river/wrapper.setup/Setup.Linux.cpp",
   "file": "/home/ciprian/testtools/river/wrapper.setup/Setup.Linux.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/wrapper.setup",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/wrappersetup.dir/Setup.Windows.cpp.o -c /home/ciprian/testtools/river/wrapper.setup/Setup.Windows.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o wrapper.setup/CMakeFiles/wrappersetup.dir/Setup.Windows.cpp.o -c /home/ciprian/testtools/river/wrapper.setup/Setup.Windows.cpp",
   "file": "/home/ciprian/testtools/river/wrapper.setup/Setup.Windows.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer-wrapper",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Drevtracerwrapper_EXPORTS   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/revtracerwrapper.dir/RevtracerWrapper.cpp.o -c /home/ciprian/testtools/river/revtracer-wrapper/RevtracerWrapper.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Drevtracerwrapper_EXPORTS   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/RevtracerWrapper.cpp.o -c /home/ciprian/testtools/river/revtracer-wrapper/RevtracerWrapper.cpp",
   "file": "/home/ciprian/testtools/river/revtracer-wrapper/RevtracerWrapper.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer-wrapper",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Drevtracerwrapper_EXPORTS   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/revtracerwrapper.dir/Wrapper.Linux.cpp.o -c /home/ciprian/testtools/river/revtracer-wrapper/Wrapper.Linux.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Drevtracerwrapper_EXPORTS   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/Wrapper.Linux.cpp.o -c /home/ciprian/testtools/river/revtracer-wrapper/Wrapper.Linux.cpp",
   "file": "/home/ciprian/testtools/river/revtracer-wrapper/Wrapper.Linux.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer-wrapper",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Drevtracerwrapper_EXPORTS   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/revtracerwrapper.dir/Wrapper.Windows.cpp.o -c /home/ciprian/testtools/river/revtracer-wrapper/Wrapper.Windows.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Drevtracerwrapper_EXPORTS   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o revtracer-wrapper/CMakeFiles/revtracerwrapper.dir/Wrapper.Windows.cpp.o -c /home/ciprian/testtools/river/revtracer-wrapper/Wrapper.Windows.cpp",
   "file": "/home/ciprian/testtools/river/revtracer-wrapper/Wrapper.Windows.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/AddressContainer.cpp.o -c /home/ciprian/testtools/river/revtracer/AddressContainer.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/AddressContainer.cpp.o -c /home/ciprian/testtools/river/revtracer/AddressContainer.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/AddressContainer.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/api.cpp.o -c /home/ciprian/testtools/river/revtracer/api.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/api.cpp.o -c /home/ciprian/testtools/river/revtracer/api.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/api.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/callgates.cpp.o -c /home/ciprian/testtools/river/revtracer/callgates.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/callgates.cpp.o -c /home/ciprian/testtools/river/revtracer/callgates.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/callgates.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/cb.cpp.o -c /home/ciprian/testtools/river/revtracer/cb.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/cb.cpp.o -c /home/ciprian/testtools/river/revtracer/cb.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/cb.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/crc32.cpp.o -c /home/ciprian/testtools/river/revtracer/crc32.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/crc32.cpp.o -c /home/ciprian/testtools/river/revtracer/crc32.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/crc32.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/crtStub.cpp.o -c /home/ciprian/testtools/river/revtracer/crtStub.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/crtStub.cpp.o -c /home/ciprian/testtools/river/revtracer/crtStub.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/crtStub.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/execenv.cpp.o -c /home/ciprian/testtools/river/revtracer/execenv.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/execenv.cpp.o -c /home/ciprian/testtools/river/revtracer/execenv.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/execenv.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/GenericX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/GenericX86Assembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/GenericX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/GenericX86Assembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/GenericX86Assembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/mm.cpp.o -c /home/ciprian/testtools/river/revtracer/mm.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/mm.cpp.o -c /home/ciprian/testtools/river/revtracer/mm.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/mm.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/modrm32.cpp.o -c /home/ciprian/testtools/river/revtracer/modrm32.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/modrm32.cpp.o -c /home/ciprian/testtools/river/revtracer/modrm32.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/modrm32.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/PreTrackingX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/PreTrackingX86Assembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/PreTrackingX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/PreTrackingX86Assembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/PreTrackingX86Assembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RelocableCodeBuffer.cpp.o -c /home/ciprian/testtools/river/revtracer/RelocableCodeBuffer.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RelocableCodeBuffer.cpp.o -c /home/ciprian/testtools/river/revtracer/RelocableCodeBuffer.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RelocableCodeBuffer.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/revtracer.cpp.o -c /home/ciprian/testtools/river/revtracer/revtracer.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/revtracer.cpp.o -c /home/ciprian/testtools/river/revtracer/revtracer.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/revtracer.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverAddress.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverAddress.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverAddress.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverAddress.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverAddress.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/TranslatorUtil.cpp.o -c /home/ciprian/testtools/river/revtracer/TranslatorUtil.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/TranslatorUtil.cpp.o -c /home/ciprian/testtools/river/revtracer/TranslatorUtil.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/TranslatorUtil.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverMetaTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverMetaTranslator.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverMetaTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverMetaTranslator.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverMetaTranslator.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverRepTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverRepTranslator.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverRepTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverRepTranslator.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverRepTranslator.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverRepAssembler.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverRepAssembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverRepAssembler.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverRepAssembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverRepAssembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverPrintTable.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverPrintTable.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverPrintTable.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverPrintTable.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverPrintTable.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverReverseTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverReverseTranslator.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverReverseTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverReverseTranslator.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverReverseTranslator.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverSaveTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverSaveTranslator.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverSaveTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverSaveTranslator.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverSaveTranslator.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverTrackingX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverTrackingX86Assembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverTrackingX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverTrackingX86Assembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverTrackingX86Assembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverX86Assembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverX86Assembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverX86Assembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverX86Disassembler.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverX86Disassembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverX86Disassembler.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverX86Disassembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverX86Disassembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/NativeX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/NativeX86Assembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/NativeX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/NativeX86Assembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/NativeX86Assembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/SymbopReverseTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/SymbopReverseTranslator.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/SymbopReverseTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/SymbopReverseTranslator.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/SymbopReverseTranslator.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/SymbopTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/SymbopTranslator.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/SymbopTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/SymbopTranslator.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/SymbopTranslator.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/SymbopSaveTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/SymbopSaveTranslator.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/SymbopSaveTranslator.cpp.o -c /home/ciprian/testtools/river/revtracer/SymbopSaveTranslator.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/SymbopSaveTranslator.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/sync.cpp.o -c /home/ciprian/testtools/river/revtracer/sync.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/sync.cpp.o -c /home/ciprian/testtools/river/revtracer/sync.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/sync.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/Tracking.cpp.o -c /home/ciprian/testtools/river/revtracer/Tracking.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/Tracking.cpp.o -c /home/ciprian/testtools/river/revtracer/Tracking.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/Tracking.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/TrackingX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/TrackingX86Assembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/TrackingX86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/TrackingX86Assembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/TrackingX86Assembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/X86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/X86Assembler.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/X86Assembler.cpp.o -c /home/ciprian/testtools/river/revtracer/X86Assembler.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/X86Assembler.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/X86AssemblerFuncs.cpp.o -c /home/ciprian/testtools/river/revtracer/X86AssemblerFuncs.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/X86AssemblerFuncs.cpp.o -c /home/ciprian/testtools/river/revtracer/X86AssemblerFuncs.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/X86AssemblerFuncs.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/RiverX86DisassemblerTable.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverX86DisassemblerTable.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/RiverX86DisassemblerTable.cpp.o -c /home/ciprian/testtools/river/revtracer/RiverX86DisassemblerTable.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/RiverX86DisassemblerTable.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/revtracer",
-  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o CMakeFiles/revtracer.dir/codegen.cpp.o -c /home/ciprian/testtools/river/revtracer/codegen.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "g++  -DIS_DEBUG_BUILD  -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL -m32 -march=i386 -fno-exceptions \t-fno-stack-protector -fcheck-new -std=c++11 -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\" \t-D_BUILDING_REVTRACER_DLL  -g -O0 -D_REVTRACER_DEBUG_PRINT_   -o revtracer/CMakeFiles/revtracer.dir/codegen.cpp.o -c /home/ciprian/testtools/river/revtracer/codegen.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/codegen.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/ipclib",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dipc_EXPORTS   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/ipc.dir/ipclib.cpp.o -c /home/ciprian/testtools/river/ipclib/ipclib.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "as -DIS_DEBUG_BUILD  --32 --32 -g   --32 -o revtracer/CMakeFiles/revtracer.dir/revtracer.stub.S.o -c /home/ciprian/testtools/river/revtracer/revtracer.stub.S",
+  "file": "/home/ciprian/testtools/river/revtracer/revtracer.stub.S"
+},
+
+{
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dipc_EXPORTS   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o ipclib/CMakeFiles/ipc.dir/ipclib.cpp.o -c /home/ciprian/testtools/river/ipclib/ipclib.cpp",
   "file": "/home/ciprian/testtools/river/ipclib/ipclib.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/Debugger.cpp.o -c /home/ciprian/testtools/river/Execution/Debugger.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/Debugger.cpp.o -c /home/ciprian/testtools/river/Execution/Debugger.cpp",
   "file": "/home/ciprian/testtools/river/Execution/Debugger.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/ExternExecutionController.Linux.cpp.o -c /home/ciprian/testtools/river/Execution/ExternExecutionController.Linux.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/ExternExecutionController.Linux.cpp.o -c /home/ciprian/testtools/river/Execution/ExternExecutionController.Linux.cpp",
   "file": "/home/ciprian/testtools/river/Execution/ExternExecutionController.Linux.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/DualAllocator.Linux.cpp.o -c /home/ciprian/testtools/river/Execution/DualAllocator.Linux.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/DualAllocator.Linux.cpp.o -c /home/ciprian/testtools/river/Execution/DualAllocator.Linux.cpp",
   "file": "/home/ciprian/testtools/river/Execution/DualAllocator.Linux.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/TokenRingInit.Linux.cpp.o -c /home/ciprian/testtools/river/Execution/TokenRingInit.Linux.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/TokenRingInit.Linux.cpp.o -c /home/ciprian/testtools/river/Execution/TokenRingInit.Linux.cpp",
   "file": "/home/ciprian/testtools/river/Execution/TokenRingInit.Linux.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/LargeStack.cpp.o -c /home/ciprian/testtools/river/Execution/LargeStack.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/LargeStack.cpp.o -c /home/ciprian/testtools/river/Execution/LargeStack.cpp",
   "file": "/home/ciprian/testtools/river/Execution/LargeStack.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/CommonExecutionController2.cpp.o -c /home/ciprian/testtools/river/Execution/CommonExecutionController2.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/CommonExecutionController2.cpp.o -c /home/ciprian/testtools/river/Execution/CommonExecutionController2.cpp",
   "file": "/home/ciprian/testtools/river/Execution/CommonExecutionController2.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/InprocessExecutionController.cpp.o -c /home/ciprian/testtools/river/Execution/InprocessExecutionController.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/InprocessExecutionController.cpp.o -c /home/ciprian/testtools/river/Execution/InprocessExecutionController.cpp",
   "file": "/home/ciprian/testtools/river/Execution/InprocessExecutionController.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/CommonExecutionController.cpp.o -c /home/ciprian/testtools/river/Execution/CommonExecutionController.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/CommonExecutionController.cpp.o -c /home/ciprian/testtools/river/Execution/CommonExecutionController.cpp",
   "file": "/home/ciprian/testtools/river/Execution/CommonExecutionController.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/Main.cpp.o -c /home/ciprian/testtools/river/Execution/Main.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/Main.cpp.o -c /home/ciprian/testtools/river/Execution/Main.cpp",
   "file": "/home/ciprian/testtools/river/Execution/Main.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/__/revtracer/sync.cpp.o -c /home/ciprian/testtools/river/revtracer/sync.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/__/revtracer/sync.cpp.o -c /home/ciprian/testtools/river/revtracer/sync.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/sync.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/__/revtracer/crc32.cpp.o -c /home/ciprian/testtools/river/revtracer/crc32.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/__/revtracer/crc32.cpp.o -c /home/ciprian/testtools/river/revtracer/crc32.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/crc32.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/__/revtracer/cb.cpp.o -c /home/ciprian/testtools/river/revtracer/cb.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/__/revtracer/cb.cpp.o -c /home/ciprian/testtools/river/revtracer/cb.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/cb.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/Execution",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I/home/ciprian/testtools/river/Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o CMakeFiles/execution.dir/__/libproc/libproc.cpp.o -c /home/ciprian/testtools/river/libproc/libproc.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dexecution_EXPORTS -I../Execution/../BinLoader   -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0   -o Execution/CMakeFiles/execution.dir/__/libproc/libproc.cpp.o -c /home/ciprian/testtools/river/libproc/libproc.cpp",
   "file": "/home/ciprian/testtools/river/libproc/libproc.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/loader",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o CMakeFiles/loader.dir/Loader.Linux.cpp.o -c /home/ciprian/testtools/river/loader/Loader.Linux.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD   -m32 -std=c++11  -m32 -std=c++11  -g -O0   -o loader/CMakeFiles/loader.dir/Loader.Linux.cpp.o -c /home/ciprian/testtools/river/loader/Loader.Linux.cpp",
   "file": "/home/ciprian/testtools/river/loader/Loader.Linux.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/SymbolicEnvironment",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I/home/ciprian/testtools/river/SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/symbolicenvironment.dir/Environment.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/Environment.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "as -DIS_DEBUG_BUILD  --32 -g --32   -o loader/CMakeFiles/loader.dir/Loader.Linux.Stub.S.o -c /home/ciprian/testtools/river/loader/Loader.Linux.Stub.S",
+  "file": "/home/ciprian/testtools/river/loader/Loader.Linux.Stub.S"
+},
+
+{
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I../SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/Environment.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/Environment.cpp",
   "file": "/home/ciprian/testtools/river/SymbolicEnvironment/Environment.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/SymbolicEnvironment",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I/home/ciprian/testtools/river/SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/symbolicenvironment.dir/LargeStack.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/LargeStack.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I../SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/LargeStack.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/LargeStack.cpp",
   "file": "/home/ciprian/testtools/river/SymbolicEnvironment/LargeStack.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/SymbolicEnvironment",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I/home/ciprian/testtools/river/SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/symbolicenvironment.dir/OverlappedRegisters.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/OverlappedRegisters.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I../SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/OverlappedRegisters.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/OverlappedRegisters.cpp",
   "file": "/home/ciprian/testtools/river/SymbolicEnvironment/OverlappedRegisters.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/SymbolicEnvironment",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I/home/ciprian/testtools/river/SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/symbolicenvironment.dir/RevSymbolicEnvironment.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/RevSymbolicEnvironment.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I../SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/RevSymbolicEnvironment.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/RevSymbolicEnvironment.cpp",
   "file": "/home/ciprian/testtools/river/SymbolicEnvironment/RevSymbolicEnvironment.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/SymbolicEnvironment",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I/home/ciprian/testtools/river/SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/symbolicenvironment.dir/SymbolicEnvironment.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/SymbolicEnvironment.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I../SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/SymbolicEnvironment.cpp.o -c /home/ciprian/testtools/river/SymbolicEnvironment/SymbolicEnvironment.cpp",
   "file": "/home/ciprian/testtools/river/SymbolicEnvironment/SymbolicEnvironment.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/SymbolicEnvironment",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I/home/ciprian/testtools/river/SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/symbolicenvironment.dir/__/revtracer/Tracking.cpp.o -c /home/ciprian/testtools/river/revtracer/Tracking.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I../SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/__/revtracer/Tracking.cpp.o -c /home/ciprian/testtools/river/revtracer/Tracking.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/Tracking.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/SymbolicEnvironment",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I/home/ciprian/testtools/river/SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/symbolicenvironment.dir/__/revtracer/AddressContainer.cpp.o -c /home/ciprian/testtools/river/revtracer/AddressContainer.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dsymbolicenvironment_EXPORTS -I../SymbolicEnvironment/..   -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -m32 -std=c++11 \t-D_BUILDING_ENVIRONMENT_DLL -D_NO_TRACK_CALLBACKS_ -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o SymbolicEnvironment/CMakeFiles/symbolicenvironment.dir/__/revtracer/AddressContainer.cpp.o -c /home/ciprian/testtools/river/revtracer/AddressContainer.cpp",
   "file": "/home/ciprian/testtools/river/revtracer/AddressContainer.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/benchmarking-payload/fmi",
-  "command": "/usr/bin/gcc-5 -DIS_DEBUG_BUILD -Dfmi_EXPORTS -I/home/ciprian/testtools/river -I/include  -m32 -g -O0  -g -O0   -o CMakeFiles/fmi.dir/fmi.c.o   -c /home/ciprian/testtools/river/benchmarking-payload/fmi/fmi.c",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dxml2_payload_EXPORTS -I../ -I../benchmarking-payload/libxml2-payload/build/include -I../benchmarking-payload/libxml2-payload/libxml2-src/include -I/include  -m32 -g -std=c++11 -D_PAYLOAD_EXPORTS  -g -O0   -o benchmarking-payload/libxml2-payload/CMakeFiles/xml2-payload.dir/Payload.cpp.o -c /home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/Payload.cpp",
+  "file": "/home/ciprian/testtools/river/benchmarking-payload/libxml2-payload/Payload.cpp"
+},
+
+{
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/gcc-5 -DIS_DEBUG_BUILD -Dhttp_parser_EXPORTS -I../ -I/include  -m32 -g -O2  -g -O0   -o benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/http_parser.c.o   -c /home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/http_parser.c",
+  "file": "/home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/http_parser.c"
+},
+
+{
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dhttp_parser_EXPORTS -I../ -I/include  -m32 -g -O2 -nostdlib -std=c++11 -D_PAYLOAD_EXPORTS  -g -O0   -o benchmarking-payload/http-parser-payload/CMakeFiles/http-parser.dir/Payload.cpp.o -c /home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/Payload.cpp",
+  "file": "/home/ciprian/testtools/river/benchmarking-payload/http-parser-payload/Payload.cpp"
+},
+
+{
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/gcc-5 -DIS_DEBUG_BUILD -Dfmi_EXPORTS -I../ -I/include  -m32 -g -O0  -g -O0   -o benchmarking-payload/fmi/CMakeFiles/fmi.dir/fmi.c.o   -c /home/ciprian/testtools/river/benchmarking-payload/fmi/fmi.c",
   "file": "/home/ciprian/testtools/river/benchmarking-payload/fmi/fmi.c"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/benchmarking-payload/fmi",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dfmi_EXPORTS -I/home/ciprian/testtools/river -I/include  -m32 -g -O0 -D_PAYLOAD_EXPORTS  -g -O0   -o CMakeFiles/fmi.dir/Payload.cpp.o -c /home/ciprian/testtools/river/benchmarking-payload/fmi/Payload.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -Dfmi_EXPORTS -I../ -I/include  -m32 -g -O0 -D_PAYLOAD_EXPORTS  -g -O0   -o benchmarking-payload/fmi/CMakeFiles/fmi.dir/Payload.cpp.o -c /home/ciprian/testtools/river/benchmarking-payload/fmi/Payload.cpp",
   "file": "/home/ciprian/testtools/river/benchmarking-payload/fmi/Payload.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/river.format/logger",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/home/ciprian/testtools/river/river.format/logger/../include -I/home/ciprian/testtools/river/river.format/logger/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/logger.dir/AbstractLog.cpp.o -c /home/ciprian/testtools/river/river.format/logger/AbstractLog.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I../river.format/logger/../include -I../river.format/logger/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o river.format/logger/CMakeFiles/logger.dir/AbstractLog.cpp.o -c /home/ciprian/testtools/river/river.format/logger/AbstractLog.cpp",
   "file": "/home/ciprian/testtools/river/river.format/logger/AbstractLog.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/river.format/logger",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/home/ciprian/testtools/river/river.format/logger/../include -I/home/ciprian/testtools/river/river.format/logger/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/logger.dir/FileLog.cpp.o -c /home/ciprian/testtools/river/river.format/logger/FileLog.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I../river.format/logger/../include -I../river.format/logger/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o river.format/logger/CMakeFiles/logger.dir/FileLog.cpp.o -c /home/ciprian/testtools/river/river.format/logger/FileLog.cpp",
   "file": "/home/ciprian/testtools/river/river.format/logger/FileLog.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/river.format/logger",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/home/ciprian/testtools/river/river.format/logger/../include -I/home/ciprian/testtools/river/river.format/logger/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/logger.dir/Logger.cpp.o -c /home/ciprian/testtools/river/river.format/logger/Logger.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I../river.format/logger/../include -I../river.format/logger/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o river.format/logger/CMakeFiles/logger.dir/Logger.cpp.o -c /home/ciprian/testtools/river/river.format/logger/Logger.cpp",
   "file": "/home/ciprian/testtools/river/river.format/logger/Logger.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/river.format/format.handler",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/include -I/home/ciprian/testtools/river/river.format/format.handler/../include -I/home/ciprian/testtools/river/river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/format.handler.dir/BinFormat.cpp.o -c /home/ciprian/testtools/river/river.format/format.handler/BinFormat.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/include -I../river.format/format.handler/../include -I../river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o river.format/format.handler/CMakeFiles/format.handler.dir/BinFormat.cpp.o -c /home/ciprian/testtools/river/river.format/format.handler/BinFormat.cpp",
   "file": "/home/ciprian/testtools/river/river.format/format.handler/BinFormat.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/river.format/format.handler",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/include -I/home/ciprian/testtools/river/river.format/format.handler/../include -I/home/ciprian/testtools/river/river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/format.handler.dir/TextFormat.cpp.o -c /home/ciprian/testtools/river/river.format/format.handler/TextFormat.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/include -I../river.format/format.handler/../include -I../river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o river.format/format.handler/CMakeFiles/format.handler.dir/TextFormat.cpp.o -c /home/ciprian/testtools/river/river.format/format.handler/TextFormat.cpp",
   "file": "/home/ciprian/testtools/river/river.format/format.handler/TextFormat.cpp"
 },
+
 {
-  "directory": "/home/ciprian/testtools/river/build/river.format/format.handler",
-  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/include -I/home/ciprian/testtools/river/river.format/format.handler/../include -I/home/ciprian/testtools/river/river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o CMakeFiles/format.handler.dir/BinFormatConcolic.cpp.o -c /home/ciprian/testtools/river/river.format/format.handler/BinFormatConcolic.cpp",
+  "directory": "/home/ciprian/testtools/river/build",
+  "command": "/usr/bin/g++-5  -DIS_DEBUG_BUILD -I/include -I../river.format/format.handler/../include -I../river.format/format.handler/../../river   -m32 -std=c++11 -D__cdecl=\"\" -D__stdcall=\"\"  -g -O0   -o river.format/format.handler/CMakeFiles/format.handler.dir/BinFormatConcolic.cpp.o -c /home/ciprian/testtools/river/river.format/format.handler/BinFormatConcolic.cpp",
   "file": "/home/ciprian/testtools/river/river.format/format.handler/BinFormatConcolic.cpp"
 }
 ]

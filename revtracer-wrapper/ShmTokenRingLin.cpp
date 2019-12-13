@@ -14,8 +14,7 @@
 #define dbg_log(fmt,...) { printf(fmt, ##__VA_ARGS__); fflush(stdout); }
 #endif
 
-
-#define DEBUG_BREAK asm volatile("int $0x3")
+#include "../revtracer/common.h"
 
 namespace revwrapper {
 

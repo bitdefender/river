@@ -5,14 +5,7 @@
 #include "../revtracer-wrapper/TokenRing.h"
 
 #include "../CommonCrossPlatform/LibraryLayout.h"
-
-#ifdef _MSC_VER
-#define DEBUG_BREAK __asm \
-{ __asm int 3 }
-#else
-#define DEBUG_BREAK asm volatile("int $0x3")
-typedef unsigned int size_t;
-#endif
+#include "../revtracer/common.h"
 
 #if defined _WIN32 || defined __CYGWIN__
 	#ifdef _BUILDING_IPC_DLL

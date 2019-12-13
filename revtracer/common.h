@@ -30,11 +30,19 @@
 #define BRANCHING_PRINT
 #endif
 
+#include <assert.h>
+#include <stdio.h>
+
 #ifdef _MSC_VER
 #define DEBUG_BREAK __asm \
 { __asm int 3 }
 #else
-#define DEBUG_BREAK asm volatile("int $0x3")
+#define DEBUG_BREAK { \
+        fprintf (stdout, "Internal error: file %s line %d\n", __FILE__, __LINE__);        \
+        assert(false && "Error"); }           
+        
+
+
 typedef unsigned int size_t;
 #endif
 
