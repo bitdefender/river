@@ -1,0 +1,429 @@
+\documentclass[format=acmsmall]{acmart}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{xspace} % Auto-insert of space after macros
+
+% To eliminate the hyperref space after the paragraph symbol
+\def\Snospace~{\S{}}
+\renewcommand*{\sectionautorefname}{\Snospace}
+\renewcommand*{\subsectionautorefname}{\Snospace}
+\renewcommand*{\subsubsectionautorefname}{\Snospace}
+
+% Nicer tables
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+% Other packages needed for the content
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{nicefrac}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning}
+
+% Some useful symbols
+\newcommand{\cmark}{\ding{51}\xspace}
+\newcommand{\xmark}{\ding{55}\xspace}
+
+% Relative fontsize
+\usepackage{relsize}
+% Abbreviations and acronyms
+\newcommand{\allcaps}[1]{\texorpdfstring{\textsmaller[.5]{#1}}{#1}\xspace}
+\newcommand{\code}[1]{\texttt{\small{#1}}}
+\newcommand{\approximately}{\ensuremath{\stackrel{\sim}{}}}
+
+\newcommand{\FIXME}[1]{\textcolor{Red}{#1}}
+%\renewcommand{\FIXME}[1]{#1}
+
+% Slowdown due to coverage instrumentation and coverage+ASan, on average over
+% our benchmarks.
+% \newcommand{\coverageSlowdown}{1.6\ensuremath{\times}\xspace}
+% \newcommand{\coverageAsanSlowdown}{2.8\ensuremath{\times}\xspace}
+
+% Fraction of CPU cycles spent in instrumentation code
+% \newcommand{\instrumentationCycles}{54\%\xspace}
+% Simply the inverse of \instrumentationCycles. This is not equal to the
+% average slowdown, because the average of inverses is not the inverse of
+% averages... Confusing.
+% \newcommand{\fuzzingSlowdown}{2.2\ensuremath{\times}\xspace}
+
+% Maximal speedup for bug finding
+% \newcommand{\fussSpeedup}{3.2\ensuremath{\times}\xspace}
+% \newcommand{\removedOverhead}{88\%\xspace}
+
+% Global listings config
+\lstset{ %
+  basicstyle=\small,
+  language=C,
+  numberstyle=\scriptsize\color{gray},
+  numbers=left,
+  xleftmargin=18pt,
+}
+
+\hyphenation{analy-sis}
+
+\newcommand{\mytitle}{Rosanne: River Offline Sanitizers}
+\newcommand{\tool}{\textbf{Rosanne}}
+\newcommand{\river}{\allcaps{RIVER}}
+
+\hypersetup{
+  pdfauthor={Teodor Stoenescu, Alexandra Sandulescu},
+  pdftitle={\mytitle},
+  pdfsubject={Computer Science},
+  pdfkeywords={Runtime Tracing, Instrumentation, Dynamic Binary Instrumentation, Program Analysis, Static Analysis},
+}
+
+% Metadata Information
+% \acmJournal{TOSEM}
+
+\author{Teodor Stoenescu}
+\affiliation{%
+  \institution{Bitdefender}
+  \city{Bucharest}
+  \country{Romania}}
+\email{tstoenescu@bitdefender.com}
+\author{Alexandra Sandulescu}
+\affiliation{%
+  \institution{Bitdefender}
+  \city{Bucharest}
+  \country{Romania}}
+\email{asandulescu@bitdefender.com}
+
+\title{\mytitle}
+\keywords{Runtime Tracing, Instrumentation, Dynamic Binary Instrumentation, Program Analysis, Static Analysis}
+
+
+\begin{document}
+
+\begin{abstract}
+
+\end{abstract}
+
+\maketitle
+\renewcommand{\shortauthors}{T. Stoenescu, A. Sandulescu}
+
+\section{Motivation}
+\subsection{Symbolic operations}\label{subsec:symbolic-operations}
+
+\section{Why runtime instrumentation works .. slow}
+
+\section{\river Offline Traces}\label{offline-traces}
+\river obtains runtime traces from executing target programs. It instruments each target program basic block \
+depending on the required type of trace. The available tracing options are: \textit{raw traces}, \textit{tainted index traces}, \
+\textit{Z3 traces}. \\
+
+\textbf{Raw traces} show an ordered list of basic blocks executed at runtime during target program tracing. Data corresponding \
+to each basic block shows the library/module container of current basic block, the offset inside the module where the basic block \
+resides, the cost for executing it. Traces show jump type information (immediate value, memory or register) and jump instruction information \
+(return, jump, conditional jump, call or syscall). The stack pointer value is logged for each basic block. Also, the number of instructions \
+per basic block and data defining the next options in execution. Next options could be no location, one location or two different locations. \
+If the jump type depends on a value in memory or register, then the successor(s) cannot be known. Otherwise, if the current jump is not \
+dependent on any condition, one single successor is available. If the jump depends on any boolean condition, there are two potential \
+successors of current basic block. \\
+An example of how raw traces look is found in \autoref{raw-trace}. \\
+
+\begin{table}
+	\caption{Raw traces example - text format}
+	\label{raw-trace}
+	\scalebox{0.65}{
+		\begin{tabular}{| l| l| l| l| l| l| l| l| l| l| l |}
+			\hline
+			\textbf{Module name} & \textbf{Offset} & \textbf{Cost} & \textbf{Jmp type} & \textbf{Jmp instr} & \textbf{Esp} & \textbf{Nr instr} & \textbf{Taken} & \textbf{Offset} & \textbf{Not taken} & \textbf{Offset} \\
+			libsimple-address.so & 0x000005DF        &       5       &          0         &         3					&  0xF5BBF25C    &           5             &  libsimple-address.so	 & 0x000005DB       &              ???			   & 0x00000000 \\
+			libsimple-address.so & 0x000005DB		   & 2			   & 0					&						0   &  0xF5BBF260    &		   2			 &            ???			 & 0x00000000		   &			  ???		   & 0x00000000 \\
+			libsimple-address.so & 0x000005EB		   & 6			   & 0					& 3							&  0xF5BBF24C    & 6						 & libsimple-address.so  & 0x00000450		   & ???					   & 0x00000000 \\
+			libsimple-address.so & 0x00000450		   & 1			   & 1					& 1							&  0xF5BBF24C	   & 1						 & ???					 & 0x00000000		   & ???					   & 0x00000000 \\
+			libsimple-address.so & 0x00000456		   & 2			   & 0					& 1							&  0xF5BBF248	   & 2						 & libsimple-address.so  & 0x00000430		   & ???					   & 0x00000000 \\
+			libsimple-address.so & 0x00000430		   & 2			   & 1					& 1							&  0xF5BBF244     & 2						 & ???					 & 0x00000000		   & ???					   & 0x00000000 \\
+			ld-2.26.so		     & 0x000154C0		   & 6			   & 0					& 3							&  0xF5BBF234	   & 6						 & ld-2.26.so			 & 0x0000F130		   & ???					   & 0x00000000 \\
+			ld-2.26.so		     & 0x0000F130		   & 6			   & 0					& 3							&  0xF5BBF220	   & 6						 & ld-2.26.so			 & 0x0001B57D		   & ???					   & 0x00000000 \\
+			ld-2.26.so		     & 0x0001B57D		   & 2			   & 0					& 0							&  0xF5BBF224	   & 2						 & ???					 & 0x00000000		   & ???					   & 0x00000000 \\
+			ld-2.26.so		     & 0x0000F13B		   & 22			   & 0					& 2							&  0xF5BBF1F8	   & 22						 & ld-2.26.so			 & 0x0000F2BF		   & ld-2.26.so				   & 0x0000F181 \\
+			ld-2.26.so		     & 0x0000F181		   & 3			   & 0					& 2							&  0xF5BBF1F8	   & 3						 & ld-2.26.so			 & 0x0000F260		   & ld-2.26.so				   & 0x0000F18D \\ \hline
+		\end{tabular}
+		}
+		\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			Module name & module / library name of code container \\
+			Offset & offset in module where code resides \\
+			Cost & basic block cost of execution computed using a custom heuristic \\
+			Jmp type & final basic block instruction jump type (immediate / memory /register) \\
+			Jmp instuction & final basic block instruction type (call / return / syscall / jmp /jcc) \\
+			Esp & stack pointer value after basic block execution \\
+			Nr instr & number of instructions of current basic block \\
+			Taken and offset & module and offset of branch that satisfies the jump condition \\
+			Not taken and offset & module and offset of branch that does not satisfy the jump condition \\
+		\end{tabular}
+		}
+\end{table}
+
+\textbf{Tainted index traces} are represented by raw traces enhanced with tainted index information. Tainted index is a mechanism that implements \
+data flow analysis. Input data is marked with a positive number starting with \textit{1}. During target program execution, taint is transferred \
+when a certain type of operation occurs. {\tool} distinguishes between four types of operations that propagate taint: \textit{extraction}, \
+\textit{concatenation}, \textit{constant generation} and \textit{generic execution}. \\
+
+\textbf{Extract propagation} formula is shown in \autoref{extract-formula}. It defines the operation of cutting a part from tainted data. \
+Data flow propagation constructs the new cut as tainted, thus a new index is created for this type of operation. \\
+
+\begin{figure}
+	\caption{Tainted index extract}
+	\label{extract-formula}
+	\[ I[k] <= I[index][offset:size] \]
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			I[k] & tainted index\\
+			I[index] & source tainted index \\
+			offset & cut offset inside I[index] \\
+			size & cut size in bits \\
+		\end{tabular}
+	  }
+\end{figure}
+
+\textbf{Concat propagation} formula is shown in \autoref{concat-formula}. It refers to concatenating tainted data to untracked data. The \
+result is considered tainted and thus a new index is generated. \\
+
+\begin{figure}
+	\caption{Tainted index concat}
+	\label{concat-formula}
+	\[ I[k] <= I[p] ++ I[q] \]
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			I[k] & tainted index\\
+			I[p] & left concatenation operator \\
+			I[1] & right concatenation operator \\
+		\end{tabular}
+	  }
+\end{figure}
+
+\textbf{Constant generation} representation in \autoref{const-gen-formula} shows how a new tainted index is generated for tracking a \
+bare constant that is needed in the data flow analysis. \\
+
+\begin{figure}
+	\caption{Tainted index constant}
+	\label{const-gen-formula}
+	\[ I[k] <= const <const value> \]
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			I[k] & tainted index\\
+			const value & constant value that becomes tracked\\
+		\end{tabular}
+	  }
+\end{figure}
+
+
+\begin{figure}
+	\caption{Tainted index generic execution}
+	\label{generic-execution}
+	\[ I[k] <= <flagname>:I[q] | I[p] \]
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			I[k] & tainted index\\
+			<flagname>:I[q] & operator flag and its associated tainted index\\
+			I[p] & operator tainted index\\
+		\end{tabular}
+	  }
+\end{figure}
+
+\textbf{Generic execution} in the context of tainted index is represented in \autoref{generic-execution}. There are instructions that propagate taint along \
+program execution. The taint is associated with instruction source operands or flags (or both) and broadcast taint to destination operands or flags (or both). \
+\autoref{generic-execution} shows that a new tainted index \textit{I[k]} is generated by current instruction to transmit taint from source operands \
+associated with tainted index \textit{I[p]} and tainted flag \textit{<flagname>} associated with tainted index \textit{I[q]}. \\
+
+\textbf{Z3 traces} represent raw traces augmented with Z3 information. Symbolic execution is performed during target execution, thus allowing \
+the collection of z3 representation of symbolic data. Two types of operations that involve symbolic data are of interest for the offline \
+sanitizers. First operation refers to \textit{symbolic addresses} that are used for input or output of data (read or write to symbolic address). The second \
+operation is associated to \textit{symbolic jump condition} where a certain jump operation (of any kind) depends on a symbolic condition. \
+The motivation behind these two scenarios is elaborated in \autoref{subsec:symbolic-operations}. \\
+
+\begin{figure}
+	\caption{Symbolic address representation in Z3 traces}
+	\label{symbolic-address}
+	[composed address] <= [base address] + scale x [index address] + displacement
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+			<composed address> & address of symbolic object corresponding to targeted symbolic address\\
+		  <base address> & address of symbolic object corresponding to targeted address base\\
+			scale & constant representing the scaling factor from address construction\\
+			<index address> & address of symbolic object corresponding to targeted address index\\
+			displacement & constant representing the displacement from address construction\\
+		\end{tabular}
+	  }
+\end{figure}
+
+\begin{figure}
+	\caption{X86 Addressing}
+	\label{x86addressing}
+	effective address = base + scale factor x index + displacement
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+		  effective address & virtual address \\ 
+		  base & the start address usually stored in a general-purpose register \\
+		  scale factor & value of 2, 4 or 8 that is multiplied by the index operand \\
+		  index & the offset usually stored in a general-purpose register \\
+		  displacement & 8-, 16- or 32-bit value \\
+		\end{tabular}
+	  }
+\end{figure}
+
+\textbf{Symbolic address} representation is shown in \autoref{symbolic-address}. Construction of addresses in x86 architecture is explained in \autoref{x86addressing}. \
+If the target program runs an instruction that adresses memory using a symbolic address, it means that the pointer value can be controlled using input data \
+manipulation. Along with the aforementioned information about the address composition, Z3 traces also store the Z3 AST (abstract syntax tree) representing \
+the symbolic object that defines the \textit{composed address}. \\
+
+\begin{figure}
+	\caption{Jump condition representation in Z3 traces}
+	\label{jump-condition}
+	jcc <address> <= <flagname>[<symbolic address>]
+	\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+		  <address> & jump destination \\
+		  <flagname> & ZF CF DF OF PF SF AF eflags\\
+		  <symbolic address> & address of symbolic object associated with <flagname>\\
+		\end{tabular}
+	  }
+\end{figure}
+
+\textbf{Symbolic jump condition} is exposed in \autoref{jump-condition}. If the condition has a symbolic object associated, then the jump direction can be \
+controlled by user input, thus leading to a major vulnerability that allows an attacker to control program flow. Z3 AST object associated with the symbolic flag \
+is also stored inside Z3 traces. \\
+
+The authors mark an important note about symbolic flags. \textit{Symbolic flags} represent the result of comparing concrete data with symbolic data. This mechanism \
+is introduced for simplifying Z3 representation and usability of resources. All Z3 objects are represented by pure Z3 structures, eradicating the need for custom \
+\river specifications. All registers and memory locations are involved in Z3 tracing if the need arises. \\
+
+\section{Offline sanitization}
+
+
+{\tool} introduces the concept of offline sanitization, a novel approach of reporting crashes outside program execution. We introduce this approach for being \
+used in two different scenarios where instrumentation runtime costs exceeds the target code execution with a scaling factor larger than 5.0X \cite{Wagner2015}. \
+The following discussion regards \textit{offline sanitization} use cases where lower sanitization execution costs increase the overall benefits of the bearer system. \
+First and most important use case is fuzzing - in any of its flavors: white-box, grey-box and black-box - followed by secure code execution in production assisted by \
+component behavior sanitizers - address sanitizer, memory sanitizer, undefined behavior sanitizer, thread sanitizer. \\
+
+Fuzzing is a technique for testing binary files or source code by feeding random input to target program. In practice, fuzzing procedure performance is augmented \
+by input mutation heuristics, target execution feedback and crash / error reporting tools. In most implementations \cite{afl} \cite{libfuzzer}, the latter is \
+represented by instrumentation code that consists in a condition which decides whether the program crashes or not and reports the fault along with execution context \
+(memory, registers, backtrace, statistics, etc.).
+
+\begin{figure}
+  \caption{Asan instrumentation atom}
+  \label{asan-atom}
+\begin{lstlisting}
+  shadow_address = MemToShadow(address);
+  if (ShadowIsPoisoned(shadow_address)) {
+    ReportError(address, kAccessSize, kIsWrite);
+  }
+\end{lstlisting}
+\scalebox{0.7}{
+		\begin{tabular}{@{}>{$}l<{$}l@{}}
+		  shadow_address & address in shadow memory where poisoning metadata resides \\
+		  MemToShadow() & function that translates between virtual memory address and shadow memory address \\
+		  address & virtual memory address that is verified \\
+		  ShadowIsPoisoned() & check if address is addressable\\
+		  ReportError() & report execution context and exit\\
+		\end{tabular}
+	  }
+\end{figure}
+
+Runtime instrumentation for crash reporting is implemented in a separate project, Address Sanitizer, outside any fuzzing implementation. The discussion follows \
+Address Sanitizer implementation since other versions %% TODO how other fuzzers implement address sanitization \
+have similar implementations. \autoref{asan-atom} shows the layout of asan atoms. Asan instrumentation instructions that compute shadow address and verify whether \
+the associated memory location is addressable or not, is executed each time the target instruction pointer reaches instrumented basic blocks. The exposed situation \
+allows the idea of removing asan instrumentation execution overhead. {\tool} runs code instrumented with a custom implementation of coverage sanitizer and obtains \
+execution traces. The layout of these traces is discussed in \autoref{offline-traces}. \\ 
+
+\subsection{Address Sanitization}
+
+\begin{figure}
+\caption{User controlled pointer vulnerability}
+\label{vuln-symbolic-address}
+\begin{lstlisting}
+  char buf[128];
+  int size, offset = 0;
+  while(1) {
+    scanf("%d", &size);
+    if (!size) break;
+    read(STDIN_FILENO, buf + offset, size);
+    offset += size;
+  }
+\end{lstlisting}
+\end{figure}
+
+{\tool} uses {\river} offline traces to detect potential security vulnerabilities in program execution. The vulnerabilty class addressed by {\tool} refers to \
+reading/writing from/to memory location pointed by user controlled address. This includes writing to execution stack, situation which often leads to control of \
+return address. We introduce the concept of \textit{symbolic address}, a pointer that is indirectly controlled by user input. Consider the example in \
+\autoref{vuln-symbolic-address}. \\
+
+Considering that \textit{size} is controlled by user, we call it symbolic or tainted. The operation \textit{buf + offset} results in a symbolic address because \
+one of the source operators, \textit{offset}, is symbolic. The taint propagation went from initial input data, \textit{size}, to \textit{offset} by the \
+addition operation. The final taint target is \textit{buf + offset} by addressing a memory location controlled by used data. In this particular care, the user \
+can perform illegal writes to memory locations outside the designated stack buffer. \\
+
+More complex situations that allow return address overwrite, thus allowing execution flow control by user. {\tool} analyzes all addresses that are computed \
+using source operands depending on user input. These addresses are called symbolic addresses. Each raw trace entry which logs basic block metadata shows the stack \
+pointer value corresponding to the execution of last instruction. Further discussion relates to how {\tool} uses stack pointer values to detect whether user input \
+can be manipulated in such way that it rewrites the return address corresponding to current stack frame. \\
+
+\begin{figure}
+  \caption{Stack layout}
+  \label{stack-frame}
+  \begin{tabular}{| l |}
+  \hline
+  return address \\ \hline
+  old ebp \\ \hline
+  local variables \\
+  ... \\ \hline
+  return address \\ \hline
+  old ebp \\ \hline
+  local variables \\
+  ... \\ \hline
+  \end{tabular}
+\end{figure}
+
+Each entry from raw trace represents data about static and runtime context of last traslated and executed basic block. Following the basic blocks that \
+end in \textit{call} and \textit{return} instructions, each stack frame can be restored. \autoref{stack-frame} shows the layout of a stack. \\
+
+Using a stack data stucture, {\tool} records the stack pointer value corresponding to each basic block ended in a call instruction. After executing the call, \
+the stack pointer represents the stack address of last element pushed on the stack, in this particular case being the old value of instruction pointer or \
+address of the instruction following the call. \\
+
+\begin{figure}
+  \caption{Offline Address Sanitizer}
+  \label{offline-asan}
+  \[ ( assert \quad (not \quad (eq \quad [symbolic\-address] \quad [stack\-pointer]))) \]
+  \begin{tabular}{@{}>{$}l<{$}l@{}}
+    symbolic\-address & symbolic expression corresponding to virtual address\\
+    stack\-pointer & stack address where return address is stored\\
+  \end{tabular}
+\end{figure}
+
+{\tool} can assert that the symbolic address value cannot evaluate to illegal values. One illegal value that should not be written using user input is the \
+address of return address obtained using the mechanism discussed above. The assertion performend by {\tool} custom offline address sanitizer is represented in \
+\autoref{offline-asan}. \\
+
+The argument extends to an example of how {\tool} works on the particular case where addresses are not allowed to point to return address location on \
+execution stack. \\
+
+%%TODO enhanced taint analysis %%
+%===========================================================================
+
+% Acknowledgements hidden in the anonymized version
+%
+%\section{Acknowledgements}\label{acknowledgements}
+%
+%Thanks to LibFuzzer developers and the people on llvm-dev.
+%\newpage
+
+\bibliographystyle{IEEEtran}
+\citestyle{acmnumeric}
+\bibliography{header-standard,biblio}
+
+\end{document}
+
+% vim: set number wrap linebreak textwidth=0 sw=2:

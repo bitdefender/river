@@ -1,0 +1,274 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% writeLaTeX Example: A quick guide to LaTeX
+%
+% Source: Dave Richeson (divisbyzero.com), Dickinson College
+% 
+% A one-size-fits-all LaTeX cheat sheet. Kept to two pages, so it 
+% can be printed (double-sided) on one piece of paper
+% 
+% Feel free to distribute this example, but please keep the referral
+% to divisbyzero.com
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% How to use writeLaTeX: 
+%
+% You edit the source code here on the left, and the preview on the
+% right shows you the result within a few seconds.
+%
+% Bookmark this page and share the URL with your co-authors. They can
+% edit at the same time!
+%
+% You can upload figures, bibliographies, custom classes and
+% styles using the files menu.
+%
+% If you're new to LaTeX, the wikibook is a great place to start:
+% http://en.wikibooks.org/wiki/LaTeX
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt,landscape]{article}
+\usepackage{amssymb,amsmath,amsthm,amsfonts}
+\usepackage{multicol,multirow}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage[landscape]{geometry}
+\usepackage[colorlinks=true,citecolor=blue,linkcolor=blue]{hyperref}
+\usepackage{listings}
+\usepackage{balance}
+
+
+\ifthenelse{\lengthtest { \paperwidth = 11in}}
+    { \geometry{top=.5in,left=.5in,right=.5in,bottom=.5in} }
+	{\ifthenelse{ \lengthtest{ \paperwidth = 297mm}}
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+	}
+\pagestyle{empty}
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%x
+                                {\normalfont\large\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
+                                {-1explus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%
+                                {\normalfont\normalsize\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {1ex plus .2ex}%
+                                {\normalfont\small\bfseries}}
+\newcommand{\river}{RIVER}
+\newcommand{\rr}{\raggedright}
+\newcommand{\tn}{\tabularnewline}
+\makeatother
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+% -----------------------------------------------------------------------
+
+\title{Quick Guide to LaTeX}
+
+\begin{document}
+
+\raggedright
+\footnotesize
+
+\begin{center}
+	\Large{\textbf{{\river} Cheat Sheet}} \\
+\end{center}
+\begin{multicols*}{3}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{2pt}
+
+\section{What is \river?}
+	{\river} spelled backwards stands for \textbf{REV}ersible \textbf{I}ntermediate \textbf{R}epresentation. {\river} is a fixed length extended x86 instruction set. It is designed to be translated to and from x86. {\river} instrumentation helps tracing binaries (no need for program source code) and provides analysis information about each basic block that was executed by target program. Provided details are: module name, instruction pointer offset, execution cost, jump type, jump instruction and number of instructions.
+
+\section{Constant Definitions}
+
+	\subsection{{\river} Modifiers}
+
+	\begin{tabular}{ p{6cm} p{1.3cm} }
+		RIVER\_MODIFIER\_NOSEG & 0x00000000\\
+		RIVER\_MODIFIER\_ESSEG & 0x00000001\\
+		RIVER\_MODIFIER\_CSSEG & 0x00000002\\
+		RIVER\_MODIFIER\_SSSEG & 0x00000003\\
+		RIVER\_MODIFIER\_DSSEG & 0x00000004\\
+		RIVER\_MODIFIER\_FSSEG & 0x00000005\\
+		RIVER\_MODIFIER\_GSSEG & 0x00000006\\
+							   \\
+		RIVER\_MODIFIER\_EXT &	0x00000008\\
+		RIVER\_MODIFIER\_O8 & 0x00000010\\
+		RIVER\_MODIFIER\_O16 & 0x00000020\\
+		RIVER\_MODIFIER\_A16 & 0x00000040\\
+		RIVER\_MODIFIER\_LOCK & 0x00000080\\
+		RIVER\_MODIFIER\_REP & 0x00000100\\
+		RIVER\_MODIFIER\_REPZ & 0x00000200\\
+		RIVER\_MODIFIER\_REPNZ & 0x00000400\\
+	\end{tabular}
+
+	\subsection{{\river} Family}
+	\begin{tabular}{ p{6cm} p{1.3cm} }
+		RIVER\_FAMILY\_NATIVE & 0x00000000\\
+		RIVER\_FAMILY\_RIVER & 0x00000001\\
+		RIVER\_FAMILY\_TRACK & 0x00000002\\
+		RIVER\_FAMILY\_PRETRACK & 0x00000003\\
+		RIVER\_FAMILY\_PREMETA & 0x00000004\\
+		RIVER\_FAMILY\_POSTMETA & 0x00000005\\
+		RIVER\_FAMILY\_RIVER\_TRACK & 0x00000006\\
+
+		RIVER\_FAMILY\_FLAG\_METAPROCESSED & 0x00000020\\
+		RIVER\_FAMILY\_FLAG\_ORIG\_xSP & 0x00000040\\
+		RIVER\_FAMILY\_FLAG\_IGNORE & 0x00000080\\
+	\end{tabular}
+
+	\subsection{{\river} Branch Instruction}
+	\begin{tabular}{ p{6cm} p{1.3cm} }
+		RIVER\_BRANCH\_INSTR\_RET & 0x00001000\\
+		RIVER\_BRANCH\_INSTR\_JMP & 0x00002000\\
+		RIVER\_BRANCH\_INSTR\_JXX & 0x00004000\\
+		RIVER\_BRANCH\_INSTR\_CALL & 0x00008000\\
+		RIVER\_BRANCH\_INSTR\_SYSCALL & 0x00010000\\
+	\end{tabular}
+
+	\subsection{{\river} Branch Type}
+	\begin{tabular}{p{6cm} p{1.3cm} }
+		RIVER\_BRANCH\_TYPE\_IMM & 0x00020000\\
+		RIVER\_BRANCH\_TYPE\_REG & 0x00040000\\
+		RIVER\_BRANCH\_TYPE\_MEM & 0x00080000\\
+	\end{tabular}
+
+	\subsection{{\river} Virtual Registers}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_REG\_xAX & 0x00\\
+		RIVER\_REG\_xCX & 0x01\\
+		RIVER\_REG\_xDX & 0x02\\
+		RIVER\_REG\_xBX & 0x03\\
+		RIVER\_REG\_xSP & 0x04\\
+		RIVER\_REG\_xBP & 0x05\\
+		RIVER\_REG\_xSI & 0x06\\
+		RIVER\_REG\_xDI & 0x07\\
+	\end{tabular}
+
+	\subsection{{\river} Virtual Registers Size}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_REG\_SZ32 & 0x00\\
+		RIVER\_REG\_SZ16 & 0x08\\
+		RIVER\_REG\_SZ8\_L & 0x10\\
+		RIVER\_REG\_SZ8\_H & 0x18\\
+	\end{tabular}
+
+	\subsection{{\river} Segment Registers}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_REG\_ES & 0x20\\
+		RIVER\_REG\_SEGMENT & 0x20\\
+		RIVER\_REG\_CS & 0x21\\
+		RIVER\_REG\_SS & 0x22\\
+		RIVER\_REG\_DS & 0x23\\
+		RIVER\_REG\_FS & 0x24\\
+		RIVER\_REG\_GS & 0x25\\
+	\end{tabular}
+
+	\subsection{{\river} Control Registers}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_REG\_CONTROL & 0x30\\
+		RIVER\_REG\_CR0 & 0x30\\
+		RIVER\_REG\_CR2 & 0x32\\
+		RIVER\_REG\_CR3 & 0x33\\
+		RIVER\_REG\_CR4 & 0x34\\
+	\end{tabular}
+
+	\subsection{{\river} Debug Registers}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_REG\_DEBUG & 0x40\\
+		RIVER\_REG\_DR0 & 0x40\\
+		RIVER\_REG\_DR1 & 0x41\\
+		RIVER\_REG\_DR2 & 0x42\\
+		RIVER\_REG\_DR3 & 0x43\\
+		RIVER\_REG\_DR4 & 0x44\\
+		RIVER\_REG\_DR5 & 0x45\\
+		RIVER\_REG\_DR6 & 0x46\\
+		RIVER\_REG\_DR7 & 0x47\\
+	\end{tabular}
+
+	\subsection{{\river} Other Registers}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_REG\_NONE & 0x20\\
+	\end{tabular}
+
+	\subsection{RiverAddress components}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_ADDR\_DISP8 & 0x01\\
+		RIVER\_ADDR\_DISP & 0x02\\
+		RIVER\_ADDR\_SCALE & 0x04\\
+		RIVER\_ADDR\_BASE & 0x08\\
+		RIVER\_ADDR\_INDEX & 0x10\\
+		RIVER\_ADDR\_DIRTY & 0x80\\
+	\end{tabular}
+
+	\subsection{{\river} Operand Types}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_OPTYPE\_NONE & 0x00\\
+		RIVER\_OPTYPE\_IMM & 0x04\\
+		RIVER\_OPTYPE\_REG & 0x08\\
+		RIVER\_OPTYPE\_MEM & 0x0C\\
+		RIVER\_OPTYPE\_ALL & 0x10\\
+	\end{tabular}
+
+	\subsection{{\river} Operand Size}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_OPSIZE\_32 & 0x00\\
+		RIVER\_OPSIZE\_16 & 0x01\\
+		RIVER\_OPSIZE\_8 & 0x02\\
+	\end{tabular}
+
+	\subsection{{\river} Operation Specifiers}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_SPEC\_MODIFIES\_OP1 & 0x0001\\
+		RIVER\_SPEC\_MODIFIES\_OP2 & 0x0002\\
+		RIVER\_SPEC\_MODIFIES\_OP3 & 0x0004\\
+		RIVER\_SPEC\_MODIFIES\_OP4 & 0x0008\\
+		\\
+		RIVER\_SPEC\_MODIFIES\_FLG & 0x0010\\
+		\\
+		RIVER\_SPEC\_MODIFIES\_xSP & 0x0020\\
+		\\
+		RIVER\_SPEC\_MODIFIES\_CUSTOM & 0x0040\\
+		\\
+		RIVER\_SPEC\_IGNORES\_MEMORY & 0x0080\\
+		\\
+		RIVER\_SPEC\_IGNORES\_OP1 & 0x0100\\
+		RIVER\_SPEC\_IGNORES\_OP2 & 0x0200\\
+		RIVER\_SPEC\_IGNORES\_OP3 & 0x0400\\
+		RIVER\_SPEC\_IGNORES\_OP4 & 0x0800\\
+		\\
+		RIVER\_SPEC\_IGNORES\_FLG & 0x1000\\
+	\end{tabular}
+
+	\subsection{{\river} Operation Flags}
+	\begin{tabular}{p{6cm} p{1.3cm}}
+		RIVER\_SPEC\_IDX\_CF & 0x00\\
+		RIVER\_SPEC\_IDX\_PF & 0x01\\
+		RIVER\_SPEC\_IDX\_AF & 0x02\\
+		RIVER\_SPEC\_IDX\_ZF & 0x03\\
+		RIVER\_SPEC\_IDX\_SF & 0x04\\
+		RIVER\_SPEC\_IDX\_OF & 0x05\\
+		RIVER\_SPEC\_IDX\_DF & 0x06\\
+	\end{tabular}
+
+	\newpage
+	\section{Structure Definitions}
+	\subsection{struct RiverAddress}
+	\lstinputlisting[language=C]{code/RiverAddress.h}
+
+	\subsection{struct RiverOperand}
+	\lstinputlisting[language=C]{code/RiverOperand.h}
+
+	\columnbreak
+	\subsection{struct RiverInstruction}
+	\lstinputlisting[language=C]{code/RiverInstruction.h}
+
+\end{multicols*}
+
+\end{document}

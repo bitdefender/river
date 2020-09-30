@@ -1,0 +1,5 @@
+ÅUT /api/v1/spot HTTP/1.1
+content-type: application/json
+host: example.com\r\ncontent-length:31
+{\"stock\": \"AAPL\", \"price\": 643}
+

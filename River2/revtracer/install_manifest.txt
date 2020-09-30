@@ -1,0 +1,7 @@
+/usr/local/lib/librevtracer.so
+/usr/local/include/revtracer/DebugPrintFlags.h
+/usr/local/include/revtracer/RiverAddress.h
+/usr/local/include/revtracer/common.h
+/usr/local/include/revtracer/environment.h
+/usr/local/include/revtracer/revtracer.h
+/usr/local/include/revtracer/river.h

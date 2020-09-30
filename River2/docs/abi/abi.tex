@@ -1,0 +1,579 @@
+\documentclass[12pt]{report}
+
+
+\input{macros}
+
+\begin{document}
+
+\author{Edited by\\
+  Teodor Stoenescu\thanks{tstoenescu@bitdefender.com},
+  Alexandra Sandulescu\thanks{asandulescu@bitdefender.com}}
+
+\title{River Application Binary Interface\\
+Version \version}
+\maketitle
+\tableofcontents
+%%\listoftables
+%%\listoffigures
+
+\section*{Revision History}
+
+\begin{description}
+	\item[1.0][09.02.2018] Document rep prefix instrumentation \autoref{sec:rep-family-abi}.
+\item[0.3][28.01.2016] Added \autoref{sec:reassembly} detailing instruction reassembly.
+\item[0.2][26.01.2016] Added chapter detailing the binary translation - \autoref{chapter:binary-translation-process}.
+Added several new meta instructions - \autoref{sec:tracking-translator}.
+Added the track instruction family.
+Substituted chapter numbers with cross references.
+\item[0.1][09.09.2015] Renamed symbop instruction set to track and pretrack.
+Covers the pretrack instruction set.
+Added individual flag tracking.
+Added a brief description of the current API.
+\item[0.0][20.07.2015] Initial release. Covers general instruction layout as well as the river instruction set.
+\end{description}
+
+\chapter{River internal instruction representation}
+Since this documentation is subject to change please consult the river.h header file for an updated version.\\
+Instructions are represented in the river intermediate representation as fixed length structures as defined below. This comes in handy since most translators work on arrays of instructions.
+
+\lstinputlisting[language=C]{../cheatsheet/code/RiverInstruction.h}
+
+Modifiers are described in \autoref{sec:modifiers}, specifiers in \autoref{sec:specifiers}, family in \autoref{sec:instrfamilies}. OpTypes are documented in \autoref{sec:operands-and-operand-types} along with operands.
+
+\section{Modifiers}
+\label{sec:modifiers}
+Instruction modifiers are optional instruction features introduced by x86 instruction prefixes.\\
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Modifier name} & \textbf{Modifier meaning}\\ \hline
+		\texttt{RIVER\_MODIFIER\_NOSEG} & Default modifier, used as a placeholder when no other modifiers are specified.\\ \hline
+		\texttt{RIVER\_MODIFIER\_ESSEG} & \multirow{6}{*}{The instruction has been prefixed with a segment selector.} \\
+		\texttt{RIVER\_MODIFIER\_CSSEG} &\\
+		\texttt{RIVER\_MODIFIER\_SSSEG} &\\
+		\texttt{RIVER\_MODIFIER\_DSSEG} &\\
+		\texttt{RIVER\_MODIFIER\_FSSEG} &\\
+		\texttt{RIVER\_MODIFIER\_GSSEG} &\\ \hline
+		\texttt{RIVER\_MODIFIER\_EXT} & The instruction has a two byte opcode. (0x0F is the first byte)\\ \hline
+		\texttt{RIVER\_MODIFIER\_O8} & (No corresponding prefix) The instruction operates on 8 bit operands.\\ \hline
+		\texttt{RIVER\_MODIFIER\_O16} & The instruction operates on 16 bit operands.\\ \hline
+		\texttt{RIVER\_MODIFIER\_A16} & The instruction uses 16 bit addressing mode.\\ \hline
+		\texttt{RIVER\_MODIFIER\_LOCK} & The instruction has a LOCK prefix.\\ \hline
+		\texttt{RIVER\_MODIFIER\_REP} & \multirow{3}{*}{The instruction has a REP/REPZ/REPNZ prefix.}\\
+		\texttt{RIVER\_MODIFIER\_REPZ} &\\
+		\texttt{RIVER\_MODIFIER\_REPNZ} &\\ \hline
+	\end{tabular}
+	\caption{River Modifiers}
+	\label{table:river-modifiers}
+\end{table}
+
+\section{Specifiers}
+\label{sec:specifiers}
+Instruction specifiers are decorations introduced by the disassembler in order to aid data flow analysis.\\
+\begin{table}[H]
+\begin{tabular}{| p{6.3cm} | p{10cm} |}
+		\hline
+		\textbf{Specifier name} & \textbf{Specifier meaning}\\ \hline
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP(x}) & \multirow{5}{10cm}{The current instruction modifies the specified operand. NOTE: Keep in mind that \texttt{RIVER_SPEC_MODIFIES_OP1} actually corresponds to \texttt{RIVER_SPEC_MODIFIES_OP(0)}.}\\
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP1} &\\
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP2} &\\
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP3} &\\
+		\texttt{RIVER\_SPEC\_MODIFIES\_OP4} &\\ \hline
+		\texttt{RIVER\_SPEC\_MODIFIES\_FLG} & The instruction modifies at least one CPU flag. (This specifier might be deprecated in the future and replaced with individual per-flag versions)\\ \hline
+		\texttt{RIVER\_SPEC\_IGNORES\_OP(idx)} & \multirow{6}{10cm}{Used in combination with \texttt{RIVER\_SPEC\_MODIFIES\_OP(x)}, specifies that the current operand is only used as an output operand. NOTE: Keep in mind that \texttt{RIVER\_SPEC\_IGNORES\_OP1} actually corresponds to \texttt{RIVER\_SPEC\_IGNORES\_OP(0)}.} \\
+		\texttt{RIVER\_SPEC\_IGNORES\_OP1} &\\
+		\texttt{RIVER\_SPEC\_IGNORES\_OP2} &\\
+		\texttt{RIVER\_SPEC\_IGNORES\_OP3} &\\
+		\texttt{RIVER\_SPEC\_IGNORES\_OP4} &\\
+		& \\\hline
+		\texttt{RIVER\_SPEC\_IGNORES\_FLG} & The instruction ignores all CPU flags. (To be deprecated soon).\\ \hline
+	\end{tabular}
+	\caption{River Specifiers}
+	\label{table:river-specifiers}
+\end{table}
+
+\section{Instruction families}
+\label{sec:instrfamilies}
+Instruction families are the core of the river design. \autoref{chapter:instruction-families-abi} gives a more detailed analysis of the available families.\\
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Family name} & \textbf{Family meaning}\\ \hline
+		\texttt{RIVER_FAMILY_NATIVE} & Native instructions produced by the x86 disassembler.\\ \hline
+		\texttt{RIVER_FAMILY_RIVER} & Instruction family that enables reversible code.\\ \hline
+		\texttt{RIVER_FAMILY_PRETRACK} & Instruction family that handles symbolic variable tracking. These instructions are inserted directly into the original instruction stream.\\ \hline
+		\texttt{RIVER_FAMILY_TRACK} & Instruction family that handles symbolic variable tracking. These instructions are inserted in a separate instruction stream.\\ \hline
+		\texttt{RIVER_FAMILY_PREMETA} & Instruction produced by the disassembler that further specify the following native instruction.\\ \hline
+		\texttt{RIVER_FAMILY_POSTMETA} & Instruction produced by the disassembler that further specify the previous native instruction.\\ \hline
+		\texttt{RIVER_FAMILY_RIVER_TRACK} & Instruction family that handles symbolic variable tracking during reverse execution.\\ \hline
+		\texttt{RIVER_FAMILY_REP} & Instuctions that handle \texttt{rep} prefix instrumentation.\\ \hline
+	\end{tabular}
+	\caption{Instruction Families}
+	\label{table:instruction-families}
+\end{table}
+Furthermore some instruction families may be further decorated with the following flags.\\
+\begin{table}[H]
+	\begin{tabular}{| p{8cm} | p{8cm} |}
+		\hline
+		\textbf{Family name} & \textbf{Family meaning}\\ \hline
+		\texttt{RIVER_FAMILY_FLAG_IGNORE} & The current instruction has been marked for lazy deletion.\\ \hline
+		\texttt{RIVER_FAMILY_FLAG_METAPROCESSED} & The current instruction has been completely split up in metaoperations.\\ \hline
+		\texttt{RIVER_FAMILY_FLAG_ORIG_xSP} & The current instruction needs access to the native stack pointer.\\ \hline
+	\end{tabular}
+	\caption{Instruction families characteristics}
+\end{table}
+
+\section{Operands and operand types}
+\label{sec:operands-and-operand-types}
+\texttt{opTypes} field encodes the operand type while \texttt{operands} field encodes the actual operand. \texttt{opTypes} field base values are shown in \autoref{table:river-operand-types}.\\
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Operand type} & \textbf{Meaning}\\ \hline
+		\texttt{RIVER_OPTYPE_NONE} & This type specifies that the current operand is not used.\\ \hline
+		\texttt{RIVER_OPTYPE_IMM} & The current operand is an immediate value.\\ \hline
+		\texttt{RIVER_OPTYPE_REG} & The current operand is a CPU register.\\ \hline
+		\texttt{RIVER_OPTYPE_MEM} & The current operand is an address.\\ \hline
+	\end{tabular}
+	\caption{River operand types}
+	\label{table:river-operand-types}
+\end{table}
+Furthermore the basic operand types can be combined with size specifiers shown in \autoref{table:river-operand-size}.\\
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Operand size} & \textbf{Meaning}\\ \hline
+		\texttt{RIVER_OPSIZE_32} & 32-bit operand. (This is the default value)\\ \hline
+		\texttt{RIVER_OPSIZE_16} & 16-bit operand.\\ \hline
+		\texttt{RIVER_OPSIZE_8} & 8-bit operand.\\ \hline
+	\end{tabular}
+	\caption{River operand size}
+	\label{table:river-operand-size}
+\end{table}
+Last but not least the operand type can have the \texttt{RIVER_OPFLAG_IMPLICIT} flag set in order to distinguish between explicit operands and operands implicitly added by the disassembler.\\
+\newline
+The \texttt{RiverOperand} union encapsulates all possible operand configurations and is described in the following chapters.\\
+
+\subsection{Immediate operands}
+\label{ssec:immediate-operands}
+Depending on the operand size immediate values are stored in \texttt{RiverOperand::asImm8}, \texttt{RiverOperand::asImm16} or \texttt{RiverOperand::asImm32} members.\\
+\subsection{Register operands}
+\label{ssec:register-operands}
+Register operands are stored in \texttt{RiverOperand::asRegister} member. This is a 32-bit field where the least significant eight bits encode the register name, while the remaining bits are used for register versioning (in order to achieve SSA at a basic block level). Register name encoding is divided between general purpose and other registers.\\
+\newline
+The general purpose registers can be specified by combining the register name with the register size as described in \autoref{table:river-registers}.\\
+\begin{table}[H]
+	\begin{tabular}{| p{3.6cm} | p{3.2cm} | p{1cm} | p{1cm} | p{1cm} | p{1cm} | p{1cm} | p{1cm} | p{1cm} |}
+		\hline
+		& \texttt{RIVER_REG_xAX}  & \texttt{*_xCX}  & \texttt{*_xDX}  & \texttt{*_xBX}  & \texttt{*_xSP}  & \texttt{*_xBP}  & \texttt{*_xSI}  & \texttt{*_xDI}\\ \hline
+		\texttt{RIVER_REG_SZ32}  & \texttt{EAX}  & \texttt{ECX}  & \texttt{EDX}  & \texttt{EBX}  & \texttt{ESP}  & \texttt{EBP}  & \texttt{ESI}  & \texttt{EDI}\\ \hline
+		\texttt{RIVER_REG_SZ16}  & \texttt{AX}  & \texttt{CX}  & \texttt{DX}  & \texttt{BX}  & \texttt{SP}  & \texttt{BP}  & \texttt{SI}  & \texttt{DI}\\ \hline
+		\texttt{RIVER_REG_SZ8_L}  & \texttt{AL}  & \texttt{CL}  & \texttt{DL}  & \texttt{BL}  & \texttt{-}  & \texttt{-}  & \texttt{-}  & \texttt{-}\\ \hline
+		\texttt{RIVER_REG_SZ8_H}  & \texttt{AH}  & \texttt{CH}  & \texttt{DH}  & \texttt{BH}  & \texttt{-}  & \texttt{-}  & \texttt{-}  & \texttt{-}\\ \hline
+	\end{tabular}
+	\caption{River Registers}
+	\label{table:river-registers}
+\end{table}
+Other registers have individual register notations. See \autoref{table:extra-registers}.\\
+\begin{table}[H]
+	\begin{tabular}{| p{5cm} | p{5cm} | p{5cm} |}
+		\hline
+		\textbf{Segment registers} & \textbf{Control registers} & \textbf{Debug registers} \\ \hline
+		\texttt{RIVER_REG_ES} \texttt{RIVER_REG_CS} \texttt{RIVER_REG_SS} \texttt{RIVER_REG_DS} \texttt{RIVER_REG_FS} \texttt{RIVER_REG_GS} &
+		\texttt{RIVER_REG_CR0} \texttt{RIVER_REG_CR2} \texttt{RIVER_REG_CR3} \texttt{RIVER_REG_CR4} &
+		\texttt{RIVER_REG_DR0} \texttt{RIVER_REG_DR1} \texttt{RIVER_REG_DR2} \texttt{RIVER_REG_DR3} \texttt{RIVER_REG_DR4} \texttt{RIVER_REG_DR5} \texttt{RIVER_REG_DR6} \texttt{RIVER_REG_DR7}\\ \hline
+	\end{tabular}
+	\caption{Extra registers}
+	\label{table:extra-registers}
+\end{table}
+
+\subsection{Address operands}
+\label{ssec:address-operands}
+Address operands are stored as a pointer to a structure containing fields shown in \autoref{table:address-operand-fields}.\\
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{RiverAddress field name} & \textbf{Meaning}\\ \hline
+		\texttt{type} & Encodes valid address fields as described below.\\ \hline
+		\texttt{base} & Encodes the base register. Valid only if type has the \texttt{RIVER_ADDR_BASE} flag set.\\ \hline
+		\texttt{index} & Encodes the index register. Valid only if type has the \texttt{RIVER_ADDR_INDEX} flag set.\\ \hline
+		\texttt{disp.d8} & Encodes a 8-bit displacement. Valid only if type has the \texttt{RIVER_ADDR_DISP8} flag set.\\ \hline
+		\texttt{disp.d32} & Encodes a 32-bit displacement. Valid only if type has the \texttt{RIVER_ADDR_DISP} flag set. (Mutually exclusive with disp.d8)\\ \hline
+		\texttt{scaleAndSegment} & Encodes the address scale and segment in a single byte. Use the provided getters and setters for convenient access. The scale is only valid if type has the \texttt{RIVER_ADDR_SCALE} flag set.\\ \hline
+	\end{tabular}
+	\caption{Address operand structure fields}
+	\label{table:address-operand-fields}
+\end{table}
+As a short reminder the x86 addressing works by evaluating the following expression:\\
+\[address = base + scale * index + displacement\]
+Where:
+\begin{itemize}
+	\item any of the aforementioned components are optional
+	\item the scale can have values of 1,2,4 and 8
+	\item the displacement can be 8 or 32 bits
+\end{itemize}
+
+\section{Unused registers}
+\label{sec:unused-register}
+\texttt{RiverInstruction} contains the \texttt{unusedRegisters} member. The disassembler marks all the general purpose registers unaffected by the current instruction. This comes in handy while reassembling.\\
+\newline
+For instance, non-native instructions make use of a modified stack pointer register (\texttt{ESP}). When these instructions need access to the original \texttt{ESP} (\texttt{RIVER_FAMILY_ORIG_xSP} is set) some form of register reallocation needs to be performed. The assembler makes use of one of the unused registers to hold the original \texttt{ESP} value.\\
+
+\chapter{Instruction families ABI}
+\label{chapter:instruction-families-abi}
+\section{Native family ABI}
+\label{sec:native-family-abi}
+Detailing the x86 instruction set is beyond the scope of this document. Check out \footnote{Intel 64 and IA-32 Architectures Software Developer Manual \url{https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-manual-325462.pdf}} for an in depth explanation.\\
+\newline
+Furthermore, \footnote{X86 Opcode and Instruction Reference \url{http://ref.x86asm.net/coder32.html}} has a really good overview of the whole instruction set.\\
+
+\section{River family ABI}
+\label{sec:river-family-abi}
+The river instruction family handles code reversibility by saving values that are about to be destroyed in an execution log. Reversing code execution simply translates to restoring the initial values. River instructions available are presented in \autoref{table:river-instructions}.\\
+\begin{table}[H]
+	\begin{tabular}{| l | l | l |}
+		\hline
+		\textbf{Instruction mnemonic} & \textbf{Opcode} & \textbf{Meaning} \\ \hline
+		\texttt{riverpushf}  & \texttt{0x9C}  & Save the EFLAGS register.\\ \hline
+		\texttt{riverpopf}  & \texttt{0x9D}  & Restore the EFLAGS register.\\ \hline
+		\texttt{riverpush reg}  & \texttt{0x50 + r}  & Save a general purpose register.\\ \hline
+		\texttt{riverpop reg}  & \texttt{0x58 + r}  & Restore a general purpose register.\\ \hline
+		\texttt{riverpush mem}  & \texttt{0xFF /6}  & Save a memory location.\\ \hline
+		\texttt{riverpop mem}  & \texttt{0x8F}  & Restore a memory location.\\ \hline
+	\end{tabular}
+	\caption{River Instructions}
+	\label{table:river-instructions}
+\end{table}
+While reassembling, river instructions are converted into their native counterparts.\\
+\newline
+River instruction set needs a separate \texttt{ESP} register. Transitioning to and from a river instruction is achieved using a single \texttt{xchg} instruction. \autoref{table:river-family-abi-example} presents two examples. The second example also shows how the register renaming works.\\
+\begin{table}[H]
+	\centering
+	\begin{tabular}{| l | l |}
+		\hline
+		\textbf{Original code} & \textbf{Reassembled code}\\ \hline
+		\multirow{3}{*}{\texttt{riverpush [eax+4*ecx]}} & \texttt{xchg esp, [espSave]}\\
+		& \texttt{push [eax+4*ecx]}\\
+		& \texttt{xchg esp, [espSave]}\\ \hline
+		\multirow{5}{*}{\texttt{riverpush esp}} & \texttt{xchg esp, [espSave]}\\
+		& \texttt{xchg eax, esp}\\
+		& \texttt{push eax}\\
+		& \texttt{xchg eax, esp}\\
+		& \texttt{xchg esp, [espSave]}\\ \hline
+	\end{tabular}
+	\caption{River family ABI - examples}
+	\label{table:river-family-abi-example}
+\end{table}
+
+
+\section{Meta family ABI (both pre- and postmeta)}
+\label{sec:meta-family-abi}
+Meta instructions are generated by the disassembler in order to add further detail to the native instruction family. There are two instructions available in the meta instruction family.\\
+\begin{table}[H]
+	\begin{tabular}{| l | l | l |}
+		\hline
+		\textbf{Instruction mnemonic} & \textbf{Opcode}  & \textbf{Meaning}\\ \hline
+		\texttt{metaadd reg, imm8}	  & \texttt{0x83 /0} & Add an immediate value to a register. No flags are altered.\\ \hline
+		\texttt{metasub reg, imm8} 	  & \texttt{0x83 /5} & Subtract an immediate value to a register. No flags are altered.\\ \hline
+		\texttt{metamov reg, mem}	  & \texttt{0x8B}	 & Move memory to register (32 bit).\\ \hline
+		\texttt{metamov mem, reg}	  & \texttt{0x89}    & Move register to memory (32 bit).\\ \hline
+		\texttt{metamov mem, imm32}	  & \texttt{0xC7}    & Move immediate value to memory.\\ \hline
+		\texttt{metamov mem1, mem2}	  & \texttt{0xA5}    & Copy 4 bytes from mem2 to mem1.\\ \hline
+	\end{tabular}
+	\caption{Meta Instructions}
+\end{table}
+
+\section{Pretrack family ABI}
+\label{sec:pretrack-family-abi}
+Pretrack instructions handle the saving of immediate values in order to correctly track symbolic expressions. Similar to the river instructions, pretrack instructions require a separate shadow stack.\\
+\begin{table}[H]
+	\begin{tabular}{| l | l | l |}
+		\hline
+		\textbf{Instruction mnemonic} & \textbf{Opcode}   & \textbf{Meaning}\\ \hline
+		\texttt{pretrackpushf}        & \texttt{0x9C}     & Save a copy of the flags register.\\ \hline
+		\texttt{pretrackpush reg}     & \texttt{0x50 + r} & Save the value of the register.\\ \hline
+		\texttt{pretracklea mem}      & \texttt{0x8D}     & Save the address specified as the first operand.\\ \hline
+		\texttt{pretrackpush mem}     & \texttt{0xFF /6}  & Save the content at the specified address.\\ \hline
+	\end{tabular}
+	\caption{Pretrack instructions}
+\end{table}
+While reassembling pretrack instructions are converted into their native counterparts. Transitioning to the pretrack family requires an extra \texttt{xchg} instruction.\\
+\newline
+Specifically, \texttt{pretracklea} instruction requires an additional register. The assembler picks an unused register dynamically. \autoref{table:pretrack-family-abi-example} presents an example of said behavior.\\
+\begin{table}[H]
+	\centering
+	\begin{tabular}{| l | l |}
+		\hline
+		\textbf{Original code} & \textbf{Reassembled code}\\ \hline
+		\multirow{6}{*}{\texttt{pretracklea [eax+4*ecx]}} & \texttt{xchg esp, [espSave]}\\
+		& \texttt{mov [tmp], edx}\\
+		& \texttt{lea edx, [eax+4*ecx]}\\
+		& \texttt{push edx}\\
+		& \texttt{mov edx, [tmp]}\\
+		& \texttt{xchg esp, [espSave]}\\ \hline
+	\end{tabular}
+	\caption{Pretrack family ABI - example}
+	\label{table:pretrack-family-abi-example}
+\end{table}
+
+\section{Track family ABI}
+\label{sec:track-family-abi}
+Track instructions generate a separate code block responsibile for tracking marked variables. \autoref{table:track-instructions} shows valid instructions in the track family.\\
+\begin{table}[H]
+	\begin{tabular}{| l | l | p{10cm} |}
+		\hline
+		\textbf{Instruction mnemonic} &	\textbf{Opcode} & \textbf{Meaning}\\ \hline
+		\texttt{trackinit}		  & \texttt{0xB8}     & Initialize the tracking register. Corresponds to \texttt{mov edi, 0}.\\ \hline
+		\texttt{trackclean imm8}  & \texttt{0xC3}     & Marks the end of tracking for the current instruction. Corresponds to \texttt{retn}.\\ \hline
+		\texttt{trackflags imm8}  & \texttt{0x8D}     & Select which flags are used as input. Corresponds to \texttt{pushf}.\\ \hline
+		\texttt{markflags imm8}   & \texttt{0x9D}     & Selects which flags are used as output. Corresponds to \texttt{popf}.\\ \hline
+		\texttt{trackreg reg}     & \texttt{0x50 + r} & Selects which registers are used as input. Corresponds to \texttt{push reg}.\\ \hline
+		\texttt{markreg reg}      & \texttt{0x58 + r} & Selects which registers are used as output. Corresponds to \texttt{pop reg}.\\ \hline
+		\texttt{trackaddress mem} & \texttt{0x8D}     & Selects addresses that are used as input. Corresponds to \texttt{lea mem}.\\ \hline
+		\texttt{trackmem mem}     & \texttt{0xFF /6}  & Selects memory location as tracking input. Corresponds to \texttt{push mem}.\\ \hline
+		\texttt{markmem mem}      & \texttt{0x8F}     & Selects memory location as tracking output. Corresponds to \texttt{pop mem}.\\ \hline
+	\end{tabular}
+	\caption{Track instructions}
+	\label{table:track-instructions}
+\end{table}
+
+\section{Rep family ABI}
+\label{sec:rep-family-abi}
+Rep instructions wrap the original instruction prefixed by rep/repz/repnz. \autoref{table:rep-instructions} shows how rep instrumentation works.\\
+\begin{table}[H]
+	\begin{tabular}{| l | l | l |}
+		\hline
+		\textbf{Instruction mnemonic}     & \textbf{Opcode}                & \textbf{Native equivalent}\\ \hline
+		\multirow{7}{*}{\texttt{repinit}} & \multirow{4}{*}{\texttt{0xF2}} & \tab \texttt{jmp wrapin}\\
+										  &								   & \texttt{init:}\\
+										  &								   & \tab \texttt{jmp codein}\\
+										  &								   & \texttt{loop:}\\
+										  &								   & \tab \texttt{loop init}\\
+										  &								   & \tab \texttt{jmp codeout}\\
+										  &								   & \texttt{codein:}\\ \hline
+		\multirow{9}{*}{\texttt{repfini}} & \multirow{5}{*}{\texttt{0xF3}} & \tab \texttt{jmp loop}\\
+										  &								   & \texttt{codeout:}\\
+										  &								   & \tab \texttt{jmp wrapout}\\
+										  &								   & \texttt{farloop:}\\
+										  &								   & \tab \texttt{jmp init}\\
+										  &								   & \texttt{wrapin:}\\
+										  &								   & \tab \texttt{lea ecx, [ecx + 1]}\\
+										  &								   & \tab \texttt{loop farloop}\\
+										  &								   & \texttt{wrapout:}\\ \hline
+	\end{tabular}
+	\caption{Rep prefix instrumentation}
+	\label{table:rep-instructions}
+\end{table}
+
+\textbf{codein} label marks the actual instructions that are prefixed by \texttt{rep}. The original code contains only one instruction, but it may be translated into more instructions, depending on the tracking type. The instrumentation performs a \texttt{farloop} instruction that also ensures that null ecx register value doesn't result in an internal crash.\\
+A \texttt{farloop} is a loop that jumps to the actual code that is executed because \texttt{loop} instruction operand size is signed 8-bit, while \texttt{jmp} operand can be as large as signed 32-bit.\\
+The extra \texttt{loop} verifies if ecx value is zero. Consult x86 documetation\footnote{Rep/Repz/Repnz\url{https://c9x.me/x86/html/file_module_x86_id_279.html}} \footnote{Loop/Loopz/Loopnz\url{https://c9x.me/x86/html/file_module_x86_id_161.html}} for further details.
+
+\chapter{Binary translation process}
+\label{chapter:binary-translation-process}
+\textit{Note: This chapter is subject to some changes in future versions.}\\
+The goal of this chapter is to detail the inner workings of the translation process. Throughout the entire chapter basic block in \autoref{table:basic-block-example} is used as an example.\\
+\begin{table}[H]
+	\centering
+	\begin{tabular}{| l |}
+		\hline
+		\textbf{Original code}\\ \hline
+		\texttt{mov edi, edi}\\
+		\texttt{push ebp}\\
+		\texttt{mov ebp, esp}\\
+		\texttt{cmp dword ptr[0x77b40150], 0x01}\\
+		\texttt{jnz 0x000571d6}\\ \hline
+	\end{tabular}
+	\label{table:basic-block-example}
+	\caption{Basic Block Example}
+\end{table}
+
+\section{Disassembly and decoration}
+\label{sec:disassembly-and-decoration}
+Besides the conversion to x86 assembly, the river disassembler augments the code with the following properties:
+\begin{itemize}
+	\item \textbf{Implicit operands} - some instructions implicitly modify registers and memory locations. These are added to the instruction as implicit operands.
+	\item \textbf{Register versioning} - in order to simplify data flow analysis, the disassembler versions every register.
+	\item \textbf{Meta operations} - since the x86 instruction set is not orthogonal, some instructions may be split into several sub-operations. (See \autoref{sec:meta-family-abi})
+	\item \textbf{Absolute jump addresses} - relative jump operations are augmented with an additional operand containing the original instruction address. This makes it easier to compute the jump destination.
+\end{itemize}
+
+\autoref{table:disassembler-output} shows the disassembler output for the input block. The implicit operands are marked \textcolor{orange}{orange}, register version are \textcolor{blue}{blue}, meta operations are \textit{italic}, and the inserted jump operand is \textcolor{green}{green}.\\
+\begin{table}[H]
+	\centering
+	\begin{tabular}{| l |}
+		\hline
+		\textbf{Disassembled code}\\ \hline
+		\texttt{mov edi\blue{\$1}, edi\blue{\$0}}\\
+		\texttt{\textit{premetamov dword ptr {[}esp\blue{\$0}+0xfc{]}, ebp\blue{\$0}}}\\
+		\texttt{\textit{premetasub esp\blue{\$1}, 4}}\\
+		\texttt{push ebp\blue{\$0},}
+		\texttt{\orange{\{esp}\blue{\$1}\orange{\}},}
+		\texttt{\orange{\{dword ptr {[}esp}\blue{\$0 }\orange{+ 0xfc{]}\}}}\\
+		\texttt{mov ebp\blue{\$1}, esp\blue{\$1}}\\
+		\texttt{cmp dword ptr[0x77b40150], 0x01}\\
+		\texttt{jnz 0x000571d6, \textcolor{green}{0x77a79831}}\\ \hline
+	\end{tabular}
+	\caption{Disassembler output}
+	\label{table:disassembler-output}
+\end{table}
+\section{River translator}
+\label{sec:river-translator}
+The river translator inserts the river instruction family in the translated code (see \autoref{sec:river-family-abi}). The river translator generates a second basic block for reversing the effects of the first block. The newly inserted instructions are \textbf{bold}. The river translator operates only on native instructions. As a general rule, every operand that is about to be overwritten has a corresponding riverpush instruction.\\
+\begin{table}[H]
+	\begin{tabular}{| l | l |}
+		\hline
+		\textbf{Forward block}							& \textbf{Backward block}\\ \hline
+		\texttt{\textbf{riverpush edi\$0}}						 & \texttt{riverpopf}\\
+		\texttt{mov edi\$1, edi\$0}								 & \texttt{riverpop ebp\$0}\\
+		\texttt{premetamov dword ptr [esp\$0+0xfc], ...}		 & \texttt{espriverpop esp\$0}\\
+		\texttt{premetasub esp\$1, 4}							 & \texttt{espriverpop dword ptr [esp\$0 + 0xfc]}\\
+		\texttt{\textbf{espriverpush dword ptr [esp\$0 + 0xfc]}} & \texttt{riverpop edi\$0}\\
+		\texttt{\textbf{espriverpush esp\$0}}					 & \texttt{jmp 0x77a7981f}\\
+		\texttt{push ebp\$0, \{esp\$1\}, \{dword ptr [esp ...}   & \\
+		\texttt{\textbf{riverpush ebp\$0}}						 & \\
+		\texttt{mov ebp\$1, esp\$1}								 & \\
+		\texttt{\textbf{riverpushf}}							 & \\
+		\texttt{cmp dword ptr[0x77b40150], 0x01}				 & \\
+		\texttt{jnz 0x000571d6, 0x77a79831}						 & \\ \hline
+	\end{tabular}
+	\caption{River Translation}
+\end{table}
+\section{Tracking translator}
+\label{sec:tracking-translator}
+Similar to the river translator, the tracking translator inserts some instructions (from the pretrack family) in the original basic block and generates a separate block for tracking purposes.\\
+\newline
+The tracking translator operates both on native and meta instructions. Below are the rules for generating pretrack instructions.\\
+\begin{itemize}
+	\item If the analyzed instruction uses any processor flags a \texttt{pretrackpushf} instruction is generated. The purpose of this instruction is to save the necessary flag values.
+	\item For any register operand that is used as an input a \texttt{pretrackpush reg} instruction is generated. The purpose of this instruction is to save the register value.
+	\item For any memory operand a \texttt{pretracklea mem} instruction is generated.
+	\item Furthermore for any memory operand that is used as input a \texttt{pretrackpush mem} instruction is generated.
+\end{itemize}
+
+The main role of the pretrack instructions is to store a copy of every operand in a separate buffer. These are later used in the tracking block. The track instructions will be generated on a per instruction basis. Following rules are followed for generation.\\
+\begin{itemize}
+	\item Each analyzed instruction generates a tracking instruction group preceded by a \texttt{trackinit}/\texttt{trackmov edi, 0} instruction and succeeded by a \texttt{trackclean}/\texttt{trackretn imm8} instruction.
+	\item Each tracking block is split in two parts, the first part consists of track* instructions in order to determine whether the original instruction has tracked operands. The latter part consists of mark* instructions in order to mark the output operands.
+\end{itemize}
+
+\begin{table}[H]
+	\begin{tabular}{| p{9.7cm} | l |}
+		\hline
+		\textbf{Forward block}									& \textbf{Tracking block}\\ \hline
+		\texttt{riverpush edi\$0}							    & \texttt{trackmov edi, 0}\\
+		\texttt{\textbf{pretrackpush edi\$0}}				    & \texttt{trackpush edi}\\
+		\texttt{mov edi\$1, edi\$0}							    & \texttt{trackpop edi}\\
+		\texttt{\textbf{esppretracklea [esp\$0+0xfc]}}		    & \texttt{trackretn 0x01}\\
+		\texttt{\textbf{pretrackpush ebp\$0}}				    &\\
+		\texttt{premetamov dword ptr [esp\$0+0xfc], }...	    & \texttt{trackmov edi, 0}\\
+		\texttt{\textbf{esppretrackpush esp\$1}}			    & \texttt{esptracklea [esp+0xfc]}\\
+		\texttt{premetasub esp\$1, 4}						    & \texttt{trackpush ebp}\\
+		\texttt{espriverpush dword ptr [esp\$0+0xfc]}		    & \texttt{esptrackpop [esp+0xfc], 0x00}\\
+		\texttt{espriverpush esp\$0}							& \texttt{trackretn 0x02}\\
+		\texttt{push ebp\$0, \{esp\$1\}, \{dword ptr [esp} ...  &\\
+		\texttt{riverpush ebp\$0}							    & \texttt{trackmov edi, 0}\\
+		\texttt{\textbf{esppretrackpush esp\$1}}				& \texttt{esptrackpush esp}\\
+		\texttt{mov ebp\$1, esp\$1}							    & \texttt{esptrackpop esp}\\
+		\texttt{riverpushf}									    & \texttt{trackretn 0x01}\\
+		\texttt{\textbf{pretrackpushf}}						    &\\
+		\texttt{\textbf{pretracklea [0x77b40150]}}			    & \texttt{trackmov edi, 0}\\
+		\texttt{\textbf{pretrackpush [0x77b40150], 0x02}}	    & \texttt{esptrackpush esp}\\
+		\texttt{cmp dword ptr[0x77b40150], 0x01}				& \texttt{trackpop ebp}\\
+		\texttt{\textbf{pretrackpushf}}						    & \texttt{trackretn 0x01}\\
+		\texttt{jnz 0x000571d6, 0x77a79831}					    &\\
+															    & \texttt{trackmov edi, 0}\\
+															    & \texttt{trackpushf 0x00}\\
+															    & \texttt{tracklea [0x77b40150]}\\
+															    & \texttt{trackpush [0x77b40150], 0x01}\\
+															    & \texttt{trackpopf 0x3f}\\
+															    & \texttt{trackretn 0x03}\\
+															    &\\
+															    & \texttt{trackmov edi, 0}\\
+															    & \texttt{trackpushf 0x08}\\
+															    & \texttt{trackretn 0x01}\\ \hline
+	\end{tabular}
+	\caption{Tracking translation}
+\end{table}
+
+\section{Reassembly}
+\label{sec:reassembly}
+The last translation stage handles reassembly back to x86 binary. The assembler handles the transitions between instruction families, and all particularities that come with each instruction family.\\
+
+\subsection{Transition handling}
+\autoref{img:river-transition-handling} details transitions between families. The track family is not present because it cannot be combined with other families.\\
+\begin{figure}[h]
+	\includegraphics[width=\textwidth]{river-transition-handling}
+	\label{img:river-transition-handling}
+	\caption{River transition handling}
+\end{figure}
+
+\subsection{Assembling native instructions}
+\label{ssec:assembling-native-instructions}
+Most native instructions are assembled back to their original representations. The sole exceptions are branch instructions (jumps, conditional jumps, calls, returns, syscalls). Details will follow in future versions of this document.\\
+
+\subsection{Assembling river instructions}
+All river instructions are assembled directly to their binary counterpart.\\
+
+\subsection{Assembling pretrack instructions}
+Some pretrack instructions do not have a direct binary correspondent. See \autoref{table:assembling-pretrack-instructions}.\\
+\begin{table}[h]
+	\centering
+	\begin{tabular}{| l | l |}
+		\hline
+		\textbf{Instruction mnemonic}			  & \textbf{Native equivalent}\\ \hline
+		\texttt{pretrackpushf}					  &	\texttt{pushf}\\ \hline
+		\texttt{pretrackpush reg}			      & \texttt{push reg}\\ \hline
+		\multirow{4}{*}{\texttt{pretracklea mem}} & \texttt{mov [tmp], <unused_reg>}\\
+												  & \texttt{lea <unused_reg>, mem}\\
+												  & \texttt{push <unused_reg>}\\
+												  & \texttt{mov <unused_reg>, [tmp]}\\ \hline
+		\texttt{pretrackpush mem}				  & \texttt{push mem}\\ \hline
+	\end{tabular}
+	\caption{Pretrack transition table}
+	\label{table:assembling-pretrack-instructions}
+\end{table}
+
+\chapter{Execution API}
+\label{chapter:execution-api}
+\textit{Note: The documentation in \autoref{chapter:execution-api} is subject to a lot of changes.}\\
+While evaluating binary code the user regains control of the execution after each basic block. The user must implement the following callback in order to steer the program execution:
+\lstinputlisting[language=C]{./code/BranchHandler.h}
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Parameter name}		   & \textbf{Meaning}\\ \hline
+		\multirow{2}{*}{\texttt{pEnv}} & An object encapsulating the entire execution environment. The user may store generic data under the \texttt{pEnv->userContext} field.\\
+									   & For allocating space for the userContext the user needs to call the \texttt{AllocUserContext} function.\\ \hline
+		\texttt{address}			   & The address of the next instruction that will be executed (in case the execution goes forward).\\ \hline
+	\end{tabular}
+	\caption{Branch Handler Parameters}
+	\label{table:branch-handler-parameters}
+\end{table}
+BranchHandler needs to return one of the two values in \autoref{table:branch-handler-return}.\\
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Return value}      & \textbf{Meaning}\\ \hline
+		\texttt{EVALUATE_FORWARD}  & Execution goes forward. The callback will be called after the next basic block is executed.\\ \hline
+		\texttt{EVALUATE_BACKWARD} & All changes made by the last executed basic block are rolled back. The callback gets called after the rollback.\\ \hline
+	\end{tabular}
+	\label{table:branch-handler-return}
+	\caption{Branch Handler Return Values}
+\end{table}
+If a basic block ends with a syscall the following callback is called:
+\lstinputlisting[language=C]{./code/SysHandler.h}
+This allows the user to globally save the machine state.\\
+\begin{table}[H]
+	\begin{tabular}{| p{6cm} | p{10cm} |}
+		\hline
+		\textbf{Parameter name} & \textbf{Meaning}\\ \hline
+		\texttt{pEnv}			& An object encapsulating the entire execution environment. The user may store generic data under the \texttt{pEnv->userContext} field.\\ \hline
+	\end{tabular}
+	\caption{SysHandler Parameters}
+	\label{table:syshandler-parameters}
+\end{table}
+
+\appendix
+
+\end{document}

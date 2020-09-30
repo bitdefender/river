@@ -1,0 +1,261 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "Execution/libexecution.so"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"install",
+			"target_link_libraries",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"Execution/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 18,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 45,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 34,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 17,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -m32 -std=c++11 \t-DBLOCK_CACHE_READ_ONLY -D_cdecl=\"__attribute__((cdecl))\" \t-D_stdcall=\"__attribute__((stdcall))\"     -D'__declspec(noinline)=__attribute__ ((noinline))'     -D'CALLING_CONV(naked)=__attribute__((naked))'     -D__cdecl=\"\"     -D__stdcall=\"\"  -g -O0  "
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "IS_DEBUG_BUILD"
+				},
+				{
+					"define" : "execution_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 4,
+					"path" : "/home/ciprian/testtools/river/Execution/../BinLoader"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 3,
+			"id" : "binloader::@3164b1e408a00561e57b"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "revtracerwrapper::@937dc62c7f98e03d7caa"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "revtracer::@1959fb09c76e8606cdce"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "virtualmemory::@92c1390b9cf8da590614"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "wrappersetup::@141cb483ce87b8abb458"
+		}
+	],
+	"id" : "execution::@6afe2b6d4d857933ccc8",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "/usr/local/lib"
+			},
+			{
+				"backtrace" : 2,
+				"path" : "/usr/local/lib"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/usr/local"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-Wl,-rpath,/home/ciprian/testtools/river/build/revtracer:/home/ciprian/testtools/river/build/revtracer-wrapper: ../BinLoader/libbinloader.a ../wrapper.setup/libwrappersetup.a ../VirtualMemory/libvirtualmemory.a -lrt -ldl ../revtracer/librevtracer.so ../revtracer-wrapper/librevtracerwrapper.so ../BinLoader/libbinloader.a -ldl",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "execution",
+	"nameOnDisk" : "libexecution.so",
+	"paths" : 
+	{
+		"build" : "Execution",
+		"source" : "Execution"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/Debugger.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/ExternExecutionController.Linux.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/DualAllocator.Linux.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/TokenRingInit.Linux.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/LargeStack.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/CommonExecutionController2.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/InprocessExecutionController.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/CommonExecutionController.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Execution/Main.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "revtracer/sync.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "revtracer/crc32.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "revtracer/cb.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "libproc/libproc.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}
