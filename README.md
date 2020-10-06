@@ -1,3 +1,41 @@
+# *Major refactoring to version River 3.0 for improved stability*
+# Intro to River 3.0 and the major modifications
+- We are going to have two backends: 
+ 0. LLVM based tools and Libfuzzer 
+ 1. Binary execution using Triton + bcov for tracing ? + sanitizers ? 
+ 
+ It will be cross-platform running on all common OSs and support architectures: x86,x64,ARM32, ARM64
+ 
+ - We are going to convert the evaluation API to FuzzBench and Lava kind of benchmarks
+ 
+ - River 3.0 will be a collection of tools that runs over the backend mentioned above. 
+ - Currently we have implemented as a proof of concept a Generic Concolic Executor that can be found in River3/ subfolder. 
+ You can test it against the crackme_xor program inside River3/TestPrograms
+ 
+ How to build your program for testing with our tools ? 
+```
+gcc -g -O0 -o crackme_xor ./crackme_xor.c
+(you can use without -g or -O0)
+```
+
+How to use or concolic tool ? Currently in concolicGeneric.py you can set a sample of parameters like below.
+
+
+**--annotated ../../samples/crackmes/crackme_xor**
+**--architecture x64**
+**--minLen 1**
+**--maxLen 1**
+**--targetAddress 0x11ce**
+
+The targetAddress is optional, it is for capture the flag like kind of things, where you want to get to a certain address
+in the binary code.
+If you have the source code, you can use: the following command to get the address of interest. The execution will stop when the target is reached, otherwise it will exhaustively try to search all inputs.
+
+```
+ objdump -M intel -S ./crackme_xor
+```
+
+
 # *Part 1: River and tracer tools*
 
 - The instalation process is for Ubuntu 16.04.5 LTS xenial version

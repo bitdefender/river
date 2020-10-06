@@ -1,9 +1,0 @@
-## 
-moduleName                     + offset   cost   jmp    instr  esp        ninstr taken                          - offset   nottaken                       - offset  
-libfmi.so                      + 00000EF2 (   6) (   0) (   3) (F5B4121C) (   6) libfmi.so                      + 00000E97 ???                            + 00000000
-libfmi.so                      + 00000E97 (   8) (   0) (   2) (F5B41208) (   8) libfmi.so                      + 00000EB2 libfmi.so                      + 00000EAE
-libfmi.so                      + 00000EB2 (   5) (   0) (   2) (F5B41208) (   5) libfmi.so                      + 00000EC3 libfmi.so                      + 00000EBF
-libfmi.so                      + 00000EC3 (   5) (   0) (   2) (F5B41208) (   5) libfmi.so                      + 00000ED4 libfmi.so                      + 00000ED0
-libfmi.so                      + 00000ED4 (   5) (   0) (   2) (F5B41208) (   5) libfmi.so                      + 00000EE5 libfmi.so                      + 00000EE1
-libfmi.so                      + 00000EE5 (   2) (   0) (   2) (F5B41208) (   2) libfmi.so                      + 00000EEF libfmi.so                      + 00000EEB
-libfmi.so                      + 00000EEF (   3) (   0) (   0) (F5B41220) (   3) ???                            + 00000000 ???                            + 00000000
