@@ -1,0 +1,35 @@
+E: Short term
+
+-> Use emulation to get the basic blocks metrics 
+-> fix the targetADress using Score function
+-> update doc
+
+
+A.
+---------------------
+River Conc:
+
+ - simpletracer ? bcov ?
+ - SAGE: python
+ - export our SAGE with OpenAI gym.
+ - bring back RL strategies.  (23w oct !!!!)
+
+	
+  - Cpp, SAGE  
+  - Evaluation with FuzzBench, Lava
+  
+  - genetic algorithms.
+
+
+C. Tool usability:
+-------------------
+Check real problems catch <-- bring from River impl
+Corpus folder
+Dictionary
+Smarter input
+Distributed computing <-- Marius ?
+Check other params from LibFuzzer: https://llvm.org/docs/LibFuzzer.html
+
+
+
+
