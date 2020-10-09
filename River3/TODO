@@ -1,9 +1,11 @@
 E: Short term
 
--> Use emulation to get the basic blocks metrics 
--> fix the targetADress using Score function
+-> Check with logs worklist and priorities
+-> Graph reconstriction
+-> log option as param
 -> update doc
 
+-> replace simpletracer with emulation function code, make it common
 
 A.
 ---------------------
