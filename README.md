@@ -11,7 +11,9 @@
 # Installation and testing
 
 Step 1: Clone this repo with --recursive option, since we have some external submodules.
+
 Step 2: Build Triton from ExternalTools/Triton with Python bindings as documented in the README.md file in the submodule, or use their latest info on https://github.com/JonathanSalwan/Triton 
+
 Step 3: Install LIEF either from ExternalTools or with ```pip install lief```, or as according to their documentation: https://github.com/lief-project/LIEF 
 Note that by taking the versions inside submodules, it is guaranteed to compile correctly with the current River 3.0 API. 
 
@@ -23,31 +25,37 @@ import lief
 
 # Testing River 3.0
 
- Currently we have implemented as a proof of concept a Generic Concolic Executor that can be found in River3/ subfolder. 
- You can test it against the crackme_xor program inside River3/TestPrograms
+ Currently we have implemented as a proof of concept of a Generic Concolic Executor and Generalitional Search (SAGE, first open source version, see the original paper here ) that can be found in /River3/ConcolicExecution_Generic/python. The ```concolic_GenerationalSearch.py``` is the recommended one to use for performance 
+ You can test it against the crackme_xor, sage, sage2, or other programs inside program inside River3/TestPrograms. You are free to modify and experiment with your own code or changes however.
  
- How to build your program for testing with our tools ? 
+## How to build your program for testing with our tools ? 
+Let's say you modify the crackme_xor.c code file and you want to compile it. (Note, -g and -O0 are not needed but they can help you in the process of debugging and understanding the asm code without optimizations).
 ```
 gcc -g -O0 -o crackme_xor ./crackme_xor.c
 (you can use without -g or -O0)
 ```
 
-How to use or concolic tool ? Currently in concolicGeneric.py you can set a sample of parameters like below.
+## How to use or concolic tool ? 
+Currently you can run concolic_GenerationalSearch.py with a sample of parameters like below.
 
 
-**--annotated ../../samples/crackmes/crackme_xor**
-**--architecture x64**
-**--minLen 1**
-**--maxLen 1**
-**--targetAddress 0x11ce**
+--binaryPath "../../samples/crackmes/sage2"
+--architecture x64
+--maxLen 1 
+--targetAddress 0x11d3
+--logLevel CRITICAL
+--secondsBetweenStats 10
 
 The targetAddress is optional, it is for capture the flag like kind of things, where you want to get to a certain address
 in the binary code.
 If you have the source code, you can use: the following command to get the address of interest. The execution will stop when the target is reached, otherwise it will exhaustively try to search all inputs.
-
 ```
  objdump -M intel -S ./crackme_xor
 ```
+The secondsBetweenStats is the time in seconds to show various stats between runs. logLevel is working with the ```logging``` module in Python to show logs, basically you put here the level you want to see output. Put DEBUG if you want to see everything outputed as log for example.
+The architecture parameter can be set to x64, x86, ARM32, ARM64.
+
+
 ## Future work
  - Parallelization
  - We are going to convert the evaluation API to Google FuzzBench and Lava kind of benchmarks
