@@ -1,11 +1,8 @@
 E: Short term
 
--> Check with logs worklist and priorities
--> Graph reconstriction
--> log option as param
--> update doc
-
--> replace simpletracer with emulation function code, make it common
+     - export our SAGE with OpenAI gym.
+ - bring back RL strategies.  (23w oct !!!!)
+ - TensorflowAgents,  => our script
 
 A.
 ---------------------
@@ -13,14 +10,16 @@ River Conc:
 
  - simpletracer ? bcov ?
  - SAGE: python
- - export our SAGE with OpenAI gym.
- - bring back RL strategies.  (23w oct !!!!)
+
 
 	
   - Cpp, SAGE  
   - Evaluation with FuzzBench, Lava
   
+  
+-> replace simpletracer with emulation function code, make it common
   - genetic algorithms.
+
 
 
 C. Tool usability:

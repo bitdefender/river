@@ -1,5 +1,5 @@
 
-int check(const char* data, const int size)
+int RIVERTestOneInput(const char* data, const int size)
 {
   if (data[0] == 'x')
   {
@@ -13,6 +13,6 @@ int check(const char* data, const int size)
 
 int main(int ac, const char **av)
 {
-  return check(av[1], 5);
+  return RIVERTestOneInput(av[1], 5);
 }
 

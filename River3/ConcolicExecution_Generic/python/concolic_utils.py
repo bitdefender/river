@@ -60,4 +60,4 @@ def processSeedDict(seedsDict : List[any]):
         if isinstance(oldVal, str):
             seedsDict[idx] = str.encode(oldVal)
 
-    print(seedsDict)
+    #print(seedsDict)

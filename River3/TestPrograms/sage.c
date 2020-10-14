@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void check(char input[4])
+void RIVERTestOneInput(char input[4])
 {
 	int cnt = 0;
 	if (input[0] == 'b') cnt++;
@@ -26,7 +26,7 @@ int main(int ac, char **av)
 	    return -1;
 	}
 	
-	check(av[1]);
+	RIVERTestOneInput(av[1]);
 	return 0;
 }
 

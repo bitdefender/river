@@ -6,17 +6,32 @@ import argparse
 import concolic_utils as CU
 from typing import List, Dict, Set
 import copy
+import time
 
 import logging
-logging.basicConfig(level=logging.DEBUG) # filename='example.log', # Set DEBUG or INFO if you want to see more
 
 ENTRY_FUNC_ADDR = None
 INPUT_BUFFER_ADDRESS = 0x10000000 # Where the input buffer will reside in the emulated program
-TARGET_TO_REACH = None  # The target instruction to reac - None by default ,check documentation
+TARGET_TO_REACH = False  # The target instruction to reach - None by default ,check documentation
+
+# TODO Bogdan, replace this with the graphical interface
+SECONDS_BETWEEN_STATS = 10 # The interval in seconds to show stats from the running execution
+
 
 # The set of basic blocks found so far. This is used to evaluate how valuate are the inputs according to the heuristic
 # Be carefully on how you use it in RL or distributed environments
 AllBlocksFound: Set[int] = set()
+
+# The online reconstructed graph that shows possible connections between basic blocks.
+# We don't keep inputs or symbolic conditions because we don;t need them so far..just the graph
+BlocksGraph : Dict[int, Set[int]] = {} # From basic block to the list of basic blocks and possible links
+
+RECONSTRUCT_BB_GRAPH = False # Enable this if you need the block graph above
+
+def onEdgeDetected(fromAddr, toAddr):
+    if fromAddr not in BlocksGraph:
+        BlocksGraph[fromAddr] = set()
+    BlocksGraph[fromAddr].add(toAddr)
 
 def parseArgs():
     # Construct the argument parser
@@ -25,15 +40,24 @@ def parseArgs():
     # Add the arguments to the parser
     ap.add_argument("-bp", "--binaryPath", required=True,
                     help="where is the binary located")
-    ap.add_argument("-entryfuncName", "--entryfuncName", required=False, default="check",
-                    help="the name of the entry func you want to start the test from. By defult it is a 'check' name function!", type=str)
+    ap.add_argument("-entryfuncName", "--entryfuncName", required=False, default="RIVERTestOneInput",
+                    help="the name of the entry func you want to start the test from. By default it is a 'RIVERTestOneInput' name function!", type=str)
     ap.add_argument("-arch", "--architecture", required=True,
                     help="Architecture of the executable, one of: ARM32, ARM64, X86, X64")
     ap.add_argument("-max", "--maxLen", required=True,
                     help="max size of input len", type=int)
     ap.add_argument("-targetAddress", "--targetAddress", required=False, default=None,
                     help="the target that your program is trying to reach !", type=str)
+    ap.add_argument("-logLevel", "--logLevel", required=False, default='CRITICAL',
+                    help="the log level you want, see the logging module and put the corresponding string. Put it DEBUG to see verything", type=str)
+    ap.add_argument("-secondsBetweenStats", "--secondsBetweenStats", required=False, default='CRITICAL',
+                    help="How many seconds to wait before showing new stats, this is only used if you don't want to use the graphical interface", type=int)
     args = ap.parse_args()
+
+    loggingLevel = logging._nameToLevel[args.logLevel]
+    logging.basicConfig(level=loggingLevel)  # filename='example.log', # Set DEBUG or INFO if you want to see more
+
+    SECONDS_BETWEEN_STATS = args.secondsBetweenStats
 
     global TARGET_TO_REACH
     TARGET_TO_REACH = None if args.targetAddress is None else int(args.targetAddress, 16)
@@ -158,6 +182,10 @@ def loadBinary(ctxList, binaryPath, entryfuncName):
         logging.info(f"Loading the binary at path {binaryPath}..")
         import lief
         binary = lief.parse(binaryPath)
+        if binary is None:
+            assert False, f"Path to binary not found {binaryPath}"
+            exit(0)
+
         phdrs  = binary.segments
         for phdr in phdrs:
             size   = phdr.physical_size
@@ -174,7 +202,7 @@ def loadBinary(ctxList, binaryPath, entryfuncName):
                     logging.info(f"Function of interest found at address {ENTRY_FUNC_ADDR}")
                     break
 
-            assert ENTRY_FUNC_ADDR != None, "Exported function wasn't found"
+        assert ENTRY_FUNC_ADDR != None, "Exported function wasn't found"
 
 # This function returns a set of new inputs based on the last trace.
 def Expand(ctx, inputToTry):
@@ -203,10 +231,16 @@ def Expand(ctx, inputToTry):
     for pcIndex in range(inputToTry.bound, PCLen):
         pc = PathConstraints[pcIndex]
 
-        # If there is a condition on this path, try to reverse it
+        # Get all branches
+        branches = pc.getBranchConstraints()
+
+        if RECONSTRUCT_BB_GRAPH:
+            # Put all detected edges in the graph
+            for branch in branches:
+                onEdgeDetected(branch['srcAddr'], branch['dstAddr'])
+
+        # If there is a condition on this path (not a direct jump), try to reverse it
         if pc.isMultipleBranches():
-            # Get all branches
-            branches = pc.getBranchConstraints()
             for branch in branches:
                 # Get the constraint of the branch which has been not taken
                 if branch['isTaken'] == False:
@@ -240,10 +274,23 @@ def Expand(ctx, inputToTry):
 
     return inputs
 
-def SearchInputs(ctx, initialSeedDict):
+# Updates on screen feedback
+def UpdateOutputStats(startTime, currTime, forceOutput = False):
+    # TODO Bogdan: disable this output if user requested the graphical interface !
+    newTime = time.time()
+    secondsSinceLastUpdate = (newTime - currTime)
+    secondsSinceStart = (newTime - startTime)
+    if secondsSinceLastUpdate >= SECONDS_BETWEEN_STATS or forceOutput == True:
+        currTime = newTime
+        logging.critical(f"After {secondsSinceStart:.2f}s Found {len(AllBlocksFound)} blocks '\n' at addresses {AllBlocksFound}")
 
+    return currTime
+
+# This function starts with a given seed dictionary and does concolic execution starting from it.
+def SearchInputs(ctx, initialSeedDict):
     # Init the worklist with the initial seed dict
     worklist  = CU.InputsWorklist()
+    forceFinish = False
 
     # Put all the the inputs in the seed dictionary to the worklist
     for initialSeed in initialSeedDict:
@@ -253,6 +300,7 @@ def SearchInputs(ctx, initialSeedDict):
         inp.priority = 0
         worklist.addInput(inp)
 
+    startTime = currTime = time.time()
     while worklist:
         # Take the first seed
         inputSeed : CU.Input = worklist.extractInput()
@@ -268,17 +316,26 @@ def SearchInputs(ctx, initialSeedDict):
             if targetFound:
                 logging.critical(f"The solution to get to the target address is input {newInp}")
                 # TODO: Bogdan put this in output somewhere , folder, visualization etc.
-                exit(0)
+                forceFinish = True # No reason to continue...
+                break
 
             # Then put it in the worklist
             worklist.addInput(newInp)
+
+        currTime = UpdateOutputStats(startTime, currTime)
+
+        if forceFinish:
+            break
+
+    currTime = UpdateOutputStats(startTime, currTime, forceOutput=True)
+
 
 def ExecuteInputToDetectIssues(input : CU.Input):
     # TODO Bogdan, output somehow if the input has issues - folders, visual report etc...
     pass
 
 def ScoreInput(newInp : CU.Input):
-    # TODO Ciprian, executes the input and get using a BB based heuristics what should be its priority
+    logging.info(f"--Scoring input {newInp}")
     initContext(tracingContext, newInp, symbolized=False)
     targetFound, numNewBlocks = emulate(tracingContext, ENTRY_FUNC_ADDR, countBBlocks=True)
 
@@ -301,16 +358,20 @@ if __name__ == '__main__':
     # Define symbolic optimizations
     symbolicContext.setMode(MODE.ALIGNED_MEMORY, True)
     symbolicContext.setMode(MODE.ONLY_ON_SYMBOLIZED, True) # ????
-    # TODO Ciprian: should we enable AST_OPTIMIZATIONS, CONSTANT_FOLDING
+    #symbolicContext.setMode(MODE.AST_OPTIMIZATIONS, True)
+    #symbolicContext.setMode(MODE.CONSTANT_FOLDING, True)
+
 
     # Load the binary into the given set of contexts
     loadBinary([symbolicContext, tracingContext], args.binaryPath, args.entryfuncName)
 
-    # TODO: currently random input ;use corpus and dictionary like in libfuzzer
+    # TODO Bogdan: Implement the corpus strategies as defined in https://llvm.org/docs/LibFuzzer.html#corpus, or Random if not given
     initialSeedDict = ["good"]
     CU.processSeedDict(initialSeedDict) # Transform the initial seed dict to bytes instead of chars if needed
 
     SearchInputs(symbolicContext, initialSeedDict)
 
+    if RECONSTRUCT_BB_GRAPH:
+        print(f"Reconstructed graph is: {BlocksGraph}")
     sys.exit(0)
 

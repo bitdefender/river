@@ -4,7 +4,7 @@
 
 char *serial = "\x31\x3e\x3d\x26\x31";
 
-void check(char *ptr)
+void RIVERTestOneInput(char *ptr)
 {
   int i = 0;
 
@@ -31,6 +31,6 @@ int main(int ac, char **av)
     return -1;
   }
 
-  check(av[1]);
+  RIVERTestOneInput(av[1]);
 }
 

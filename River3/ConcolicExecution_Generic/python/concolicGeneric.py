@@ -6,7 +6,7 @@ import argparse
 import logging
 logging.basicConfig(level=logging.DEBUG) # filename='example.log', # Set DEBUG or INFO if you want to see more
 
-ENTRY = None
+ENTRY_FUNC_ADDR = None
 ENTRY_FUNC_NAME = "check" # "check"
 INPUT_BUFFER_ADDRESS = 0x10000000
 TARGET_TO_REACH = None
@@ -163,7 +163,7 @@ def getNewInput(ctx):
 
 # Load segments into triton.
 def loadBinary(ctx, path):
-    global ENTRY
+    global ENTRY_FUNC_ADDR
 
     logging.info(f"Loading the binary at path {path}..")
     import lief
@@ -218,7 +218,7 @@ if __name__ == '__main__':
             initContext(ctx, seed)
 
             # Emulate
-            targetFound = emulate(ctx, ENTRY)
+            targetFound = emulate(ctx, ENTRY_FUNC_ADDR)
 
             if targetFound:
                 seed_asStr = {k : chr(value) for k,value in sorted(seed.items())}
