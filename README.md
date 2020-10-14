@@ -1,15 +1,29 @@
-# *Major refactoring to version River 3.0 for improved stability*
-# Intro to River 3.0 and the major modifications
+# River 3.0 
+# Short intro to River 3.0 changes
 - We are going to have two backends: 
  0. LLVM based tools and Libfuzzer 
- 1. Binary execution using Triton + bcov for tracing ? + sanitizers ? 
+ 1. Binary execution using Triton and LIEF
  
- It will be cross-platform running on all common OSs and support architectures: x86,x64,ARM32, ARM64
- 
- - We are going to convert the evaluation API to FuzzBench and Lava kind of benchmarks
- 
+ Currently, we have 1 (binary execution) functional, while 0 (LLVM) is work in progress.
+ - It is **cross-platform running on all common OSs and support architectures: x86,x64,ARM32, ARM64**
  - River 3.0 will be a collection of tools that runs over the backend mentioned above. 
- - Currently we have implemented as a proof of concept a Generic Concolic Executor that can be found in River3/ subfolder. 
+
+# Installation and testing
+
+Step 1: Clone this repo with --recursive option, since we have some external submodules.
+Step 2: Build Triton from ExternalTools/Triton with Python bindings as documented in the README.md file in the submodule, or use their latest info on https://github.com/JonathanSalwan/Triton 
+Step 3: Install LIEF either from ExternalTools or with ```pip install lief```, or as according to their documentation: https://github.com/lief-project/LIEF 
+Note that by taking the versions inside submodules, it is guaranteed to compile correctly with the current River 3.0 API. 
+
+To check if everything is working correctly, open you Python interface (tested on Python 3.7) and check if the following commands work correctly:
+```
+import triton
+import lief
+```
+
+# Testing River 3.0
+
+ Currently we have implemented as a proof of concept a Generic Concolic Executor that can be found in River3/ subfolder. 
  You can test it against the crackme_xor program inside River3/TestPrograms
  
  How to build your program for testing with our tools ? 
@@ -34,7 +48,10 @@ If you have the source code, you can use: the following command to get the addre
 ```
  objdump -M intel -S ./crackme_xor
 ```
-
+## Future work
+ - Parallelization
+ - We are going to convert the evaluation API to Google FuzzBench and Lava kind of benchmarks
+ 
 
 # *Part 1: River and tracer tools*
 
