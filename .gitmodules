@@ -1,0 +1,6 @@
+[submodule "River3/ExternalTools/Triton"]
+	path = River3/ExternalTools/Triton
+	url = https://github.com/JonathanSalwan/Triton
+[submodule "River3/ExternalTools/LIEF"]
+	path = River3/ExternalTools/LIEF
+	url = https://github.com/lief-project/LIEF
