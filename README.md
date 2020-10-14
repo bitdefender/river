@@ -38,13 +38,14 @@ gcc -g -O0 -o crackme_xor ./crackme_xor.c
 ## How to use or concolic tool ? 
 Currently you can run concolic_GenerationalSearch.py with a sample of parameters like below.
 
-
+```
 --binaryPath "../../samples/crackmes/sage2"
 --architecture x64
 --maxLen 1 
 --targetAddress 0x11d3
 --logLevel CRITICAL
 --secondsBetweenStats 10
+```
 
 The targetAddress is optional, it is for capture the flag like kind of things, where you want to get to a certain address
 in the binary code.
@@ -57,6 +58,10 @@ The architecture parameter can be set to x64, x86, ARM32, ARM64.
 
 
 ## Future work
+ - Output graphics
+ - Corpus folder like in libfuzzer
+ - Group of interesting inputs in folders
+ - RL impl
  - Parallelization
  - We are going to convert the evaluation API to Google FuzzBench and Lava kind of benchmarks
  
