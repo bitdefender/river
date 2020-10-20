@@ -9,6 +9,7 @@ from typing import List, Dict, Set
 import copy
 import time
 from RiverOutputStats import RiverStatsTextual
+import tensorflow as tf
 
 import logging
 
@@ -45,6 +46,11 @@ def parseArgs():
                     help="How many seconds to wait before showing new stats", type=int)
     ap.add_argument("-outputType", "--outputType", required=False, default=None,
                     help="Kind of output type, can be visual or textual", type=str)
+
+    ap.add_argument("-isTraining", "--isTraining", required=False, default=0,
+                    help="1 if training, 0 if using a saved model", type=int)
+    ap.add_argument("-pathToModel", "--pathToModel", required=False, default=None, help="path to the model to use", type=str)
+
     args = ap.parse_args()
 
     loggingLevel = logging._nameToLevel[args.logLevel]
@@ -68,6 +74,12 @@ def parseArgs():
         raise NotImplementedError
 
     return args
+
+class RLBanditsModule():
+    def __init__(self):
+        pass
+    def predict(input : RiverUtils.InputRLGenerational) -> int:
+        return 0
 
 # This function returns a set of new inputs based on the last trace.
 def Expand(symbolicTracer : RiverTracer, inputToTry):
@@ -100,7 +112,7 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
             for branch in branches:
                 onEdgeDetected(branch['srcAddr'], branch['dstAddr'])
 
-        # If there is a condition on this path (not a direct jump), try to reverse it
+        # If there is a condition on this path (not a direct jump), try to reverse it with a new input
         if pc.isMultipleBranches():
             for branch in branches:
                 # Get the constraint of the branch which has been not taken
@@ -111,6 +123,18 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
 
                     # Check if we can change current executed path with the branch changed
                     desiredConstrain = astCtxt.land([currentPathConstraint, branch['constraint']])
+
+                    newInput = RiverUtils.InputRLGenerational()
+                    newInput.buffer = None
+                    newInput.buffer_parent = copy.deepcopy(inputToTry.buffer)
+                    newInput.bound = inputToTry.bound + 1 # Same as for parent
+                    newInput.PC = copy.copy(PathConstraints) # Copy the path constraint of the parent input
+                    newInput.constraint = desiredConstrain
+                    newInput.action = pcIndex
+                    newInput.priority = RLBanditsModule.predict(newInput)
+                    inputs.append(newInput)
+
+                    """
                     changes = symbolicTracer.solveInputChangesForPath(desiredConstrain)
 
                     # Then, if a possible change was detected => create a new input entry and add it to the output list
@@ -119,6 +143,7 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
                         newInput.applyChanges(changes)
                         newInput.bound = pcIndex + 1
                         inputs.append(newInput)
+                    """
 
         # Update the previous constraints with taken(true) branch to keep the same path initially taken
         currentPathConstraint = astCtxt.land([currentPathConstraint, pc.getTakenPredicate()])
@@ -128,39 +153,65 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
 
     return inputs
 
+# Solve an estimated input by putting the real input in the buffer, returning its score and if the target was found or not
+def solveLazyInput(inputSeed, symbolicTracer, simpleTracer, isTraining):
+    changes = symbolicTracer.solveInputChangesForPath(inputSeed.constraint)
+    if len(changes) == 0:
+        return None, None
+
+    inputSeed.buffer = inputSeed.buffer_parent
+    inputSeed.applyChanges(changes)
+
+    #print(inputSeed)
+
+
+    # TODO Bogdan : same as in the other script
+    ExecuteInputToDetectIssues(inputSeed)
+
+    # TODO: compute using heuristic and store as an experience if training mode is active
+    targetFound, numNewBlocks = ScoreInput(inputSeed, symbolicTracer, simpleTracer)
+    return inputSeed, targetFound
+
 # This function starts with a given seed dictionary and does concolic execution starting from it.
-def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict):
+def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict, isTraining):
     # Init the worklist with the initial seed dict
     worklist  = RiverUtils.InputsWorklist()
     forceFinish = False
 
     # Put all the the inputs in the seed dictionary to the worklist
     for initialSeed in initialSeedDict:
-        inp = RiverUtils.Input()
+        inp = RiverUtils.InputRLGenerational()
         inp.buffer = {k: v for k, v in enumerate(initialSeed)}
         inp.bound = 0
         inp.priority = 0
+
         worklist.addInput(inp)
 
     startTime = currTime = time.time()
     while worklist:
         # Take the first seed
         inputSeed : RiverUtils.Input = worklist.extractInput()
+
+        # If the input was just estimated, solve it now !
+        if inputSeed.buffer == None:
+            inputSeed, targetFound  = solveLazyInput(inputSeed, symbolicTracer, simpleTracer, isTraining)
+
+            if targetFound:
+                logging.critical(f"The solution to get to the target address is input {inputSeed}")
+                # TODO: Bogdan put this in output somewhere , folder, visualization etc.
+                forceFinish = True  # No reason to continue...
+                break
+
+            if inputSeed == None:
+                continue
+
         newInputs = Expand(symbolicTracer, inputSeed)
 
         for newInp in newInputs:
-            # Execute the input to detect real issues with it
-            ExecuteInputToDetectIssues(newInp)
-
+            """
             # Assign this input a priority, and check if the hacked target address was found or not
-            targetFound, newInp.priority = ScoreInput(newInp, simpleTracer)
-
-            if targetFound:
-                logging.critical(f"The solution to get to the target address is input {newInp}")
-                # TODO: Bogdan put this in output somewhere , folder, visualization etc.
-                forceFinish = True # No reason to continue...
-                break
-
+            targetFound, newInp.priority = ScoreInput(newInp, symbolicTracer, simpleTracer)
+            """
             # Then put it in the worklist
             worklist.addInput(newInp)
 
@@ -176,9 +227,12 @@ def ExecuteInputToDetectIssues(input : RiverUtils.Input):
     # TODO Bogdan, output somehow if the input has issues - folders, visual report etc...
     pass
 
-def ScoreInput(newInp : RiverUtils.Input, simpleTracer : RiverTracer):
+def ScoreInput(newInp : RiverUtils.Input, symbolicTracer : RiverTracer, simpleTracer : RiverTracer):
     logging.info(f"--Scoring input {newInp}")
     targetFound, numNewBlocks, allBBsInThisRun = simpleTracer.runInput(newInp, symbolized=False, countBBlocks=True)
+
+
+
     return targetFound, numNewBlocks # as default, return the bound...
 
 if __name__ == '__main__':
@@ -198,7 +252,7 @@ if __name__ == '__main__':
     initialSeedDict = ["good"]
     RiverUtils.processSeedDict(initialSeedDict) # Transform the initial seed dict to bytes instead of chars if needed
 
-    SearchInputs(symbolicTracer=symbolicTracer, simpleTracer=simpleTracer, initialSeedDict=initialSeedDict)
+    SearchInputs(symbolicTracer=symbolicTracer, simpleTracer=simpleTracer, initialSeedDict=initialSeedDict, isTraining=args.isTraining)
 
     if RECONSTRUCT_BB_GRAPH:
         print(f"Reconstructed graph is: {BlocksGraph}")

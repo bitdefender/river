@@ -41,12 +41,13 @@ class RiverTracer:
 
 	# Given a context where to emulate the binary already setup in memory with its input, and the PC address to emulate from, plus a few parameters...
 	# Returns a tuple (true if the optional target address was reached, num new basic blocks found - if countBBlocks is True)
+	# AND the path of basic block addresses found in this run
 	def __emulate(self, pc: int, countBBlocks: bool):
 		targetAddressFound = False
 		currentBBlockAddr = pc  # The basic block address that we started to analyze currently
 		numNewBasicBlocks = 0  # The number of new basic blocks found by this function (only if countBBlocks was activated)
 		newBasicBlocksFound = set()
-		allBasicBlocksFoundThisRun = []
+		basicBlocksPathFoundThisRun = []
 
 		def onNewBasicBlockEntryFound(addr):
 			nonlocal numNewBasicBlocks
@@ -54,7 +55,7 @@ class RiverTracer:
 			if addr not in self.allBlocksFound:
 				numNewBasicBlocks += 1
 				newBasicBlocksFound.add(addr)
-				allBasicBlocksFoundThisRun.append(addr)
+				basicBlocksPathFoundThisRun.append(addr)
 				self.allBlocksFound.add(addr)
 
 		onNewBasicBlockEntryFound(currentBBlockAddr)
@@ -89,11 +90,11 @@ class RiverTracer:
 		if countBBlocks:
 			logging.info(f'===== New basic blocks found: {[hex(intBlock) for intBlock in newBasicBlocksFound]}')
 
-		return targetAddressFound, numNewBasicBlocks, allBasicBlocksFoundThisRunl
+		return targetAddressFound, numNewBasicBlocks, basicBlocksPathFoundThisRun
 
 	# This function initializes the context memory for further emulation
 	def __initContext(self, inputToTry: RiverUtils.Input, symbolized: bool):
-		assert (self.context.isSymbolicEngineEnabled() == symbolized), "Making sure that context has exactly the matching requirements for the call, nothing more, nothing less"
+		assert (self.context.isSymbolicEngineEnabled() == symbolized or symbolized == False), "Making sure that context has exactly the matching requirements for the call, nothing more, nothing less"
 
 		# Clean symbolic state
 		if symbolized:
