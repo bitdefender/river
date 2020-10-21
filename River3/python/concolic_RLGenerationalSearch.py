@@ -9,6 +9,7 @@ from typing import List, Dict, Set
 import copy
 import time
 from RiverOutputStats import RiverStatsTextual
+from concolic_RLModelTf import RLBanditsModule
 import tensorflow as tf
 
 import logging
@@ -75,17 +76,11 @@ def parseArgs():
 
     return args
 
-class RLBanditsModule():
-    def __init__(self):
-        pass
-    def predict(input : RiverUtils.InputRLGenerational) -> int:
-        return 0
-
 # This function returns a set of new inputs based on the last trace.
 def Expand(symbolicTracer : RiverTracer, inputToTry):
     logging.info(f"Seed injected:, {inputToTry}")
 
-    symbolicTracer.runInput(inputToTry, symbolized=True, countBBlocks=False)
+    targetAddressFound, numNewBasicBlocks, basicBlocksPathFoundThisRun = symbolicTracer.runInput(inputToTry, symbolized=True, countBBlocks=False)
 
     # Set of new inputs
     inputs : List[RiverUtils.Input] = []
@@ -131,7 +126,7 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
                     newInput.PC = copy.copy(PathConstraints) # Copy the path constraint of the parent input
                     newInput.constraint = desiredConstrain
                     newInput.action = pcIndex
-                    newInput.priority = RLBanditsModule.predict(newInput)
+                    newInput.priority = RLBanditsModule.predict(newInput, basicBlocksPathFoundThisRun)
                     inputs.append(newInput)
 
                     """

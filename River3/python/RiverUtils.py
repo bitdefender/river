@@ -38,27 +38,6 @@ class InputRLGenerational(Input):
         self.constraint = None # The constraint needed (SMT) to give to solve to change the PC using action and produce the new input for this structure
         self.action = -1 # The action to take (which of the self.PC branches should we modify)
 
-# Given a list of basic blocks this func creates an embedding space of the requested size out of it
-# TODO: include a list of visited bblocks as well here ?
-def buildRLGenerationalStateEmbeeding(blocksPath : List[int], embeddingSize : int):
-    # Cut if too long
-    if len(blocksPath) > embeddingSize:
-        blocksPath = blocksPath[-embeddingSize:]
-
-    # Make the path relative to the first input
-    if len(blocksPath) > 0:
-        offsetBegin = blocksPath[0] - 1
-        blocksPath[0] -= offsetBegin
-        for i in range(1, len(blocksPath)):
-            blocksPath[i] -= offsetBegin
-
-    # Append if too short
-    diffLen = embeddingSize - len(blocksPath)
-    if diffLen > 0:
-        blocksPath.extend([0]*diffLen) # THe difference can't be 0 in the normal because we made a jump between two consecutive blocks and this helps us a lot
-
-    assert len(blocksPath) == embeddingSize
-
 # A priority queue data structure for holding inputs by their priority
 class InputsWorklist:
     def __init__(self):
