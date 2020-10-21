@@ -9,7 +9,7 @@ from typing import List, Dict, Set
 import copy
 import time
 from RiverOutputStats import RiverStatsTextual
-from concolic_RLModelTf import RLBanditsModule
+from concolic_RLModelTf import RLBanditsModule, NEGATIVE_ACTION_SCORE
 import tensorflow as tf
 
 import logging
@@ -20,6 +20,8 @@ import logging
 BlocksGraph : Dict[int, Set[int]] = {} # From basic block to the list of basic blocks and possible links
 
 RECONSTRUCT_BB_GRAPH = False # Enable this if you need the block graph above
+
+RLBanditsModuleInstance = RLBanditsModule()
 
 def onEdgeDetected(fromAddr, toAddr):
     if fromAddr not in BlocksGraph:
@@ -124,9 +126,10 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
                     newInput.buffer_parent = copy.deepcopy(inputToTry.buffer)
                     newInput.bound = inputToTry.bound + 1 # Same as for parent
                     newInput.PC = copy.copy(PathConstraints) # Copy the path constraint of the parent input
+                    newInput.BBPathInParentPC = copy.copy(basicBlocksPathFoundThisRun)
                     newInput.constraint = desiredConstrain
                     newInput.action = pcIndex
-                    newInput.priority = RLBanditsModule.predict(newInput, basicBlocksPathFoundThisRun)
+                    newInput.priority = RLBanditsModuleInstance.predict(newInput, basicBlocksPathFoundThisRun)
                     inputs.append(newInput)
 
                     """
@@ -152,7 +155,7 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
 def solveLazyInput(inputSeed, symbolicTracer, simpleTracer, isTraining):
     changes = symbolicTracer.solveInputChangesForPath(inputSeed.constraint)
     if len(changes) == 0:
-        return None, None
+        return None, None, None, None
 
     inputSeed.buffer = inputSeed.buffer_parent
     inputSeed.applyChanges(changes)
@@ -164,8 +167,8 @@ def solveLazyInput(inputSeed, symbolicTracer, simpleTracer, isTraining):
     ExecuteInputToDetectIssues(inputSeed)
 
     # TODO: compute using heuristic and store as an experience if training mode is active
-    targetFound, numNewBlocks = ScoreInput(inputSeed, symbolicTracer, simpleTracer)
-    return inputSeed, targetFound
+    targetFound, score, BBPath = ScoreInput(inputSeed, symbolicTracer, simpleTracer)
+    return inputSeed, targetFound, score, BBPath
 
 # This function starts with a given seed dictionary and does concolic execution starting from it.
 def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict, isTraining):
@@ -189,7 +192,11 @@ def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict, isTraining):
 
         # If the input was just estimated, solve it now !
         if inputSeed.buffer == None:
-            inputSeed, targetFound  = solveLazyInput(inputSeed, symbolicTracer, simpleTracer, isTraining)
+            actionTaken = inputSeed.action
+            bbPathInParent = inputSeed.BBPathInParentPC
+            inputSeed, targetFound, score, newBasicBlockPath = solveLazyInput(inputSeed, symbolicTracer, simpleTracer, isTraining)
+
+            RLBanditsModuleInstance.addExperience(bb_path_state=bbPathInParent, action=actionTaken, realValue=score if score != None else NEGATIVE_ACTION_SCORE)
 
             if targetFound:
                 logging.critical(f"The solution to get to the target address is input {inputSeed}")
@@ -222,13 +229,17 @@ def ExecuteInputToDetectIssues(input : RiverUtils.Input):
     # TODO Bogdan, output somehow if the input has issues - folders, visual report etc...
     pass
 
+# This is the real scoring of an input to detect the new basic blocks found...
+
 def ScoreInput(newInp : RiverUtils.Input, symbolicTracer : RiverTracer, simpleTracer : RiverTracer):
     logging.info(f"--Scoring input {newInp}")
     targetFound, numNewBlocks, allBBsInThisRun = simpleTracer.runInput(newInp, symbolized=False, countBBlocks=True)
 
+    # Here we come with the various REWARD FUNCTIONS implementations
+    # Locally we do only new basic blocks counting as debug
+    score = numNewBlocks
 
-
-    return targetFound, numNewBlocks # as default, return the bound...
+    return targetFound, score, allBBsInThisRun # as default, return the bound...
 
 if __name__ == '__main__':
 

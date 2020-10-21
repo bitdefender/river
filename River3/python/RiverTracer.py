@@ -49,16 +49,19 @@ class RiverTracer:
 		newBasicBlocksFound = set()
 		basicBlocksPathFoundThisRun = []
 
-		def onNewBasicBlockEntryFound(addr):
+		def onBasicBlockFound(addr):
 			nonlocal numNewBasicBlocks
 			nonlocal newBasicBlocksFound
+			nonlocal basicBlocksPathFoundThisRun
+
+			basicBlocksPathFoundThisRun.append(addr)
+			# Is this a new basic block ?
 			if addr not in self.allBlocksFound:
 				numNewBasicBlocks += 1
 				newBasicBlocksFound.add(addr)
-				basicBlocksPathFoundThisRun.append(addr)
 				self.allBlocksFound.add(addr)
 
-		onNewBasicBlockEntryFound(currentBBlockAddr)
+		onBasicBlockFound(currentBBlockAddr)
 
 		logging.info('[+] Starting emulation.')
 		while pc:
@@ -80,7 +83,7 @@ class RiverTracer:
 
 			if instruction.isControlFlow():
 				currentBBlockAddr = pc
-				onNewBasicBlockEntryFound(currentBBlockAddr)
+				onBasicBlockFound(currentBBlockAddr)
 				logging.info(f"Instruction is control flow of type {instruction.getType()}. Addr of the new Basic block {hex(currentBBlockAddr)}")
 
 			if self.TARGET_TO_REACH is not None and pc == self.TARGET_TO_REACH:
@@ -90,6 +93,8 @@ class RiverTracer:
 		if countBBlocks:
 			logging.info(f'===== New basic blocks found: {[hex(intBlock) for intBlock in newBasicBlocksFound]}')
 
+		if basicBlocksPathFoundThisRun[-1] == 0: # ret instruction
+			basicBlocksPathFoundThisRun = basicBlocksPathFoundThisRun[:-1]
 		return targetAddressFound, numNewBasicBlocks, basicBlocksPathFoundThisRun
 
 	# This function initializes the context memory for further emulation

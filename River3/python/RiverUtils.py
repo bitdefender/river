@@ -35,6 +35,7 @@ class InputRLGenerational(Input):
         self.priority = -1 # The estimated priority for the state
         self.stateEmbedding = None
         self.PC = None # The parent path constraint that generated the parent input
+        self.BBPathInParentPC = None # The same as above but simplified, basically the path of basic blocks obtained by running buffer_parent
         self.constraint = None # The constraint needed (SMT) to give to solve to change the PC using action and produce the new input for this structure
         self.action = -1 # The action to take (which of the self.PC branches should we modify)
 

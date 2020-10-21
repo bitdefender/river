@@ -6,14 +6,20 @@ import sys
 import RiverUtils
 from typing import List, Dict
 
+
+# TODO:
+# 1. Optimize parameters + add option to stop training when no improvement
+# 2. Masked LSTM !
+
 Batch_size = 64
 BBlock_emb_size = 10
 action_emb_size = 30
-numEpochs = 1000
-fixedStateSize = 100
+numEpochs = 100
+fixedStateSize = 50
 maskValueForRNNState = 0
 
-num_exp_to_triggerRetrain = Batch_size * 1
+num_exp_to_triggerRetrain = Batch_size * 32
+NEGATIVE_ACTION_SCORE = -10  # Invalid path action, e.g. no continuation from here
 
 class RLBanditsModule():
 	def __init__(self):
@@ -66,11 +72,11 @@ class RLBanditsModule():
 	# Predict the value of a input and state
 	def predict(self, input: RiverUtils.InputRLGenerational, basicBlocksPathFoundThisRun) -> float:
 		bb_path_state = self.buildRLGenerationalStateEmbeeding(basicBlocksPathFoundThisRun, fixedStateSize)
-		bb_path_state = tf.expand_dims(bb_path_state, axis=-1)
-		action_state = tf.constant([[input.action]])
+		bb_path_state = tf.expand_dims(bb_path_state, axis=0)
+		action_state = tf.constant([input.action])
 
 		res = self.model(input_state=bb_path_state, input_action=action_state, training=False)
-		return res[0]
+		return res.numpy()[0]
 
 	# Given the size of a single basic block embedding size and
 	# action embedding size (which in our case it is the maximum of the sequence length of considered bblocks path)
@@ -178,13 +184,21 @@ class RLBanditsModule():
 if __name__ == "__main__":
 	rlBandits = RLBanditsModule()
 
-	# Create random experiences
-	for expIndex in range(Batch_size):
-		rlBandits.addExperience(list(np.random.choice(10, size=np.random.randint(10))),
-								np.random.randint(10),
-								np.random.rand())
+	def randomExp():
+		state = list(np.random.choice(10, size=np.random.randint(10)))
+		action = np.random.randint(10)
+		realValue = np.random.rand()
+		return state, action, realValue
 
-	print(rlBandits)
+	# Create random experiences to trigger a training
+	for expIndex in range(Batch_size):
+		rlBandits.addExperience(*randomExp())
+
+	# Predict for some values
+	state, action, realValue = randomExp()
+	input = RiverUtils.InputRLGenerational()
+	input.action = action
+	print(rlBandits.predict(input, state))
 
 	"""
 	input_state = tf.random.uniform(shape=(Batch_size, 11))  # 11 is variable, can be anything !

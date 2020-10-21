@@ -1,3 +1,7 @@
+So we are estimateing Q(PC, a) value of each action.
+The reward is mainly (B(newPC) - B(PC))
+B(x) = # branches in that path
+
 E: Short term
 
      - export our SAGE with OpenAI gym.
