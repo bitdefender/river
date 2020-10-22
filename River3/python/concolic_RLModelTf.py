@@ -9,13 +9,13 @@ from typing import List, Dict
 
 # TODO:
 # 1. Optimize parameters + add option to stop training when no improvement
-# 2. Masked LSTM !
+# 3. optimize experience replay method: Similar experiences such as (state, action, value) should be detected and eliminated ! ->  !
 
 Batch_size = 64
 BBlock_emb_size = 10
 action_emb_size = 30
 numEpochs = 100
-fixedStateSize = 50
+maxEmbeddingPathStateSize = 50
 maskValueForRNNState = 0
 
 num_exp_to_triggerRetrain = Batch_size * 32
@@ -32,10 +32,10 @@ class RLBanditsModule():
 
 	# Given a list of basic blocks this func creates an embedding space of the requested size out of it
 	# TODO: include a list of visited bblocks as well here ?
-	def buildRLGenerationalStateEmbeeding(self, blocksPath: List[int], embeddingSize) -> List[int]:
+	def buildRLGenerationalStateEmbeeding(self, blocksPath: List[int], embeddingMaxSize) -> List[int]:
 		# Cut if too long
-		if len(blocksPath) > embeddingSize:
-			blocksPath = blocksPath[-embeddingSize:]
+		if len(blocksPath) > embeddingMaxSize:
+			blocksPath = blocksPath[-embeddingMaxSize:]
 
 		# Make the path relative to the first input
 		if len(blocksPath) > 0:
@@ -45,15 +45,17 @@ class RLBanditsModule():
 				blocksPath[i] -= offsetBegin
 
 		# Append if too short
-		diffLen = embeddingSize - len(blocksPath)
+		"""
+		diffLen = embeddingMaxSize - len(blocksPath)
 		if diffLen > 0:
 			blocksPath.extend([maskValueForRNNState] * diffLen)  # THe difference can't be 0 in the normal because we made a jump between two consecutive blocks and this helps us a lot
+		"""
 
-		assert len(blocksPath) == embeddingSize
+		#assert len(blocksPath) == embeddingMaxSize
 		return blocksPath #tf.constant(blocksPath)
 
 	def addExperience(self, bb_path_state, action, realValue): # realValue is the concrete reward value that should be for (state,action)
-		self.currentExperiences_actions.append(self.buildRLGenerationalStateEmbeeding(bb_path_state, fixedStateSize))
+		self.currentExperiences_actions.append(self.buildRLGenerationalStateEmbeeding(bb_path_state, maxEmbeddingPathStateSize))
 		self.currentExperiences_states.append(action)
 		self.currentExperiences_realValues.append(realValue)
 
@@ -71,8 +73,9 @@ class RLBanditsModule():
 
 	# Predict the value of a input and state
 	def predict(self, input: RiverUtils.InputRLGenerational, basicBlocksPathFoundThisRun) -> float:
-		bb_path_state = self.buildRLGenerationalStateEmbeeding(basicBlocksPathFoundThisRun, fixedStateSize)
+		bb_path_state = self.buildRLGenerationalStateEmbeeding(basicBlocksPathFoundThisRun, maxEmbeddingPathStateSize)
 		bb_path_state = tf.expand_dims(bb_path_state, axis=0)
+		bb_path_state = tf.keras.preprocessing.sequence.pad_sequences(bb_path_state, padding="post")
 		action_state = tf.constant([input.action])
 
 		res = self.model(input_state=bb_path_state, input_action=action_state, training=False)
@@ -119,6 +122,7 @@ class RLBanditsModule():
 				# Embedding for bblocks path
 				input_state = tf.expand_dims(input_state, axis=-1)
 				input_state = self.bblocksEncodingLayer(input_state)
+				#input_state = tf.keras.preprocessing.sequence.pad_sequences(input_state, padding="post")
 
 				# Transforms actions to one hot encoding
 				input_action = tf.one_hot(indices=input_action, depth=self.action_emb_size, dtype=tf.float32)
