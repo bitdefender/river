@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Sleep
+#include <unistd.h>
+
+// Crashes
+#include <sys/mman.h>
+#include <signal.h>
+
+int is_uppercase(int c) {
+    return c >= 'A' && c <= 'Z';
+}
+
+int is_lowercase(int c) {
+    return c >= 'a' && c <= 'z';
+}
+
+int is_number(char c) {
+    return c >= '0' && c <= '9';
+}
+
+int is_operator(char c) {
+    return c == '=' || c == '<' || c == '>';
+}
+
+int is_voyel(char c) {
+    if ((char) c == 'A' || (char) c == 'E' || (char) c == 'I' || (char) c == 'O' || (char) c == 'U' || 
+        (char) c == 'a' || (char) c == 'e' || (char) c == 'i' || (char) c == 'o' || (char) c == 'u')
+        return 1;
+    return 0;
+}
+
+void RIVERTestOneInput(char *ptr) {
+
+    int fst = (int)ptr[0];
+    int snd = (int)ptr[1];
+    int thd = (int)ptr[2];
+    int fth = (int)ptr[3];
+
+    int x = -0xffff;
+    if (is_uppercase(fst) || is_lowercase(fst)) {
+        if (is_operator(snd)) {
+            if (is_number(thd)) 
+            {
+                x = fth;
+            }            
+        }
+    }
+
+    // Not interested in the input
+    if(x == -0xffff)
+        return;
+
+    int error = 0;
+
+    // Make it more probable to crash (unsigned char <= 256)
+    // x = x / 3;
+
+    // Segmentation fault
+    if (x >= 0 && x <= 10) {
+        int a[10];
+        for (int i = 0; i < 1000; ++i)
+            a[i] = i;
+
+       error = 1; 
+    }        
+
+    // Bus error
+    if (x >= 11 && x <= 20) {   
+        FILE *f = tmpfile();
+        int *m = mmap(0, 4, PROT_WRITE, MAP_PRIVATE, fileno(f), 0);
+        *m = 0;
+
+        error = 2;
+    }
+
+    if (x >= 21 && x <= 30) {
+        raise(SIGTERM);
+
+        error = 3;
+    }
+
+    if (x >= 31 && x <= 40) {
+        raise(SIGABRT);
+
+        error = 4;
+    }
+
+    if (x >= 41 && x <= 50) {   
+        raise(SIGFPE);
+
+        error = 5;
+    }
+
+    if (x >= 51 && x <= 60) {
+        sleep(5);
+
+        error = 6;
+    }
+
+    if (error != 0) {
+        printf("Error found: %d!", error);
+        return;
+    }
+}
+
+int main(int ac, char **av)
+{
+    int ret;
+
+    if (ac != 2)
+    {
+        printf("First param must be the string password");
+        return -1;
+    }
+
+    RIVERTestOneInput(av[1]);
+}

@@ -173,8 +173,12 @@ def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict):
 
 
 def ExecuteInputToDetectIssues(input : RiverUtils.Input):
-    # TODO Bogdan, output somehow if the input has issues - folders, visual report etc...
-    pass
+    from bugs_detection.write_binary_input import write_binary_input
+    from pathlib import Path
+    
+    bugs_folder = './bugs_detection/all_inputs/'
+    Path(bugs_folder).mkdir(exist_ok=True)
+    write_binary_input(bugs_folder, [v for v in input.buffer.values()])
 
 def ScoreInput(newInp : RiverUtils.Input, simpleTracer : RiverTracer):
     logging.info(f"--Scoring input {newInp}")
