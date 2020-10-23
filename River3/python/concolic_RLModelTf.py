@@ -75,7 +75,7 @@ class RLBanditsModule():
 	def predict(self, input: RiverUtils.InputRLGenerational, basicBlocksPathFoundThisRun) -> float:
 		bb_path_state = self.buildRLGenerationalStateEmbeeding(basicBlocksPathFoundThisRun, maxEmbeddingPathStateSize)
 		bb_path_state = tf.expand_dims(bb_path_state, axis=0)
-		bb_path_state = tf.keras.preprocessing.sequence.pad_sequences(bb_path_state, padding="post")
+		#bb_path_state = tf.keras.preprocessing.sequence.pad_sequences(bb_path_state, padding="post")
 		action_state = tf.constant([input.action])
 
 		res = self.model(input_state=bb_path_state, input_action=action_state, training=False)
