@@ -79,7 +79,7 @@ class RLBanditsModule():
 		action_state = tf.constant([input.action])
 
 		res = self.model(input_state=bb_path_state, input_action=action_state, training=False)
-		return res.numpy()[0]
+		return res.numpy()[0][0]
 
 	# Given the size of a single basic block embedding size and
 	# action embedding size (which in our case it is the maximum of the sequence length of considered bblocks path)
