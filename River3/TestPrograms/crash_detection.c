@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Sleep
 #include <unistd.h>
@@ -8,11 +9,11 @@
 #include <sys/mman.h>
 #include <signal.h>
 
-int is_uppercase(int c) {
+int is_uppercase(char c) {
     return c >= 'A' && c <= 'Z';
 }
 
-int is_lowercase(int c) {
+int is_lowercase(char c) {
     return c >= 'a' && c <= 'z';
 }
 
@@ -33,10 +34,10 @@ int is_voyel(char c) {
 
 void RIVERTestOneInput(char *ptr) {
 
-    int fst = (int)ptr[0];
-    int snd = (int)ptr[1];
-    int thd = (int)ptr[2];
-    int fth = (int)ptr[3];
+    int fst = (unsigned char)ptr[0];
+    int snd = (unsigned char)ptr[1];
+    int thd = (unsigned char)ptr[2];
+    int fth = (unsigned char)ptr[3];
 
     int x = -0xffff;
     if (is_uppercase(fst) || is_lowercase(fst)) {
@@ -54,11 +55,8 @@ void RIVERTestOneInput(char *ptr) {
 
     int error = 0;
 
-    // Make it more probable to crash (unsigned char <= 256)
-    // x = x / 3;
-
     // Segmentation fault
-    if (x >= 0 && x <= 10) {
+    if (x >= 0 && x <= 20) {
         int a[10];
         for (int i = 0; i < 1000; ++i)
             a[i] = i;
@@ -67,7 +65,7 @@ void RIVERTestOneInput(char *ptr) {
     }        
 
     // Bus error
-    if (x >= 11 && x <= 20) {   
+    if (x >= 21 && x <= 40) {   
         FILE *f = tmpfile();
         int *m = mmap(0, 4, PROT_WRITE, MAP_PRIVATE, fileno(f), 0);
         *m = 0;
@@ -75,26 +73,27 @@ void RIVERTestOneInput(char *ptr) {
         error = 2;
     }
 
-    if (x >= 21 && x <= 30) {
+    if (x >= 41 && x <= 60) {
         raise(SIGTERM);
 
         error = 3;
     }
 
-    if (x >= 31 && x <= 40) {
+    if (x >= 61 && x <= 80) {
         raise(SIGABRT);
 
         error = 4;
     }
 
-    if (x >= 41 && x <= 50) {   
+    if (x >= 81 && x <= 120) {   
         raise(SIGFPE);
 
         error = 5;
     }
 
-    if (x >= 51 && x <= 60) {
+    if (x >= 121 && x <= 127) {
         sleep(5);
+        // raise (SIGHUP);
 
         error = 6;
     }
@@ -115,5 +114,10 @@ int main(int ac, char **av)
         return -1;
     }
 
+    int fth = 0;
+    if (strlen(av[1]) >= 4)
+        fth = (unsigned char) av[1][3];
+
+    printf("Executing: %s %s. Fourth char: %d\n", av[0], av[1], fth);
     RIVERTestOneInput(av[1]);
 }
