@@ -35,7 +35,7 @@ gcc -g -O0 -o crackme_xor ./crackme_xor.c
 (you can use without -g or -O0)
 ```
 
-## How to use or concolic tool ? 
+## How to use or concolic (SAGE like) tool ? 
 Currently you can run concolic_GenerationalSearch.py with a sample of parameters like below.
 
 ```
@@ -55,6 +55,10 @@ If you have the source code, you can use: the following command to get the addre
 ```
 The secondsBetweenStats is the time in seconds to show various stats between runs. logLevel is working with the ```logging``` module in Python to show logs, basically you put here the level you want to see output. Put DEBUG if you want to see everything outputed as log for example.
 The architecture parameter can be set to x64, x86, ARM32, ARM64.
+
+## How to use or concolic Reinforcement Learning based Concolic tool ? 
+Same parameters as above. Note that our implementation is done using Tensorflow 2 (2.3 version was tested). You can modify manually the parameters of the model from RLConcolicModelTf.py script.
+
 
 
 ## Future work
