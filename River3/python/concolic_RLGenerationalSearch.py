@@ -111,9 +111,10 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
 
         # If there is a condition on this path (not a direct jump), try to reverse it with a new input
         if pc.isMultipleBranches():
+            takenAddress = pc.getTakenAddress()
             for branch in branches:
                 # Get the constraint of the branch which has been not taken
-                if branch['isTaken'] == False:
+                if branch['dstAddr'] != takenAddress:
                     #print(branch['constraint'])
                     #expr = astCtxt.unroll(branch['constraint'])
                     #expr = ctx.simplify(expr)
