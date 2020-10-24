@@ -1,12 +1,14 @@
 # River - a binary fuzz testing framework using AI-guided coverage
 
-River is an open-source framework that uses AI to guide the fuzz testing of binary programs.
+River is an [open-source framework](https://github.com/AGAPIA/river) that uses AI to guide the fuzz testing of binary programs.
 
 The architecture of River 3.0 is given below:
 
 ![RIVER 3.0 architecture](River3/River3-architecture.png?raw=true "RIVER 3.0 architecture")
 
-Scientific publications related to River:
+River is developed in the Department of Computer Science, University of Bucharest with [Ciprian Paduraru](mailto:ciprian.paduraru@fmi.unibuc.ro) being the lead developer. 
+
+Scientific publications related to River can be found below:
 - B. Ghimis, M. Paduraru, A. Stefanescu. [RIVER 2.0: An Open-Source Testing Framework using AI Techniques](http://alin.stefanescu.eu/publications/pdf/langeti20-river.pdf). In Proc. of LANGETI'20, workshop affiliated to ESEC/FSE'20, pp. 13-18, ACM, 2020.
 - C. Paduraru, M. Paduraru, A. Stefanescu. [Optimizing decision making in concolic execution using reinforcement learning](http://alin.stefanescu.eu/publications/pdf/amost20.pdf). In Proc. of A-MOST'20, workshop affiliated to ICST'20, pp. 52-61, IEEE, 2020.
 - C. Paduraru, B. Ghimis, A, Stefanescu. [RiverConc: An Open-source Concolic Execution Engine for x86 Binaries](http://alin.stefanescu.eu/publications/pdf/icsoft20-river-camera-ready.pdf). In Proc. of 15th Int. Conf on Software Technologies (ICSOFT'20), pp. 529-536, SciTePress, 2020.
