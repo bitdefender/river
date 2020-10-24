@@ -71,7 +71,7 @@ def parseArgs():
 
 # This function returns a set of new inputs based on the last trace.
 def Expand(symbolicTracer : RiverTracer, inputToTry):
-    logging.info(f"Seed injected:, {inputToTry}")
+    logging.critical(f"Seed injected:, {inputToTry}")
 
     symbolicTracer.runInput(inputToTry, symbolized=True, countBBlocks=False)
 
@@ -102,9 +102,10 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
 
         # If there is a condition on this path (not a direct jump), try to reverse it
         if pc.isMultipleBranches():
+            takenAddress = pc.getTakenAddress()
             for branch in branches:
                 # Get the constraint of the branch which has been not taken
-                if branch['isTaken'] == False:
+                if branch['dstAddr'] != takenAddress:
                     #print(branch['constraint'])
                     #expr = astCtxt.unroll(branch['constraint'])
                     #expr = ctx.simplify(expr)
@@ -181,7 +182,7 @@ def ExecuteInputToDetectIssues(input : RiverUtils.Input):
     write_binary_input(bugs_folder, [v for v in input.buffer.values()])
 
 def ScoreInput(newInp : RiverUtils.Input, simpleTracer : RiverTracer):
-    logging.info(f"--Scoring input {newInp}")
+    logging.critical(f"--Scoring input {newInp}")
     targetFound, numNewBlocks, allBBsInThisRun = simpleTracer.runInput(newInp, symbolized=False, countBBlocks=True)
     return targetFound, numNewBlocks # as default, return the bound...
 
@@ -199,7 +200,7 @@ if __name__ == '__main__':
         outputStats = RiverStatsTextual()
 
     # TODO Bogdan: Implement the corpus strategies as defined in https://llvm.org/docs/LibFuzzer.html#corpus, or Random if not given
-    initialSeedDict = ["good"]
+    initialSeedDict = ["good"]#["a<9d"]
     RiverUtils.processSeedDict(initialSeedDict) # Transform the initial seed dict to bytes instead of chars if needed
 
     SearchInputs(symbolicTracer=symbolicTracer, simpleTracer=simpleTracer, initialSeedDict=initialSeedDict)

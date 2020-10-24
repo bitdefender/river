@@ -30,7 +30,9 @@ class RiverTracer:
 		# The set of basic blocks found so far by this tracer.
 		self.allBlocksFound: Set[int] = set()
 		self.TARGET_TO_REACH = targetAddressToReach
-		self.entryFuncAddr = None
+		self.entryFuncAddr = None # Entry function address
+		self.codeSection_begin = None # Where the code section begins and ends
+		self.codeSection_end = None
 
 	# Gets the context of this tracer
 	def getContext(self):
@@ -64,7 +66,7 @@ class RiverTracer:
 		onBasicBlockFound(currentBBlockAddr)
 
 		logging.info('[+] Starting emulation.')
-		while pc:
+		while pc and (pc >= self.codeSection_begin and pc <= self.codeSection_end):
 			# Fetch opcode
 			opcode = self.context.getConcreteMemoryAreaValue(pc, 16)
 
@@ -115,7 +117,7 @@ class RiverTracer:
 
 		# Symbolize the input bytes in the input seed.
 		# Put all the inputs in the buffer in the emulated program memory
-		inputLen = max(inputToTry.buffer.keys())
+		inputLen = max(inputToTry.buffer.keys()) + 1
 		for byteIndex, value in inputToTry.buffer.items():
 			symbolizeAndConcretizeByteIndex(byteIndex, value, symbolized)
 
@@ -176,25 +178,31 @@ class RiverTracer:
 	def loadBinary(tracersInstances, binaryPath, entryfuncName):
 		outEntryFuncAddr = None
 
+		logging.info(f"Loading the binary at path {binaryPath}..")
+		import lief
+		binary = lief.parse(binaryPath)
+		if binary is None:
+			assert False, f"Path to binary not found {binaryPath}"
+			exit(0)
+
+		text = binary.get_section(".text")
+		codeSection_begin = text.file_offset
+		codeSection_end = codeSection_begin + text.size
+
+		if outEntryFuncAddr is None:
+			logging.info(f"Findind the exported function of interest {binaryPath}..")
+			res = binary.exported_functions
+			for function in res:
+				if entryfuncName in function.name:
+					outEntryFuncAddr = function.address
+					logging.info(f"Function of interest found at address {outEntryFuncAddr}")
+					break
+		assert outEntryFuncAddr != None, "Exported function wasn't found"
+
 		for tracerIndex, tracer in enumerate(tracersInstances):
-			logging.info(f"Loading the binary at path {binaryPath}..")
-			import lief
-			binary = lief.parse(binaryPath)
-			if binary is None:
-				assert False, f"Path to binary not found {binaryPath}"
-				exit(0)
-
-			if outEntryFuncAddr is None:
-				logging.info(f"Findind the exported function of interest {binaryPath}..")
-				res = binary.exported_functions
-				for function in res:
-					if entryfuncName in function.name:
-						outEntryFuncAddr = function.address
-						logging.info(f"Function of interest found at address {outEntryFuncAddr}")
-						break
-			assert outEntryFuncAddr != None, "Exported function wasn't found"
-
 			tracersInstances[tracerIndex].entryFuncAddr = outEntryFuncAddr
+			tracersInstances[tracerIndex].codeSection_begin = codeSection_begin
+			tracersInstances[tracerIndex].codeSection_end = codeSection_end
 
 			phdrs = binary.segments
 			for phdr in phdrs:
