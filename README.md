@@ -1,4 +1,23 @@
-# River 3.0 
+# River - a binary fuzz testing framework using AI-guided coverage
+
+River is an open-source framework that uses AI to guide the fuzz testing of binary programs.
+
+The architecture of River 3.0 is given below:
+
+![RIVER 3.0 architecture](River3/River3-architecture.png?raw=true "RIVER 3.0 architecture")
+
+Scientific publications related to River:
+- B. Ghimis, M. Paduraru, A. Stefanescu. [RIVER 2.0: An Open-Source Testing Framework using AI Techniques](http://alin.stefanescu.eu/publications/pdf/langeti20-river.pdf). In Proc. of LANGETI'20, workshop affiliated to ESEC/FSE'20, pp. 13-18, ACM, 2020.
+- C. Paduraru, M. Paduraru, A. Stefanescu. [Optimizing decision making in concolic execution using reinforcement learning](http://alin.stefanescu.eu/publications/pdf/amost20.pdf). In Proc. of A-MOST'20, workshop affiliated to ICST'20, pp. 52-61, IEEE, 2020.
+- C. Paduraru, B. Ghimis, A, Stefanescu. [RiverConc: An Open-source Concolic Execution Engine for x86 Binaries](http://alin.stefanescu.eu/publications/pdf/icsoft20-river-camera-ready.pdf). In Proc. of 15th Int. Conf on Software Technologies (ICSOFT'20), pp. 529-536, SciTePress, 2020.
+- C. Paduraru, M. Melemciuc, B. Ghimis. Fuzz Testing with Dynamic Taint Analysis based Tools for Faster Code Coverage. In Proc. of 14th Int. Conf on Software Technologies (ICSOFT'19), pp. 82-93, SciTePress, 2019.
+- C. Paduraru, M. Melemciuc. An Automatic Test Data Generation Tool using Machine Learning. In Proc. of 13th Int. Conf on Software Technologies (ICSOFT'18), pp. pp. 506-515, SciTePress, 2018.
+- C. Paduraru, M. Melemciuc, M. Paduraru. Automatic Test Data Generation for a Given Set of Applications Using Recurrent Neural Networks. Springer CCIS series, vol. 1077, pp. 307-326, Springer, 2018.
+- C. Paduraru, M. Melemciuc, A. Stefanescu. [A distributed implementation using Apache Spark of a genetic algorithm applied to test data generation](http://alin.stefanescu.eu/publications/pdf/pdeim17.pdf). In Proc. of PDEIM'17, workshop of GECCO’17, GECCO Companion, pp. 1857-1863, ACM, 2017.
+- T. Stoenescu, A. Stefanescu, S. Predut, F. Ipate. [Binary Analysis based on Symbolic Execution and Reversible x86 Instructions](http://alin.stefanescu.eu/publications/pdf/fundamenta17.pdf), Fundamenta Informaticae 153 (1-2), pp. 105-124, 2017.
+- T. Stoenescu, A. Stefanescu, S. Predut, F. Ipate. [RIVER: A Binary Analysis Framework using Symbolic Execution and Reversible x86 Instructions](http://alin.stefanescu.eu/publications/pdf/fm16.pdf). In Proc. of 21st International Symposium on Formal Methods (FM'16), LNCS 9995, pp. 779-785, Springer, 2016.
+
+
 # Short intro to River 3.0 changes
 - We are going to have two backends: 
  0. LLVM based tools and Libfuzzer 
@@ -25,7 +44,7 @@ import lief
 
 # Testing River 3.0
 
- Currently we have implemented as a proof of concept of a Generic Concolic Executor and Generalitional Search (SAGE, first open source version, see the original paper here ) that can be found in /River3/ConcolicExecution_Generic/python. The ```concolic_GenerationalSearch.py``` is the recommended one to use for performance 
+ Currently we have implemented as a proof of concept a Generic Concolic Executor and Generalitional Search (SAGE), first open-source version, see the original paper [here](https://patricegodefroid.github.io/public_psfiles/cacm2012.pdf)) that can be found in /River3/ConcolicExecution_Generic/python. The ```concolic_GenerationalSearch.py``` is the recommended one to use for performance 
  You can test it against the crackme_xor, sage, sage2, or other programs inside program inside River3/TestPrograms. You are free to modify and experiment with your own code or changes however.
  
 ## How to build your program for testing with our tools ? 
@@ -35,7 +54,7 @@ gcc -g -O0 -o crackme_xor ./crackme_xor.c
 (you can use without -g or -O0)
 ```
 
-## How to use or concolic (SAGE like) tool ? 
+## How to use or concolic (SAGE-like) tool ? 
 Currently you can run concolic_GenerationalSearch.py with a sample of parameters like below.
 
 ```
@@ -47,8 +66,7 @@ Currently you can run concolic_GenerationalSearch.py with a sample of parameters
 --secondsBetweenStats 10
 ```
 
-The targetAddress is optional, it is for capture the flag like kind of things, where you want to get to a certain address
-in the binary code.
+The targetAddress is optional; it is for "capture the flag"-like kind of things, where you want to get to a certain address in the binary code.
 If you have the source code, you can use: the following command to get the address of interest. The execution will stop when the target is reached, otherwise it will exhaustively try to search all inputs.
 ```
  objdump -M intel -S ./crackme_xor
@@ -56,9 +74,8 @@ If you have the source code, you can use: the following command to get the addre
 The secondsBetweenStats is the time in seconds to show various stats between runs. logLevel is working with the ```logging``` module in Python to show logs, basically you put here the level you want to see output. Put DEBUG if you want to see everything outputed as log for example.
 The architecture parameter can be set to x64, x86, ARM32, ARM64.
 
-## How to use or concolic Reinforcement Learning based Concolic tool ? 
+## How to use or concolic Reinforcement Learning based Concolic tool? 
 Same parameters as above. Note that our implementation is done using Tensorflow 2 (2.3 version was tested). You can modify manually the parameters of the model from RLConcolicModelTf.py script.
-
 
 
 ## Future work
@@ -90,7 +107,7 @@ wget https://raw.githubusercontent.com/AGAPIA/river/master/installRiverTools.sh
 ```
 sh ~/installRiverTools.sh testtools Debug
 ```
-First parameter is the folder to install all River tool. This command will install all in ~/testtools/ . You can of course change the folder name as you wish
+First parameter is the folder to install all River tool. This command will install all in ~/testtools/ . You can, of course, change the folder name as you wish
 Second parameter is for build type and it can be either Debug or Release
 
 Now you have to close the terminal and open it again (to activate the env variables) to see if it works !
@@ -148,7 +165,7 @@ The modern way to debug and build projects from VS code:
 # *Part 2: Concolic executor*
 
 ## Installing and usage 
-The source code are in river/riverexp folder. You can build it using Visual Studio code. Just open de folder and build, as specified above in the River tools section 
+The source code are in river/riverexp folder. You can build it using Visual Studio code. Just open the folder and build, as specified above in the River tools section 
 TODO: we need to make an installer and separate it from RIVER with a different repository since its code is totally independent.
 
 The options for executing the executable are the following:
@@ -193,4 +210,4 @@ Check the ConcolicExecutor class and how it aggregates inside a TracerExecutionS
 
 **TracerExecutionStrategyMPI** - communication using MPI. No code. TODO task
 
-A list of working progress task can be found at https://trello.com/b/WmfPJGo6/tech-tasks . If you like something don't hesitate to contribute to our project !
+A list of work-in-progress tasks can be found in this [Trello board](https://trello.com/b/WmfPJGo6/tech-tasks). If you like a task, just ping us! ^_^
