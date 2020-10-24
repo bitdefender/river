@@ -19,6 +19,9 @@ Scientific publications related to River can be found below:
 - T. Stoenescu, A. Stefanescu, S. Predut, F. Ipate. [Binary Analysis based on Symbolic Execution and Reversible x86 Instructions](http://alin.stefanescu.eu/publications/pdf/fundamenta17.pdf), Fundamenta Informaticae 153 (1-2), pp. 105-124, 2017.
 - T. Stoenescu, A. Stefanescu, S. Predut, F. Ipate. [RIVER: A Binary Analysis Framework using Symbolic Execution and Reversible x86 Instructions](http://alin.stefanescu.eu/publications/pdf/fm16.pdf). In Proc. of 21st International Symposium on Formal Methods (FM'16), LNCS 9995, pp. 779-785, Springer, 2016.
 
+Presentations:
+A-AMOST, (ICST Workshop): https://www.youtube.com/watch?v=xfomXR3MN94&ab_channel=paduraru2007
+Slides: https://www.dropbox.com/s/bkstdgts0whc2np/Presentation3.pptx?dl=0
 
 # Short intro to River 3.0 changes
 - We are going to have two backends: 
