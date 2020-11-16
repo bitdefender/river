@@ -1,11 +1,11 @@
-name: Build River3 image
+name: Build River3 docker image
 
 on:
   push:
-    branches: ["master", "gh-actions"]
+    branches: ["master"]
 
 jobs:
-  main:
+  build_and_push:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
