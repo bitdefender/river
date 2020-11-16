@@ -1,4 +1,4 @@
-name: Build River Tools image
+name: Build River3 image
 
 on:
   push:
@@ -23,9 +23,8 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          context: ./docker
-          file: ./river-tools.Dockerfile
+          context: .
           push: true
-          tags: cconache/river-tools:latest
+          tags: cconache/river3:latest
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
