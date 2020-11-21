@@ -130,7 +130,7 @@ def Expand(symbolicTracer : RiverTracer, inputToTry):
     return inputs
 
 # This function starts with a given seed dictionary and does concolic execution starting from it.
-def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict):
+def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict, binaryPath):
     # Init the worklist with the initial seed dict
     worklist  = RiverUtils.InputsWorklist()
     forceFinish = False
@@ -151,7 +151,11 @@ def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict):
 
         for newInp in newInputs:
             # Execute the input to detect real issues with it
-            ExecuteInputToDetectIssues(newInp)
+            issue = ExecuteInputToDetectIssues(binaryPath, newInp)
+            if issue != None:
+                # TODO: save the input to a database
+                print(f"{binaryPath} has issues: {issue} on input {newInp}")
+                pass
 
             # Assign this input a priority, and check if the hacked target address was found or not
             targetFound, newInp.priority = ScoreInput(newInp, simpleTracer)
@@ -173,13 +177,9 @@ def SearchInputs(symbolicTracer, simpleTracer, initialSeedDict):
     currTime = outputStats.UpdateOutputStats(startTime, currTime, collectorTracers=[simpleTracer], forceOutput=True)
 
 
-def ExecuteInputToDetectIssues(input : RiverUtils.Input):
-    from bugs_detection.write_binary_input import write_binary_input
-    from pathlib import Path
-    
-    bugs_folder = './bugs_detection/all_inputs/'
-    Path(bugs_folder).mkdir(exist_ok=True)
-    write_binary_input(bugs_folder, [v for v in input.buffer.values()])
+def ExecuteInputToDetectIssues(binary_path, input : RiverUtils.Input):
+    from bugs_detection.test_inputs import sig_str, test_input
+    return sig_str.get(test_input(binary_path, bytes([v for v in input.buffer.values()])))
 
 def ScoreInput(newInp : RiverUtils.Input, simpleTracer : RiverTracer):
     logging.critical(f"--Scoring input {newInp}")
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     initialSeedDict = ["good"]#["a<9d"]
     RiverUtils.processSeedDict(initialSeedDict) # Transform the initial seed dict to bytes instead of chars if needed
 
-    SearchInputs(symbolicTracer=symbolicTracer, simpleTracer=simpleTracer, initialSeedDict=initialSeedDict)
+    SearchInputs(symbolicTracer=symbolicTracer, simpleTracer=simpleTracer, initialSeedDict=initialSeedDict, binaryPath=args.binaryPath)
 
     if RECONSTRUCT_BB_GRAPH:
         print(f"Reconstructed graph is: {BlocksGraph}")
