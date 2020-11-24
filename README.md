@@ -1,6 +1,6 @@
 # River - a binary fuzz testing framework using AI-guided coverage
 
-River is an [open-source framework](https://github.com/AGAPIA/river) that uses AI to guide the fuzz testing of binary programs.
+River is an [open-source framework](https://github.com/unibuc-cs/river) that uses AI to guide the fuzz testing of binary programs.
 
 The architecture of River 3.0 is given below:
 
@@ -217,4 +217,4 @@ Check the ConcolicExecutor class and how it aggregates inside a TracerExecutionS
 
 **TracerExecutionStrategyMPI** - communication using MPI. No code. TODO task
 
-A list of work-in-progress tasks can be found in this [Trello board](https://trello.com/b/WmfPJGo6/tech-tasks). If you like a task, just ping us! ^_^
+We are glad if people would like to collaborate on this exciting project! ^_^
