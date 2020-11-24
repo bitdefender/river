@@ -1,12 +1,10 @@
-# River - a binary fuzz testing framework using AI-guided coverage
-
-River is an [open-source framework](https://github.com/unibuc-cs/river) that uses AI to guide the fuzz testing of binary programs.
+**River** is an [open-source framework](https://github.com/unibuc-cs/river) that uses AI to guide the fuzz testing of binary programs.
 
 The architecture of River 3.0 is given below:
 
 ![RIVER 3.0 architecture](River3/River3-architecture.png?raw=true "RIVER 3.0 architecture")
 
-River is developed in the Department of Computer Science, University of Bucharest with [Ciprian Paduraru](mailto:ciprian.paduraru@fmi.unibuc.ro) being the lead developer. 
+River is developed in the Department of Computer Science, University of Bucharest. [Ciprian Paduraru](mailto:ciprian.paduraru@fmi.unibuc.ro) is the lead developer. 
 
 Scientific publications related to River can be found below:
 - B. Ghimis, M. Paduraru, A. Stefanescu. [RIVER 2.0: An Open-Source Testing Framework using AI Techniques](http://alin.stefanescu.eu/publications/pdf/langeti20-river.pdf). In Proc. of LANGETI'20, workshop affiliated to ESEC/FSE'20, pp. 13-18, ACM, 2020.
@@ -217,4 +215,4 @@ Check the ConcolicExecutor class and how it aggregates inside a TracerExecutionS
 
 **TracerExecutionStrategyMPI** - communication using MPI. No code. TODO task
 
-We are glad if people would like to collaborate on this exciting project! ^_^
+P.S. Please get in touch if you would like to collaborate on this exciting project! ^_^
