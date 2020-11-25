@@ -106,6 +106,7 @@ void RIVERTestOneInput(char *ptr) {
 
 int main(int ac, char **av)
 {
+    /* Reading input with command line args
     int ret;
 
     if (ac != 2)
@@ -120,5 +121,23 @@ int main(int ac, char **av)
 
     printf("Executing: %s %s. Fourth char: %d\n", av[0], av[1], fth);
     RIVERTestOneInput(av[1]);
+    */
+
+    /* Reading input as a string from stdin
+    char input[100];
+    scanf("%s", input);
+    RIVERTestOneInput(input);
+    */
+
+    /* Reading input as bytes from stdin */
+    freopen(NULL, "rb", stdin);
+
+    char buffer[1000];
+    while (fread(buffer, sizeof(char), 1000, stdin) != EOF) {
+        // Reusing buffer?
+        RIVERTestOneInput(buffer);
+    }
+
+    return 0;
 }
 

@@ -59,6 +59,9 @@ Session.vim
 .z3-trace/
 benchmarking-payload/fmi/.z3-trace/
 
+#Ctags
+tags
+
 #Python
 # Byte-compiled / optimized / DLL files
 __pycache__/
