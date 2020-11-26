@@ -133,9 +133,13 @@ int main(int ac, char **av)
     freopen(NULL, "rb", stdin);
 
     char buffer[1000];
-    while (fread(buffer, sizeof(char), 1000, stdin) != EOF) {
+    while (fread(buffer, sizeof(char), 1000, stdin)) {
         // Reusing buffer?
         RIVERTestOneInput(buffer);
+
+        if (feof(stdin)) {
+            break;
+        }
     }
 
     return 0;

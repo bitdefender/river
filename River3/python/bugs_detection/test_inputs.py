@@ -59,20 +59,21 @@ def test_input(binary_path, binary_input):
     # run program
     try:
         result = subprocess.Popen(
-            [binary_path, binary_input], 
-            bufsize=-1, 
-            stdout=subprocess.PIPE, 
-            stdin=subprocess.PIPE)
+            binary_path,
+            bufsize=-1,
+            stdin=subprocess.PIPE,
+            )
     except ValueError:
         # Skipping string containing \0 value
         # Probably a good idea to save it somewhere else
         # We skip it because it cannot be passed as argument
         return 'skipped'
 
-    # used for communicating using stdin/stdout
-    # result.stdin.write(bytearray("BBBB", encoding='UTF-8'))
-    # result.stdin.flush()
-    # result.stdin.close()
+    # Used for communicating using stdin/stdout
+    print(f'Testing {binary_path} with input {binary_input}')
+    result.stdin.write(binary_input)
+    result.stdin.flush()
+    result.stdin.close()
     result.wait()
     return result.returncode
 

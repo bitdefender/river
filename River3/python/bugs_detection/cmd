@@ -1,5 +1,5 @@
 # run from ~/river/River3/python/
-python3 concolic_GenerationalSearch2.py --binaryPath "../TestPrograms/crash_detection" --architecture x64 --maxLen 10 --logLevel CRITICAL --targetAddress $TARGET --secondsBetweenStats 10 --outputType textual
+python3 concolic_GenerationalSearch2.py --binaryPath "../TestPrograms/crash_detection" --architecture x64 --maxLen 10 --logLevel CRITICAL --secondsBetweenStats 10 --outputType textual
 
 # to view the inputs as strings:
 ./read_binary_input.py all_inputs/
