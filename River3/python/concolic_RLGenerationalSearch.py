@@ -1,7 +1,7 @@
 # This is the implementation based on the SAGE paper
 from __future__ import print_function
-from triton     import TritonContext, ARCH, Instruction, MemoryAccess, CPUSIZE, MODE
-import  sys
+from triton import TritonContext, ARCH, Instruction, MemoryAccess, CPUSIZE, MODE
+import sys
 import argparse
 import RiverUtils as RiverUtils
 from RiverTracer import RiverTracer
@@ -34,25 +34,25 @@ def parseArgs():
 
     # Add the arguments to the parser
     ap.add_argument("-bp", "--binaryPath", required=True,
-                    help="where is the binary located")
+                    help="the test binary location")
     ap.add_argument("-entryfuncName", "--entryfuncName", required=False, default="RIVERTestOneInput",
-                    help="the name of the entry func you want to start the test from. By default it is a 'RIVERTestOneInput' name function!", type=str)
+                    help="the name of the entry function you want to start the test from. By default the function name is 'RIVERTestOneInput'!", type=str)
     ap.add_argument("-arch", "--architecture", required=True,
-                    help="Architecture of the executable, one of: ARM32, ARM64, X86, X64")
+                    help="architecture of the executable: ARM32, ARM64, X86, X64 are supported")
     ap.add_argument("-max", "--maxLen", required=True,
-                    help="max size of input len", type=int)
+                    help="maximum size of input length", type=int)
     ap.add_argument("-targetAddress", "--targetAddress", required=False, default=None,
-                    help="the target that your program is trying to reach !", type=str)
+                    help="the target address that your program is trying to reach", type=str)
     ap.add_argument("-logLevel", "--logLevel", required=False, default='CRITICAL',
-                    help="the log level you want, see the logging module and put the corresponding string. Put it DEBUG to see everything", type=str)
-    ap.add_argument("-secondsBetweenStats", "--secondsBetweenStats", required=False, default='CRITICAL',
-                    help="How many seconds to wait before showing new stats", type=int)
-    ap.add_argument("-outputType", "--outputType", required=False, default=None,
-                    help="Kind of output type, can be visual or textual", type=str)
-
+                    help="set the log level threshold, see the Python logging module documentation for the list of levels. Set it to DEBUG to see everything!", type=str)
+    ap.add_argument("-secondsBetweenStats", "--secondsBetweenStats", required=False, default='10',
+                    help="the interval (in seconds) between showing new stats", type=int)
+    ap.add_argument("-outputType", "--outputType", required=False, default='textual',
+                    help="the output interface type, can be visual or textual", type=str)
     ap.add_argument("-isTraining", "--isTraining", required=False, default=0,
-                    help="1 if training, 0 if using a saved model", type=int)
-    ap.add_argument("-pathToModel", "--pathToModel", required=False, default=None, help="path to the model to use", type=str)
+                    help="set it to 1 if using an untrained model or to 0 if using a saved model", type=int)
+    ap.add_argument("-pathToModel", "--pathToModel", required=False, default=None, 
+                    help="path to the model to use", type=str)
 
     args = ap.parse_args()
 
@@ -264,4 +264,3 @@ if __name__ == '__main__':
     if RECONSTRUCT_BB_GRAPH:
         print(f"Reconstructed graph is: {BlocksGraph}")
     sys.exit(0)
-
