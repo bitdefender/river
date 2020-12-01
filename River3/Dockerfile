@@ -64,5 +64,5 @@ RUN pip install --use-feature=2020-resolver numpy tensorflow
 COPY [".", "/River3"]
 WORKDIR /River3
 
-ENTRYPOINT [ "python3.6", "python/concolic_RLGenerationalSearch.py"]
+ENTRYPOINT [ "python3.6", "python/concolic_GenerationalSearch2.py"]
 # CMD ["--secondsBetweenStats", "2", "--architecture", "x64", "--maxLen", "1", "--outputType", "textual"]
