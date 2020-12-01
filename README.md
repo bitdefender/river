@@ -53,7 +53,7 @@ The `concolic_GenerationalSearch2.py` is the recommended one to use for performa
 
 You can test it against the crackme_xor, sage, sage2, or other programs inside program inside River3/TestPrograms. You are free to modify and experiment with your own code or changes however.
 
-## How to build your program for testing with our tools ? 
+## How to build your program for testing with our tools?
 Let's say you modify the crackme_xor.c code file and you want to compile it. (Note, -g and -O0 are not needed but they can help you in the process of debugging and understanding the asm code without optimizations).
 ```
 gcc -g -O0 -o crackme_xor ./crackme_xor.c
@@ -73,16 +73,76 @@ Currently you can run `concolic_GenerationalSearch2.py` with a sample of paramet
 --outputType textual
 ```
 
-The targetAddress is optional; it is for "capture the flag"-like kind of things, where you want to get to a certain address in the binary code.
-If you have the source code, you can use: the following command to get the address of interest. The execution will stop when the target is reached, otherwise it will exhaustively try to search all inputs.
+The `targetAddress` is optional; it is for "capture the flag"-like kind of things, where you want to get to a certain address in the binary code.
+If you have the source code, you can use: the following command to get the address of interest.
+The execution will stop when the target is reached, otherwise it will exhaustively try to search all inputs.
 ```
  objdump -M intel -S ./crackme_xor
 ```
-The secondsBetweenStats is the time in seconds to show various stats between runs. logLevel is working with the ```logging``` module in Python to show logs, basically you put here the level you want to see output. Put DEBUG if you want to see everything outputed as log for example.
-The architecture parameter can be set to x64, x86, ARM32, ARM64.
+
+The `secondsBetweenStats` is the time in seconds to show various stats between runs.
+
+The `logLevel` is working with the `logging` module in Python to show logs, basically you put here the level you want to see output.
+Put `DEBUG` if you want to see everything outputed as log for example.
+
+The `architecture` parameter can be set to x64, x86, ARM32, ARM64.
+
+---
+**NOTE**
+
+By default, `concolic_GenerationalSearch2.py` will search for a function named `RIVERTestOneInput` to use as a testing entrypoint.
+If one desires to change the entrypoint, he can use the `--entryfuncName` option.
+The example bellow sets `main` as the entrypoint:
+```
+--entryfuncName "main"
+```
+
+---
 
 ## How to use or concolic Reinforcement Learning based Concolic tool? 
 Same parameters as above. Note that our implementation is done using Tensorflow 2 (2.3 version was tested). You can modify manually the parameters of the model from RLConcolicModelTf.py script.
+
+## Testing using `docker`
+
+We also provide a `Dockerfile` that builds an image with all the required dependencies and the latest `river` flavour.
+The `Dockerfile` can be found in the `docker/` folder.
+Inside the `docker/` folder are two files:
+
+* The `Dockerfile` that builds the image
+* A `Makefile` for convenience
+
+To build the image navigate to the `docker/` directory and run `make`:
+```
+$ cd path/to/river/docker/
+$ make
+
+```
+
+This will build the docker image locally.
+View the available images with:
+```
+$ docker image ls
+```
+
+To start a self-destructing container that runs a simple test, run:
+```
+$ make test
+```
+
+To start a long running container with an interactive `/bin/bash` session, run:
+```
+$ make run
+```
+
+To connect to an existing, long running container, run:
+```
+$ make bash
+```
+
+To delete the container and local image crated, run:
+```
+$ make clean
+```
 
 ## Future work
  - Output graphics
