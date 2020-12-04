@@ -63,8 +63,12 @@ git clone --recursive https://github.com/unibuc-cs/river
 [documentation](https://github.com/lief-project/LIEF).
 
 4. Install `numpy` with `pip install numpy`.
+
+5. Install `tensorflow` with `pip install tensorflow`.
+
 To check if the dependencies are installed correctly, run the following commands in a Python console
 (tested on Python 3.7):
+
 ```
 $ python3
 >>> import triton
@@ -181,6 +185,10 @@ To start a self-destructing container that runs a simple test, run:
 ```
 $ make test
 ```
+
+This will test both `concolic_GenerationalSearch2.py` and `concolic_RLGenerationalSearch.py`.
+The test for `concolic_RLGenerationalSearch.py` will print a bunch of warnings.
+This is expected, as `tensorflow` is just warning about the fact that it didn't find the CUDA libraries, so it wont be able to run on a GPU and it will use the CPU instead.
 
 To start a long running container with an interactive `/bin/bash` session, run:
 ```
