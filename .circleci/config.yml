@@ -1,0 +1,7 @@
+version: 2.1
+jobs:
+    build:
+        docker:
+            - image: circleci/buildpack-deps
+        steps:
+            - checkout # check out the code in the project directory
