@@ -5,3 +5,16 @@ jobs:
             - image: circleci/buildpack-deps
         steps:
             - checkout # check out the code in the project directory
+            - run: git submodule sync
+            - run: git submodule update --init
+            - setup_remote_docker:
+                version: 19.03.13
+            - run:
+                name: Check docker
+                command: docker --version
+            - run:
+                name: Use docker to build test image
+                command: make -C ./docker build
+            - run:
+                name: Use docker to run tests
+                command: make -C ./docker test
